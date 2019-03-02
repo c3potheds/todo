@@ -1,0 +1,6 @@
+[package]
+name = "todo-lib"
+version = "0.1.0"
+authors = ["Simeon <simeon.anfinrud@mac.com>"]
+
+[dependencies]
