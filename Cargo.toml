@@ -4,3 +4,4 @@ version = "0.1.0"
 authors = ["Simeon <simeon.anfinrud@mac.com>"]
 
 [dependencies]
+json = "0.11.13"
