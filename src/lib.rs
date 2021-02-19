@@ -1,6 +1,10 @@
 #[macro_use]
 extern crate serde;
 
+extern crate clap;
+
+mod cli;
+
 #[cfg(test)]
 #[macro_use]
 extern crate serde_json;
