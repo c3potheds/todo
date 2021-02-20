@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate serde;
 
-extern crate clap;
+extern crate structopt;
 
 mod cli;
 

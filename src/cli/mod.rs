@@ -1,48 +1,23 @@
-#[derive(Debug, PartialEq)]
-pub enum Cmd<'a> {
-    Check { keys: Vec<&'a str> },
-    New { desc: Vec<&'a str> },
-    Status {},
+use structopt::StructOpt;
+
+#[derive(Debug, PartialEq, StructOpt)]
+pub enum SubCommand {
+    /// Marks tasks as complete.
+    Check { keys: Vec<String> },
+    /// Creates new tasks in the to-do list.
+    New { desc: Vec<String> },
 }
 
-pub fn clap_app<'a, 'b>() -> clap::App<'a, 'b>
-where
-    'a: 'b,
-{
-    clap::App::new("todo")
-        .version("0.1")
-        .author("Simeon Anfinrud")
-        .about("Maintains and manipulates your to-do list.")
-        .subcommand(
-            clap::SubCommand::with_name("new")
-                .about("Creates new tasks in the to-do list.")
-                .arg(clap::Arg::with_name("desc").multiple(true).min_values(1)),
-        )
-        .subcommand(
-            clap::SubCommand::with_name("check")
-                .about("Marks tasks as complete.")
-                .arg(clap::Arg::with_name("keys").multiple(true).min_values(1)),
-        )
-}
-
-pub fn parse_args<'a>(matches: &'a clap::ArgMatches<'a>) -> Cmd<'a> {
-    match matches.subcommand() {
-        ("new", Some(new)) => {
-            let desc = new
-                .values_of("desc")
-                .map(|c| c.collect())
-                .unwrap_or_else(|| Vec::new());
-            Cmd::New { desc: desc }
-        }
-        ("check", Some(check)) => {
-            let keys = check
-                .values_of("keys")
-                .map(|c| c.collect())
-                .unwrap_or_else(|| Vec::new());
-            Cmd::Check { keys: keys }
-        }
-        _ => Cmd::Status {},
-    }
+#[derive(Debug, StructOpt)]
+#[structopt(
+    name = "todo",
+    about = "Maintains and manipulates your to-do list.",
+    author = "Simeon Anfinrud",
+    version = "0.1"
+)]
+pub struct Options {
+    #[structopt(subcommand)]
+    cmd: Option<SubCommand>,
 }
 
 #[cfg(test)]
@@ -51,55 +26,57 @@ mod tests {
 
     #[test]
     fn empty_defaults_to_status() {
-        let app = clap_app();
-        let args = ["todo"];
-        let matches = app.get_matches_from_safe(&args).unwrap();
-        let opts = parse_args(&matches);
-        assert_eq!(opts, Cmd::Status {});
+        let options = Options::from_iter_safe(&["todo"]).unwrap();
+        assert_eq!(options.cmd, None);
     }
 
     #[test]
     fn new_one() {
-        let app = clap_app();
-        let args = ["rodo", "new", "abc"];
-        let matches = app.get_matches_from_safe(&args).unwrap();
-        let opts = parse_args(&matches);
-        assert_eq!(opts, Cmd::New { desc: vec!["abc"] });
+        let options = Options::from_iter_safe(&["todo", "new", "a"]).unwrap();
+        let cmd = options.cmd.unwrap();
+        assert_eq!(
+            cmd,
+            SubCommand::New {
+                desc: vec!["a".to_string()]
+            }
+        );
     }
 
     #[test]
     fn new_three() {
-        let app = clap_app();
         let args = ["todo", "new", "a", "b", "c"];
-        let matches = app.get_matches_from_safe(&args).unwrap();
-        let opts = parse_args(&matches);
+        let options = Options::from_iter_safe(&args).unwrap();
+        let cmd = options.cmd.unwrap();
         assert_eq!(
-            opts,
-            Cmd::New {
-                desc: vec!["a", "b", "c"]
+            cmd,
+            SubCommand::New {
+                desc: vec!["a".to_string(), "b".to_string(), "c".to_string()]
             }
         );
     }
 
     #[test]
     fn check_one() {
-        let app = clap_app();
         let args = ["todo", "check", "1"];
-        let matches = app.get_matches_from_safe(&args).unwrap();
-        let opts = parse_args(&matches);
-        assert_eq!(opts, Cmd::Check { keys: vec!["1"] });
+        let options = Options::from_iter_safe(&args).unwrap();
+        let cmd = options.cmd.unwrap();
+        assert_eq!(
+            cmd,
+            SubCommand::Check {
+                keys: vec!["1".to_string()]
+            }
+        );
     }
 
     #[test]
     fn check_three() {
-        let app = clap_app();
         let args = ["todo", "check", "1", "2", "3"];
-        let matches = app.get_matches_from_safe(&args).unwrap();
-        let opts = parse_args(&matches);
+        let options = Options::from_iter_safe(&args).unwrap();
+        let cmd = options.cmd.unwrap();
         assert_eq!(
-            opts,
-            Cmd::Check {
-                keys: vec!["1", "2", "3"]
+            cmd,
+            SubCommand::Check {
+                keys: vec!["1".to_string(), "2".to_string(), "3".to_string()]
             }
         );
     }
