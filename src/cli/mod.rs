@@ -1,11 +1,21 @@
 use structopt::StructOpt;
 
 #[derive(Debug, PartialEq, StructOpt)]
-pub enum SubCommand {
+struct New {
+    desc: Vec<String>,
+}
+
+#[derive(Debug, PartialEq, StructOpt)]
+struct Check {
+    keys: Vec<String>,
+}
+
+#[derive(Debug, PartialEq, StructOpt)]
+enum SubCommand {
     /// Marks tasks as complete.
-    Check { keys: Vec<String> },
+    Check(Check),
     /// Creates new tasks in the to-do list.
-    New { desc: Vec<String> },
+    New(New),
 }
 
 #[derive(Debug, StructOpt)]
@@ -15,7 +25,7 @@ pub enum SubCommand {
     author = "Simeon Anfinrud",
     version = "0.1"
 )]
-pub struct Options {
+struct Options {
     #[structopt(subcommand)]
     cmd: Option<SubCommand>,
 }
@@ -36,9 +46,9 @@ mod tests {
         let cmd = options.cmd.unwrap();
         assert_eq!(
             cmd,
-            SubCommand::New {
+            SubCommand::New(New {
                 desc: vec!["a".to_string()]
-            }
+            })
         );
     }
 
@@ -49,9 +59,9 @@ mod tests {
         let cmd = options.cmd.unwrap();
         assert_eq!(
             cmd,
-            SubCommand::New {
+            SubCommand::New(New {
                 desc: vec!["a".to_string(), "b".to_string(), "c".to_string()]
-            }
+            })
         );
     }
 
@@ -62,9 +72,9 @@ mod tests {
         let cmd = options.cmd.unwrap();
         assert_eq!(
             cmd,
-            SubCommand::Check {
+            SubCommand::Check(Check {
                 keys: vec!["1".to_string()]
-            }
+            })
         );
     }
 
@@ -75,9 +85,9 @@ mod tests {
         let cmd = options.cmd.unwrap();
         assert_eq!(
             cmd,
-            SubCommand::Check {
+            SubCommand::Check(Check {
                 keys: vec!["1".to_string(), "2".to_string(), "3".to_string()]
-            }
+            })
         );
     }
 }
