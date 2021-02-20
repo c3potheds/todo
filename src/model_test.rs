@@ -8,163 +8,191 @@ fn no_tasks() {
 }
 
 #[test]
+fn get_incomplete_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    assert_eq!(list.get(a).desc, "a");
+    assert_eq!(list.get(b).desc, "b");
+}
+
+#[test]
+fn get_completed_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    list.check(a);
+    list.check(b);
+    assert_eq!(list.get(a).desc, "a");
+    assert_eq!(list.get(b).desc, "b");
+}
+
+#[test]
 fn add_one_task() {
     let mut list = TodoList::new();
-    let task = Task::new("hello, world".to_string());
-    list.add(task.clone());
+    let a = list.add(Task::new("hello, world"));
     let mut tasks = list.incomplete_tasks();
-    assert_eq!(tasks.next(), Some(&task));
+    assert_eq!(tasks.next(), Some(&a));
     assert_eq!(tasks.next(), None);
 }
 
 #[test]
 fn add_multiple_tasks() {
     let mut list = TodoList::new();
-    let t1 = Task::new("walk the dog".to_string());
-    let t2 = Task::new("do the dishes".to_string());
-    let t3 = Task::new("take out the trash".to_string());
-    list.add(t1.clone());
-    list.add(t2.clone());
-    list.add(t3.clone());
+    let a = list.add(Task::new("walk the dog"));
+    let b = list.add(Task::new("do the dishes"));
+    let c = list.add(Task::new("take out the trash"));
     let mut tasks = list.incomplete_tasks();
-    assert_eq!(tasks.next(), Some(&t1));
-    assert_eq!(tasks.next(), Some(&t2));
-    assert_eq!(tasks.next(), Some(&t3));
+    assert_eq!(tasks.next(), Some(&a));
+    assert_eq!(tasks.next(), Some(&b));
+    assert_eq!(tasks.next(), Some(&c));
     assert_eq!(tasks.next(), None);
 }
 
 #[test]
 fn check_first_task() {
     let mut list = TodoList::new();
-    let t1 = Task::new("walk the dog".to_string());
-    let t2 = Task::new("do the dishes".to_string());
-    let t3 = Task::new("take out the trash".to_string());
-    let id1 = list.add(t1.clone());
-    list.add(t2.clone());
-    list.add(t3.clone());
-    list.check(id1);
+    let a = list.add(Task::new("walk the dog"));
+    let b = list.add(Task::new("do the dishes"));
+    let c = list.add(Task::new("take out the trash"));
+    list.check(a);
     let mut tasks = list.incomplete_tasks();
-    assert_eq!(tasks.next(), Some(&t2));
-    assert_eq!(tasks.next(), Some(&t3));
+    assert_eq!(tasks.next(), Some(&b));
+    assert_eq!(tasks.next(), Some(&c));
     assert_eq!(tasks.next(), None);
 }
 
 #[test]
 fn check_second_task() {
     let mut list = TodoList::new();
-    let t1 = Task::new("walk the dog".to_string());
-    let t2 = Task::new("do the dishes".to_string());
-    let t3 = Task::new("take out the trash".to_string());
-    list.add(t1.clone());
-    let id2 = list.add(t2.clone());
-    list.add(t3.clone());
-    list.check(id2);
+    let a = list.add(Task::new("walk the dog"));
+    let b = list.add(Task::new("do the dishes"));
+    let c = list.add(Task::new("take out the trash"));
+    list.check(b);
     let mut tasks = list.incomplete_tasks();
-    assert_eq!(tasks.next(), Some(&t1));
-    assert_eq!(tasks.next(), Some(&t3));
+    assert_eq!(tasks.next(), Some(&a));
+    assert_eq!(tasks.next(), Some(&c));
     assert_eq!(tasks.next(), None);
 }
 
 #[test]
 fn check_third_task() {
     let mut list = TodoList::new();
-    let t1 = Task::new("walk the dog".to_string());
-    let t2 = Task::new("do the dishes".to_string());
-    let t3 = Task::new("take out the trash".to_string());
-    list.add(t1.clone());
-    list.add(t2.clone());
-    let id3 = list.add(t3.clone());
-    list.check(id3);
+    let a = list.add(Task::new("walk the dog"));
+    let b = list.add(Task::new("do the dishes"));
+    let c = list.add(Task::new("take out the trash"));
+    list.check(c);
     let mut tasks = list.incomplete_tasks();
-    assert_eq!(tasks.next(), Some(&t1));
-    assert_eq!(tasks.next(), Some(&t2));
+    assert_eq!(tasks.next(), Some(&a));
+    assert_eq!(tasks.next(), Some(&b));
     assert_eq!(tasks.next(), None);
 }
 
 #[test]
-fn empty_to_json() {
+fn complete_task_shows_up_in_complete_list() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    list.check(a);
+    let mut complete_tasks = list.complete_tasks();
+    assert_eq!(complete_tasks.next(), Some(&a));
+    assert_eq!(complete_tasks.next(), None);
+}
+
+#[test]
+fn iterate_multiple_complete_tasks() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.check(a);
+    list.check(c);
+    let mut complete_tasks = list.complete_tasks();
+    assert_eq!(complete_tasks.next(), Some(&a));
+    assert_eq!(complete_tasks.next(), Some(&c));
+    assert_eq!(complete_tasks.next(), None);
+    let mut incomplete_tasks = list.incomplete_tasks();
+    assert_eq!(incomplete_tasks.next(), Some(&b));
+    assert_eq!(incomplete_tasks.next(), None);
+}
+
+// Serializes, then deserializes the list, and makes sure the reserialized
+// version is equal to the original.
+fn reload(list: &TodoList) {
+    let serialized = serde_json::to_string(&list).unwrap();
+    let deserialized = serde_json::from_str::<TodoList>(&serialized).unwrap();
+    assert_eq!(list, &deserialized);
+}
+
+#[test]
+fn reload_empty() {
     let list = TodoList::new();
-    assert_eq!(
-        serde_json::to_string(&list).unwrap(),
-        json!({"tasks": []}).to_string()
-    );
+    reload(&list);
 }
 
 #[test]
-fn single_task_to_json() {
+fn reload_single_task() {
     let mut list = TodoList::new();
-    list.add(Task::new("pass this test".to_string()));
-    assert_eq!(
-        serde_json::to_string(&list).unwrap(),
-        json!({"tasks": [{"desc": "pass this test"}]}).to_string()
-    );
+    list.add(Task::new("pass this test"));
+    reload(&list);
 }
 
 #[test]
-fn three_tasks_to_json() {
+fn reload_three_tasks() {
     let mut list = TodoList::new();
-    list.add(Task::new("first".to_string()));
-    list.add(Task::new("second".to_string()));
-    list.add(Task::new("third".to_string()));
-    assert_eq!(
-        serde_json::to_string(&list).unwrap(),
-        json!({"tasks": [
-            {"desc": "first"},
-            {"desc": "second"},
-            {"desc": "third"},
-        ]})
-        .to_string()
-    );
+    list.add(Task::new("first"));
+    list.add(Task::new("second"));
+    list.add(Task::new("third"));
+    reload(&list);
 }
 
 #[test]
 fn empty_from_json() {
     let list = TodoList::new();
-    let json = json!({"tasks": []});
-    assert_eq!(
-        serde_json::from_str::<TodoList>(&json.to_string()).unwrap(),
-        list
-    );
+    let json =
+        json!({"tasks": [], "incomplete_tasks": [], "complete_tasks": []});
+    assert_eq!(serde_json::from_value::<TodoList>(json).unwrap(), list);
 }
 
 #[test]
 fn single_task_from_json() {
     let mut list = TodoList::new();
-    list.add(Task::new("check me out".to_string()));
-    let json = json!({"tasks": [{"desc": "check me out"}]});
-    assert_eq!(
-        serde_json::from_str::<TodoList>(&json.to_string()).unwrap(),
-        list
-    );
+    list.add(Task::new("check me out"));
+    let json = json!({
+        "tasks": [{"desc": "check me out"}],
+        "incomplete_tasks": [0],
+        "complete_tasks": [],
+    });
+    assert_eq!(serde_json::from_value::<TodoList>(json).unwrap(), list);
 }
 
 #[test]
 fn three_tasks_from_json() {
     let mut list = TodoList::new();
-    list.add(Task::new("three".to_string()));
-    list.add(Task::new("blind".to_string()));
-    list.add(Task::new("mice".to_string()));
-    let json = json!({"tasks": [
-        {"desc": "three"},
-        {"desc": "blind"},
-        {"desc": "mice"},
-    ]});
-    assert_eq!(
-        serde_json::from_str::<TodoList>(&json.to_string()).unwrap(),
-        list
-    );
+    list.add(Task::new("three"));
+    list.add(Task::new("blind"));
+    list.add(Task::new("mice"));
+    let json = json!({
+        "tasks": [
+            {"desc": "three"},
+            {"desc": "blind"},
+            {"desc": "mice"},
+        ],
+        "incomplete_tasks": [0, 1, 2],
+        "complete_tasks": [],
+    });
+    assert_eq!(serde_json::from_value::<TodoList>(json).unwrap(), list);
 }
 
 #[test]
 fn todo_list_parse_fails_from_empty_object() {
     let json = json!({});
-    assert!(serde_json::from_str::<TodoList>(&json.to_string()).is_err());
+    assert!(serde_json::from_value::<TodoList>(json).is_err());
 }
 
 #[test]
 fn todo_list_parse_fails_missing_tasks_key() {
     let json = json!({"wrong_key": "hi"});
-    assert!(serde_json::from_str::<TodoList>(&json.to_string()).is_err());
+    assert!(serde_json::from_value::<TodoList>(json).is_err());
 }
 
 #[test]
