@@ -199,3 +199,46 @@ fn todo_list_parse_fails_missing_tasks_key() {
 fn todo_list_parse_fails_from_garbage() {
     assert!(serde_json::from_str::<TodoList>("garbage").is_err());
 }
+
+#[test]
+fn number_of_nonexistent_task() {
+    let list = TodoList::new();
+    assert_eq!(list.get_number(0), None);
+}
+
+#[test]
+fn number_of_incomplete_tasks() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    assert_eq!(list.get_number(a), Some(1));
+    assert_eq!(list.get_number(b), Some(2));
+    assert_eq!(list.get_number(c), Some(3));
+}
+
+#[test]
+fn number_of_complete_tasks() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.check(a);
+    list.check(b);
+    list.check(c);
+    assert_eq!(list.get_number(c), Some(0));
+    assert_eq!(list.get_number(b), Some(-1));
+    assert_eq!(list.get_number(a), Some(-2));
+}
+
+#[test]
+fn number_of_task_updates_when_predecessor_completes() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.check(a);
+    assert_eq!(list.get_number(a), Some(0));
+    assert_eq!(list.get_number(b), Some(1));
+    assert_eq!(list.get_number(c), Some(2));
+}

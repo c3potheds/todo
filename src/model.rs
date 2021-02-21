@@ -1,4 +1,4 @@
-type TaskId = usize;
+pub type TaskId = usize;
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct Task {
@@ -41,6 +41,20 @@ impl TodoList {
 
     pub fn get(&self, id: TaskId) -> &Task {
         return &self.tasks[id];
+    }
+
+    pub fn get_number(&self, id: TaskId) -> Option<i32> {
+        return self
+            .incomplete_tasks
+            .iter()
+            .position(|&item| item == id)
+            .map(|pos| (pos + 1) as i32)
+            .or_else(|| {
+                self.complete_tasks
+                    .iter()
+                    .position(|&item| item == id)
+                    .map(|pos| 1 - ((self.complete_tasks.len() - pos) as i32))
+            });
     }
 
     pub fn incomplete_tasks(&self) -> impl Iterator<Item = &TaskId> {
