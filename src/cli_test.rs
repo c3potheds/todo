@@ -40,7 +40,7 @@ fn check_one() {
     assert_eq!(
         cmd,
         SubCommand::Check(Check {
-            keys: vec!["1".to_string()]
+            keys: vec![Key::ByNumber(1)]
         })
     );
 }
@@ -53,7 +53,7 @@ fn check_three() {
     assert_eq!(
         cmd,
         SubCommand::Check(Check {
-            keys: vec!["1".to_string(), "2".to_string(), "3".to_string()]
+            keys: vec![Key::ByNumber(1), Key::ByNumber(2), Key::ByNumber(3)]
         })
     );
 }

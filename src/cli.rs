@@ -1,4 +1,18 @@
+use std::num::ParseIntError;
+use std::str::FromStr;
 use structopt::StructOpt;
+
+#[derive(Debug, PartialEq)]
+pub enum Key {
+    ByNumber(i32),
+}
+
+impl FromStr for Key {
+    type Err = ParseIntError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Key::ByNumber(s.parse::<i32>()?))
+    }
+}
 
 #[derive(Debug, PartialEq, StructOpt)]
 pub struct New {
@@ -7,7 +21,7 @@ pub struct New {
 
 #[derive(Debug, PartialEq, StructOpt)]
 pub struct Check {
-    pub keys: Vec<String>,
+    pub keys: Vec<Key>,
 }
 
 #[derive(Debug, PartialEq, StructOpt)]
