@@ -242,3 +242,58 @@ fn number_of_task_updates_when_predecessor_completes() {
     assert_eq!(list.get_number(b), Some(1));
     assert_eq!(list.get_number(c), Some(2));
 }
+
+#[test]
+fn existent_incomplete_task_by_number() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    assert_eq!(list.lookup_by_number(1), Some(&a));
+    assert_eq!(list.lookup_by_number(2), Some(&b));
+    assert_eq!(list.lookup_by_number(3), Some(&c));
+}
+
+#[test]
+fn nonexistent_incomplete_task_by_number() {
+    let list = TodoList::new();
+    assert_eq!(list.lookup_by_number(1), None);
+}
+
+#[test]
+fn existent_complete_task_by_number() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.check(a);
+    list.check(b);
+    list.check(c);
+    assert_eq!(list.lookup_by_number(0), Some(&c));
+    assert_eq!(list.lookup_by_number(-1), Some(&b));
+    assert_eq!(list.lookup_by_number(-2), Some(&a));
+}
+
+#[test]
+fn nonexistent_complete_task_by_number() {
+    let list = TodoList::new();
+    assert_eq!(list.lookup_by_number(0), None);
+}
+
+#[test]
+fn lookup_by_number_is_inverse_of_get_number() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.add(Task::new("d"));
+    let e = list.add(Task::new("e"));
+    list.check(a);
+    list.check(c);
+    list.check(e);
+    for &id in list.incomplete_tasks().chain(list.complete_tasks()) {
+        let number = list.get_number(id).unwrap();
+        let id_from_number = *list.lookup_by_number(number).unwrap();
+        assert_eq!(id_from_number, id);
+    }
+}

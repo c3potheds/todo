@@ -57,6 +57,17 @@ impl TodoList {
             });
     }
 
+    pub fn lookup_by_number(&self, number: i32) -> Option<&TaskId> {
+        if number > 0 {
+            self.incomplete_tasks.get((number - 1) as usize)
+        } else if self.complete_tasks.len() == 0 {
+            None
+        } else {
+            self.complete_tasks
+                .get(self.complete_tasks.len() - (-number) as usize - 1)
+        }
+    }
+
     pub fn incomplete_tasks(&self) -> impl Iterator<Item = &TaskId> {
         self.incomplete_tasks.iter()
     }
