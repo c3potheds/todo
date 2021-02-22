@@ -9,9 +9,13 @@ extern crate serde_json;
 
 mod cli;
 mod model;
+mod printing;
 
 #[cfg(test)]
 mod cli_test;
 
 #[cfg(test)]
 mod model_test;
+
+#[cfg(test)]
+mod printing_test;
