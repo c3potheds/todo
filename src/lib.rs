@@ -7,9 +7,13 @@ extern crate structopt;
 #[macro_use]
 extern crate serde_json;
 
+mod app;
 mod cli;
 mod model;
 mod printing;
+
+#[cfg(test)]
+mod app_test;
 
 #[cfg(test)]
 mod cli_test;
