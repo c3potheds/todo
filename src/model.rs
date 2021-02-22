@@ -72,7 +72,7 @@ impl TodoList {
         self.incomplete_tasks.iter()
     }
 
-    pub fn complete_tasks(&self) -> impl Iterator<Item = &TaskId> {
+    pub fn complete_tasks(&self) -> impl DoubleEndedIterator<Item = &TaskId> {
         self.complete_tasks.iter()
     }
 }

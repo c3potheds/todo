@@ -57,3 +57,10 @@ fn check_three() {
         })
     );
 }
+
+#[test]
+fn log() {
+    let options = Options::from_iter_safe(&["todo", "log"]).unwrap();
+    let cmd = options.cmd.unwrap();
+    assert_eq!(cmd, SubCommand::Log);
+}

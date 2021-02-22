@@ -77,3 +77,32 @@ fn status_after_check_multiple_tasks() {
         .printed(&[Expect::Desc("a"), Expect::Number(1)])
         .end();
 }
+
+#[test]
+fn log_with_no_tasks_completed() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "log"]).validate().end();
+}
+
+#[test]
+fn log_after_single_task_completed() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b", "c"]);
+    test(&mut list, &["todo", "check", "2"]);
+    test(&mut list, &["todo", "log"])
+        .validate()
+        .printed(&[Expect::Desc("b"), Expect::Number(0)])
+        .end();
+}
+
+#[test]
+fn log_after_multiple_tasks_completed() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b", "c"]);
+    test(&mut list, &["todo", "check", "1", "3"]);
+    test(&mut list, &["todo", "log"])
+        .validate()
+        .printed(&[Expect::Desc("c"), Expect::Number(0)])
+        .printed(&[Expect::Desc("a"), Expect::Number(-1)])
+        .end();
+}

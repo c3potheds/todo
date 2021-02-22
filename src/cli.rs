@@ -30,6 +30,8 @@ pub enum SubCommand {
     Check(Check),
     /// Creates new tasks in the to-do list.
     New(New),
+    /// Shows completed tasks.
+    Log,
 }
 
 #[derive(Debug, StructOpt)]

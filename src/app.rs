@@ -52,6 +52,13 @@ fn status(model: &TodoList, printer: &mut impl TodoPrinter) {
         .for_each(|&id| printer.print_task(&format_task(model, id)))
 }
 
+fn log(model: &TodoList, printer: &mut impl TodoPrinter) {
+    model
+        .complete_tasks()
+        .rev()
+        .for_each(|&id| printer.print_task(&format_task(model, id)));
+}
+
 pub fn todo(
     model: &mut TodoList,
     printer: &mut impl TodoPrinter,
@@ -60,6 +67,7 @@ pub fn todo(
     match &options.cmd {
         Some(SubCommand::New(cmd)) => new(model, printer, &cmd),
         Some(SubCommand::Check(cmd)) => check(model, printer, &cmd),
+        Some(SubCommand::Log) => log(model, printer),
         None => status(model, printer),
     }
 }
