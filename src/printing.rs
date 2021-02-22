@@ -26,21 +26,25 @@ impl TodoPrinter for SimpleTodoPrinter {
 }
 
 #[derive(Debug)]
+#[cfg(test)]
 struct PrintedTaskInfo {
     desc: String,
     number: i32,
 }
 
+#[cfg(test)]
 pub struct FakePrinter {
     record: Vec<PrintedTaskInfo>,
 }
 
 #[derive(Debug)]
+#[cfg(test)]
 pub enum Expect<'a> {
     Desc(&'a str),
     Number(i32),
 }
 
+#[cfg(test)]
 impl<'a> Expect<'a> {
     fn validate(&self, info: &PrintedTaskInfo) {
         match self {
@@ -64,10 +68,12 @@ impl<'a> Expect<'a> {
     }
 }
 
+#[cfg(test)]
 pub struct Validation<'a> {
     record: &'a mut Vec<PrintedTaskInfo>,
 }
 
+#[cfg(test)]
 impl<'a> Validation<'a> {
     pub fn printed(self, es: &[Expect<'a>]) -> Validation<'a> {
         if self.record.len() == 0 {
@@ -85,6 +91,7 @@ impl<'a> Validation<'a> {
     }
 }
 
+#[cfg(test)]
 impl FakePrinter {
     pub fn new() -> Self {
         Self { record: Vec::new() }
@@ -97,6 +104,7 @@ impl FakePrinter {
     }
 }
 
+#[cfg(test)]
 impl TodoPrinter for FakePrinter {
     fn print_task(&mut self, task: &PrintableTask) {
         self.record.push(PrintedTaskInfo {
