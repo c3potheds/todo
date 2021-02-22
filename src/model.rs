@@ -19,7 +19,6 @@ impl Task {
 }
 
 impl TodoList {
-    #[cfg(test)]
     pub fn new() -> TodoList {
         TodoList {
             tasks: Vec::new(),

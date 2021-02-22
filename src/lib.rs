@@ -7,10 +7,10 @@ extern crate structopt;
 #[macro_use]
 extern crate serde_json;
 
-mod app;
-mod cli;
-mod model;
-mod printing;
+pub mod app;
+pub mod cli;
+pub mod model;
+pub mod printing;
 
 #[cfg(test)]
 mod app_test;
