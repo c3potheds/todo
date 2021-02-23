@@ -26,6 +26,10 @@ impl Task {
     }
 }
 
+fn reversed<I: Iterator>(iter: I) -> impl Iterator<Item = I::Item> {
+    iter.collect::<Vec<_>>().into_iter().rev()
+}
+
 impl TodoList {
     pub fn new() -> TodoList {
         let mut graph = Dag::new();
@@ -40,18 +44,18 @@ impl TodoList {
 
     pub fn add(&mut self, task: Task) -> TaskId {
         self.graph
-            .add_parent(self.incomplete_root, (), task)
+            .add_child(self.incomplete_root, (), task)
             .1
             .index()
     }
 
     pub fn check(&mut self, id: TaskId) -> bool {
         self.graph
-            .find_edge(NodeIndex::new(id), self.incomplete_root)
+            .find_edge(self.incomplete_root, NodeIndex::new(id))
             .and_then(|edge| {
                 self.graph.remove_edge(edge);
                 self.graph
-                    .update_edge(NodeIndex::new(id), self.complete_root, ())
+                    .update_edge(self.complete_root, NodeIndex::new(id), ())
                     .ok()
             })
             .is_some()
@@ -59,11 +63,11 @@ impl TodoList {
 
     pub fn restore(&mut self, id: TaskId) -> bool {
         self.graph
-            .find_edge(NodeIndex::new(id), self.complete_root)
+            .find_edge(self.complete_root, NodeIndex::new(id))
             .and_then(|edge| {
                 self.graph.remove_edge(edge);
                 self.graph
-                    .update_edge(NodeIndex::new(id), self.incomplete_root, ())
+                    .update_edge(self.incomplete_root, NodeIndex::new(id), ())
                     .ok()
             })
             .is_some()
@@ -74,17 +78,12 @@ impl TodoList {
     }
 
     pub fn get_number(&self, id: TaskId) -> Option<i32> {
-        self.graph
-            .parents(self.incomplete_root)
-            .iter(&self.graph)
-            .collect::<Vec<_>>()
-            .into_iter()
-            .rev()
+        reversed(self.graph.children(self.incomplete_root).iter(&self.graph))
             .position(|(_, n)| n.index() == id)
             .map(|pos| pos as i32 + 1)
             .or_else(|| {
                 self.graph
-                    .parents(self.complete_root)
+                    .children(self.complete_root)
                     .iter(&self.graph)
                     .position(|(_, n)| n.index() == id)
                     .map(|pos| -(pos as i32))
@@ -93,17 +92,14 @@ impl TodoList {
 
     pub fn lookup_by_number(&self, number: i32) -> Option<TaskId> {
         if number > 0 {
-            self.graph
-                .parents(self.incomplete_root)
-                .iter(&self.graph)
-                .collect::<Vec<_>>()
-                .into_iter()
-                .rev()
-                .nth(number as usize - 1)
-                .map(|(_, n)| n.index())
+            reversed(
+                self.graph.children(self.incomplete_root).iter(&self.graph),
+            )
+            .nth(number as usize - 1)
+            .map(|(_, n)| n.index())
         } else {
             self.graph
-                .parents(self.complete_root)
+                .children(self.complete_root)
                 .iter(&self.graph)
                 .nth((-number) as usize)
                 .map(|(_, n)| n.index())
@@ -111,25 +107,21 @@ impl TodoList {
     }
 
     pub fn incomplete_tasks(&self) -> impl Iterator<Item = TaskId> + '_ {
-        self.graph
-            .parents(self.incomplete_root)
-            .iter(&self.graph)
-            .map(|(_, n)| n.index())
-            // The children() method appears to iterate in the reverse order.
-            // This means we need to collect the children and reverse-iterate.
-            .collect::<Vec<_>>()
-            .into_iter()
-            .rev()
+        reversed(
+            self.graph
+                .children(self.incomplete_root)
+                .iter(&self.graph)
+                .map(|(_, n)| n.index()),
+        )
     }
 
     pub fn complete_tasks(&self) -> impl Iterator<Item = TaskId> + '_ {
-        self.graph
-            .parents(self.complete_root)
-            .iter(&self.graph)
-            .map(|(_, n)| n.index())
-            .collect::<Vec<_>>()
-            .into_iter()
-            .rev()
+        reversed(
+            self.graph
+                .children(self.complete_root)
+                .iter(&self.graph)
+                .map(|(_, n)| n.index()),
+        )
     }
 }
 
