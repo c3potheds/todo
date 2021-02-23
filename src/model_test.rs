@@ -50,12 +50,26 @@ fn add_multiple_tasks() {
 }
 
 #[test]
+fn check_nonexistent_task() {
+    let mut list = TodoList::new();
+    assert!(!list.check(0));
+}
+
+#[test]
+fn check_complete_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    assert!(list.check(a));
+    assert!(!list.check(a));
+}
+
+#[test]
 fn check_first_task() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("walk the dog"));
     let b = list.add(Task::new("do the dishes"));
     let c = list.add(Task::new("take out the trash"));
-    list.check(a);
+    assert!(list.check(a));
     let mut tasks = list.incomplete_tasks();
     assert_eq!(tasks.next(), Some(&b));
     assert_eq!(tasks.next(), Some(&c));
@@ -68,7 +82,7 @@ fn check_second_task() {
     let a = list.add(Task::new("walk the dog"));
     let b = list.add(Task::new("do the dishes"));
     let c = list.add(Task::new("take out the trash"));
-    list.check(b);
+    assert!(list.check(b));
     let mut tasks = list.incomplete_tasks();
     assert_eq!(tasks.next(), Some(&a));
     assert_eq!(tasks.next(), Some(&c));
@@ -81,7 +95,7 @@ fn check_third_task() {
     let a = list.add(Task::new("walk the dog"));
     let b = list.add(Task::new("do the dishes"));
     let c = list.add(Task::new("take out the trash"));
-    list.check(c);
+    assert!(list.check(c));
     let mut tasks = list.incomplete_tasks();
     assert_eq!(tasks.next(), Some(&a));
     assert_eq!(tasks.next(), Some(&b));

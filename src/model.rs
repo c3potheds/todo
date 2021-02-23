@@ -39,9 +39,13 @@ impl TodoList {
         id
     }
 
-    pub fn check(&mut self, id: TaskId) {
+    pub fn check(&mut self, id: TaskId) -> bool {
+        if !self.incomplete_tasks.contains(&id) {
+            return false;
+        }
         self.complete_tasks.push(id);
         self.incomplete_tasks.retain(|x| x != &id);
+        true
     }
 
     pub fn restore(&mut self, id: TaskId) -> bool {
