@@ -1,11 +1,8 @@
 #[macro_use]
 extern crate serde;
 
+extern crate daggy;
 extern crate structopt;
-
-#[cfg(test)]
-#[macro_use]
-extern crate serde_json;
 
 pub mod app;
 pub mod cli;

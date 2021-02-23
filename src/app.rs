@@ -12,7 +12,7 @@ use printing::TodoPrinter;
 
 fn format_task<'a>(model: &'a TodoList, id: TaskId) -> PrintableTask<'a> {
     PrintableTask {
-        desc: &model.get(id).desc,
+        desc: &model.get(id).unwrap().desc,
         number: model.get_number(id).unwrap(),
     }
 }
@@ -33,7 +33,6 @@ fn check(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Check) {
         .keys
         .iter()
         .flat_map(|&Key::ByNumber(n)| model.lookup_by_number(n))
-        .copied()
         .collect::<Vec<_>>();
     let checked_ids = ids_to_check
         .iter()
@@ -50,12 +49,15 @@ fn check(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Check) {
 fn status(model: &TodoList, printer: &mut impl TodoPrinter) {
     model
         .incomplete_tasks()
-        .for_each(|&id| printer.print_task(&format_task(model, id)))
+        .for_each(|id| printer.print_task(&format_task(model, id)))
 }
 
 fn log(model: &TodoList, printer: &mut impl TodoPrinter) {
-    model
-        .complete_tasks()
+    // This is inefficient, but there's no apparent way to coerce a daggy Walker
+    // into a DoubleEndedIterator.
+    let complete_tasks = model.complete_tasks().collect::<Vec<_>>();
+    complete_tasks
+        .iter()
         .rev()
         .for_each(|&id| printer.print_task(&format_task(model, id)));
 }
@@ -69,7 +71,6 @@ fn restore(
         .keys
         .iter()
         .flat_map(|&Key::ByNumber(n)| model.lookup_by_number(n))
-        .copied()
         .collect::<Vec<_>>();
     let restored_ids = ids_to_restore
         .iter()

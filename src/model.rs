@@ -1,3 +1,6 @@
+use daggy::Dag;
+use daggy::NodeIndex;
+use daggy::Walker;
 use std::fs::File;
 use std::io::BufReader;
 use std::io::BufWriter;
@@ -10,11 +13,11 @@ pub struct Task {
     pub desc: String,
 }
 
-#[derive(Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct TodoList {
-    tasks: Vec<Task>,
-    incomplete_tasks: Vec<TaskId>,
-    complete_tasks: Vec<TaskId>,
+    graph: Dag<Task, (), TaskId>,
+    complete_root: NodeIndex<TaskId>,
+    incomplete_root: NodeIndex<TaskId>,
 }
 
 impl Task {
@@ -25,73 +28,108 @@ impl Task {
 
 impl TodoList {
     pub fn new() -> TodoList {
+        let mut graph = Dag::new();
+        let complete_root = graph.add_node(Task::new(""));
+        let incomplete_root = graph.add_node(Task::new(""));
         TodoList {
-            tasks: Vec::new(),
-            incomplete_tasks: Vec::new(),
-            complete_tasks: Vec::new(),
+            graph: graph,
+            complete_root: complete_root,
+            incomplete_root: incomplete_root,
         }
     }
 
     pub fn add(&mut self, task: Task) -> TaskId {
-        self.tasks.push(task);
-        let id = self.tasks.len() - 1;
-        self.incomplete_tasks.push(id);
-        id
+        self.graph
+            .add_parent(self.incomplete_root, (), task)
+            .1
+            .index()
     }
 
     pub fn check(&mut self, id: TaskId) -> bool {
-        if !self.incomplete_tasks.contains(&id) {
-            return false;
-        }
-        self.complete_tasks.push(id);
-        self.incomplete_tasks.retain(|x| x != &id);
-        true
+        self.graph
+            .find_edge(NodeIndex::new(id), self.incomplete_root)
+            .and_then(|edge| {
+                self.graph.remove_edge(edge);
+                self.graph
+                    .update_edge(NodeIndex::new(id), self.complete_root, ())
+                    .ok()
+            })
+            .is_some()
     }
 
     pub fn restore(&mut self, id: TaskId) -> bool {
-        if !self.complete_tasks.contains(&id) {
-            return false;
-        }
-        self.complete_tasks.retain(|x| x != &id);
-        self.incomplete_tasks.push(id);
-        true
+        self.graph
+            .find_edge(NodeIndex::new(id), self.complete_root)
+            .and_then(|edge| {
+                self.graph.remove_edge(edge);
+                self.graph
+                    .update_edge(NodeIndex::new(id), self.incomplete_root, ())
+                    .ok()
+            })
+            .is_some()
     }
 
-    pub fn get(&self, id: TaskId) -> &Task {
-        return &self.tasks[id];
+    pub fn get(&self, id: TaskId) -> Option<&Task> {
+        self.graph.node_weight(NodeIndex::new(id))
     }
 
     pub fn get_number(&self, id: TaskId) -> Option<i32> {
-        return self
-            .incomplete_tasks
-            .iter()
-            .position(|&item| item == id)
-            .map(|pos| (pos + 1) as i32)
+        self.graph
+            .parents(self.incomplete_root)
+            .iter(&self.graph)
+            .collect::<Vec<_>>()
+            .into_iter()
+            .rev()
+            .position(|(_, n)| n.index() == id)
+            .map(|pos| pos as i32 + 1)
             .or_else(|| {
-                self.complete_tasks
-                    .iter()
-                    .position(|&item| item == id)
-                    .map(|pos| 1 - ((self.complete_tasks.len() - pos) as i32))
-            });
+                self.graph
+                    .parents(self.complete_root)
+                    .iter(&self.graph)
+                    .position(|(_, n)| n.index() == id)
+                    .map(|pos| -(pos as i32))
+            })
     }
 
-    pub fn lookup_by_number(&self, number: i32) -> Option<&TaskId> {
+    pub fn lookup_by_number(&self, number: i32) -> Option<TaskId> {
         if number > 0 {
-            self.incomplete_tasks.get((number - 1) as usize)
-        } else if self.complete_tasks.len() == 0 {
-            None
+            self.graph
+                .parents(self.incomplete_root)
+                .iter(&self.graph)
+                .collect::<Vec<_>>()
+                .into_iter()
+                .rev()
+                .nth(number as usize - 1)
+                .map(|(_, n)| n.index())
         } else {
-            self.complete_tasks
-                .get(self.complete_tasks.len() - (-number) as usize - 1)
+            self.graph
+                .parents(self.complete_root)
+                .iter(&self.graph)
+                .nth((-number) as usize)
+                .map(|(_, n)| n.index())
         }
     }
 
-    pub fn incomplete_tasks(&self) -> impl Iterator<Item = &TaskId> {
-        self.incomplete_tasks.iter()
+    pub fn incomplete_tasks(&self) -> impl Iterator<Item = TaskId> + '_ {
+        self.graph
+            .parents(self.incomplete_root)
+            .iter(&self.graph)
+            .map(|(_, n)| n.index())
+            // The children() method appears to iterate in the reverse order.
+            // This means we need to collect the children and reverse-iterate.
+            .collect::<Vec<_>>()
+            .into_iter()
+            .rev()
     }
 
-    pub fn complete_tasks(&self) -> impl DoubleEndedIterator<Item = &TaskId> {
-        self.complete_tasks.iter()
+    pub fn complete_tasks(&self) -> impl Iterator<Item = TaskId> + '_ {
+        self.graph
+            .parents(self.complete_root)
+            .iter(&self.graph)
+            .map(|(_, n)| n.index())
+            .collect::<Vec<_>>()
+            .into_iter()
+            .rev()
     }
 }
 
