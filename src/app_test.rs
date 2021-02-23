@@ -106,3 +106,33 @@ fn log_after_multiple_tasks_completed() {
         .printed(&[Expect::Desc("a"), Expect::Number(-1)])
         .end();
 }
+
+#[test]
+fn restore_incomplete_task() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a"]);
+    test(&mut list, &["todo", "restore", "1"]).validate().end();
+}
+
+#[test]
+fn restore_complete_task() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a"]);
+    test(&mut list, &["todo", "check", "1"]);
+    test(&mut list, &["todo", "restore", "0"])
+        .validate()
+        .printed(&[Expect::Desc("a"), Expect::Number(1)])
+        .end();
+}
+
+#[test]
+#[ignore = "Figure out how to parse negative numbers."]
+fn restore_task_with_negative_number() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b", "c"]);
+    test(&mut list, &["todo", "check", "a", "b"]);
+    test(&mut list, &["todo", "restore", "-1"])
+        .validate()
+        .printed(&[Expect::Desc("b"), Expect::Number(2)])
+        .end();
+}

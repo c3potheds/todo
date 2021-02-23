@@ -297,3 +297,31 @@ fn lookup_by_number_is_inverse_of_get_number() {
         assert_eq!(id_from_number, id);
     }
 }
+
+#[test]
+fn restore_incomplete_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    assert!(!list.restore(a));
+    assert_eq!(list.get_number(a), Some(1));
+}
+
+#[test]
+fn restore_complete_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    list.check(a);
+    assert!(list.restore(a));
+    assert_eq!(list.get_number(a), Some(1));
+}
+
+#[test]
+fn restore_complete_task_to_nonempty_list() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    list.add(Task::new("b"));
+    list.add(Task::new("c"));
+    list.check(a);
+    assert!(list.restore(a));
+    assert_eq!(list.get_number(a), Some(3));
+}

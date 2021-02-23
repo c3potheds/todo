@@ -2,6 +2,7 @@ use cli::Check;
 use cli::Key;
 use cli::New;
 use cli::Options;
+use cli::Restore;
 use cli::SubCommand;
 use model::Task;
 use model::TaskId;
@@ -28,13 +29,13 @@ fn new(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &New) {
 }
 
 fn check(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Check) {
-    let checked_ids = cmd
+    let ids_to_check = cmd
         .keys
         .iter()
         .flat_map(|&Key::ByNumber(n)| model.lookup_by_number(n))
         .copied()
         .collect::<Vec<_>>();
-    let checked_ids = checked_ids
+    let checked_ids = ids_to_check
         .iter()
         .map(|&id| {
             model.check(id);
@@ -59,6 +60,27 @@ fn log(model: &TodoList, printer: &mut impl TodoPrinter) {
         .for_each(|&id| printer.print_task(&format_task(model, id)));
 }
 
+fn restore(
+    model: &mut TodoList,
+    printer: &mut impl TodoPrinter,
+    cmd: &Restore,
+) {
+    let ids_to_restore = cmd
+        .keys
+        .iter()
+        .flat_map(|&Key::ByNumber(n)| model.lookup_by_number(n))
+        .copied()
+        .collect::<Vec<_>>();
+    let restored_ids = ids_to_restore
+        .iter()
+        .copied()
+        .filter(|&id| model.restore(id))
+        .collect::<Vec<_>>();
+    restored_ids
+        .iter()
+        .for_each(|&id| printer.print_task(&format_task(model, id)));
+}
+
 pub fn todo(
     model: &mut TodoList,
     printer: &mut impl TodoPrinter,
@@ -68,6 +90,7 @@ pub fn todo(
         Some(SubCommand::New(cmd)) => new(model, printer, &cmd),
         Some(SubCommand::Check(cmd)) => check(model, printer, &cmd),
         Some(SubCommand::Log) => log(model, printer),
+        Some(SubCommand::Restore(cmd)) => restore(model, printer, &cmd),
         None => status(model, printer),
     }
 }

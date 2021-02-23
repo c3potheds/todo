@@ -25,6 +25,12 @@ pub struct Check {
 }
 
 #[derive(Debug, PartialEq, StructOpt)]
+pub struct Restore {
+    #[structopt(set = structopt::clap::ArgSettings::AllowLeadingHyphen)]
+    pub keys: Vec<Key>,
+}
+
+#[derive(Debug, PartialEq, StructOpt)]
 pub enum SubCommand {
     /// Marks tasks as complete.
     Check(Check),
@@ -32,6 +38,8 @@ pub enum SubCommand {
     New(New),
     /// Shows completed tasks.
     Log,
+    /// Restore completed tasks.
+    Restore(Restore),
 }
 
 #[derive(Debug, StructOpt)]
