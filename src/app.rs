@@ -8,12 +8,18 @@ use model::Task;
 use model::TaskId;
 use model::TodoList;
 use printing::PrintableTask;
+use printing::PrintingContext;
 use printing::TaskStatus;
 use printing::TodoPrinter;
 
-fn format_task<'a>(model: &'a TodoList, id: TaskId) -> PrintableTask<'a> {
+fn format_task<'a>(
+    context: &'a PrintingContext,
+    model: &'a TodoList,
+    id: TaskId,
+) -> PrintableTask<'a> {
     let number = model.get_number(id).unwrap();
     PrintableTask {
+        context: context,
         desc: &model.get(id).unwrap().desc,
         number: number,
         status: if number <= 0 {
@@ -24,18 +30,28 @@ fn format_task<'a>(model: &'a TodoList, id: TaskId) -> PrintableTask<'a> {
     }
 }
 
-fn new(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &New) {
+fn new(
+    model: &mut TodoList,
+    printing_context: &PrintingContext,
+    printer: &mut impl TodoPrinter,
+    cmd: &New,
+) {
     let new_ids = cmd
         .desc
         .iter()
         .map(|desc| model.add(Task::new(desc)))
         .collect::<Vec<_>>();
-    new_ids
-        .iter()
-        .for_each(|&id| printer.print_task(&format_task(model, id)));
+    new_ids.iter().for_each(|&id| {
+        printer.print_task(&format_task(printing_context, model, id))
+    });
 }
 
-fn check(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Check) {
+fn check(
+    model: &mut TodoList,
+    printing_context: &PrintingContext,
+    printer: &mut impl TodoPrinter,
+    cmd: &Check,
+) {
     let ids_to_check = cmd
         .keys
         .iter()
@@ -48,29 +64,37 @@ fn check(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Check) {
             id
         })
         .collect::<Vec<_>>();
-    checked_ids
-        .iter()
-        .for_each(|&id| printer.print_task(&format_task(model, id)));
+    checked_ids.iter().for_each(|&id| {
+        printer.print_task(&format_task(printing_context, model, id))
+    });
 }
 
-fn status(model: &TodoList, printer: &mut impl TodoPrinter) {
-    model
-        .incomplete_tasks()
-        .for_each(|id| printer.print_task(&format_task(model, id)))
+fn status(
+    model: &TodoList,
+    printing_context: &PrintingContext,
+    printer: &mut impl TodoPrinter,
+) {
+    model.incomplete_tasks().for_each(|id| {
+        printer.print_task(&format_task(printing_context, model, id))
+    })
 }
 
-fn log(model: &TodoList, printer: &mut impl TodoPrinter) {
+fn log(
+    model: &TodoList,
+    printing_context: &PrintingContext,
+    printer: &mut impl TodoPrinter,
+) {
     // This is inefficient, but there's no apparent way to coerce a daggy Walker
     // into a DoubleEndedIterator.
     let complete_tasks = model.complete_tasks().collect::<Vec<_>>();
-    complete_tasks
-        .iter()
-        .rev()
-        .for_each(|&id| printer.print_task(&format_task(model, id)));
+    complete_tasks.iter().rev().for_each(|&id| {
+        printer.print_task(&format_task(printing_context, model, id))
+    });
 }
 
 fn restore(
     model: &mut TodoList,
+    printing_context: &PrintingContext,
     printer: &mut impl TodoPrinter,
     cmd: &Restore,
 ) {
@@ -84,21 +108,28 @@ fn restore(
         .copied()
         .filter(|&id| model.restore(id))
         .collect::<Vec<_>>();
-    restored_ids
-        .iter()
-        .for_each(|&id| printer.print_task(&format_task(model, id)));
+    restored_ids.iter().for_each(|&id| {
+        printer.print_task(&format_task(printing_context, model, id))
+    });
 }
 
 pub fn todo(
     model: &mut TodoList,
+    printing_context: &PrintingContext,
     printer: &mut impl TodoPrinter,
     options: &Options,
 ) {
     match &options.cmd {
-        Some(SubCommand::New(cmd)) => new(model, printer, &cmd),
-        Some(SubCommand::Check(cmd)) => check(model, printer, &cmd),
-        Some(SubCommand::Log) => log(model, printer),
-        Some(SubCommand::Restore(cmd)) => restore(model, printer, &cmd),
-        None => status(model, printer),
+        Some(SubCommand::New(cmd)) => {
+            new(model, printing_context, printer, &cmd)
+        }
+        Some(SubCommand::Check(cmd)) => {
+            check(model, printing_context, printer, &cmd)
+        }
+        Some(SubCommand::Log) => log(model, printing_context, printer),
+        Some(SubCommand::Restore(cmd)) => {
+            restore(model, printing_context, printer, &cmd)
+        }
+        None => status(model, printing_context, printer),
     }
 }

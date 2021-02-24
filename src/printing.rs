@@ -10,11 +10,21 @@ pub enum TaskStatus {
     Blocked,
 }
 
+pub struct PrintingContext {
+    /// The number of digits that task numbers may have, including a minus sign.
+    pub max_index_digits: usize,
+    /// The number of columns to render task descriptions in (not used yet).
+    pub width: usize,
+}
+
 pub struct PrintableTask<'a> {
+    pub context: &'a PrintingContext,
     pub desc: &'a str,
     pub number: i32,
     pub status: TaskStatus,
 }
+
+const ANSI_OFFSET: usize = 10;
 
 impl<'a> Display for PrintableTask<'a> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
@@ -25,7 +35,13 @@ impl<'a> Display for PrintableTask<'a> {
         };
         let mut indexing = self.number.to_string();
         indexing.push_str(")");
-        write!(f, "\t{}\t{}", style.paint(&indexing), self.desc)
+        write!(
+            f,
+            "{:>width$} {}",
+            format!("{}", style.paint(&indexing)),
+            self.desc,
+            width = self.context.max_index_digits + ANSI_OFFSET,
+        )
     }
 }
 

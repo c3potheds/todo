@@ -3,6 +3,7 @@ use cli::Options;
 use model::TodoList;
 use printing::Expect;
 use printing::FakePrinter;
+use printing::PrintingContext;
 use printing::TaskStatus;
 use std::ffi::OsString;
 use structopt::StructOpt;
@@ -12,8 +13,18 @@ where
     I: IntoIterator,
     I::Item: Into<OsString> + Clone,
 {
+    let printing_context = PrintingContext {
+        // TODO: Get the number of tasks from the list.
+        max_index_digits: 3,
+        width: 80,
+    };
     let mut printer = FakePrinter::new();
-    todo(list, &mut printer, &Options::from_iter_safe(args).unwrap());
+    todo(
+        list,
+        &printing_context,
+        &mut printer,
+        &Options::from_iter_safe(args).unwrap(),
+    );
     printer
 }
 

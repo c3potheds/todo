@@ -11,6 +11,7 @@ use todo::model::load;
 use todo::model::save;
 use todo::model::SaveError;
 use todo::model::TodoList;
+use todo::printing::PrintingContext;
 use todo::printing::SimpleTodoPrinter;
 
 #[derive(Debug)]
@@ -56,7 +57,17 @@ fn main() -> TodoResult {
     let mut path = app_dirs::app_root(AppDataType::UserData, &app_info)?;
     path.push("data.json");
     let mut model = load(&path).unwrap_or_else(|_| TodoList::new());
-    todo(&mut model, &mut SimpleTodoPrinter {}, &options);
+    let printing_context = PrintingContext {
+        // TODO: Get the number of tasks from the list.
+        max_index_digits: 3,
+        width: 80,
+    };
+    todo(
+        &mut model,
+        &printing_context,
+        &mut SimpleTodoPrinter {},
+        &options,
+    );
     save(&path, &model)?;
     Ok(())
 }
