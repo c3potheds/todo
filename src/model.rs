@@ -1,3 +1,5 @@
+use chrono::DateTime;
+use chrono::Utc;
 use daggy::Dag;
 use daggy::NodeIndex;
 use daggy::Walker;
@@ -11,6 +13,7 @@ pub type TaskId = usize;
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct Task {
     pub desc: String,
+    pub creation_time: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -22,7 +25,10 @@ pub struct TodoList {
 
 impl Task {
     pub fn new<S: Into<String>>(desc: S) -> Task {
-        Task { desc: desc.into() }
+        Task {
+            desc: desc.into(),
+            creation_time: Some(Utc::now()),
+        }
     }
 }
 

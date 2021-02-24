@@ -8,6 +8,21 @@ fn no_tasks() {
 }
 
 #[test]
+fn new_task_has_creation_time() {
+    let task = Task::new("task");
+    assert!(task.creation_time.is_some());
+}
+
+#[test]
+fn deserialize_task_with_missing_creation_time() {
+    let task = serde_json::from_str::<Task>("{\"desc\":\"hi\"}")
+        .ok()
+        .unwrap();
+    assert_eq!(task.desc, "hi");
+    assert!(task.creation_time.is_none());
+}
+
+#[test]
 fn get_incomplete_task() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
