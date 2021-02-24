@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Simeon <simeon.anfinrud@mac.com>"]
 
 [dependencies]
+ansi_term = "0.12"
 chrono = { version = "0.4", features = ["serde"] }
 clap = "~2.33.0"
 app_dirs = "1.2.1"

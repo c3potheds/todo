@@ -1,15 +1,31 @@
+use ansi_term::Color;
 use std::fmt;
 use std::fmt::Display;
 use std::fmt::Formatter;
 
+#[derive(Debug, PartialEq, Copy, Clone)]
+pub enum TaskStatus {
+    Complete,
+    Incomplete,
+    Blocked,
+}
+
 pub struct PrintableTask<'a> {
     pub desc: &'a str,
     pub number: i32,
+    pub status: TaskStatus,
 }
 
 impl<'a> Display for PrintableTask<'a> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{}) {}", self.number, self.desc)
+        let style = match &self.status {
+            TaskStatus::Complete => Color::Green,
+            TaskStatus::Incomplete => Color::Yellow,
+            TaskStatus::Blocked => Color::Red,
+        };
+        let mut indexing = self.number.to_string();
+        indexing.push_str(")");
+        write!(f, "\t{}\t{}", style.paint(&indexing), self.desc)
     }
 }
 
@@ -30,6 +46,7 @@ impl TodoPrinter for SimpleTodoPrinter {
 struct PrintedTaskInfo {
     desc: String,
     number: i32,
+    status: TaskStatus,
 }
 
 #[cfg(test)]
@@ -42,6 +59,7 @@ pub struct FakePrinter {
 pub enum Expect<'a> {
     Desc(&'a str),
     Number(i32),
+    Status(TaskStatus),
 }
 
 #[cfg(test)]
@@ -61,6 +79,14 @@ impl<'a> Expect<'a> {
                     panic!(
                         "Unexpected number: {} (Expected {})",
                         info.number, number
+                    );
+                }
+            }
+            Expect::Status(status) => {
+                if *status != info.status {
+                    panic!(
+                        "Unexpected status: {:?} (Expected {:?})",
+                        info.status, status
                     );
                 }
             }
@@ -110,6 +136,7 @@ impl TodoPrinter for FakePrinter {
         self.record.push(PrintedTaskInfo {
             desc: task.desc.to_string(),
             number: task.number,
+            status: task.status,
         });
     }
 }

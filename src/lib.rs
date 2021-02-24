@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate serde;
 
+extern crate ansi_term;
 extern crate chrono;
 extern crate daggy;
 extern crate structopt;

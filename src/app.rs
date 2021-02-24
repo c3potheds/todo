@@ -8,12 +8,19 @@ use model::Task;
 use model::TaskId;
 use model::TodoList;
 use printing::PrintableTask;
+use printing::TaskStatus;
 use printing::TodoPrinter;
 
 fn format_task<'a>(model: &'a TodoList, id: TaskId) -> PrintableTask<'a> {
+    let number = model.get_number(id).unwrap();
     PrintableTask {
         desc: &model.get(id).unwrap().desc,
-        number: model.get_number(id).unwrap(),
+        number: number,
+        status: if number <= 0 {
+            TaskStatus::Complete
+        } else {
+            TaskStatus::Incomplete
+        },
     }
 }
 
