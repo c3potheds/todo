@@ -14,12 +14,19 @@ fn new_task_has_creation_time() {
 }
 
 #[test]
+fn new_task_has_no_completion_time() {
+    let task = Task::new("task");
+    assert!(task.completion_time.is_none());
+}
+
+#[test]
 fn deserialize_task_with_missing_creation_time() {
     let task = serde_json::from_str::<Task>("{\"desc\":\"hi\"}")
         .ok()
         .unwrap();
     assert_eq!(task.desc, "hi");
     assert!(task.creation_time.is_none());
+    assert!(task.completion_time.is_none());
 }
 
 #[test]
@@ -76,6 +83,26 @@ fn check_complete_task() {
     let a = list.add(Task::new("a"));
     assert!(list.check(a));
     assert!(!list.check(a));
+}
+
+#[test]
+fn checked_task_has_completion_time() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    list.check(a);
+    assert!(list.get(a).unwrap().completion_time.is_some());
+}
+
+#[test]
+fn completion_time_of_completed_task_does_not_update_if_checked() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    list.check(a);
+    let original_completion_time =
+        list.get(a).unwrap().completion_time.unwrap();
+    list.check(a);
+    let new_completion_time = list.get(a).unwrap().completion_time.unwrap();
+    assert_eq!(original_completion_time, new_completion_time);
 }
 
 #[test]
@@ -306,4 +333,13 @@ fn restore_complete_task_to_nonempty_list() {
     assert_eq!(list.get_number(b), Some(1));
     assert_eq!(list.get_number(c), Some(2));
     assert_eq!(list.get_number(a), Some(3));
+}
+
+#[test]
+fn restored_task_resets_completion_time() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    list.check(a);
+    list.restore(a);
+    assert_eq!(list.get(a).unwrap().completion_time, None);
 }

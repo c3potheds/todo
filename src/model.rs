@@ -14,6 +14,7 @@ pub type TaskId = usize;
 pub struct Task {
     pub desc: String,
     pub creation_time: Option<DateTime<Utc>>,
+    pub completion_time: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -28,6 +29,7 @@ impl Task {
         Task {
             desc: desc.into(),
             creation_time: Some(Utc::now()),
+            completion_time: None,
         }
     }
 }
@@ -59,6 +61,8 @@ impl TodoList {
         self.graph
             .find_edge(self.incomplete_root, NodeIndex::new(id))
             .and_then(|edge| {
+                self.graph[NodeIndex::new(id)].completion_time =
+                    Some(Utc::now());
                 self.graph.remove_edge(edge);
                 self.graph
                     .update_edge(self.complete_root, NodeIndex::new(id), ())
@@ -71,6 +75,7 @@ impl TodoList {
         self.graph
             .find_edge(self.complete_root, NodeIndex::new(id))
             .and_then(|edge| {
+                self.graph[NodeIndex::new(id)].completion_time = None;
                 self.graph.remove_edge(edge);
                 self.graph
                     .update_edge(self.incomplete_root, NodeIndex::new(id), ())
