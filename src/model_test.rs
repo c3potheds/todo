@@ -343,3 +343,24 @@ fn restored_task_resets_completion_time() {
     list.restore(a);
     assert_eq!(list.get(a).unwrap().completion_time, None);
 }
+
+#[test]
+fn status_of_nonexistent_task() {
+    let list = TodoList::new();
+    assert_eq!(list.get_status(0), None);
+}
+
+#[test]
+fn status_of_incomplete_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    assert_eq!(list.get_status(a), Some(TaskStatus::Incomplete));
+}
+
+#[test]
+fn status_of_complete_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    list.check(a);
+    assert_eq!(list.get_status(a), Some(TaskStatus::Complete));
+}

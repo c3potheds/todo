@@ -10,6 +10,13 @@ use std::path::Path;
 
 pub type TaskId = usize;
 
+#[derive(Debug, PartialEq, Copy, Clone)]
+pub enum TaskStatus {
+    Complete,
+    Incomplete,
+    Blocked,
+}
+
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct Task {
     pub desc: String,
@@ -98,6 +105,17 @@ impl TodoList {
                     .iter(&self.graph)
                     .position(|(_, n)| n.index() == id)
                     .map(|pos| -(pos as i32))
+            })
+    }
+
+    pub fn get_status(&self, id: TaskId) -> Option<TaskStatus> {
+        self.graph
+            .find_edge(self.complete_root, NodeIndex::new(id))
+            .map(|_| TaskStatus::Complete)
+            .or_else(|| {
+                self.graph
+                    .find_edge(self.incomplete_root, NodeIndex::new(id))
+                    .map(|_| TaskStatus::Incomplete)
             })
     }
 

@@ -1,14 +1,8 @@
 use ansi_term::Color;
+use model::TaskStatus;
 use std::fmt;
 use std::fmt::Display;
 use std::fmt::Formatter;
-
-#[derive(Debug, PartialEq, Copy, Clone)]
-pub enum TaskStatus {
-    Complete,
-    Incomplete,
-    Blocked,
-}
 
 pub struct PrintingContext {
     /// The number of digits that task numbers may have, including a minus sign.

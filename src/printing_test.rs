@@ -1,3 +1,4 @@
+use model::TaskStatus;
 use printing::*;
 
 fn make_printing_context() -> PrintingContext {

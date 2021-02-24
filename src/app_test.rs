@@ -1,10 +1,10 @@
 use app::*;
 use cli::Options;
+use model::TaskStatus;
 use model::TodoList;
 use printing::Expect;
 use printing::FakePrinter;
 use printing::PrintingContext;
-use printing::TaskStatus;
 use std::ffi::OsString;
 use structopt::StructOpt;
 
