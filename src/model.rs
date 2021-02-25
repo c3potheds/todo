@@ -1,5 +1,6 @@
 use chrono::DateTime;
 use chrono::Utc;
+use daggy::petgraph::visit::Topo;
 use daggy::Dag;
 use daggy::NodeIndex;
 use daggy::Walker;
@@ -45,11 +46,29 @@ fn reversed<I: Iterator>(iter: I) -> impl Iterator<Item = I::Item> {
     iter.collect::<Vec<_>>().into_iter().rev()
 }
 
+pub struct Block<'a> {
+    list: &'a mut TodoList,
+    blocked: NodeIndex<TaskId>,
+}
+
+impl<'a> Block<'a> {
+    pub fn on(self, blocking: TaskId) -> bool {
+        self.list
+            .graph
+            .find_edge(self.list.incomplete_root, self.blocked)
+            .and_then(|edge| self.list.graph.remove_edge(edge));
+        self.list
+            .graph
+            .update_edge(NodeIndex::new(blocking), self.blocked, ())
+            .is_ok()
+    }
+}
+
 impl TodoList {
     pub fn new() -> TodoList {
         let mut graph = Dag::new();
-        let complete_root = graph.add_node(Task::new(""));
-        let incomplete_root = graph.add_node(Task::new(""));
+        let complete_root = graph.add_node(Task::new("__complete__"));
+        let incomplete_root = graph.add_node(Task::new("__incomplete__"));
         TodoList {
             graph: graph,
             complete_root: complete_root,
@@ -91,13 +110,20 @@ impl TodoList {
             .is_some()
     }
 
+    pub fn block(&mut self, id: TaskId) -> Block {
+        Block {
+            list: self,
+            blocked: NodeIndex::new(id),
+        }
+    }
+
     pub fn get(&self, id: TaskId) -> Option<&Task> {
         self.graph.node_weight(NodeIndex::new(id))
     }
 
     pub fn get_number(&self, id: TaskId) -> Option<i32> {
-        reversed(self.graph.children(self.incomplete_root).iter(&self.graph))
-            .position(|(_, n)| n.index() == id)
+        self.incomplete_tasks()
+            .position(|n| n == id)
             .map(|pos| pos as i32 + 1)
             .or_else(|| {
                 self.graph
@@ -117,15 +143,16 @@ impl TodoList {
                     .find_edge(self.incomplete_root, NodeIndex::new(id))
                     .map(|_| TaskStatus::Incomplete)
             })
+            .or_else(|| {
+                self.graph
+                    .node_weight(NodeIndex::new(id))
+                    .map(|_| TaskStatus::Blocked)
+            })
     }
 
     pub fn lookup_by_number(&self, number: i32) -> Option<TaskId> {
         if number > 0 {
-            reversed(
-                self.graph.children(self.incomplete_root).iter(&self.graph),
-            )
-            .nth(number as usize - 1)
-            .map(|(_, n)| n.index())
+            self.incomplete_tasks().nth(number as usize - 1)
         } else {
             self.graph
                 .children(self.complete_root)
@@ -136,12 +163,18 @@ impl TodoList {
     }
 
     pub fn incomplete_tasks(&self) -> impl Iterator<Item = TaskId> + '_ {
-        reversed(
-            self.graph
-                .children(self.incomplete_root)
-                .iter(&self.graph)
-                .map(|(_, n)| n.index()),
-        )
+        let incomplete_root = self.incomplete_root;
+        let complete_root = self.complete_root;
+        Topo::new(&self.graph)
+            .iter(&self.graph)
+            .filter(move |&n| {
+                // Do not include the root nodes or children of the complete
+                // root, which are completed tasks.
+                n != incomplete_root
+                    && n != complete_root
+                    && self.graph.find_edge(self.complete_root, n).is_none()
+            })
+            .map(|n| n.index())
     }
 
     pub fn complete_tasks(&self) -> impl Iterator<Item = TaskId> + '_ {

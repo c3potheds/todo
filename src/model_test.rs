@@ -347,7 +347,7 @@ fn restored_task_resets_completion_time() {
 #[test]
 fn status_of_nonexistent_task() {
     let list = TodoList::new();
-    assert_eq!(list.get_status(0), None);
+    assert_eq!(list.get_status(100), None);
 }
 
 #[test]
@@ -363,4 +363,87 @@ fn status_of_complete_task() {
     let a = list.add(Task::new("a"));
     list.check(a);
     assert_eq!(list.get_status(a), Some(TaskStatus::Complete));
+}
+
+#[test]
+fn status_of_blocked_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    assert!(list.block(b).on(a));
+    assert_eq!(list.get_status(b), Some(TaskStatus::Blocked));
+}
+
+#[test]
+fn ordering_of_blocked_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    list.block(b).on(a);
+    assert_eq!(list.get_number(a), Some(1));
+    assert_eq!(list.get_number(b), Some(2));
+}
+
+#[test]
+fn blocked_task_appears_after_task_that_blocks_it() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    assert!(list.block(a).on(b));
+    assert_eq!(list.get_number(b), Some(1));
+    assert_eq!(list.get_number(a), Some(2));
+}
+
+#[test]
+fn cannot_block_blocking_task_on_task_it_blocks() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    assert!(list.block(a).on(b));
+    assert!(!list.block(b).on(a));
+    assert_eq!(list.get_number(b), Some(1));
+    assert_eq!(list.get_number(a), Some(2));
+}
+
+#[test]
+fn incomplete_tasks_includes_blocked_tasks() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    list.block(b).on(a);
+    let mut incomplete_tasks = list.incomplete_tasks();
+    assert_eq!(incomplete_tasks.next(), Some(a));
+    assert_eq!(incomplete_tasks.next(), Some(b));
+    assert_eq!(incomplete_tasks.next(), None);
+}
+
+#[test]
+fn chained_blocking() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.block(a).on(b);
+    list.block(b).on(c);
+    let mut incomplete_tasks = list.incomplete_tasks();
+    let mut next = incomplete_tasks.next().unwrap();
+    assert_eq!(list.get(next).unwrap().desc, "c");
+    assert_eq!(list.get_status(next).unwrap(), TaskStatus::Incomplete);
+    next = incomplete_tasks.next().unwrap();
+    assert_eq!(list.get(next).unwrap().desc, "b");
+    assert_eq!(list.get_status(next).unwrap(), TaskStatus::Blocked);
+    next = incomplete_tasks.next().unwrap();
+    assert_eq!(list.get(next).unwrap().desc, "a");
+    assert_eq!(list.get_status(next).unwrap(), TaskStatus::Blocked);
+}
+
+#[test]
+fn indirect_blocking_cycle() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    assert!(list.block(b).on(a));
+    assert!(list.block(c).on(b));
+    assert!(!list.block(a).on(c));
 }
