@@ -87,12 +87,37 @@ impl TodoList {
         self.graph
             .find_edge(self.incomplete_root, NodeIndex::new(id))
             .and_then(|edge| {
+                // Set the completion time.
                 self.graph[NodeIndex::new(id)].completion_time =
                     Some(Utc::now());
+                // Remove the connection to the incomplete root.
                 self.graph.remove_edge(edge);
+                // Connect the checked node to the complete root.
                 self.graph
                     .update_edge(self.complete_root, NodeIndex::new(id), ())
-                    .ok()
+                    .unwrap();
+                // Update tasks that are blocked by this task.
+                self.graph
+                    .children(NodeIndex::new(id))
+                    .iter(&self.graph)
+                    .map(|(_, n)| n)
+                    .filter(|&n| {
+                        // If every task that blocks this dependent task is
+                        // complete, it should be updated.
+                        self.graph.parents(n).iter(&self.graph).all(|(_, p)| {
+                            self.graph
+                                .find_edge(self.complete_root, p)
+                                .is_some()
+                        })
+                    })
+                    .collect::<Vec<_>>()
+                    .into_iter()
+                    .for_each(|to_update| {
+                        self.graph
+                            .update_edge(self.incomplete_root, to_update, ())
+                            .unwrap();
+                    });
+                Some(())
             })
             .is_some()
     }
@@ -101,11 +126,40 @@ impl TodoList {
         self.graph
             .find_edge(self.complete_root, NodeIndex::new(id))
             .and_then(|edge| {
+                // Reset the completion time.
                 self.graph[NodeIndex::new(id)].completion_time = None;
+                // Remove the connection to the complete root.
                 self.graph.remove_edge(edge);
+                // Connect the restored node to the incomplete root.
                 self.graph
                     .update_edge(self.incomplete_root, NodeIndex::new(id), ())
-                    .ok()
+                    .unwrap();
+                // Update tasks that become blocked on this task.
+                self.graph
+                    .children(NodeIndex::new(id))
+                    .iter(&self.graph)
+                    .map(|(_, n)| n)
+                    .flat_map(|n| {
+                        // If this dependent task is connected to the incomplete
+                        // root or complete root, sever the connection. This
+                        // means that complete tasks will become blocked (and
+                        // show up in the incomplete list) again if they were
+                        // blocked on the restored task.
+                        self.graph
+                            .find_edge(self.incomplete_root, n)
+                            .into_iter()
+                            .chain(
+                                self.graph
+                                    .find_edge(self.complete_root, n)
+                                    .into_iter(),
+                            )
+                    })
+                    .collect::<Vec<_>>()
+                    .into_iter()
+                    .for_each(|e| {
+                        self.graph.remove_edge(e);
+                    });
+                Some(())
             })
             .is_some()
     }

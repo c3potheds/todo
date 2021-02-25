@@ -447,3 +447,62 @@ fn indirect_blocking_cycle() {
     assert!(list.block(c).on(b));
     assert!(!list.block(a).on(c));
 }
+
+#[test]
+fn cannot_check_blocked_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    assert!(list.block(b).on(a));
+    assert!(!list.check(b));
+}
+
+#[test]
+fn can_check_task_whose_dependency_is_complete() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    assert!(list.block(b).on(a));
+    assert!(list.check(a));
+    assert!(list.check(b));
+}
+
+#[test]
+fn can_check_task_whose_dependencies_are_complete() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    assert!(list.block(c).on(a));
+    assert!(list.block(c).on(b));
+    assert!(list.check(a));
+    assert!(list.check(b));
+    assert!(list.check(c));
+}
+
+#[test]
+fn task_becomes_blocked_if_dependency_is_restored() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    assert!(list.block(b).on(a));
+    assert!(list.check(a));
+    assert!(list.restore(a));
+    assert_eq!(list.get_status(b), Some(TaskStatus::Blocked));
+}
+
+#[test]
+fn complete_task_becomes_blocked_if_dependency_is_restored() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    assert!(list.block(b).on(a));
+    assert!(list.check(a));
+    assert!(list.check(b));
+    assert!(list.restore(a));
+    assert_eq!(list.get_status(b), Some(TaskStatus::Blocked));
+    let mut incomplete_tasks = list.incomplete_tasks();
+    assert_eq!(incomplete_tasks.next(), Some(a));
+    assert_eq!(incomplete_tasks.next(), Some(b));
+    assert_eq!(incomplete_tasks.next(), None);
+}
