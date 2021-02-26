@@ -122,12 +122,33 @@ impl TodoList {
             .is_some()
     }
 
+    fn block_all_children(&mut self, id: TaskId) {
+        self.graph
+            .children(NodeIndex::new(id))
+            .iter(&self.graph)
+            .flat_map(|(_, n)| {
+                self.graph
+                    .find_edge(self.incomplete_root, n)
+                    .into_iter()
+                    .chain(
+                        self.graph.find_edge(self.complete_root, n).into_iter(),
+                    )
+                    .map(move |e| (e, n))
+            })
+            .collect::<Vec<_>>()
+            .into_iter()
+            .for_each(|(e, n)| {
+                // Sever the connections to the incomplete and complete nodes.
+                self.graph.remove_edge(e);
+                // Recur on child.
+                self.block_all_children(n.index());
+            })
+    }
+
     pub fn restore(&mut self, id: TaskId) -> bool {
         self.graph
             .find_edge(self.complete_root, NodeIndex::new(id))
             .and_then(|edge| {
-                // Reset the completion time.
-                self.graph[NodeIndex::new(id)].completion_time = None;
                 // Remove the connection to the complete root.
                 self.graph.remove_edge(edge);
                 // Connect the restored node to the incomplete root.
@@ -135,30 +156,7 @@ impl TodoList {
                     .update_edge(self.incomplete_root, NodeIndex::new(id), ())
                     .unwrap();
                 // Update tasks that become blocked on this task.
-                self.graph
-                    .children(NodeIndex::new(id))
-                    .iter(&self.graph)
-                    .map(|(_, n)| n)
-                    .flat_map(|n| {
-                        // If this dependent task is connected to the incomplete
-                        // root or complete root, sever the connection. This
-                        // means that complete tasks will become blocked (and
-                        // show up in the incomplete list) again if they were
-                        // blocked on the restored task.
-                        self.graph
-                            .find_edge(self.incomplete_root, n)
-                            .into_iter()
-                            .chain(
-                                self.graph
-                                    .find_edge(self.complete_root, n)
-                                    .into_iter(),
-                            )
-                    })
-                    .collect::<Vec<_>>()
-                    .into_iter()
-                    .for_each(|e| {
-                        self.graph.remove_edge(e);
-                    });
+                self.block_all_children(id);
                 Some(())
             })
             .is_some()

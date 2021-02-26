@@ -336,15 +336,6 @@ fn restore_complete_task_to_nonempty_list() {
 }
 
 #[test]
-fn restored_task_resets_completion_time() {
-    let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    list.check(a);
-    list.restore(a);
-    assert_eq!(list.get(a).unwrap().completion_time, None);
-}
-
-#[test]
 fn status_of_nonexistent_task() {
     let list = TodoList::new();
     assert_eq!(list.get_status(100), None);
@@ -504,5 +495,25 @@ fn complete_task_becomes_blocked_if_dependency_is_restored() {
     let mut incomplete_tasks = list.incomplete_tasks();
     assert_eq!(incomplete_tasks.next(), Some(a));
     assert_eq!(incomplete_tasks.next(), Some(b));
+    assert_eq!(incomplete_tasks.next(), None);
+}
+
+#[test]
+fn complete_task_becomes_blocked_if_transitive_dependency_is_restored() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    assert!(list.block(b).on(a));
+    assert!(list.block(c).on(b));
+    assert!(list.check(a));
+    assert!(list.check(b));
+    assert!(list.check(c));
+    assert!(list.restore(a));
+    assert_eq!(list.get_status(c), Some(TaskStatus::Blocked));
+    let mut incomplete_tasks = list.incomplete_tasks();
+    assert_eq!(incomplete_tasks.next(), Some(a));
+    assert_eq!(incomplete_tasks.next(), Some(b));
+    assert_eq!(incomplete_tasks.next(), Some(c));
     assert_eq!(incomplete_tasks.next(), None);
 }
