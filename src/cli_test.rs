@@ -103,3 +103,48 @@ fn restore_multiple_tasks() {
         })
     );
 }
+
+#[test]
+fn block_one_on_one() {
+    let options =
+        Options::from_iter_safe(&["todo", "block", "2", "--on", "1"]).unwrap();
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Block(Block {
+            keys: vec![Key::ByNumber(2)],
+            on: vec![Key::ByNumber(1)],
+        })
+    );
+}
+
+#[test]
+fn block_three_on_one() {
+    let options =
+        Options::from_iter_safe(&["todo", "block", "1", "2", "3", "--on", "4"])
+            .unwrap();
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Block(Block {
+            keys: vec![Key::ByNumber(1), Key::ByNumber(2), Key::ByNumber(3)],
+            on: vec![Key::ByNumber(4)],
+        })
+    );
+}
+
+#[test]
+fn block_three_on_three() {
+    let options = Options::from_iter_safe(&[
+        "todo", "block", "1", "2", "3", "--on", "4", "5", "6",
+    ])
+    .unwrap();
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Block(Block {
+            keys: vec![Key::ByNumber(1), Key::ByNumber(2), Key::ByNumber(3)],
+            on: vec![Key::ByNumber(4), Key::ByNumber(5), Key::ByNumber(6)],
+        })
+    );
+}

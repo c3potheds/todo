@@ -31,6 +31,13 @@ pub struct Restore {
 }
 
 #[derive(Debug, PartialEq, StructOpt)]
+pub struct Block {
+    pub keys: Vec<Key>,
+    #[structopt(long)]
+    pub on: Vec<Key>,
+}
+
+#[derive(Debug, PartialEq, StructOpt)]
 pub enum SubCommand {
     /// Marks tasks as complete.
     Check(Check),
@@ -40,6 +47,8 @@ pub enum SubCommand {
     Log,
     /// Restore completed tasks.
     Restore(Restore),
+    /// Block tasks on other tasks.
+    Block(Block),
 }
 
 #[derive(Debug, StructOpt)]

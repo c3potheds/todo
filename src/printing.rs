@@ -113,7 +113,7 @@ pub struct Validation<'a> {
 impl<'a> Validation<'a> {
     pub fn printed(self, es: &[Expect<'a>]) -> Validation<'a> {
         if self.record.len() == 0 {
-            panic!("Missing task: {:?}", es);
+            panic!("Missing task: {:#?}", es);
         }
         let info = self.record.drain(0..1).nth(0).unwrap();
         es.iter().for_each(|e| e.validate(&info));
@@ -122,7 +122,7 @@ impl<'a> Validation<'a> {
 
     pub fn end(self) {
         if self.record.len() > 0 {
-            panic!("Extra tasks were recorded: {:?}", self.record);
+            panic!("Extra tasks were recorded: {:#?}", self.record);
         }
     }
 }

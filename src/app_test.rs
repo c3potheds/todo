@@ -200,3 +200,146 @@ fn restore_task_with_negative_number() {
         .printed(&[Expect::Desc("b"), Expect::Number(2)])
         .end();
 }
+
+#[test]
+fn block_one_on_one() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b"]);
+    test(&mut list, &["todo", "block", "1", "--on", "2"])
+        .validate()
+        .printed(&[
+            Expect::Desc("a"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Blocked),
+        ])
+        .end();
+}
+
+#[test]
+fn block_one_on_three() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b", "c", "d"]);
+    test(&mut list, &["todo", "block", "1", "--on", "2", "3", "4"])
+        .validate()
+        .printed(&[
+            Expect::Desc("a"),
+            Expect::Number(4),
+            Expect::Status(TaskStatus::Blocked),
+        ])
+        .end();
+}
+
+#[test]
+fn block_three_on_one() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b", "c", "d"]);
+    test(&mut list, &["todo", "block", "1", "2", "3", "--on", "4"])
+        .validate()
+        .printed(&[
+            Expect::Desc("a"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Blocked),
+        ])
+        .printed(&[
+            Expect::Desc("b"),
+            Expect::Number(3),
+            Expect::Status(TaskStatus::Blocked),
+        ])
+        .printed(&[
+            Expect::Desc("c"),
+            Expect::Number(4),
+            Expect::Status(TaskStatus::Blocked),
+        ])
+        .end();
+}
+
+#[test]
+fn unable_to_check_blocked_task() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b"]);
+    test(&mut list, &["todo", "block", "1", "--on", "2"]);
+    test(&mut list, &["todo", "check", "2"]).validate().end();
+}
+
+#[test]
+fn check_newly_unblocked_task() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b"]);
+    test(&mut list, &["todo", "block", "1", "--on", "2"]);
+    test(&mut list, &["todo", "check", "1"])
+        .validate()
+        .printed(&[
+            Expect::Desc("b"),
+            Expect::Number(0),
+            Expect::Status(TaskStatus::Complete),
+        ])
+        .end();
+    test(&mut list, &["todo", "check", "1"])
+        .validate()
+        .printed(&[
+            Expect::Desc("a"),
+            Expect::Number(0),
+            Expect::Status(TaskStatus::Complete),
+        ])
+        .end();
+}
+
+#[test]
+fn check_newly_unblocked_task_with_multiple_dependencies() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b", "c"]);
+    test(&mut list, &["todo", "block", "1", "--on", "2", "3"]);
+    test(&mut list, &["todo", "check", "1", "2"])
+        .validate()
+        .printed(&[
+            Expect::Desc("b"),
+            Expect::Number(-1),
+            Expect::Status(TaskStatus::Complete),
+        ])
+        .printed(&[
+            Expect::Desc("c"),
+            Expect::Number(0),
+            Expect::Status(TaskStatus::Complete),
+        ])
+        .end();
+    test(&mut list, &["todo", "check", "1"])
+        .validate()
+        .printed(&[
+            Expect::Desc("a"),
+            Expect::Number(0),
+            Expect::Status(TaskStatus::Complete),
+        ])
+        .end();
+}
+
+#[test]
+fn check_newly_unblocked_task_with_chained_dependencies() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b", "c"]);
+    test(&mut list, &["todo", "block", "3", "--on", "2"]);
+    test(&mut list, &["todo", "block", "2", "--on", "1"]);
+    test(&mut list, &["todo", "check", "1"])
+        .validate()
+        .printed(&[
+            Expect::Desc("a"),
+            Expect::Number(0),
+            Expect::Status(TaskStatus::Complete),
+        ])
+        .end();
+    test(&mut list, &["todo", "check", "1"])
+        .validate()
+        .printed(&[
+            Expect::Desc("b"),
+            Expect::Number(0),
+            Expect::Status(TaskStatus::Complete),
+        ])
+        .end();
+    test(&mut list, &["todo", "check", "1"])
+        .validate()
+        .printed(&[
+            Expect::Desc("c"),
+            Expect::Number(0),
+            Expect::Status(TaskStatus::Complete),
+        ])
+        .end();
+}

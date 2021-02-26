@@ -4,6 +4,7 @@ extern crate serde;
 extern crate ansi_term;
 extern crate chrono;
 extern crate daggy;
+extern crate itertools;
 extern crate structopt;
 
 pub mod app;

@@ -132,7 +132,7 @@ fn validate_multiple_tasks() {
 }
 
 #[test]
-#[should_panic(expected = "Missing task: [Desc(\"a\")]")]
+#[should_panic(expected = "Missing task")]
 fn fail_validation_on_missing_task() {
     let mut printer = FakePrinter::new();
     printer.validate().printed(&[Expect::Desc("a")]).end();
