@@ -42,10 +42,6 @@ impl Task {
     }
 }
 
-fn reversed<I: Iterator>(iter: I) -> impl Iterator<Item = I::Item> {
-    iter.collect::<Vec<_>>().into_iter().rev()
-}
-
 pub struct Block<'a> {
     list: &'a mut TodoList,
     blocked: NodeIndex<TaskId>,
@@ -230,12 +226,10 @@ impl TodoList {
     }
 
     pub fn complete_tasks(&self) -> impl Iterator<Item = TaskId> + '_ {
-        reversed(
-            self.graph
-                .children(self.complete_root)
-                .iter(&self.graph)
-                .map(|(_, n)| n.index()),
-        )
+        self.graph
+            .children(self.complete_root)
+            .iter(&self.graph)
+            .map(|(_, n)| n.index())
     }
 }
 

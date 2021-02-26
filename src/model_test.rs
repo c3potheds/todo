@@ -163,8 +163,8 @@ fn iterate_multiple_complete_tasks() {
     list.check(a);
     list.check(c);
     let mut complete_tasks = list.complete_tasks();
-    assert_eq!(complete_tasks.next(), Some(a));
     assert_eq!(complete_tasks.next(), Some(c));
+    assert_eq!(complete_tasks.next(), Some(a));
     assert_eq!(complete_tasks.next(), None);
     let mut incomplete_tasks = list.incomplete_tasks();
     assert_eq!(incomplete_tasks.next(), Some(b));

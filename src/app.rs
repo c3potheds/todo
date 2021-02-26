@@ -80,16 +80,9 @@ fn log(
     printing_context: &PrintingContext,
     printer: &mut impl TodoPrinter,
 ) {
-    model
-        .complete_tasks()
-        // This is inefficient, but there's no apparent way to coerce a daggy
-        // Walker into a DoubleEndedIterator.
-        .collect::<Vec<_>>()
-        .into_iter()
-        .rev()
-        .for_each(|id| {
-            printer.print_task(&format_task(printing_context, model, id))
-        });
+    model.complete_tasks().for_each(|id| {
+        printer.print_task(&format_task(printing_context, model, id))
+    });
 }
 
 fn restore(
