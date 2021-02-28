@@ -517,3 +517,18 @@ fn complete_task_becomes_blocked_if_transitive_dependency_is_restored() {
     assert_eq!(incomplete_tasks.next(), Some(c));
     assert_eq!(incomplete_tasks.next(), None);
 }
+
+#[test]
+#[ignore = "Need to implement layers for incomplete tasks."]
+fn test_blocked_task_comes_after_all_unblocked_tasks() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.block(a).on(b);
+    let mut incomplete_tasks = list.incomplete_tasks();
+    assert_eq!(incomplete_tasks.next(), Some(b));
+    assert_eq!(incomplete_tasks.next(), Some(c));
+    assert_eq!(incomplete_tasks.next(), Some(a));
+    assert_eq!(incomplete_tasks.next(), None);
+}
