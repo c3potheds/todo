@@ -25,9 +25,16 @@ pub struct Task {
     pub completion_time: Option<DateTime<Utc>>,
 }
 
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+enum Node {
+    IncompleteRoot,
+    CompleteRoot,
+    Task(Task),
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct TodoList {
-    graph: Dag<Task, (), TaskId>,
+    graph: Dag<Node, (), TaskId>,
     complete_root: NodeIndex<TaskId>,
     incomplete_root: NodeIndex<TaskId>,
 }
@@ -63,8 +70,8 @@ impl<'a> Block<'a> {
 impl TodoList {
     pub fn new() -> TodoList {
         let mut graph = Dag::new();
-        let complete_root = graph.add_node(Task::new("__complete__"));
-        let incomplete_root = graph.add_node(Task::new("__incomplete__"));
+        let complete_root = graph.add_node(Node::CompleteRoot);
+        let incomplete_root = graph.add_node(Node::IncompleteRoot);
         TodoList {
             graph: graph,
             complete_root: complete_root,
@@ -74,7 +81,7 @@ impl TodoList {
 
     pub fn add(&mut self, task: Task) -> TaskId {
         self.graph
-            .add_child(self.incomplete_root, (), task)
+            .add_child(self.incomplete_root, (), Node::Task(task))
             .1
             .index()
     }
@@ -84,8 +91,11 @@ impl TodoList {
             .find_edge(self.incomplete_root, NodeIndex::new(id))
             .and_then(|edge| {
                 // Set the completion time.
-                self.graph[NodeIndex::new(id)].completion_time =
-                    Some(Utc::now());
+                if let Some(Node::Task(ref mut task)) =
+                    self.graph.node_weight_mut(NodeIndex::new(id))
+                {
+                    task.completion_time = Some(Utc::now());
+                }
                 // Remove the connection to the incomplete root.
                 self.graph.remove_edge(edge);
                 // Connect the checked node to the complete root.
@@ -166,7 +176,10 @@ impl TodoList {
     }
 
     pub fn get(&self, id: TaskId) -> Option<&Task> {
-        self.graph.node_weight(NodeIndex::new(id))
+        match self.graph.node_weight(NodeIndex::new(id)) {
+            Some(Node::Task(ref task)) => Some(task),
+            _ => None,
+        }
     }
 
     pub fn get_number(&self, id: TaskId) -> Option<i32> {
@@ -211,16 +224,16 @@ impl TodoList {
     }
 
     pub fn incomplete_tasks(&self) -> impl Iterator<Item = TaskId> + '_ {
-        let incomplete_root = self.incomplete_root;
-        let complete_root = self.complete_root;
         Topo::new(&self.graph)
             .iter(&self.graph)
             .filter(move |&n| {
                 // Do not include the root nodes or children of the complete
                 // root, which are completed tasks.
-                n != incomplete_root
-                    && n != complete_root
-                    && self.graph.find_edge(self.complete_root, n).is_none()
+                if let Some(Node::Task(_)) = self.graph.node_weight(n) {
+                    self.graph.find_edge(self.complete_root, n).is_none()
+                } else {
+                    false
+                }
             })
             .map(|n| n.index())
     }
