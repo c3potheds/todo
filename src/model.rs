@@ -9,7 +9,8 @@ use std::io::BufReader;
 use std::io::BufWriter;
 use std::path::Path;
 
-pub type TaskId = usize;
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Deserialize, Serialize)]
+pub struct TaskId(NodeIndex);
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum TaskStatus {
@@ -34,9 +35,9 @@ enum Node {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct TodoList {
-    graph: Dag<Node, (), TaskId>,
-    complete_root: NodeIndex<TaskId>,
-    incomplete_root: NodeIndex<TaskId>,
+    graph: Dag<Node, ()>,
+    complete_root: NodeIndex,
+    incomplete_root: NodeIndex,
 }
 
 impl Task {
@@ -51,18 +52,18 @@ impl Task {
 
 pub struct Block<'a> {
     list: &'a mut TodoList,
-    blocked: NodeIndex<TaskId>,
+    blocked: TaskId,
 }
 
 impl<'a> Block<'a> {
     pub fn on(self, blocking: TaskId) -> bool {
         self.list
             .graph
-            .find_edge(self.list.incomplete_root, self.blocked)
+            .find_edge(self.list.incomplete_root, self.blocked.0)
             .and_then(|edge| self.list.graph.remove_edge(edge));
         self.list
             .graph
-            .update_edge(NodeIndex::new(blocking), self.blocked, ())
+            .update_edge(blocking.0, self.blocked.0, ())
             .is_ok()
     }
 }
@@ -80,19 +81,20 @@ impl TodoList {
     }
 
     pub fn add(&mut self, task: Task) -> TaskId {
-        self.graph
-            .add_child(self.incomplete_root, (), Node::Task(task))
-            .1
-            .index()
+        TaskId(
+            self.graph
+                .add_child(self.incomplete_root, (), Node::Task(task))
+                .1,
+        )
     }
 
     pub fn check(&mut self, id: TaskId) -> bool {
         self.graph
-            .find_edge(self.incomplete_root, NodeIndex::new(id))
+            .find_edge(self.incomplete_root, id.0)
             .and_then(|edge| {
                 // Set the completion time.
                 if let Some(Node::Task(ref mut task)) =
-                    self.graph.node_weight_mut(NodeIndex::new(id))
+                    self.graph.node_weight_mut(id.0)
                 {
                     task.completion_time = Some(Utc::now());
                 }
@@ -100,11 +102,11 @@ impl TodoList {
                 self.graph.remove_edge(edge);
                 // Connect the checked node to the complete root.
                 self.graph
-                    .update_edge(self.complete_root, NodeIndex::new(id), ())
+                    .update_edge(self.complete_root, id.0, ())
                     .unwrap();
                 // Update tasks that are blocked by this task.
                 self.graph
-                    .children(NodeIndex::new(id))
+                    .children(id.0)
                     .iter(&self.graph)
                     .map(|(_, n)| n)
                     .filter(|&n| {
@@ -130,7 +132,7 @@ impl TodoList {
 
     fn block_all_children(&mut self, id: TaskId) {
         self.graph
-            .children(NodeIndex::new(id))
+            .children(id.0)
             .iter(&self.graph)
             .flat_map(|(_, n)| {
                 self.graph
@@ -147,19 +149,19 @@ impl TodoList {
                 // Sever the connections to the incomplete and complete nodes.
                 self.graph.remove_edge(e);
                 // Recur on child.
-                self.block_all_children(n.index());
+                self.block_all_children(TaskId(n));
             })
     }
 
     pub fn restore(&mut self, id: TaskId) -> bool {
         self.graph
-            .find_edge(self.complete_root, NodeIndex::new(id))
+            .find_edge(self.complete_root, id.0)
             .and_then(|edge| {
                 // Remove the connection to the complete root.
                 self.graph.remove_edge(edge);
                 // Connect the restored node to the incomplete root.
                 self.graph
-                    .update_edge(self.incomplete_root, NodeIndex::new(id), ())
+                    .update_edge(self.incomplete_root, id.0, ())
                     .unwrap();
                 // Update tasks that become blocked on this task.
                 self.block_all_children(id);
@@ -171,12 +173,12 @@ impl TodoList {
     pub fn block(&mut self, id: TaskId) -> Block {
         Block {
             list: self,
-            blocked: NodeIndex::new(id),
+            blocked: id,
         }
     }
 
     pub fn get(&self, id: TaskId) -> Option<&Task> {
-        match self.graph.node_weight(NodeIndex::new(id)) {
+        match self.graph.node_weight(id.0) {
             Some(Node::Task(ref task)) => Some(task),
             _ => None,
         }
@@ -190,24 +192,22 @@ impl TodoList {
                 self.graph
                     .children(self.complete_root)
                     .iter(&self.graph)
-                    .position(|(_, n)| n.index() == id)
+                    .position(|(_, n)| n == id.0)
                     .map(|pos| -(pos as i32))
             })
     }
 
     pub fn get_status(&self, id: TaskId) -> Option<TaskStatus> {
         self.graph
-            .find_edge(self.complete_root, NodeIndex::new(id))
+            .find_edge(self.complete_root, id.0)
             .map(|_| TaskStatus::Complete)
             .or_else(|| {
                 self.graph
-                    .find_edge(self.incomplete_root, NodeIndex::new(id))
+                    .find_edge(self.incomplete_root, id.0)
                     .map(|_| TaskStatus::Incomplete)
             })
             .or_else(|| {
-                self.graph
-                    .node_weight(NodeIndex::new(id))
-                    .map(|_| TaskStatus::Blocked)
+                self.graph.node_weight(id.0).map(|_| TaskStatus::Blocked)
             })
     }
 
@@ -219,7 +219,7 @@ impl TodoList {
                 .children(self.complete_root)
                 .iter(&self.graph)
                 .nth((-number) as usize)
-                .map(|(_, n)| n.index())
+                .map(|(_, n)| TaskId(n))
         }
     }
 
@@ -235,14 +235,14 @@ impl TodoList {
                     false
                 }
             })
-            .map(|n| n.index())
+            .map(|n| TaskId(n))
     }
 
     pub fn complete_tasks(&self) -> impl Iterator<Item = TaskId> + '_ {
         self.graph
             .children(self.complete_root)
             .iter(&self.graph)
-            .map(|(_, n)| n.index())
+            .map(|(_, n)| TaskId(n))
     }
 }
 

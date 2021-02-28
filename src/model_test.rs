@@ -72,12 +72,6 @@ fn add_multiple_tasks() {
 }
 
 #[test]
-fn check_nonexistent_task() {
-    let mut list = TodoList::new();
-    assert!(!list.check(0));
-}
-
-#[test]
 fn check_complete_task() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
@@ -208,12 +202,6 @@ fn reload_three_tasks() {
 }
 
 #[test]
-fn number_of_nonexistent_task() {
-    let list = TodoList::new();
-    assert_eq!(list.get_number(0), None);
-}
-
-#[test]
 fn number_of_incomplete_tasks() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
@@ -333,12 +321,6 @@ fn restore_complete_task_to_nonempty_list() {
     assert_eq!(list.get_number(b), Some(1));
     assert_eq!(list.get_number(c), Some(2));
     assert_eq!(list.get_number(a), Some(3));
-}
-
-#[test]
-fn status_of_nonexistent_task() {
-    let list = TodoList::new();
-    assert_eq!(list.get_status(100), None);
 }
 
 #[test]
