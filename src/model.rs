@@ -28,8 +28,8 @@ pub struct Task {
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 enum Node {
-    IncompleteRoot,
     CompleteRoot,
+    Layer(u32),
     Task(Task),
 }
 
@@ -37,7 +37,7 @@ enum Node {
 pub struct TodoList {
     graph: Dag<Node, ()>,
     complete_root: NodeIndex,
-    incomplete_root: NodeIndex,
+    layers: Vec<NodeIndex>,
 }
 
 impl Task {
@@ -59,7 +59,7 @@ impl<'a> Block<'a> {
     pub fn on(self, blocking: TaskId) -> bool {
         self.list
             .graph
-            .find_edge(self.list.incomplete_root, self.blocked.0)
+            .find_edge(self.list.layers[0], self.blocked.0)
             .and_then(|edge| self.list.graph.remove_edge(edge));
         self.list
             .graph
@@ -72,25 +72,21 @@ impl TodoList {
     pub fn new() -> TodoList {
         let mut graph = Dag::new();
         let complete_root = graph.add_node(Node::CompleteRoot);
-        let incomplete_root = graph.add_node(Node::IncompleteRoot);
+        let incomplete_root = graph.add_node(Node::Layer(0));
         TodoList {
             graph: graph,
             complete_root: complete_root,
-            incomplete_root: incomplete_root,
+            layers: vec![incomplete_root],
         }
     }
 
     pub fn add(&mut self, task: Task) -> TaskId {
-        TaskId(
-            self.graph
-                .add_child(self.incomplete_root, (), Node::Task(task))
-                .1,
-        )
+        TaskId(self.graph.add_child(self.layers[0], (), Node::Task(task)).1)
     }
 
     pub fn check(&mut self, id: TaskId) -> bool {
         self.graph
-            .find_edge(self.incomplete_root, id.0)
+            .find_edge(self.layers[0], id.0)
             .and_then(|edge| {
                 // Set the completion time.
                 if let Some(Node::Task(ref mut task)) =
@@ -122,7 +118,7 @@ impl TodoList {
                     .into_iter()
                     .for_each(|to_update| {
                         self.graph
-                            .update_edge(self.incomplete_root, to_update, ())
+                            .update_edge(self.layers[0], to_update, ())
                             .unwrap();
                     });
                 Some(())
@@ -136,7 +132,7 @@ impl TodoList {
             .iter(&self.graph)
             .flat_map(|(_, n)| {
                 self.graph
-                    .find_edge(self.incomplete_root, n)
+                    .find_edge(self.layers[0], n)
                     .into_iter()
                     .chain(
                         self.graph.find_edge(self.complete_root, n).into_iter(),
@@ -160,9 +156,7 @@ impl TodoList {
                 // Remove the connection to the complete root.
                 self.graph.remove_edge(edge);
                 // Connect the restored node to the incomplete root.
-                self.graph
-                    .update_edge(self.incomplete_root, id.0, ())
-                    .unwrap();
+                self.graph.update_edge(self.layers[0], id.0, ()).unwrap();
                 // Update tasks that become blocked on this task.
                 self.block_all_children(id);
                 Some(())
@@ -203,7 +197,7 @@ impl TodoList {
             .map(|_| TaskStatus::Complete)
             .or_else(|| {
                 self.graph
-                    .find_edge(self.incomplete_root, id.0)
+                    .find_edge(self.layers[0], id.0)
                     .map(|_| TaskStatus::Incomplete)
             })
             .or_else(|| {
