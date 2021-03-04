@@ -4,11 +4,9 @@ use daggy::Dag;
 use daggy::NodeIndex;
 use daggy::Walker;
 use std::collections::HashMap;
-use std::fs::File;
 use std::hash::Hash;
-use std::io::BufReader;
-use std::io::BufWriter;
-use std::path::Path;
+use std::io::Read;
+use std::io::Write;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Deserialize, Serialize)]
 pub struct TaskId(NodeIndex);
@@ -316,6 +314,7 @@ impl TodoList {
     }
 }
 
+#[derive(Debug)]
 pub enum LoadError {
     IoError(std::io::Error),
     DeserializeError(serde_json::Error),
@@ -333,12 +332,10 @@ impl From<serde_json::Error> for LoadError {
     }
 }
 
-pub fn load<P>(path: P) -> Result<TodoList, LoadError>
+pub fn load<R>(reader: R) -> Result<TodoList, LoadError>
 where
-    P: AsRef<Path>,
+    R: Read,
 {
-    let file = File::open(path)?;
-    let reader = BufReader::new(file);
     Ok(serde_json::from_reader(reader)?)
 }
 
@@ -360,11 +357,9 @@ impl From<serde_json::Error> for SaveError {
     }
 }
 
-pub fn save<P>(path: P, model: &TodoList) -> Result<(), SaveError>
+pub fn save<W>(writer: W, model: &TodoList) -> Result<(), SaveError>
 where
-    P: AsRef<Path>,
+    W: Write,
 {
-    let file = File::create(path)?;
-    let writer = BufWriter::new(file);
     Ok(serde_json::to_writer(writer, model)?)
 }

@@ -4,11 +4,14 @@ extern crate todo;
 
 use app_dirs::AppDataType;
 use app_dirs::AppInfo;
+use std::fs::File;
+use std::io::BufWriter;
 use structopt::StructOpt;
 use todo::app::todo;
 use todo::cli::Options;
 use todo::model::load;
 use todo::model::save;
+use todo::model::LoadError;
 use todo::model::SaveError;
 use todo::model::TodoList;
 use todo::printing::PrintingContext;
@@ -19,6 +22,7 @@ enum TodoError {
     NoDataDirectoryError(app_dirs::AppDirsError),
     IoError(std::io::Error),
     CommandLineParsingError(structopt::clap::Error),
+    LoadError(LoadError),
     SaveError(SaveError),
 }
 
@@ -40,6 +44,12 @@ impl From<app_dirs::AppDirsError> for TodoError {
     }
 }
 
+impl From<LoadError> for TodoError {
+    fn from(src: LoadError) -> Self {
+        Self::LoadError(src)
+    }
+}
+
 impl From<SaveError> for TodoError {
     fn from(src: SaveError) -> Self {
         Self::SaveError(src)
@@ -56,7 +66,8 @@ fn main() -> TodoResult {
     };
     let mut path = app_dirs::app_root(AppDataType::UserData, &app_info)?;
     path.push("data.json");
-    let mut model = load(&path).unwrap_or_else(|_| TodoList::new());
+    let mut model = File::open(&path)
+        .map_or_else(|_| Ok(TodoList::new()), |file| load(file))?;
     let printing_context = PrintingContext {
         // TODO: Get the number of tasks from the list.
         max_index_digits: 3,
@@ -68,6 +79,8 @@ fn main() -> TodoResult {
         &mut SimpleTodoPrinter {},
         &options,
     );
-    save(&path, &model)?;
+    let file = File::create(&path)?;
+    let writer = BufWriter::new(file);
+    save(writer, &model)?;
     Ok(())
 }
