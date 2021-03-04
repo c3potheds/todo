@@ -57,7 +57,13 @@ fn check(
 ) {
     lookup_tasks(&model, &cmd.keys)
         .into_iter()
-        .filter_map(|id| if model.check(id) { Some(id) } else { None })
+        .filter_map(|id| {
+            if model.check(id).is_ok() {
+                Some(id)
+            } else {
+                None
+            }
+        })
         .collect::<Vec<_>>()
         .into_iter()
         .for_each(|id| {
@@ -93,7 +99,7 @@ fn restore(
 ) {
     lookup_tasks(&model, &cmd.keys)
         .into_iter()
-        .filter(|&id| model.restore(id))
+        .filter(|&id| model.restore(id).is_ok())
         .collect::<Vec<_>>()
         .into_iter()
         .for_each(|id| {
@@ -110,7 +116,9 @@ fn block(
     lookup_tasks(&model, &cmd.keys)
         .into_iter()
         .cartesian_product(lookup_tasks(&model, &cmd.on).into_iter())
-        .filter(|&(blocked, blocking)| model.block(blocked).on(blocking))
+        .filter(|&(blocked, blocking)| {
+            model.block(blocked).on(blocking).is_ok()
+        })
         .map(|(blocked, _)| blocked)
         .unique()
         .collect::<Vec<_>>()

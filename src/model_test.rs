@@ -43,8 +43,8 @@ fn get_completed_task() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
-    list.check(a);
-    list.check(b);
+    list.check(a).expect("Could not check a");
+    list.check(b).expect("Could not check b");
     assert_eq!(list.get(a).unwrap().desc, "a");
     assert_eq!(list.get(b).unwrap().desc, "b");
 }
@@ -75,15 +75,16 @@ fn add_multiple_tasks() {
 fn check_complete_task() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
-    assert!(list.check(a));
-    assert!(!list.check(a));
+    list.check(a).expect("Could not check a");
+    list.check(a)
+        .expect_err("Shouldn't have been able to check a");
 }
 
 #[test]
 fn checked_task_has_completion_time() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
-    list.check(a);
+    list.check(a).expect("Could not check a");
     assert!(list.get(a).unwrap().completion_time.is_some());
 }
 
@@ -91,10 +92,11 @@ fn checked_task_has_completion_time() {
 fn completion_time_of_completed_task_does_not_update_if_checked() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
-    list.check(a);
+    list.check(a).expect("Could not check a");
     let original_completion_time =
         list.get(a).unwrap().completion_time.unwrap();
-    list.check(a);
+    list.check(a)
+        .expect_err("Shouldn't have been able to check a");
     let new_completion_time = list.get(a).unwrap().completion_time.unwrap();
     assert_eq!(original_completion_time, new_completion_time);
 }
@@ -105,7 +107,7 @@ fn check_first_task() {
     let a = list.add(Task::new("walk the dog"));
     let b = list.add(Task::new("do the dishes"));
     let c = list.add(Task::new("take out the trash"));
-    assert!(list.check(a));
+    list.check(a).expect("Could not check a");
     let mut tasks = list.incomplete_tasks();
     assert_eq!(tasks.next(), Some(b));
     assert_eq!(tasks.next(), Some(c));
@@ -118,7 +120,7 @@ fn check_second_task() {
     let a = list.add(Task::new("walk the dog"));
     let b = list.add(Task::new("do the dishes"));
     let c = list.add(Task::new("take out the trash"));
-    assert!(list.check(b));
+    list.check(b).expect("Could not check b");
     let mut tasks = list.incomplete_tasks();
     assert_eq!(tasks.next(), Some(a));
     assert_eq!(tasks.next(), Some(c));
@@ -131,7 +133,7 @@ fn check_third_task() {
     let a = list.add(Task::new("walk the dog"));
     let b = list.add(Task::new("do the dishes"));
     let c = list.add(Task::new("take out the trash"));
-    assert!(list.check(c));
+    list.check(c).expect("Could not check c");
     let mut tasks = list.incomplete_tasks();
     assert_eq!(tasks.next(), Some(a));
     assert_eq!(tasks.next(), Some(b));
@@ -142,7 +144,7 @@ fn check_third_task() {
 fn complete_task_shows_up_in_complete_list() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
-    list.check(a);
+    list.check(a).expect("Could not check a");
     let mut complete_tasks = list.complete_tasks();
     assert_eq!(complete_tasks.next(), Some(a));
     assert_eq!(complete_tasks.next(), None);
@@ -154,8 +156,8 @@ fn iterate_multiple_complete_tasks() {
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
     let c = list.add(Task::new("c"));
-    list.check(a);
-    list.check(c);
+    list.check(a).expect("Could not check a");
+    list.check(c).expect("Could not check c");
     let mut complete_tasks = list.complete_tasks();
     assert_eq!(complete_tasks.next(), Some(c));
     assert_eq!(complete_tasks.next(), Some(a));
@@ -218,9 +220,9 @@ fn number_of_complete_tasks() {
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
     let c = list.add(Task::new("c"));
-    list.check(a);
-    list.check(b);
-    list.check(c);
+    list.check(a).expect("Could not check a");
+    list.check(b).expect("Could not check b");
+    list.check(c).expect("Could not check c");
     assert_eq!(list.get_number(c), Some(0));
     assert_eq!(list.get_number(b), Some(-1));
     assert_eq!(list.get_number(a), Some(-2));
@@ -232,7 +234,7 @@ fn number_of_task_updates_when_predecessor_completes() {
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
     let c = list.add(Task::new("c"));
-    list.check(a);
+    list.check(a).expect("Could not check a");
     assert_eq!(list.get_number(a), Some(0));
     assert_eq!(list.get_number(b), Some(1));
     assert_eq!(list.get_number(c), Some(2));
@@ -261,9 +263,9 @@ fn existent_complete_task_by_number() {
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
     let c = list.add(Task::new("c"));
-    list.check(a);
-    list.check(b);
-    list.check(c);
+    list.check(a).expect("Could not check a");
+    list.check(b).expect("Could not check b");
+    list.check(c).expect("Could not check c");
     assert_eq!(list.lookup_by_number(0), Some(c));
     assert_eq!(list.lookup_by_number(-1), Some(b));
     assert_eq!(list.lookup_by_number(-2), Some(a));
@@ -283,9 +285,9 @@ fn lookup_by_number_is_inverse_of_get_number() {
     let c = list.add(Task::new("c"));
     list.add(Task::new("d"));
     let e = list.add(Task::new("e"));
-    list.check(a);
-    list.check(c);
-    list.check(e);
+    list.check(a).expect("Could not check a");
+    list.check(c).expect("Could not check c");
+    list.check(e).expect("could not check e");
     for id in list.incomplete_tasks().chain(list.complete_tasks()) {
         let number = list.get_number(id).unwrap();
         let id_from_number = list.lookup_by_number(number).unwrap();
@@ -297,7 +299,7 @@ fn lookup_by_number_is_inverse_of_get_number() {
 fn restore_incomplete_task() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
-    assert!(!list.restore(a));
+    assert!(list.restore(a).is_err());
     assert_eq!(list.get_number(a), Some(1));
 }
 
@@ -305,8 +307,8 @@ fn restore_incomplete_task() {
 fn restore_complete_task() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
-    list.check(a);
-    assert!(list.restore(a));
+    list.check(a).expect("Could not check a");
+    list.restore(a).expect("Could not restore a");
     assert_eq!(list.get_number(a), Some(1));
 }
 
@@ -316,8 +318,8 @@ fn restore_complete_task_to_nonempty_list() {
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
     let c = list.add(Task::new("c"));
-    list.check(a);
-    assert!(list.restore(a));
+    list.check(a).expect("Could not check a");
+    list.restore(a).expect("Could not restore a");
     assert_eq!(list.get_number(b), Some(1));
     assert_eq!(list.get_number(c), Some(2));
     assert_eq!(list.get_number(a), Some(3));
@@ -334,7 +336,7 @@ fn status_of_incomplete_task() {
 fn status_of_complete_task() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
-    list.check(a);
+    list.check(a).expect("Could not check a");
     assert_eq!(list.get_status(a), Some(TaskStatus::Complete));
 }
 
@@ -343,7 +345,7 @@ fn status_of_blocked_task() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
-    assert!(list.block(b).on(a));
+    list.block(b).on(a).expect("Could not block b on a");
     assert_eq!(list.get_status(b), Some(TaskStatus::Blocked));
 }
 
@@ -352,7 +354,7 @@ fn ordering_of_blocked_task() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
-    list.block(b).on(a);
+    list.block(b).on(a).expect("Could not block b on a");
     assert_eq!(list.get_number(a), Some(1));
     assert_eq!(list.get_number(b), Some(2));
 }
@@ -362,7 +364,7 @@ fn blocked_task_appears_after_task_that_blocks_it() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
-    assert!(list.block(a).on(b));
+    list.block(a).on(b).expect("Could not block a on b");
     assert_eq!(list.get_number(b), Some(1));
     assert_eq!(list.get_number(a), Some(2));
 }
@@ -372,8 +374,8 @@ fn cannot_block_blocking_task_on_task_it_blocks() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
-    assert!(list.block(a).on(b));
-    assert!(!list.block(b).on(a));
+    list.block(a).on(b).expect("Could not block a on b");
+    assert!(list.block(b).on(a).is_err());
     assert_eq!(list.get_number(b), Some(1));
     assert_eq!(list.get_number(a), Some(2));
 }
@@ -383,7 +385,7 @@ fn incomplete_tasks_includes_blocked_tasks() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
-    list.block(b).on(a);
+    list.block(b).on(a).expect("Could not block b on a");
     let mut incomplete_tasks = list.incomplete_tasks();
     assert_eq!(incomplete_tasks.next(), Some(a));
     assert_eq!(incomplete_tasks.next(), Some(b));
@@ -396,8 +398,8 @@ fn chained_blocking() {
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
     let c = list.add(Task::new("c"));
-    list.block(a).on(b);
-    list.block(b).on(c);
+    list.block(a).on(b).expect("Could not block a on b");
+    list.block(b).on(c).expect("Could not block b on c");
     let mut incomplete_tasks = list.incomplete_tasks();
     let mut next = incomplete_tasks.next().unwrap();
     assert_eq!(list.get(next).unwrap().desc, "c");
@@ -416,9 +418,15 @@ fn indirect_blocking_cycle() {
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
     let c = list.add(Task::new("c"));
-    assert!(list.block(b).on(a));
-    assert!(list.block(c).on(b));
-    assert!(!list.block(a).on(c));
+    list.block(b).on(a).expect("Could not block b on a");
+    list.block(c).on(b).expect("Could not block c on b");
+    assert!(list.block(a).on(c).is_err());
+    // Make sure the status is consistent.
+    let mut incomplete_tasks = list.incomplete_tasks();
+    assert_eq!(incomplete_tasks.next(), Some(a));
+    assert_eq!(incomplete_tasks.next(), Some(b));
+    assert_eq!(incomplete_tasks.next(), Some(c));
+    assert_eq!(incomplete_tasks.next(), None);
 }
 
 #[test]
@@ -426,8 +434,8 @@ fn cannot_check_blocked_task() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
-    assert!(list.block(b).on(a));
-    assert!(!list.check(b));
+    list.block(b).on(a).expect("Could not block b on a");
+    assert!(list.check(b).is_err());
 }
 
 #[test]
@@ -435,9 +443,9 @@ fn can_check_task_whose_dependency_is_complete() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
-    assert!(list.block(b).on(a));
-    assert!(list.check(a));
-    assert!(list.check(b));
+    list.block(b).on(a).expect("Could not block b on a");
+    list.check(a).expect("Could not check a");
+    list.check(b).expect("Could not check b");
 }
 
 #[test]
@@ -446,11 +454,11 @@ fn can_check_task_whose_dependencies_are_complete() {
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
     let c = list.add(Task::new("c"));
-    assert!(list.block(c).on(a));
-    assert!(list.block(c).on(b));
-    assert!(list.check(a));
-    assert!(list.check(b));
-    assert!(list.check(c));
+    list.block(c).on(a).expect("Could not block c on a");
+    list.block(c).on(b).expect("Could not block c on b");
+    list.check(a).expect("Could not check a");
+    list.check(b).expect("Could not check b");
+    list.check(c).expect("Could not check c");
 }
 
 #[test]
@@ -458,9 +466,9 @@ fn task_becomes_blocked_if_dependency_is_restored() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
-    assert!(list.block(b).on(a));
-    assert!(list.check(a));
-    assert!(list.restore(a));
+    list.block(b).on(a).expect("Could not block b on a");
+    list.check(a).expect("Could not check a");
+    list.restore(a).expect("Could not restore a");
     assert_eq!(list.get_status(b), Some(TaskStatus::Blocked));
 }
 
@@ -469,10 +477,10 @@ fn complete_task_becomes_blocked_if_dependency_is_restored() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
-    assert!(list.block(b).on(a));
-    assert!(list.check(a));
-    assert!(list.check(b));
-    assert!(list.restore(a));
+    list.block(b).on(a).expect("Could not block b on a");
+    list.check(a).expect("Could not check a");
+    list.check(b).expect("Could not check b");
+    list.restore(a).expect("Could not restore a");
     assert_eq!(list.get_status(b), Some(TaskStatus::Blocked));
     let mut incomplete_tasks = list.incomplete_tasks();
     assert_eq!(incomplete_tasks.next(), Some(a));
@@ -486,12 +494,12 @@ fn complete_task_becomes_blocked_if_transitive_dependency_is_restored() {
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
     let c = list.add(Task::new("c"));
-    assert!(list.block(b).on(a));
-    assert!(list.block(c).on(b));
-    assert!(list.check(a));
-    assert!(list.check(b));
-    assert!(list.check(c));
-    assert!(list.restore(a));
+    list.block(b).on(a).expect("Could not block b on a");
+    list.block(c).on(b).expect("Could not block c on b");
+    list.check(a).expect("Could not check a");
+    list.check(b).expect("Could not check b");
+    list.check(c).expect("Could not check c");
+    list.restore(a).expect("Could not restore a");
     assert_eq!(list.get_status(c), Some(TaskStatus::Blocked));
     let mut incomplete_tasks = list.incomplete_tasks();
     assert_eq!(incomplete_tasks.next(), Some(a));
@@ -501,16 +509,60 @@ fn complete_task_becomes_blocked_if_transitive_dependency_is_restored() {
 }
 
 #[test]
-#[ignore = "Need to implement layers for incomplete tasks."]
-fn test_blocked_task_comes_after_all_unblocked_tasks() {
+fn blocked_task_comes_after_all_unblocked_tasks() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
     let c = list.add(Task::new("c"));
-    list.block(a).on(b);
+    list.block(a).on(b).expect("Could not block a on b");
     let mut incomplete_tasks = list.incomplete_tasks();
     assert_eq!(incomplete_tasks.next(), Some(b));
     assert_eq!(incomplete_tasks.next(), Some(c));
     assert_eq!(incomplete_tasks.next(), Some(a));
     assert_eq!(incomplete_tasks.next(), None);
+}
+
+#[test]
+fn block_blocked_task_on_other_blocked_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.block(b).on(a).expect("Could not block b on a");
+    list.block(c).on(a).expect("Could not block c on a");
+    list.block(b).on(c).expect("Could not block b on c");
+    let mut incomplete_tasks = list.incomplete_tasks();
+    assert_eq!(incomplete_tasks.next(), Some(a));
+    assert_eq!(incomplete_tasks.next(), Some(c));
+    assert_eq!(incomplete_tasks.next(), Some(b));
+    assert_eq!(incomplete_tasks.next(), None);
+}
+
+#[test]
+fn block_complete_task_on_previously_complete_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    list.check(a).expect("Could not check a");
+    list.check(b).expect("Could not check b");
+    list.block(b).on(a).expect("Could not block b on a");
+    let mut complete_tasks = list.complete_tasks();
+    assert_eq!(complete_tasks.next(), Some(b));
+    assert_eq!(complete_tasks.next(), Some(a));
+    assert_eq!(complete_tasks.next(), None);
+}
+
+#[test]
+#[ignore = "Do we need layers for complete tasks?"]
+fn block_complete_task_on_later_complete_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    list.check(a).expect("Could not check a");
+    list.check(b).expect("Could not check b");
+    list.block(a).on(b).expect("Could not block a on b");
+    let mut complete_tasks = list.complete_tasks();
+    assert_eq!(complete_tasks.next(), Some(a));
+    assert_eq!(complete_tasks.next(), Some(b));
+    assert_eq!(complete_tasks.next(), None);
 }
