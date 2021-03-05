@@ -21,7 +21,9 @@ fn new_one() {
     assert_eq!(
         cmd,
         SubCommand::New(New {
-            desc: vec!["a".to_string()]
+            desc: vec!["a".to_string()],
+            blocked_by: Vec::new(),
+            blocking: Vec::new(),
         })
     );
 }
@@ -34,8 +36,70 @@ fn new_three() {
     assert_eq!(
         cmd,
         SubCommand::New(New {
-            desc: vec!["a".to_string(), "b".to_string(), "c".to_string()]
+            desc: vec!["a".to_string(), "b".to_string(), "c".to_string()],
+            blocked_by: Vec::new(),
+            blocking: Vec::new(),
         })
+    );
+}
+
+#[test]
+fn new_blocked_by_long() {
+    let args = ["todo", "new", "b", "--blocked-by", "1"];
+    let options = Options::from_iter_safe(&args).unwrap();
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::New(New {
+            desc: vec!["b".to_string()],
+            blocked_by: vec![Key::ByNumber(1)],
+            blocking: Vec::new(),
+        }),
+    );
+}
+
+#[test]
+fn new_blocked_by_short() {
+    let args = ["todo", "new", "b", "-p", "1"];
+    let options = Options::from_iter_safe(&args).unwrap();
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::New(New {
+            desc: vec!["b".to_string()],
+            blocked_by: vec![Key::ByNumber(1)],
+            blocking: Vec::new(),
+        }),
+    );
+}
+
+#[test]
+fn new_blocking_long() {
+    let args = ["todo", "new", "b", "--blocking", "1"];
+    let options = Options::from_iter_safe(&args).unwrap();
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::New(New {
+            desc: vec!["b".to_string()],
+            blocked_by: Vec::new(),
+            blocking: vec![Key::ByNumber(1)],
+        }),
+    );
+}
+
+#[test]
+fn new_blocking_short() {
+    let args = ["todo", "new", "c", "-b", "1", "2"];
+    let options = Options::from_iter_safe(&args).unwrap();
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::New(New {
+            desc: vec!["c".to_string()],
+            blocked_by: Vec::new(),
+            blocking: vec![Key::ByNumber(1), Key::ByNumber(2)],
+        }),
     );
 }
 

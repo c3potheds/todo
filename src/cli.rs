@@ -17,6 +17,20 @@ impl FromStr for Key {
 #[derive(Debug, PartialEq, StructOpt)]
 pub struct New {
     pub desc: Vec<String>,
+    #[structopt(
+        long,
+        short = "p",
+        value_name = "keys",
+        help = "Block new tasks on these tasks."
+    )]
+    pub blocked_by: Vec<Key>,
+    #[structopt(
+        long,
+        short = "b",
+        value_name = "keys",
+        help = "Block these tasks on new tasks."
+    )]
+    pub blocking: Vec<Key>,
 }
 
 #[derive(Debug, PartialEq, StructOpt)]
@@ -61,6 +75,6 @@ pub enum SubCommand {
 pub struct Options {
     #[structopt(subcommand)]
     pub cmd: Option<SubCommand>,
-    #[structopt(short = "b")]
+    #[structopt(long, short = "b", help = "Show blocked tasks in the status.")]
     pub include_blocked: bool,
 }

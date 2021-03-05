@@ -452,3 +452,147 @@ fn check_same_task_twice_in_one_command() {
         ])
         .end();
 }
+
+#[test]
+fn new_one_blocking_one() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a"]);
+    test(&mut list, &["todo", "new", "b", "--blocking", "1"])
+        .validate()
+        .printed(&[
+            Expect::Desc("b"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::New),
+        ])
+        .printed(&[
+            Expect::Desc("a"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::None),
+        ])
+        .end();
+}
+
+#[test]
+fn new_blocked_by_one() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a"]);
+    test(&mut list, &["todo", "new", "b", "--blocked-by", "1"])
+        .validate()
+        .printed(&[
+            Expect::Desc("a"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
+        ])
+        .printed(&[
+            Expect::Desc("b"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::New),
+        ])
+        .end();
+}
+
+#[test]
+fn new_one_blocking_one_short() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a"]);
+    test(&mut list, &["todo", "new", "b", "-b", "1"])
+        .validate()
+        .printed(&[
+            Expect::Desc("b"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::New),
+        ])
+        .printed(&[
+            Expect::Desc("a"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::None),
+        ])
+        .end();
+}
+
+#[test]
+fn new_blocked_by_one_short() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a"]);
+    test(&mut list, &["todo", "new", "b", "-p", "1"])
+        .validate()
+        .printed(&[
+            Expect::Desc("a"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
+        ])
+        .printed(&[
+            Expect::Desc("b"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::New),
+        ])
+        .end();
+}
+
+#[test]
+fn new_blocking_multiple() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b", "c"]);
+    test(&mut list, &["todo", "new", "d", "-b", "1", "2", "3"])
+        .validate()
+        .printed(&[
+            Expect::Desc("d"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::New),
+        ])
+        .printed(&[
+            Expect::Desc("a"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::None),
+        ])
+        .printed(&[
+            Expect::Desc("b"),
+            Expect::Number(3),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::None),
+        ])
+        .printed(&[
+            Expect::Desc("c"),
+            Expect::Number(4),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::None),
+        ])
+        .end();
+}
+
+#[test]
+fn new_blocking_and_blocked_by() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b"]);
+    test(&mut list, &["todo", "new", "c", "-p", "1", "-b", "2"])
+        .validate()
+        .printed(&[
+            Expect::Desc("a"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
+        ])
+        .printed(&[
+            Expect::Desc("c"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::New),
+        ])
+        .printed(&[
+            Expect::Desc("b"),
+            Expect::Number(3),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::None),
+        ])
+        .end();
+}
