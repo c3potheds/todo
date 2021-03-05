@@ -11,14 +11,32 @@ pub struct PrintingContext {
     pub width: usize,
 }
 
+#[derive(Debug, PartialEq, Copy, Clone)]
+pub enum Action {
+    None,
+    New,
+    Check,
+}
+
 pub struct PrintableTask<'a> {
     pub context: &'a PrintingContext,
     pub desc: &'a str,
     pub number: i32,
     pub status: TaskStatus,
+    pub action: Action,
 }
 
 const ANSI_OFFSET: usize = 10;
+
+impl Display for Action {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match self {
+            Action::None => write!(f, "{}", "   "),
+            Action::New => write!(f, "{}", Color::Green.paint("NEW")),
+            Action::Check => write!(f, "{}", Color::Green.paint("[✓]")),
+        }
+    }
+}
 
 impl<'a> Display for PrintableTask<'a> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
@@ -31,7 +49,8 @@ impl<'a> Display for PrintableTask<'a> {
         indexing.push_str(")");
         write!(
             f,
-            "{:>width$} {}",
+            "{} {:>width$} {}",
+            self.action,
             format!("{}", style.paint(&indexing)),
             self.desc,
             width = self.context.max_index_digits + ANSI_OFFSET,
@@ -57,6 +76,7 @@ struct PrintedTaskInfo {
     desc: String,
     number: i32,
     status: TaskStatus,
+    action: Action,
 }
 
 #[cfg(test)]
@@ -70,6 +90,7 @@ pub enum Expect<'a> {
     Desc(&'a str),
     Number(i32),
     Status(TaskStatus),
+    Action(Action),
 }
 
 #[cfg(test)]
@@ -97,6 +118,14 @@ impl<'a> Expect<'a> {
                     panic!(
                         "Unexpected status: {:?} (Expected {:?})",
                         info.status, status
+                    );
+                }
+            }
+            Expect::Action(action) => {
+                if *action != info.action {
+                    panic!(
+                        "Unexpected action: {:?} (Expected {:?})",
+                        info.action, action
                     );
                 }
             }
@@ -147,6 +176,7 @@ impl TodoPrinter for FakePrinter {
             desc: task.desc.to_string(),
             number: task.number,
             status: task.status,
+            action: task.action,
         });
     }
 }

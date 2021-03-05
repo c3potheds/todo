@@ -2,6 +2,7 @@ use app::*;
 use cli::Options;
 use model::TaskStatus;
 use model::TodoList;
+use printing::Action;
 use printing::Expect;
 use printing::FakePrinter;
 use printing::PrintingContext;
@@ -33,7 +34,12 @@ fn new_one_task() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a"])
         .validate()
-        .printed(&[Expect::Desc("a"), Expect::Number(1)]);
+        .printed(&[
+            Expect::Desc("a"),
+            Expect::Number(1),
+            Expect::Action(Action::New),
+        ])
+        .end();
 }
 
 #[test]
@@ -45,16 +51,19 @@ fn new_multiple_tasks() {
             Expect::Desc("a"),
             Expect::Number(1),
             Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::New),
         ])
         .printed(&[
             Expect::Desc("b"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::New),
         ])
         .printed(&[
             Expect::Desc("c"),
             Expect::Number(3),
             Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::New),
         ])
         .end();
 }
@@ -75,16 +84,41 @@ fn status_after_added_tasks() {
             Expect::Desc("a"),
             Expect::Number(1),
             Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
         ])
         .printed(&[
             Expect::Desc("b"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
         ])
         .printed(&[
             Expect::Desc("c"),
             Expect::Number(3),
             Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
+        ])
+        .end();
+}
+
+#[test]
+fn status_does_not_include_blocked_tasks() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b", "c"]);
+    test(&mut list, &["todo", "block", "2", "--on", "1"]);
+    test(&mut list, &["todo"])
+        .validate()
+        .printed(&[
+            Expect::Desc("a"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
+        ])
+        .printed(&[
+            Expect::Desc("c"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
         ])
         .end();
 }
@@ -99,6 +133,7 @@ fn check_one_task() {
             Expect::Desc("a"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
+            Expect::Action(Action::Check),
         ])
         .end();
 }
@@ -113,11 +148,13 @@ fn status_after_check_multiple_tasks() {
             Expect::Desc("b"),
             Expect::Number(-1),
             Expect::Status(TaskStatus::Complete),
+            Expect::Action(Action::Check),
         ])
         .printed(&[
             Expect::Desc("c"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
+            Expect::Action(Action::Check),
         ])
         .end();
     test(&mut list, &["todo"])
@@ -126,6 +163,7 @@ fn status_after_check_multiple_tasks() {
             Expect::Desc("a"),
             Expect::Number(1),
             Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
         ])
         .end();
 }
@@ -147,6 +185,7 @@ fn log_after_single_task_completed() {
             Expect::Desc("b"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
+            Expect::Action(Action::None),
         ])
         .end();
 }
@@ -162,11 +201,13 @@ fn log_after_multiple_tasks_completed() {
             Expect::Desc("c"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
+            Expect::Action(Action::None),
         ])
         .printed(&[
             Expect::Desc("a"),
             Expect::Number(-1),
             Expect::Status(TaskStatus::Complete),
+            Expect::Action(Action::None),
         ])
         .end();
 }
@@ -197,7 +238,11 @@ fn restore_task_with_negative_number() {
     test(&mut list, &["todo", "check", "a", "b"]);
     test(&mut list, &["todo", "restore", "-1"])
         .validate()
-        .printed(&[Expect::Desc("b"), Expect::Number(2)])
+        .printed(&[
+            Expect::Desc("b"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Incomplete),
+        ])
         .end();
 }
 
@@ -208,7 +253,11 @@ fn restore_same_task_with_multiple_keys() {
     test(&mut list, &["todo", "check", "1"]);
     test(&mut list, &["todo", "restore", "0", "0"])
         .validate()
-        .printed(&[Expect::Desc("a"), Expect::Number(2)])
+        .printed(&[
+            Expect::Desc("a"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Incomplete),
+        ])
         .end();
 }
 
@@ -344,6 +393,7 @@ fn check_newly_unblocked_task_with_chained_dependencies() {
             Expect::Desc("a"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
+            Expect::Action(Action::Check),
         ])
         .end();
     test(&mut list, &["todo", "check", "1"])
@@ -352,6 +402,7 @@ fn check_newly_unblocked_task_with_chained_dependencies() {
             Expect::Desc("b"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
+            Expect::Action(Action::Check),
         ])
         .end();
     test(&mut list, &["todo", "check", "1"])
@@ -360,6 +411,7 @@ fn check_newly_unblocked_task_with_chained_dependencies() {
             Expect::Desc("c"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
+            Expect::Action(Action::Check),
         ])
         .end();
 }
@@ -374,6 +426,7 @@ fn check_same_task_twice_in_one_command() {
             Expect::Desc("a"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
+            Expect::Action(Action::Check),
         ])
         .end();
 }

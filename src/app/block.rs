@@ -3,6 +3,7 @@ use app::util::lookup_tasks;
 use cli::Block;
 use itertools::Itertools;
 use model::TodoList;
+use printing::Action;
 use printing::PrintingContext;
 use printing::TodoPrinter;
 
@@ -23,6 +24,11 @@ pub fn run(
         .collect::<Vec<_>>()
         .into_iter()
         .for_each(|id| {
-            printer.print_task(&format_task(printing_context, model, id));
+            printer.print_task(&format_task(
+                printing_context,
+                model,
+                id,
+                Action::None,
+            ));
         });
 }
