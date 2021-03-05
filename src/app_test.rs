@@ -20,12 +20,8 @@ where
         width: 80,
     };
     let mut printer = FakePrinter::new();
-    todo(
-        list,
-        &printing_context,
-        &mut printer,
-        &Options::from_iter_safe(args).unwrap(),
-    );
+    let options = Options::from_iter_safe(args).expect("Could not parse args");
+    todo(list, &printing_context, &mut printer, &options);
     printer
 }
 
@@ -253,15 +249,15 @@ fn restore_complete_task() {
 }
 
 #[test]
-#[ignore = "Figure out how to parse negative numbers."]
 fn restore_task_with_negative_number() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a", "b", "c"]);
-    test(&mut list, &["todo", "check", "a", "b"]);
+    test(&mut list, &["todo", "check", "1"]);
+    test(&mut list, &["todo", "check", "1"]);
     test(&mut list, &["todo", "restore", "-1"])
         .validate()
         .printed(&[
-            Expect::Desc("b"),
+            Expect::Desc("a"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Incomplete),
         ])

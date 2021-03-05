@@ -1,22 +1,30 @@
 use cli::*;
 use structopt::StructOpt;
 
+fn parse<I>(args: I) -> Options
+where
+    I: IntoIterator,
+    I::Item: Into<std::ffi::OsString> + Clone,
+{
+    Options::from_iter_safe(args).expect("Could not parse args")
+}
+
 #[test]
 fn empty_defaults_to_status() {
-    let options = Options::from_iter_safe(&["todo"]).unwrap();
+    let options = parse(&["todo"]);
     assert_eq!(options.cmd, None);
 }
 
 #[test]
 fn status_include_blocked() {
-    let options = Options::from_iter_safe(&["todo", "-b"]).unwrap();
+    let options = parse(&["todo", "-b"]);
     assert_eq!(options.cmd, None);
     assert!(options.include_blocked);
 }
 
 #[test]
 fn new_one() {
-    let options = Options::from_iter_safe(&["todo", "new", "a"]).unwrap();
+    let options = parse(&["todo", "new", "a"]);
     let cmd = options.cmd.unwrap();
     assert_eq!(
         cmd,
@@ -31,7 +39,7 @@ fn new_one() {
 #[test]
 fn new_three() {
     let args = ["todo", "new", "a", "b", "c"];
-    let options = Options::from_iter_safe(&args).unwrap();
+    let options = parse(&args);
     let cmd = options.cmd.unwrap();
     assert_eq!(
         cmd,
@@ -46,7 +54,7 @@ fn new_three() {
 #[test]
 fn new_blocked_by_long() {
     let args = ["todo", "new", "b", "--blocked-by", "1"];
-    let options = Options::from_iter_safe(&args).unwrap();
+    let options = parse(&args);
     let cmd = options.cmd.unwrap();
     assert_eq!(
         cmd,
@@ -61,7 +69,7 @@ fn new_blocked_by_long() {
 #[test]
 fn new_blocked_by_short() {
     let args = ["todo", "new", "b", "-p", "1"];
-    let options = Options::from_iter_safe(&args).unwrap();
+    let options = parse(&args);
     let cmd = options.cmd.unwrap();
     assert_eq!(
         cmd,
@@ -76,7 +84,7 @@ fn new_blocked_by_short() {
 #[test]
 fn new_blocking_long() {
     let args = ["todo", "new", "b", "--blocking", "1"];
-    let options = Options::from_iter_safe(&args).unwrap();
+    let options = parse(&args);
     let cmd = options.cmd.unwrap();
     assert_eq!(
         cmd,
@@ -91,7 +99,7 @@ fn new_blocking_long() {
 #[test]
 fn new_blocking_short() {
     let args = ["todo", "new", "c", "-b", "1", "2"];
-    let options = Options::from_iter_safe(&args).unwrap();
+    let options = parse(&args);
     let cmd = options.cmd.unwrap();
     assert_eq!(
         cmd,
@@ -106,7 +114,7 @@ fn new_blocking_short() {
 #[test]
 fn check_one() {
     let args = ["todo", "check", "1"];
-    let options = Options::from_iter_safe(&args).unwrap();
+    let options = parse(&args);
     let cmd = options.cmd.unwrap();
     assert_eq!(
         cmd,
@@ -119,7 +127,7 @@ fn check_one() {
 #[test]
 fn check_three() {
     let args = ["todo", "check", "1", "2", "3"];
-    let options = Options::from_iter_safe(&args).unwrap();
+    let options = parse(&args);
     let cmd = options.cmd.unwrap();
     assert_eq!(
         cmd,
@@ -131,14 +139,14 @@ fn check_three() {
 
 #[test]
 fn log() {
-    let options = Options::from_iter_safe(&["todo", "log"]).unwrap();
+    let options = parse(&["todo", "log"]);
     let cmd = options.cmd.unwrap();
     assert_eq!(cmd, SubCommand::Log);
 }
 
 #[test]
 fn restore_one_task() {
-    let options = Options::from_iter_safe(&["todo", "restore", "1"]).unwrap();
+    let options = parse(&["todo", "restore", "1"]);
     let cmd = options.cmd.unwrap();
     assert_eq!(
         cmd,
@@ -149,9 +157,8 @@ fn restore_one_task() {
 }
 
 #[test]
-#[ignore = "Figure out how to parse negative numbers."]
 fn restore_task_with_negative_number() {
-    let options = Options::from_iter_safe(&["todo", "restore", "-1"]).unwrap();
+    let options = parse(&["todo", "restore", "-1"]);
     let cmd = options.cmd.unwrap();
     assert_eq!(
         cmd,
@@ -162,10 +169,8 @@ fn restore_task_with_negative_number() {
 }
 
 #[test]
-#[ignore = "Figure out how to parse negative numbers."]
 fn restore_multiple_tasks() {
-    let options =
-        Options::from_iter_safe(&["todo", "restore", "0", "-1", "-2"]).unwrap();
+    let options = parse(&["todo", "restore", "0", "-1", "-2"]);
     let cmd = options.cmd.unwrap();
     assert_eq!(
         cmd,
@@ -177,8 +182,7 @@ fn restore_multiple_tasks() {
 
 #[test]
 fn block_one_on_one() {
-    let options =
-        Options::from_iter_safe(&["todo", "block", "2", "--on", "1"]).unwrap();
+    let options = parse(&["todo", "block", "2", "--on", "1"]);
     let cmd = options.cmd.unwrap();
     assert_eq!(
         cmd,
@@ -191,9 +195,7 @@ fn block_one_on_one() {
 
 #[test]
 fn block_three_on_one() {
-    let options =
-        Options::from_iter_safe(&["todo", "block", "1", "2", "3", "--on", "4"])
-            .unwrap();
+    let options = parse(&["todo", "block", "1", "2", "3", "--on", "4"]);
     let cmd = options.cmd.unwrap();
     assert_eq!(
         cmd,
@@ -206,10 +208,8 @@ fn block_three_on_one() {
 
 #[test]
 fn block_three_on_three() {
-    let options = Options::from_iter_safe(&[
-        "todo", "block", "1", "2", "3", "--on", "4", "5", "6",
-    ])
-    .unwrap();
+    let options =
+        parse(&["todo", "block", "1", "2", "3", "--on", "4", "5", "6"]);
     let cmd = options.cmd.unwrap();
     assert_eq!(
         cmd,

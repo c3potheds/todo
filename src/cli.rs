@@ -39,8 +39,8 @@ pub struct Check {
 }
 
 #[derive(Debug, PartialEq, StructOpt)]
+#[structopt(setting = structopt::clap::AppSettings::AllowNegativeNumbers)]
 pub struct Restore {
-    #[structopt(set = structopt::clap::ArgSettings::AllowLeadingHyphen)]
     pub keys: Vec<Key>,
 }
 
