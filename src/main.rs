@@ -1,5 +1,6 @@
 extern crate app_dirs;
 extern crate structopt;
+extern crate term_size;
 extern crate todo;
 
 use app_dirs::AppDataType;
@@ -68,10 +69,12 @@ fn main() -> TodoResult {
     path.push("data.json");
     let mut model = File::open(&path)
         .map_or_else(|_| Ok(TodoList::new()), |file| load(file))?;
+    let (term_width, _term_height) =
+        term_size::dimensions_stdout().unwrap_or((80, 20));
     let printing_context = PrintingContext {
         // TODO: Get the number of tasks from the list.
         max_index_digits: 3,
-        width: 80,
+        width: term_width,
     };
     todo(
         &mut model,
