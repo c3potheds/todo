@@ -21,8 +21,11 @@ pub fn format_task<'a>(
     }
 }
 
-pub fn lookup_tasks(model: &TodoList, keys: &Vec<Key>) -> Vec<TaskId> {
-    keys.iter()
+pub fn lookup_tasks<'a>(
+    model: &'a TodoList,
+    keys: impl IntoIterator<Item = &'a Key>,
+) -> Vec<TaskId> {
+    keys.into_iter()
         .flat_map(|&Key::ByNumber(n)| model.lookup_by_number(n))
         .collect::<Vec<_>>()
 }
