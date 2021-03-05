@@ -575,3 +575,87 @@ fn block_complete_task_on_later_complete_task() {
     assert_eq!(complete_tasks.next(), Some(b));
     assert_eq!(complete_tasks.next(), None);
 }
+
+#[test]
+fn unlbock_task_from_self_is_error() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    list.unblock(a)
+        .from(a)
+        .expect_err("Unblocking a task from itself is nonsensical");
+}
+
+#[test]
+fn unblock_task_from_task_that_does_not_block_it() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    list.unblock(b)
+        .from(a)
+        .expect_err("Shouldn't be able to unblock b from a");
+}
+
+#[test]
+fn unblock_task_from_blocking_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    list.block(b).on(a).expect("Could not block b on a");
+    list.unblock(b).from(a).expect("Could not unblock b from a");
+}
+
+#[test]
+fn unblock_task_from_indirectly_blocking_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.block(b).on(a).expect("Could not block b on a");
+    list.block(c).on(b).expect("Could not block c on b");
+    list.unblock(c)
+        .from(a)
+        .expect_err("Shouldn't be able to unblock c from a");
+}
+
+#[test]
+fn newly_unblocked_task_has_incomplete_status() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    list.block(b).on(a).expect("Could not block b on a");
+    list.unblock(b).from(a).expect("Could not unblock b from a");
+    assert_eq!(list.get_status(b), Some(TaskStatus::Incomplete));
+}
+
+#[test]
+fn unblocked_task_is_still_blocked_if_it_has_remaining_dependencies() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.block(c).on(a).expect("Could not block c on a");
+    list.block(c).on(b).expect("Could not block c on b");
+    list.unblock(c).from(a).expect("Could not unblock c from a");
+    assert_eq!(list.get_status(c), Some(TaskStatus::Blocked));
+    assert_eq!(list.get_number(c), Some(3));
+}
+
+#[test]
+fn partially_unblocked_task_moves_to_lowest_possible_layer() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    let d = list.add(Task::new("d"));
+    list.block(b).on(a).expect("Could not block b on a");
+    list.block(c).on(a).expect("Could not block c on a");
+    list.block(c).on(b).expect("Could not block c on b");
+    list.block(d).on(b).expect("Could not block d on b");
+    list.unblock(c).from(b).expect("Could not unblock c from b");
+    let mut incomplete_tasks = list.incomplete_tasks();
+    assert_eq!(incomplete_tasks.next(), Some(a));
+    assert_eq!(incomplete_tasks.next(), Some(b));
+    assert_eq!(incomplete_tasks.next(), Some(c));
+    assert_eq!(incomplete_tasks.next(), Some(d));
+    assert_eq!(incomplete_tasks.next(), None);
+}

@@ -271,6 +271,40 @@ impl<'a> Block<'a> {
     }
 }
 
+pub struct Unblock<'a> {
+    list: &'a mut TodoList,
+    blocked: TaskId,
+}
+
+impl TodoList {
+    pub fn unblock(&mut self, blocked: TaskId) -> Unblock {
+        Unblock {
+            list: self,
+            blocked: blocked,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum UnblockError {
+    WouldUnblockFromSelf,
+    WasNotDirectlyBlocking,
+}
+
+impl<'a> Unblock<'a> {
+    pub fn from(self, blocking: TaskId) -> Result<(), UnblockError> {
+        if blocking == self.blocked {
+            return Err(UnblockError::WouldUnblockFromSelf);
+        }
+        match self.list.tasks.find_edge(blocking.0, self.blocked.0) {
+            Some(e) => self.list.tasks.remove_edge(e),
+            None => return Err(UnblockError::WasNotDirectlyBlocking),
+        };
+        self.list.update_depth(self.blocked);
+        Ok(())
+    }
+}
+
 impl TodoList {
     pub fn get(&self, id: TaskId) -> Option<&Task> {
         self.tasks.node_weight(id.0)
