@@ -61,4 +61,6 @@ pub enum SubCommand {
 pub struct Options {
     #[structopt(subcommand)]
     pub cmd: Option<SubCommand>,
+    #[structopt(short = "b")]
+    pub include_blocked: bool,
 }

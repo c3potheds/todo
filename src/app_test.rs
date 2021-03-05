@@ -124,6 +124,28 @@ fn status_does_not_include_blocked_tasks() {
 }
 
 #[test]
+fn include_blocked_in_status() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b"]);
+    test(&mut list, &["todo", "block", "1", "--on", "2"]);
+    test(&mut list, &["todo", "-b"])
+        .validate()
+        .printed(&[
+            Expect::Desc("b"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
+        ])
+        .printed(&[
+            Expect::Desc("a"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::None),
+        ])
+        .end();
+}
+
+#[test]
 fn check_one_task() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a", "b", "c"]);

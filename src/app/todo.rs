@@ -30,6 +30,13 @@ pub fn todo(
         Some(SubCommand::Block(cmd)) => {
             block::run(model, printing_context, printer, &cmd)
         }
-        None => status::run(model, printing_context, printer),
+        None => status::run(
+            model,
+            printing_context,
+            printer,
+            &status::Status {
+                include_blocked: options.include_blocked,
+            },
+        ),
     }
 }

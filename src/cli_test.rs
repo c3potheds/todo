@@ -8,6 +8,13 @@ fn empty_defaults_to_status() {
 }
 
 #[test]
+fn status_include_blocked() {
+    let options = Options::from_iter_safe(&["todo", "-b"]).unwrap();
+    assert_eq!(options.cmd, None);
+    assert!(options.include_blocked);
+}
+
+#[test]
 fn new_one() {
     let options = Options::from_iter_safe(&["todo", "new", "a"]).unwrap();
     let cmd = options.cmd.unwrap();
