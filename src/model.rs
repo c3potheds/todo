@@ -248,6 +248,7 @@ impl TodoList {
 
 #[derive(Debug)]
 pub enum BlockError {
+    WouldBlockOnSelf,
     WouldCycle(daggy::WouldCycle<()>),
 }
 
@@ -259,6 +260,9 @@ impl From<daggy::WouldCycle<()>> for BlockError {
 
 impl<'a> Block<'a> {
     pub fn on(self, blocking: TaskId) -> Result<(), BlockError> {
+        if blocking == self.blocked {
+            return Err(BlockError::WouldBlockOnSelf);
+        }
         self.list
             .tasks
             .update_edge(blocking.0, self.blocked.0, ())?;

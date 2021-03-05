@@ -202,6 +202,26 @@ fn restore_task_with_negative_number() {
 }
 
 #[test]
+fn restore_same_task_with_multiple_keys() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b"]);
+    test(&mut list, &["todo", "check", "1"]);
+    test(&mut list, &["todo", "restore", "0", "0"])
+        .validate()
+        .printed(&[Expect::Desc("a"), Expect::Number(2)])
+        .end();
+}
+
+#[test]
+fn cannot_block_on_self() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a"]);
+    test(&mut list, &["todo", "block", "1", "--on", "1"])
+        .validate()
+        .end();
+}
+
+#[test]
 fn block_one_on_one() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a", "b"]);
@@ -254,7 +274,7 @@ fn block_three_on_one() {
 }
 
 #[test]
-fn unable_to_check_blocked_task() {
+fn cannot_check_blocked_task() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a", "b"]);
     test(&mut list, &["todo", "block", "1", "--on", "2"]);
@@ -338,6 +358,20 @@ fn check_newly_unblocked_task_with_chained_dependencies() {
         .validate()
         .printed(&[
             Expect::Desc("c"),
+            Expect::Number(0),
+            Expect::Status(TaskStatus::Complete),
+        ])
+        .end();
+}
+
+#[test]
+fn check_same_task_twice_in_one_command() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a"]);
+    test(&mut list, &["todo", "check", "1", "1"])
+        .validate()
+        .printed(&[
+            Expect::Desc("a"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
         ])

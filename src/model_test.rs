@@ -381,6 +381,15 @@ fn cannot_block_blocking_task_on_task_it_blocks() {
 }
 
 #[test]
+fn cannot_block_on_self() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    list.block(a)
+        .on(a)
+        .expect_err("Shouldn't be able to block a task on itself.");
+}
+
+#[test]
 fn incomplete_tasks_includes_blocked_tasks() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
