@@ -8,7 +8,7 @@ use app_dirs::AppInfo;
 use std::fs::File;
 use std::io::BufWriter;
 use structopt::StructOpt;
-use todo::app::todo;
+use todo::app;
 use todo::cli::Options;
 use todo::model::load;
 use todo::model::save;
@@ -76,7 +76,7 @@ fn main() -> TodoResult {
         max_index_digits: 3,
         width: term_width,
     };
-    todo(
+    app::todo(
         &mut model,
         &printing_context,
         &mut SimpleTodoPrinter {},
