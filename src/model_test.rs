@@ -659,3 +659,35 @@ fn partially_unblocked_task_moves_to_lowest_possible_layer() {
     assert_eq!(incomplete_tasks.next(), Some(d));
     assert_eq!(incomplete_tasks.next(), None);
 }
+
+#[test]
+fn all_tasks_when_all_are_incomplete() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    itertools::assert_equal(list.all_tasks(), vec![a, b, c]);
+}
+
+#[test]
+fn all_tasks_when_all_are_complete() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.check(a).expect("Could not check a");
+    list.check(b).expect("Could not check b");
+    list.check(c).expect("Could not check c");
+    itertools::assert_equal(list.all_tasks(), vec![a, b, c]);
+}
+
+#[test]
+fn all_tasks_when_some_are_complete_and_some_are_blocked() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.check(a).expect("Could not check a");
+    list.block(c).on(b).expect("Could not block c on b");
+    itertools::assert_equal(list.all_tasks(), vec![a, b, c]);
+}

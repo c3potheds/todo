@@ -350,6 +350,10 @@ impl TodoList {
     pub fn complete_tasks(&self) -> impl Iterator<Item = TaskId> + '_ {
         self.complete.iter().copied().rev()
     }
+
+    pub fn all_tasks(&self) -> impl Iterator<Item = TaskId> + '_ {
+        self.complete.iter().copied().chain(self.incomplete_tasks())
+    }
 }
 
 #[derive(Debug)]
