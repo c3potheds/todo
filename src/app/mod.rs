@@ -9,3 +9,6 @@ mod unblock;
 mod util;
 
 pub use self::todo::todo;
+
+#[cfg(test)]
+mod util_test;
