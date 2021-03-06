@@ -15,6 +15,7 @@ impl FromStr for Key {
 }
 
 #[derive(Debug, PartialEq, StructOpt)]
+#[structopt(setting = structopt::clap::AppSettings::AllowNegativeNumbers)]
 pub struct New {
     pub desc: Vec<String>,
     #[structopt(
@@ -47,6 +48,7 @@ pub struct Restore {
 }
 
 #[derive(Debug, PartialEq, StructOpt)]
+#[structopt(setting = structopt::clap::AppSettings::AllowNegativeNumbers)]
 pub struct Block {
     pub keys: Vec<Key>,
     #[structopt(long)]
@@ -54,6 +56,7 @@ pub struct Block {
 }
 
 #[derive(Debug, PartialEq, StructOpt)]
+#[structopt(setting = structopt::clap::AppSettings::AllowNegativeNumbers)]
 pub struct Unblock {
     pub keys: Vec<Key>,
     #[structopt(long)]
