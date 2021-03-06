@@ -157,6 +157,15 @@ fn check_one_task() {
 }
 
 #[test]
+fn check_task_with_incomplete_dependencies() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b"]);
+    test(&mut list, &["todo", "block", "2", "--on", "1"]);
+    // TODO: Print a warning explaining why it can't be checked.
+    test(&mut list, &["todo", "check", "2"]).validate().end();
+}
+
+#[test]
 fn status_after_check_multiple_tasks() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a", "b", "c"]);
@@ -275,6 +284,31 @@ fn restore_same_task_with_multiple_keys() {
             Expect::Desc("a"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Incomplete),
+        ])
+        .end();
+}
+
+#[test]
+#[ignore = "TODO: Show implicitly restored tasks."]
+fn restore_task_with_complete_antidependency() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b"]);
+    test(&mut list, &["todo", "block", "b", "--on", "a"]);
+    test(&mut list, &["todo", "check", "1"]);
+    test(&mut list, &["todo", "check", "1"]);
+    test(&mut list, &["todo", "restore", "-1"])
+        .validate()
+        .printed(&[
+            Expect::Desc("a"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
+        ])
+        .printed(&[
+            Expect::Desc("b"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
         ])
         .end();
 }
