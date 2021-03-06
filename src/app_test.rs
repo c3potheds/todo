@@ -30,7 +30,7 @@ fn new_one_task() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(1),
             Expect::Action(Action::New),
@@ -43,19 +43,19 @@ fn new_multiple_tasks() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a", "b", "c"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(1),
             Expect::Status(TaskStatus::Incomplete),
             Expect::Action(Action::New),
         ])
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("b"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Incomplete),
             Expect::Action(Action::New),
         ])
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("c"),
             Expect::Number(3),
             Expect::Status(TaskStatus::Incomplete),
@@ -76,19 +76,19 @@ fn status_after_added_tasks() {
     test(&mut list, &["todo", "new", "a", "b", "c"]);
     test(&mut list, &["todo"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(1),
             Expect::Status(TaskStatus::Incomplete),
             Expect::Action(Action::None),
         ])
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("b"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Incomplete),
             Expect::Action(Action::None),
         ])
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("c"),
             Expect::Number(3),
             Expect::Status(TaskStatus::Incomplete),
@@ -104,13 +104,13 @@ fn status_does_not_include_blocked_tasks() {
     test(&mut list, &["todo", "block", "2", "--on", "1"]);
     test(&mut list, &["todo"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(1),
             Expect::Status(TaskStatus::Incomplete),
             Expect::Action(Action::None),
         ])
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("c"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Incomplete),
@@ -126,13 +126,13 @@ fn include_blocked_in_status() {
     test(&mut list, &["todo", "block", "1", "--on", "2"]);
     test(&mut list, &["todo", "-b"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("b"),
             Expect::Number(1),
             Expect::Status(TaskStatus::Incomplete),
             Expect::Action(Action::None),
         ])
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Blocked),
@@ -147,7 +147,7 @@ fn check_one_task() {
     test(&mut list, &["todo", "new", "a", "b", "c"]);
     test(&mut list, &["todo", "check", "1"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
@@ -171,13 +171,13 @@ fn status_after_check_multiple_tasks() {
     test(&mut list, &["todo", "new", "a", "b", "c"]);
     test(&mut list, &["todo", "check", "2", "3"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("b"),
             Expect::Number(-1),
             Expect::Status(TaskStatus::Complete),
             Expect::Action(Action::Check),
         ])
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("c"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
@@ -186,7 +186,7 @@ fn status_after_check_multiple_tasks() {
         .end();
     test(&mut list, &["todo"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(1),
             Expect::Status(TaskStatus::Incomplete),
@@ -208,7 +208,7 @@ fn log_after_single_task_completed() {
     test(&mut list, &["todo", "check", "2"]);
     test(&mut list, &["todo", "log"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("b"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
@@ -224,13 +224,13 @@ fn log_after_multiple_tasks_completed() {
     test(&mut list, &["todo", "check", "1", "3"]);
     test(&mut list, &["todo", "log"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("c"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
             Expect::Action(Action::None),
         ])
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(-1),
             Expect::Status(TaskStatus::Complete),
@@ -253,7 +253,7 @@ fn restore_complete_task() {
     test(&mut list, &["todo", "check", "1"]);
     test(&mut list, &["todo", "restore", "0"])
         .validate()
-        .printed(&[Expect::Desc("a"), Expect::Number(1)])
+        .printed_task(&[Expect::Desc("a"), Expect::Number(1)])
         .end();
 }
 
@@ -265,7 +265,7 @@ fn restore_task_with_negative_number() {
     test(&mut list, &["todo", "check", "1"]);
     test(&mut list, &["todo", "restore", "-1"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Incomplete),
@@ -280,7 +280,7 @@ fn restore_same_task_with_multiple_keys() {
     test(&mut list, &["todo", "check", "1"]);
     test(&mut list, &["todo", "restore", "0", "0"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Incomplete),
@@ -298,13 +298,13 @@ fn restore_task_with_complete_antidependency() {
     test(&mut list, &["todo", "check", "1"]);
     test(&mut list, &["todo", "restore", "-1"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(1),
             Expect::Status(TaskStatus::Incomplete),
             Expect::Action(Action::None),
         ])
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("b"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Incomplete),
@@ -328,7 +328,7 @@ fn block_one_on_one() {
     test(&mut list, &["todo", "new", "a", "b"]);
     test(&mut list, &["todo", "block", "1", "--on", "2"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Blocked),
@@ -342,7 +342,7 @@ fn block_one_on_three() {
     test(&mut list, &["todo", "new", "a", "b", "c", "d"]);
     test(&mut list, &["todo", "block", "1", "--on", "2", "3", "4"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(4),
             Expect::Status(TaskStatus::Blocked),
@@ -356,17 +356,17 @@ fn block_three_on_one() {
     test(&mut list, &["todo", "new", "a", "b", "c", "d"]);
     test(&mut list, &["todo", "block", "1", "2", "3", "--on", "4"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Blocked),
         ])
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("b"),
             Expect::Number(3),
             Expect::Status(TaskStatus::Blocked),
         ])
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("c"),
             Expect::Number(4),
             Expect::Status(TaskStatus::Blocked),
@@ -389,7 +389,7 @@ fn check_newly_unblocked_task() {
     test(&mut list, &["todo", "block", "1", "--on", "2"]);
     test(&mut list, &["todo", "check", "1"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("b"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
@@ -397,7 +397,7 @@ fn check_newly_unblocked_task() {
         .end();
     test(&mut list, &["todo", "check", "1"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
@@ -412,12 +412,12 @@ fn check_newly_unblocked_task_with_multiple_dependencies() {
     test(&mut list, &["todo", "block", "1", "--on", "2", "3"]);
     test(&mut list, &["todo", "check", "1", "2"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("b"),
             Expect::Number(-1),
             Expect::Status(TaskStatus::Complete),
         ])
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("c"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
@@ -425,7 +425,7 @@ fn check_newly_unblocked_task_with_multiple_dependencies() {
         .end();
     test(&mut list, &["todo", "check", "1"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
@@ -441,7 +441,7 @@ fn check_newly_unblocked_task_with_chained_dependencies() {
     test(&mut list, &["todo", "block", "2", "--on", "1"]);
     test(&mut list, &["todo", "check", "1"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
@@ -450,7 +450,7 @@ fn check_newly_unblocked_task_with_chained_dependencies() {
         .end();
     test(&mut list, &["todo", "check", "1"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("b"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
@@ -459,7 +459,7 @@ fn check_newly_unblocked_task_with_chained_dependencies() {
         .end();
     test(&mut list, &["todo", "check", "1"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("c"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
@@ -474,7 +474,7 @@ fn check_same_task_twice_in_one_command() {
     test(&mut list, &["todo", "new", "a"]);
     test(&mut list, &["todo", "check", "1", "1"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
@@ -489,13 +489,13 @@ fn new_one_blocking_one() {
     test(&mut list, &["todo", "new", "a"]);
     test(&mut list, &["todo", "new", "b", "--blocking", "1"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("b"),
             Expect::Number(1),
             Expect::Status(TaskStatus::Incomplete),
             Expect::Action(Action::New),
         ])
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Blocked),
@@ -510,13 +510,13 @@ fn new_blocked_by_one() {
     test(&mut list, &["todo", "new", "a"]);
     test(&mut list, &["todo", "new", "b", "--blocked-by", "1"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(1),
             Expect::Status(TaskStatus::Incomplete),
             Expect::Action(Action::None),
         ])
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("b"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Blocked),
@@ -531,13 +531,13 @@ fn new_one_blocking_one_short() {
     test(&mut list, &["todo", "new", "a"]);
     test(&mut list, &["todo", "new", "b", "-b", "1"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("b"),
             Expect::Number(1),
             Expect::Status(TaskStatus::Incomplete),
             Expect::Action(Action::New),
         ])
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Blocked),
@@ -552,13 +552,13 @@ fn new_blocked_by_one_short() {
     test(&mut list, &["todo", "new", "a"]);
     test(&mut list, &["todo", "new", "b", "-p", "1"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(1),
             Expect::Status(TaskStatus::Incomplete),
             Expect::Action(Action::None),
         ])
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("b"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Blocked),
@@ -573,25 +573,25 @@ fn new_blocking_multiple() {
     test(&mut list, &["todo", "new", "a", "b", "c"]);
     test(&mut list, &["todo", "new", "d", "-b", "1", "2", "3"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("d"),
             Expect::Number(1),
             Expect::Status(TaskStatus::Incomplete),
             Expect::Action(Action::New),
         ])
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Blocked),
             Expect::Action(Action::None),
         ])
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("b"),
             Expect::Number(3),
             Expect::Status(TaskStatus::Blocked),
             Expect::Action(Action::None),
         ])
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("c"),
             Expect::Number(4),
             Expect::Status(TaskStatus::Blocked),
@@ -606,19 +606,19 @@ fn new_blocking_and_blocked_by() {
     test(&mut list, &["todo", "new", "a", "b"]);
     test(&mut list, &["todo", "new", "c", "-p", "1", "-b", "2"])
         .validate()
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("a"),
             Expect::Number(1),
             Expect::Status(TaskStatus::Incomplete),
             Expect::Action(Action::None),
         ])
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("c"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Blocked),
             Expect::Action(Action::New),
         ])
-        .printed(&[
+        .printed_task(&[
             Expect::Desc("b"),
             Expect::Number(3),
             Expect::Status(TaskStatus::Blocked),

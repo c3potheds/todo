@@ -110,7 +110,7 @@ fn validate_single_task() {
     });
     printer
         .validate()
-        .printed(&[Expect::Desc("a"), Expect::Number(1)])
+        .printed_task(&[Expect::Desc("a"), Expect::Number(1)])
         .end();
 }
 
@@ -134,8 +134,8 @@ fn validate_multiple_tasks() {
     });
     printer
         .validate()
-        .printed(&[Expect::Desc("a"), Expect::Number(1)])
-        .printed(&[Expect::Desc("b"), Expect::Number(2)])
+        .printed_task(&[Expect::Desc("a"), Expect::Number(1)])
+        .printed_task(&[Expect::Desc("b"), Expect::Number(2)])
         .end();
 }
 
@@ -143,7 +143,7 @@ fn validate_multiple_tasks() {
 #[should_panic(expected = "Missing task")]
 fn fail_validation_on_missing_task() {
     let mut printer = FakePrinter::new();
-    printer.validate().printed(&[Expect::Desc("a")]).end();
+    printer.validate().printed_task(&[Expect::Desc("a")]).end();
 }
 
 #[test]
@@ -158,7 +158,7 @@ fn fail_validation_on_incorrect_description() {
         status: TaskStatus::Incomplete,
         action: Action::None,
     });
-    printer.validate().printed(&[Expect::Desc("b")]).end();
+    printer.validate().printed_task(&[Expect::Desc("b")]).end();
 }
 
 #[test]
@@ -173,7 +173,7 @@ fn fail_validation_on_incorrect_number() {
         status: TaskStatus::Incomplete,
         action: Action::None,
     });
-    printer.validate().printed(&[Expect::Number(2)]).end();
+    printer.validate().printed_task(&[Expect::Number(2)]).end();
 }
 
 #[test]
@@ -205,7 +205,7 @@ fn fail_validation_on_incorrect_status() {
     });
     printer
         .validate()
-        .printed(&[Expect::Status(TaskStatus::Complete)])
+        .printed_task(&[Expect::Status(TaskStatus::Complete)])
         .end();
 }
 
@@ -223,6 +223,6 @@ fn fail_validation_on_incorrect_action() {
     });
     printer
         .validate()
-        .printed(&[Expect::Action(Action::None)])
+        .printed_task(&[Expect::Action(Action::None)])
         .end();
 }

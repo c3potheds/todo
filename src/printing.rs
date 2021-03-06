@@ -140,7 +140,7 @@ pub struct Validation<'a> {
 
 #[cfg(test)]
 impl<'a> Validation<'a> {
-    pub fn printed(self, es: &[Expect<'a>]) -> Validation<'a> {
+    pub fn printed_task(self, es: &[Expect<'a>]) -> Validation<'a> {
         if self.record.len() == 0 {
             panic!("Missing task: {:#?}", es);
         }
