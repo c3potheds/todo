@@ -52,6 +52,13 @@ pub struct Block {
 }
 
 #[derive(Debug, PartialEq, StructOpt)]
+pub struct Unblock {
+    pub keys: Vec<Key>,
+    #[structopt(long)]
+    pub from: Vec<Key>,
+}
+
+#[derive(Debug, PartialEq, StructOpt)]
 pub enum SubCommand {
     /// Marks tasks as complete.
     Check(Check),
@@ -63,6 +70,8 @@ pub enum SubCommand {
     Restore(Restore),
     /// Block tasks on other tasks.
     Block(Block),
+    /// Unblock tasks from other tasks.
+    Unblock(Unblock),
 }
 
 #[derive(Debug, StructOpt)]

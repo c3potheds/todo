@@ -4,6 +4,7 @@ use app::log;
 use app::new;
 use app::restore;
 use app::status;
+use app::unblock;
 use cli::Options;
 use cli::SubCommand;
 use model::TodoList;
@@ -29,6 +30,9 @@ pub fn todo(
         }
         Some(SubCommand::Block(cmd)) => {
             block::run(model, printing_context, printer, &cmd)
+        }
+        Some(SubCommand::Unblock(cmd)) => {
+            unblock::run(model, printing_context, printer, &cmd)
         }
         None => status::run(
             model,

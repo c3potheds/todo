@@ -5,6 +5,7 @@ mod new;
 mod restore;
 mod status;
 pub mod todo;
+mod unblock;
 mod util;
 
 pub use self::todo::todo;

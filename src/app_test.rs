@@ -626,3 +626,52 @@ fn new_blocking_and_blocked_by() {
         ])
         .end();
 }
+
+#[test]
+fn unblock_task_from_direct_dependency() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b"]);
+    test(&mut list, &["todo", "block", "2", "--on", "1"]);
+    test(&mut list, &["todo", "unblock", "2", "--from", "1"])
+        .validate()
+        .printed_task(&[
+            Expect::Desc("b"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
+        ])
+        .end();
+}
+
+#[test]
+fn status_after_unblocking_task() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b"]);
+    test(&mut list, &["todo", "block", "2", "--on", "1"]);
+    test(&mut list, &["todo", "unblock", "2", "--from", "1"]);
+    test(&mut list, &["todo"])
+        .validate()
+        .printed_task(&[
+            Expect::Desc("a"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
+        ])
+        .printed_task(&[
+            Expect::Desc("b"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
+        ])
+        .end();
+}
+#[test]
+fn unblock_task_from_indirect_dependency() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b", "c"]);
+    test(&mut list, &["todo", "block", "3", "--on", "2"]);
+    test(&mut list, &["todo", "block", "2", "--on", "1"]);
+    test(&mut list, &["todo", "unblock", "3", "--from", "1"])
+        .validate()
+        .end();
+}

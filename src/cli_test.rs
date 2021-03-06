@@ -219,3 +219,43 @@ fn block_three_on_three() {
         })
     );
 }
+
+#[test]
+fn unblock_one_from_one() {
+    let options = parse(&["todo", "unblock", "2", "--from", "1"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Unblock(Unblock {
+            keys: vec![Key::ByNumber(2)],
+            from: vec![Key::ByNumber(1)],
+        })
+    );
+}
+
+#[test]
+fn unblock_three_from_one() {
+    let options = parse(&["todo", "unblock", "2", "3", "4", "--from", "0"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Unblock(Unblock {
+            keys: vec![Key::ByNumber(2), Key::ByNumber(3), Key::ByNumber(4)],
+            from: vec![Key::ByNumber(0)],
+        })
+    );
+}
+
+#[test]
+fn unblock_three_from_three() {
+    let options =
+        parse(&["todo", "unblock", "4", "5", "6", "--from", "1", "2", "3"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Unblock(Unblock {
+            keys: vec![Key::ByNumber(4), Key::ByNumber(5), Key::ByNumber(6)],
+            from: vec![Key::ByNumber(1), Key::ByNumber(2), Key::ByNumber(3)],
+        })
+    );
+}
