@@ -98,6 +98,76 @@ fn triple_digit_number_in_max_four_digit_environment() {
 }
 
 #[test]
+fn show_check_mark_on_check_action() {
+    let context = make_printing_context();
+    let fmt = format!(
+        "{}",
+        PrintableTask {
+            context: &context,
+            desc: "done!",
+            number: 0,
+            status: TaskStatus::Complete,
+            action: Action::Check,
+        }
+    );
+    assert_eq!(fmt, "\u{1b}[32m[✓]\u{1b}[0m   \u{1b}[32m0)\u{1b}[0m done!");
+}
+
+#[test]
+fn show_empty_box_on_uncheck_action() {
+    let context = make_printing_context();
+    let fmt = format!(
+        "{}",
+        PrintableTask {
+            context: &context,
+            desc: "oh",
+            number: 1,
+            status: TaskStatus::Incomplete,
+            action: Action::Uncheck,
+        }
+    );
+    assert_eq!(fmt, "\u{1b}[33m[ ]\u{1b}[0m   \u{1b}[33m1)\u{1b}[0m oh");
+}
+
+#[test]
+fn show_lock_icon_on_lock_action() {
+    let context = make_printing_context();
+    let fmt = format!(
+        "{}",
+        PrintableTask {
+            context: &context,
+            desc: "blocked",
+            number: 5,
+            status: TaskStatus::Blocked,
+            action: Action::Lock,
+        }
+    );
+    assert_eq!(
+        fmt,
+        " \u{1b}[31m🔒\u{1b}[0m   \u{1b}[31m5)\u{1b}[0m blocked"
+    );
+}
+
+#[test]
+fn show_unlock_icon_on_unlock_action() {
+    let context = make_printing_context();
+    let fmt = format!(
+        "{}",
+        PrintableTask {
+            context: &context,
+            desc: "unblocked",
+            number: 10,
+            status: TaskStatus::Incomplete,
+            action: Action::Unlock,
+        }
+    );
+    assert_eq!(
+        fmt,
+        " \u{1b}[32m🔓\u{1b}[0m  \u{1b}[33m10)\u{1b}[0m unblocked"
+    );
+}
+
+#[test]
 fn validate_single_task() {
     let mut printer = FakePrinter::new();
     let context = make_printing_context();
