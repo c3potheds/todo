@@ -1,5 +1,6 @@
 use app::util::format_task;
 use app::util::lookup_tasks;
+use app::util::pairwise;
 use cli::New;
 use itertools::Itertools;
 use model::Task;
@@ -36,6 +37,13 @@ pub fn run(
             // TODO: print a warning, but continue in the error case.
             model.block(adep).on(new).expect("Cannot block");
         });
+    if cmd.chain {
+        pairwise(new_tasks.iter().copied()).for_each(|(a, b)| {
+            model.block(b).on(a).expect(
+                "This should never happen because all blocking tasks are new",
+            )
+        });
+    }
     deps.into_iter().for_each(|id| {
         printer.print_task(&format_task(
             printing_context,

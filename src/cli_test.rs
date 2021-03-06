@@ -32,6 +32,7 @@ fn new_one() {
             desc: vec!["a".to_string()],
             blocked_by: Vec::new(),
             blocking: Vec::new(),
+            chain: false,
         })
     );
 }
@@ -47,6 +48,7 @@ fn new_three() {
             desc: vec!["a".to_string(), "b".to_string(), "c".to_string()],
             blocked_by: Vec::new(),
             blocking: Vec::new(),
+            chain: false,
         })
     );
 }
@@ -62,6 +64,7 @@ fn new_blocked_by_long() {
             desc: vec!["b".to_string()],
             blocked_by: vec![Key::ByNumber(1)],
             blocking: Vec::new(),
+            chain: false,
         }),
     );
 }
@@ -77,6 +80,7 @@ fn new_blocked_by_short() {
             desc: vec!["b".to_string()],
             blocked_by: vec![Key::ByNumber(1)],
             blocking: Vec::new(),
+            chain: false,
         }),
     );
 }
@@ -92,6 +96,7 @@ fn new_blocking_long() {
             desc: vec!["b".to_string()],
             blocked_by: Vec::new(),
             blocking: vec![Key::ByNumber(1)],
+            chain: false,
         }),
     );
 }
@@ -107,7 +112,24 @@ fn new_blocking_short() {
             desc: vec!["c".to_string()],
             blocked_by: Vec::new(),
             blocking: vec![Key::ByNumber(1), Key::ByNumber(2)],
+            chain: false,
         }),
+    );
+}
+
+#[test]
+fn new_chain() {
+    let args = ["todo", "new", "a", "b", "c", "--chain"];
+    let options = parse(&args);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::New(New {
+            desc: vec!["a".to_string(), "b".to_string(), "c".to_string()],
+            blocked_by: Vec::new(),
+            blocking: Vec::new(),
+            chain: true,
+        })
     );
 }
 

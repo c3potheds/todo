@@ -31,6 +31,8 @@ pub struct New {
         help = "Block these tasks on new tasks."
     )]
     pub blocking: Vec<Key>,
+    #[structopt(long, help = "Put the new tasks in a blocking sequence.")]
+    pub chain: bool,
 }
 
 #[derive(Debug, PartialEq, StructOpt)]

@@ -675,3 +675,29 @@ fn unblock_task_from_indirect_dependency() {
         .validate()
         .end();
 }
+
+#[test]
+fn new_chain_three() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b", "c", "--chain"])
+        .validate()
+        .printed_task(&[
+            Expect::Desc("a"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::New),
+        ])
+        .printed_task(&[
+            Expect::Desc("b"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::New),
+        ])
+        .printed_task(&[
+            Expect::Desc("c"),
+            Expect::Number(3),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::New),
+        ])
+        .end();
+}
