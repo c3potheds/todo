@@ -27,7 +27,7 @@ pub fn lookup_tasks<'a>(
 ) -> Vec<TaskId> {
     keys.into_iter()
         .flat_map(|&Key::ByNumber(n)| model.lookup_by_number(n))
-        .collect::<Vec<_>>()
+        .collect()
 }
 
 struct Pairwise<T, I>

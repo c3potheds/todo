@@ -20,6 +20,7 @@ pub enum Action {
     Uncheck,
     Lock,
     Unlock,
+    Select,
 }
 
 pub struct PrintableTask<'a> {
@@ -76,6 +77,7 @@ impl Display for Action {
             Action::Uncheck => write!(f, "{}", Color::Yellow.paint("[ ]")),
             Action::Lock => write!(f, " {}", Color::Red.paint("🔒")),
             Action::Unlock => write!(f, " {}", Color::Green.paint("🔓")),
+            Action::Select => write!(f, " * "),
         }
     }
 }

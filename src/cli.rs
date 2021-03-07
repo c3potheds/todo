@@ -64,6 +64,12 @@ pub struct Unblock {
 }
 
 #[derive(Debug, PartialEq, StructOpt)]
+#[structopt(setting = structopt::clap::AppSettings::AllowNegativeNumbers)]
+pub struct Get {
+    pub keys: Vec<Key>,
+}
+
+#[derive(Debug, PartialEq, StructOpt)]
 pub enum SubCommand {
     /// Marks tasks as complete.
     Check(Check),
@@ -77,6 +83,8 @@ pub enum SubCommand {
     Block(Block),
     /// Unblock tasks from other tasks.
     Unblock(Unblock),
+    /// Shows tasks related to given tasks.
+    Get(Get),
 }
 
 #[derive(Debug, StructOpt)]

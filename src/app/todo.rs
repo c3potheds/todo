@@ -1,5 +1,6 @@
 use app::block;
 use app::check;
+use app::get;
 use app::log;
 use app::new;
 use app::restore;
@@ -33,6 +34,9 @@ pub fn todo(
         }
         Some(SubCommand::Unblock(cmd)) => {
             unblock::run(model, printing_context, printer, &cmd)
+        }
+        Some(SubCommand::Get(cmd)) => {
+            get::run(model, printing_context, printer, &cmd)
         }
         None => status::run(
             model,

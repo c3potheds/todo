@@ -281,3 +281,39 @@ fn unblock_three_from_three() {
         })
     );
 }
+
+#[test]
+fn get_one() {
+    let options = parse(&["todo", "get", "1"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Get(Get {
+            keys: vec![Key::ByNumber(1)],
+        })
+    );
+}
+
+#[test]
+fn get_three() {
+    let options = parse(&["todo", "get", "1", "2", "3"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Get(Get {
+            keys: vec![Key::ByNumber(1), Key::ByNumber(2), Key::ByNumber(3)],
+        })
+    );
+}
+
+#[test]
+fn get_negative() {
+    let options = parse(&["todo", "get", "-1"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Get(Get {
+            keys: vec![Key::ByNumber(-1)],
+        })
+    );
+}
