@@ -1,4 +1,18 @@
 use model::*;
+use std::collections::HashSet;
+
+macro_rules! set {
+    ( $( $x:expr ),* ) => {
+        {
+            #[allow(unused_mut)]
+            let mut s = HashSet::new();
+            $(
+                s.insert($x);
+            )*
+            s
+        }
+    };
+}
 
 #[test]
 fn no_tasks() {
@@ -690,4 +704,82 @@ fn all_tasks_when_some_are_complete_and_some_are_blocked() {
     list.check(a).expect("Could not check a");
     list.block(c).on(b).expect("Could not block c on b");
     itertools::assert_equal(list.all_tasks(), vec![a, b, c]);
+}
+
+#[test]
+fn deps_of_standalone_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    assert_eq!(list.deps(a), set![]);
+}
+
+#[test]
+fn deps_of_blocked_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.block(c).on(a).expect("Could not block c on a");
+    list.block(c).on(b).expect("Could not block c on b");
+    assert_eq!(list.deps(c), set![a, b]);
+}
+
+#[test]
+fn deps_of_task_blocked_by_completed_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    list.block(b).on(a).expect("Could not block b on a");
+    list.check(a).expect("Could not check a");
+    assert_eq!(list.deps(b), set![a]);
+}
+
+#[test]
+fn deps_of_task_with_depth_higher_than_one() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.block(b).on(a).expect("Could not block b on a");
+    list.block(c).on(b).expect("Could not block c on b");
+    assert_eq!(list.deps(c), set![b]);
+}
+
+#[test]
+fn adeps_of_standalone_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    assert_eq!(list.adeps(a), set![]);
+}
+
+#[test]
+fn adeps_of_blocked_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.block(b).on(a).expect("Could not block b on a");
+    list.block(c).on(a).expect("Could not block c on a");
+    assert_eq!(list.adeps(a), set![b, c]);
+}
+
+#[test]
+fn adeps_of_completed_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    list.block(b).on(a).expect("Could not block b on a");
+    list.check(a).expect("Could not check a");
+    assert_eq!(list.adeps(a), set![b]);
+}
+
+#[test]
+fn adeps_of_task_with_depth_of_one() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.block(b).on(a).expect("Could not block b on a");
+    list.block(c).on(b).expect("Could not block c on b");
+    assert_eq!(list.adeps(b), set![c]);
 }

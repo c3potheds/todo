@@ -4,6 +4,7 @@ use daggy::Dag;
 use daggy::NodeIndex;
 use daggy::Walker;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::hash::Hash;
 use std::io::Read;
 use std::io::Write;
@@ -95,8 +96,8 @@ pub struct TodoList {
 }
 
 impl TodoList {
-    fn max_depth_of_dependencies(&self, id: TaskId) -> Option<usize> {
-        self.dependencies(id)
+    fn max_depth_of_deps(&self, id: TaskId) -> Option<usize> {
+        self.deps(id)
             .into_iter()
             .flat_map(|dep| {
                 self.incomplete.depth.get(&dep).into_iter().copied()
@@ -107,7 +108,7 @@ impl TodoList {
     fn update_depth(&mut self, id: TaskId) {
         if match (
             self.incomplete.depth.get(&id).copied(),
-            self.max_depth_of_dependencies(id).map(|depth| depth + 1),
+            self.max_depth_of_deps(id).map(|depth| depth + 1),
         ) {
             // Task is complete, doesn't need to change
             (None, None) => false,
@@ -117,7 +118,7 @@ impl TodoList {
                 self.incomplete.put_in_layer(id, new_depth);
                 true
             }
-            // Task is incomplete and has some incomplete dependencies.
+            // Task is incomplete and has some incomplete deps.
             (Some(old_depth), Some(new_depth)) => {
                 if old_depth == new_depth {
                     // If depth doesn't need to change, no-op.
@@ -129,7 +130,7 @@ impl TodoList {
                     true
                 }
             }
-            // Task is incomplete, with no incomplete dependencies, so should go
+            // Task is incomplete, with no incomplete deps, so should go
             // to depth 0.
             (Some(old_depth), None) => {
                 if old_depth == 0 {
@@ -141,13 +142,13 @@ impl TodoList {
                 }
             }
         } {
-            self.antidependencies(id)
+            self.adeps(id)
                 .into_iter()
                 .for_each(|adep| self.update_depth(adep));
         }
     }
 
-    fn dependencies(&self, id: TaskId) -> Vec<TaskId> {
+    pub fn deps(&self, id: TaskId) -> HashSet<TaskId> {
         self.tasks
             .parents(id.0)
             .iter(&self.tasks)
@@ -155,7 +156,7 @@ impl TodoList {
             .collect()
     }
 
-    fn antidependencies(&self, id: TaskId) -> Vec<TaskId> {
+    pub fn adeps(&self, id: TaskId) -> HashSet<TaskId> {
         self.tasks
             .children(id.0)
             .iter(&self.tasks)
@@ -191,7 +192,7 @@ impl TodoList {
         if self.complete.contains(&id) {
             return Err(CheckError::TaskIsAlreadyComplete);
         }
-        let deps = self.dependencies(id);
+        let deps = self.deps(id);
         let incomplete_deps: Vec<_> = deps
             .iter()
             .copied()
@@ -203,8 +204,8 @@ impl TodoList {
         self.tasks[id.0].completion_time = Some(Utc::now());
         self.incomplete.remove_from_layer(&id, 0);
         self.complete.push(id);
-        // Update antidependencies.
-        self.antidependencies(id)
+        // Update adeps.
+        self.adeps(id)
             .into_iter()
             .for_each(|adep| self.update_depth(adep));
         Ok(())
@@ -222,11 +223,11 @@ impl TodoList {
         if !self.complete.contains(&id) {
             return Err(RestoreError::TaskIsAlreadyIncomplete);
         }
-        let adeps = self.antidependencies(id);
+        let adeps = self.adeps(id);
         self.tasks[id.0].completion_time = None;
         self.incomplete.put_in_layer(id, 0);
         remove_first_occurrence_from_vec(&mut self.complete, &id);
-        // Update antidependencies.
+        // Update adeps.
         adeps.into_iter().for_each(|adep| self.update_depth(adep));
         Ok(())
     }
