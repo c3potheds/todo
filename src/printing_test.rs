@@ -1,3 +1,4 @@
+use cli::Key;
 use model::TaskStatus;
 use printing::*;
 
@@ -60,7 +61,7 @@ fn fmt_blocked_task() {
 }
 
 #[test]
-fn double_digit_number_in_max_four_digit_environment() {
+fn fmt_double_digit_number_in_max_four_digit_environment() {
     let context = PrintingContext {
         max_index_digits: 4,
         width: 80,
@@ -79,7 +80,7 @@ fn double_digit_number_in_max_four_digit_environment() {
 }
 
 #[test]
-fn triple_digit_number_in_max_four_digit_environment() {
+fn fmt_triple_digit_number_in_max_four_digit_environment() {
     let context = PrintingContext {
         max_index_digits: 4,
         width: 80,
@@ -127,6 +128,130 @@ fn show_empty_box_on_uncheck_action() {
         }
     );
     assert_eq!(fmt, "\u{1b}[33m[ ]\u{1b}[0m   \u{1b}[33m1)\u{1b}[0m oh");
+}
+
+#[test]
+fn display_no_match_found_warning() {
+    let fmt = format!(
+        "{}",
+        PrintableWarning::NoMatchFoundForKey {
+            requested_key: Key::ByNumber(10),
+        },
+    );
+    assert_eq!(fmt, "\u{1b}[33mwarning\u{1b}[0m: No match found for \"10\"");
+}
+
+#[test]
+fn display_cannot_check_because_already_complete_warning() {
+    let fmt = format!(
+        "{}",
+        PrintableWarning::CannotCheckBecauseAlreadyComplete {
+            cannot_check: -2
+        },
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "\u{1b}[33mwarning\u{1b}[0m: ",
+            "Task \u{1b}[32m-2)\u{1b}[0m is already complete"
+        )
+    );
+}
+
+#[test]
+fn display_cannot_restore_because_already_incomplete_warning() {
+    let fmt = format!(
+        "{}",
+        PrintableWarning::CannotRestoreBecauseAlreadyIncomplete {
+            cannot_restore: 3
+        },
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "\u{1b}[33mwarning\u{1b}[0m: ",
+            "Task \u{1b}[33m3)\u{1b}[0m is already incomplete"
+        )
+    );
+}
+
+#[test]
+fn display_cannot_unblock_because_task_is_not_blocked_warning() {
+    let fmt = format!(
+        "{}",
+        PrintableWarning::CannotUnblockBecauseTaskIsNotBlocked {
+            cannot_unblock: 2,
+            requested_unblock_from: 1,
+        },
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "\u{1b}[33mwarning\u{1b}[0m: ",
+            "Task \u{1b}[33m2)\u{1b}[0m is not blocked by ",
+            "\u{1b}[33m1)\u{1b}[0m"
+        )
+    );
+}
+
+#[test]
+fn display_cannot_check_because_blocked_error() {
+    let fmt = format!(
+        "{}",
+        PrintableError::CannotCheckBecauseBlocked {
+            cannot_check: 3,
+            blocked_by: vec![1, 2],
+        },
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "\u{1b}[31merror\u{1b}[0m: ",
+            "Cannot complete \u{1b}[31m3)\u{1b}[0m ",
+            "because it is blocked by ",
+            "\u{1b}[33m1)\u{1b}[0m, \u{1b}[33m2)\u{1b}[0m"
+        )
+    );
+}
+
+#[test]
+fn display_cannot_restore_because_antidependency_is_complete_error() {
+    let fmt = format!(
+        "{}",
+        PrintableError::CannotRestoreBecauseAntidependencyIsComplete {
+            cannot_restore: -3,
+            complete_antidependencies: vec![-1, 0],
+        },
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "\u{1b}[31merror\u{1b}[0m: ",
+            "Cannot restore \u{1b}[32m-3)\u{1b}[0m ",
+            "because it blocks complete tasks ",
+            "\u{1b}[32m-1)\u{1b}[0m, \u{1b}[32m0)\u{1b}[0m"
+        )
+    );
+}
+
+#[test]
+fn display_cannot_block_because_would_cause_cycle_error() {
+    let fmt = format!(
+        "{}",
+        PrintableError::CannotBlockBecauseWouldCauseCycle {
+            cannot_block: 5,
+            requested_dependency: 6,
+        },
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "\u{1b}[31merror\u{1b}[0m: ",
+            "Cannot block \u{1b}[33m5)\u{1b}[0m ",
+            "on \u{1b}[31m6)\u{1b}[0m ",
+            "because it would create a cycle"
+        )
+    );
 }
 
 #[test]
