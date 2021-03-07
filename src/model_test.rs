@@ -783,3 +783,71 @@ fn adeps_of_task_with_depth_of_one() {
     list.block(c).on(b).expect("Could not block c on b");
     assert_eq!(list.adeps(b), set![c]);
 }
+
+#[test]
+fn transitive_deps_of_standalone_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    assert_eq!(list.transitive_deps(a), set![]);
+}
+
+#[test]
+fn transitive_deps_of_blocked_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    let d = list.add(Task::new("d"));
+    list.block(b).on(a).expect("Could not block b on a");
+    list.block(c).on(a).expect("Could not block c on a");
+    list.block(d).on(b).expect("Could not block d on b");
+    list.block(d).on(c).expect("Could not block d on c");
+    assert_eq!(list.transitive_deps(d), set![a, b, c]);
+}
+
+#[test]
+fn transitive_deps_includes_complete_tasks() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.block(b).on(a).expect("Could not block b on a");
+    list.block(c).on(b).expect("Could not block c on b");
+    list.check(a).expect("Could not check a");
+    list.check(b).expect("Could not check b");
+    assert_eq!(list.transitive_deps(c), set![a, b]);
+}
+
+#[test]
+fn transitive_adeps_of_standalone_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    assert_eq!(list.transitive_adeps(a), set![]);
+}
+
+#[test]
+fn transitive_adeps_of_blocking_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    let d = list.add(Task::new("d"));
+    list.block(b).on(a).expect("Could not block b on a");
+    list.block(c).on(a).expect("Could not block c on a");
+    list.block(d).on(b).expect("Could not block d on b");
+    list.block(d).on(c).expect("Could not block d on c");
+    assert_eq!(list.transitive_adeps(a), set![b, c, d]);
+}
+
+#[test]
+fn transitive_adeps_includes_complete_tasks() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.block(b).on(a).expect("Could not block b on a");
+    list.block(c).on(b).expect("Could not block c on b");
+    list.check(a).expect("Could not check a");
+    list.check(b).expect("Could not check b");
+    assert_eq!(list.transitive_adeps(a), set![b, c]);
+}

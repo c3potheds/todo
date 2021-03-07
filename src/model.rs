@@ -163,6 +163,26 @@ impl TodoList {
             .map(|(_, n)| TaskId(n))
             .collect()
     }
+
+    pub fn transitive_deps(&self, id: TaskId) -> HashSet<TaskId> {
+        let deps = self.deps(id);
+        &deps
+            | &deps
+                .iter()
+                .copied()
+                .flat_map(|dep| self.transitive_deps(dep))
+                .collect::<HashSet<_>>()
+    }
+
+    pub fn transitive_adeps(&self, id: TaskId) -> HashSet<TaskId> {
+        let adeps = self.adeps(id);
+        &adeps
+            | &adeps
+                .iter()
+                .copied()
+                .flat_map(|adep| self.transitive_adeps(adep))
+                .collect::<HashSet<_>>()
+    }
 }
 
 impl TodoList {
