@@ -326,3 +326,27 @@ fn get_negative() {
         })
     );
 }
+
+#[test]
+fn punt_one() {
+    let options = parse(&["todo", "punt", "1"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Punt(Punt {
+            keys: vec![Key::ByNumber(1)],
+        })
+    );
+}
+
+#[test]
+fn punt_three() {
+    let options = parse(&["todo", "punt", "1", "2", "3"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Punt(Punt {
+            keys: vec![Key::ByNumber(1), Key::ByNumber(2), Key::ByNumber(3)],
+        })
+    );
+}

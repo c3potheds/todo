@@ -38,6 +38,7 @@ pub fn todo(
         Some(SubCommand::Get(cmd)) => {
             get::run(model, printing_context, printer, &cmd)
         }
+        Some(SubCommand::Punt(_cmd)) => unimplemented!(),
         None => status::run(
             model,
             printing_context,
