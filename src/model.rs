@@ -105,47 +105,49 @@ impl TodoList {
             .max()
     }
 
-    fn update_depth(&mut self, id: TaskId) {
-        if match (
+    fn update_depth(&mut self, id: TaskId) -> Option<usize> {
+        match (
             self.incomplete.depth.get(&id).copied(),
             self.max_depth_of_deps(id).map(|depth| depth + 1),
         ) {
             // Task is complete, doesn't need to change
-            (None, None) => false,
+            (None, None) => None,
             // Task is complete, needs to be put into a layer.
             (None, Some(new_depth)) => {
                 remove_first_occurrence_from_vec(&mut self.complete, &id);
                 self.incomplete.put_in_layer(id, new_depth);
-                true
+                Some(new_depth)
             }
             // Task is incomplete and has some incomplete deps.
             (Some(old_depth), Some(new_depth)) => {
                 if old_depth == new_depth {
                     // If depth doesn't need to change, no-op.
-                    false
+                    None
                 } else {
                     // Depth changed and adeps need to update.
                     self.incomplete.remove_from_layer(&id, old_depth);
                     self.incomplete.put_in_layer(id, new_depth);
-                    true
+                    Some(new_depth)
                 }
             }
             // Task is incomplete, with no incomplete deps, so should go
             // to depth 0.
             (Some(old_depth), None) => {
                 if old_depth == 0 {
-                    false
+                    None
                 } else {
                     self.incomplete.remove_from_layer(&id, old_depth);
                     self.incomplete.put_in_layer(id, 0);
-                    true
+                    Some(0)
                 }
             }
-        } {
-            self.adeps(id)
-                .into_iter()
-                .for_each(|adep| self.update_depth(adep));
         }
+        .map(|new_depth| {
+            self.adeps(id).into_iter().for_each(|adep| {
+                self.update_depth(adep);
+            });
+            new_depth
+        })
     }
 
     pub fn deps(&self, id: TaskId) -> HashSet<TaskId> {
@@ -208,7 +210,7 @@ pub enum CheckError {
 }
 
 impl TodoList {
-    pub fn check(&mut self, id: TaskId) -> Result<(), CheckError> {
+    pub fn check(&mut self, id: TaskId) -> Result<HashSet<TaskId>, CheckError> {
         if self.complete.contains(&id) {
             return Err(CheckError::TaskIsAlreadyComplete);
         }
@@ -225,10 +227,11 @@ impl TodoList {
         self.incomplete.remove_from_layer(&id, 0);
         self.complete.push(id);
         // Update adeps.
-        self.adeps(id)
+        Ok(self
+            .adeps(id)
             .into_iter()
-            .for_each(|adep| self.update_depth(adep));
-        Ok(())
+            .filter(|&adep| self.update_depth(adep) == Some(0))
+            .collect())
     }
 }
 
@@ -239,7 +242,10 @@ pub enum RestoreError {
 }
 
 impl TodoList {
-    pub fn restore(&mut self, id: TaskId) -> Result<(), RestoreError> {
+    pub fn restore(
+        &mut self,
+        id: TaskId,
+    ) -> Result<HashSet<TaskId>, RestoreError> {
         if !self.complete.contains(&id) {
             return Err(RestoreError::TaskIsAlreadyIncomplete);
         }
@@ -248,8 +254,10 @@ impl TodoList {
         self.incomplete.put_in_layer(id, 0);
         remove_first_occurrence_from_vec(&mut self.complete, &id);
         // Update adeps.
-        adeps.into_iter().for_each(|adep| self.update_depth(adep));
-        Ok(())
+        Ok(adeps
+            .into_iter()
+            .filter(|&adep| self.update_depth(adep) == Some(0))
+            .collect())
     }
 }
 

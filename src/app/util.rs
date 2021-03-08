@@ -1,4 +1,5 @@
 use cli::Key;
+use itertools::Itertools;
 use model::TaskId;
 use model::TodoList;
 use printing::Action;
@@ -27,6 +28,7 @@ pub fn lookup_tasks<'a>(
 ) -> Vec<TaskId> {
     keys.into_iter()
         .flat_map(|&Key::ByNumber(n)| model.lookup_by_number(n))
+        .unique()
         .collect()
 }
 

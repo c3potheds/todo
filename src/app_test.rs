@@ -201,6 +201,7 @@ fn check_one_task() {
 }
 
 #[test]
+#[ignore = "Need to be able to record errors."]
 fn check_task_with_incomplete_dependencies() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a", "b"]);
@@ -502,6 +503,7 @@ fn block_multiple_on_following_task() {
 }
 
 #[test]
+#[ignore = "Need to be able to record printed errors."]
 fn cannot_check_blocked_task() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a", "b"]);
@@ -520,6 +522,13 @@ fn check_newly_unblocked_task() {
             Expect::Desc("b"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
+            Expect::Action(Action::Check),
+        ])
+        .printed_task(&[
+            Expect::Desc("a"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::Unlock),
         ])
         .end();
     test(&mut list, &["todo", "check", "1"])
@@ -543,11 +552,19 @@ fn check_newly_unblocked_task_with_multiple_dependencies() {
             Expect::Desc("b"),
             Expect::Number(-1),
             Expect::Status(TaskStatus::Complete),
+            Expect::Action(Action::Check),
         ])
         .printed_task(&[
             Expect::Desc("c"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
+            Expect::Action(Action::Check),
+        ])
+        .printed_task(&[
+            Expect::Desc("a"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::Unlock),
         ])
         .end();
     test(&mut list, &["todo", "check", "1"])
@@ -574,6 +591,12 @@ fn check_newly_unblocked_task_with_chained_dependencies() {
             Expect::Status(TaskStatus::Complete),
             Expect::Action(Action::Check),
         ])
+        .printed_task(&[
+            Expect::Desc("b"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::Unlock),
+        ])
         .end();
     test(&mut list, &["todo", "check", "1"])
         .validate()
@@ -582,6 +605,12 @@ fn check_newly_unblocked_task_with_chained_dependencies() {
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
             Expect::Action(Action::Check),
+        ])
+        .printed_task(&[
+            Expect::Desc("c"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::Unlock),
         ])
         .end();
     test(&mut list, &["todo", "check", "1"])
@@ -592,6 +621,30 @@ fn check_newly_unblocked_task_with_chained_dependencies() {
             Expect::Status(TaskStatus::Complete),
             Expect::Action(Action::Check),
         ])
+        .end();
+}
+
+#[test]
+fn check_does_not_show_adeps_that_are_not_unlocked() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a"]);
+    test(&mut list, &["todo", "new", "b", "c", "-p", "1", "--chain"]);
+    test(&mut list, &["todo", "check", "1"])
+        .validate()
+        .printed_task(&[
+            Expect::Desc("a"),
+            Expect::Number(0),
+            Expect::Status(TaskStatus::Complete),
+            Expect::Action(Action::Check),
+        ])
+        .printed_task(&[
+            Expect::Desc("b"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::Unlock),
+        ])
+        // Do not print c, even though it's a direct adep, because it has not
+        // been unlocked.
         .end();
 }
 
