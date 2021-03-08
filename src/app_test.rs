@@ -789,10 +789,16 @@ fn unblock_task_from_direct_dependency() {
     test(&mut list, &["todo", "unblock", "2", "--from", "1"])
         .validate()
         .printed_task(&[
+            Expect::Desc("a"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
+        ])
+        .printed_task(&[
             Expect::Desc("b"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
+            Expect::Action(Action::Unlock),
         ])
         .end();
 }
@@ -820,6 +826,7 @@ fn status_after_unblocking_task() {
         .end();
 }
 #[test]
+#[ignore = "Need to be able to record warnings."]
 fn unblock_task_from_indirect_dependency() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a", "b", "c"]);
@@ -827,6 +834,28 @@ fn unblock_task_from_indirect_dependency() {
     test(&mut list, &["todo", "block", "2", "--on", "1"]);
     test(&mut list, &["todo", "unblock", "3", "--from", "1"])
         .validate()
+        .end();
+}
+
+#[test]
+fn unblock_complete_task() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b", "--chain"]);
+    test(&mut list, &["todo", "check", "1", "2"]);
+    test(&mut list, &["todo", "unblock", "0", "--from", "-1"])
+        .validate()
+        .printed_task(&[
+            Expect::Desc("a"),
+            Expect::Number(-1),
+            Expect::Status(TaskStatus::Complete),
+            Expect::Action(Action::None),
+        ])
+        .printed_task(&[
+            Expect::Desc("b"),
+            Expect::Number(0),
+            Expect::Status(TaskStatus::Complete),
+            Expect::Action(Action::Unlock),
+        ])
         .end();
 }
 
