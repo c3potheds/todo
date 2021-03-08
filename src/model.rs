@@ -326,6 +326,24 @@ impl<'a> Unblock<'a> {
     }
 }
 
+#[derive(Debug)]
+pub enum PuntError {
+    TaskIsComplete,
+}
+
+impl TodoList {
+    pub fn punt(&mut self, id: TaskId) -> Result<(), PuntError> {
+        match self.incomplete.depth.get(&id) {
+            Some(&depth) => {
+                self.incomplete.remove_from_layer(&id, depth);
+                self.incomplete.put_in_layer(id, depth);
+                Ok(())
+            }
+            None => Err(PuntError::TaskIsComplete),
+        }
+    }
+}
+
 impl TodoList {
     pub fn get(&self, id: TaskId) -> Option<&Task> {
         self.tasks.node_weight(id.0)

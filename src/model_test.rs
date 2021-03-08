@@ -851,3 +851,42 @@ fn transitive_adeps_includes_complete_tasks() {
     list.check(b).expect("Could not check b");
     assert_eq!(list.transitive_adeps(a), set![b, c]);
 }
+
+#[test]
+fn punt_only_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    list.punt(a).expect("Cannot punt a");
+    assert_eq!(list.get_number(a), Some(1));
+}
+
+#[test]
+fn punt_first_of_three_tasks() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.punt(a).expect("Cannot punt a");
+    itertools::assert_equal(list.incomplete_tasks(), vec![b, c, a]);
+}
+
+#[test]
+fn cannot_punt_complete_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    list.check(a).expect("Cannot check a");
+    list.punt(a)
+        .expect_err("Punting a complete task should be an error");
+}
+
+#[test]
+fn punt_blocked_task_moves_to_end_of_layer() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.block(b).on(a).expect("Cannot block b on a");
+    list.block(c).on(a).expect("Cannot block c on a");
+    list.punt(b).expect("Could not punt b");
+    itertools::assert_equal(list.incomplete_tasks(), vec![a, c, b]);
+}

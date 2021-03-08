@@ -3,6 +3,7 @@ use app::check;
 use app::get;
 use app::log;
 use app::new;
+use app::punt;
 use app::restore;
 use app::status;
 use app::unblock;
@@ -38,7 +39,9 @@ pub fn todo(
         Some(SubCommand::Get(cmd)) => {
             get::run(model, printing_context, printer, &cmd)
         }
-        Some(SubCommand::Punt(_cmd)) => unimplemented!(),
+        Some(SubCommand::Punt(cmd)) => {
+            punt::run(model, printing_context, printer, &cmd)
+        }
         None => status::run(
             model,
             printing_context,

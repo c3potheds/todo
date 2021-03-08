@@ -293,6 +293,22 @@ fn show_unlock_icon_on_unlock_action() {
 }
 
 #[test]
+fn show_punt_icon_on_punt_action() {
+    let context = make_printing_context();
+    let fmt = format!(
+        "{}",
+        PrintableTask {
+            context: &context,
+            desc: "punt this",
+            number: 5,
+            status: TaskStatus::Incomplete,
+            action: Action::Punt,
+        }
+    );
+    assert_eq!(fmt, " ⏎    \u{1b}[33m5)\u{1b}[0m punt this");
+}
+
+#[test]
 fn validate_single_task() {
     let mut printer = FakePrinter::new();
     let context = make_printing_context();

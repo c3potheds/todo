@@ -3,6 +3,7 @@ mod check;
 mod get;
 mod log;
 mod new;
+mod punt;
 mod restore;
 mod status;
 pub mod todo;

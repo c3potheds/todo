@@ -21,6 +21,7 @@ pub enum Action {
     Lock,
     Unlock,
     Select,
+    Punt,
 }
 
 pub struct PrintableTask<'a> {
@@ -45,6 +46,9 @@ pub enum PrintableWarning {
     CannotUnblockBecauseTaskIsNotBlocked {
         cannot_unblock: i32,
         requested_unblock_from: i32,
+    },
+    CannotPuntBecauseComplete {
+        cannot_punt: i32,
     },
 }
 
@@ -78,6 +82,7 @@ impl Display for Action {
             Action::Lock => write!(f, " {}", Color::Red.paint("🔒")),
             Action::Unlock => write!(f, " {}", Color::Green.paint("🔓")),
             Action::Select => write!(f, " * "),
+            Action::Punt => write!(f, " ⏎ "),
         }
     }
 }
@@ -155,6 +160,11 @@ impl Display for PrintableWarning {
                         TaskStatus::Incomplete
                     )
                 ),
+                PrintableWarning::CannotPuntBecauseComplete { cannot_punt } =>
+                    format!(
+                        "Cannot punt complete task {}",
+                        format_number(*cannot_punt, TaskStatus::Complete)
+                    ),
             }
         )
     }
