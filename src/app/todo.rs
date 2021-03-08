@@ -1,5 +1,6 @@
 use app::block;
 use app::check;
+use app::edit;
 use app::get;
 use app::log;
 use app::new;
@@ -41,6 +42,9 @@ pub fn todo(
         }
         Some(SubCommand::Punt(cmd)) => {
             punt::run(model, printing_context, printer, &cmd)
+        }
+        Some(SubCommand::Edit(cmd)) => {
+            edit::run(model, printing_context, printer, &cmd)
         }
         None => status::run(
             model,

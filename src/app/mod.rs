@@ -1,5 +1,6 @@
 mod block;
 mod check;
+mod edit;
 mod get;
 mod log;
 mod new;

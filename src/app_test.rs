@@ -925,3 +925,18 @@ fn punt_blocked_task() {
         ])
         .end();
 }
+
+#[test]
+fn edit_one_task() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a"]);
+    test(&mut list, &["todo", "edit", "1", "--desc", "b"])
+        .validate()
+        .printed_task(&[
+            Expect::Desc("b"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
+        ])
+        .end();
+}

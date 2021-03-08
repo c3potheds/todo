@@ -349,6 +349,10 @@ impl TodoList {
         self.tasks.node_weight(id.0)
     }
 
+    pub fn get_mut(&mut self, id: TaskId) -> Option<&mut Task> {
+        self.tasks.node_weight_mut(id.0)
+    }
+
     pub fn get_number(&self, id: TaskId) -> Option<i32> {
         self.incomplete
             .iter()

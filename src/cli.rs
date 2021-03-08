@@ -76,6 +76,14 @@ pub struct Punt {
 }
 
 #[derive(Debug, PartialEq, StructOpt)]
+#[structopt(setting = structopt::clap::AppSettings::AllowNegativeNumbers)]
+pub struct Edit {
+    pub keys: Vec<Key>,
+    #[structopt(long, help = "The new description.")]
+    pub desc: String,
+}
+
+#[derive(Debug, PartialEq, StructOpt)]
 pub enum SubCommand {
     /// Marks tasks as complete.
     Check(Check),
@@ -93,6 +101,8 @@ pub enum SubCommand {
     Get(Get),
     /// Punts tasks to the end of the list.
     Punt(Punt),
+    /// Edit the description of tasks.
+    Edit(Edit),
 }
 
 #[derive(Debug, StructOpt)]

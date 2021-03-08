@@ -350,3 +350,16 @@ fn punt_three() {
         })
     );
 }
+
+#[test]
+fn edit_with_description() {
+    let options = parse(&["todo", "edit", "10", "--desc", "hello"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Edit(Edit {
+            keys: vec![Key::ByNumber(10)],
+            desc: "hello".to_string(),
+        })
+    );
+}
