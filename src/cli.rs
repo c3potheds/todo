@@ -99,4 +99,10 @@ pub struct Options {
     pub cmd: Option<SubCommand>,
     #[structopt(long, short = "b", help = "Show blocked tasks in the status.")]
     pub include_blocked: bool,
+    #[structopt(
+        long,
+        short = "d",
+        help = "Show complete tasks in the status."
+    )]
+    pub include_done: bool,
 }

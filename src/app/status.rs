@@ -7,6 +7,7 @@ use printing::TodoPrinter;
 
 pub struct Status {
     pub include_blocked: bool,
+    pub include_done: bool,
 }
 
 pub fn run(
@@ -16,10 +17,12 @@ pub fn run(
     cmd: &Status,
 ) {
     model
-        .incomplete_tasks()
-        .take_while(|&id| {
-            cmd.include_blocked
-                || model.get_status(id) == Some(TaskStatus::Incomplete)
+        .all_tasks()
+        .filter(|&id| match model.get_status(id) {
+            Some(TaskStatus::Blocked) => cmd.include_blocked,
+            Some(TaskStatus::Complete) => cmd.include_done,
+            Some(TaskStatus::Incomplete) => true,
+            None => false,
         })
         .for_each(|id| {
             printer.print_task(&format_task(

@@ -20,6 +20,15 @@ fn status_include_blocked() {
     let options = parse(&["todo", "-b"]);
     assert_eq!(options.cmd, None);
     assert!(options.include_blocked);
+    assert!(!options.include_done);
+}
+
+#[test]
+fn status_include_done() {
+    let options = parse(&["todo", "-d"]);
+    assert_eq!(options.cmd, None);
+    assert!(!options.include_blocked);
+    assert!(options.include_done);
 }
 
 #[test]
