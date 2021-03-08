@@ -475,6 +475,33 @@ fn block_on_complete_task() {
 }
 
 #[test]
+fn block_multiple_on_following_task() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b", "c", "d"]);
+    test(&mut list, &["todo", "block", "1", "2", "--on", "3"])
+        .validate()
+        .printed_task(&[
+            Expect::Desc("c"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
+        ])
+        .printed_task(&[
+            Expect::Desc("a"),
+            Expect::Number(3),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::Lock),
+        ])
+        .printed_task(&[
+            Expect::Desc("b"),
+            Expect::Number(4),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::Lock),
+        ])
+        .end();
+}
+
+#[test]
 fn cannot_check_blocked_task() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a", "b"]);
