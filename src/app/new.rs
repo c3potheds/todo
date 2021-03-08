@@ -15,13 +15,13 @@ pub fn run(
     printer: &mut impl TodoPrinter,
     cmd: &New,
 ) {
+    let deps = lookup_tasks(&model, &cmd.blocked_by);
+    let adeps = lookup_tasks(&model, &cmd.blocking);
     let new_tasks: Vec<_> = cmd
         .desc
         .iter()
         .map(|desc| model.add(Task::new(desc)))
         .collect();
-    let deps = lookup_tasks(&model, &cmd.blocked_by);
-    let adeps = lookup_tasks(&model, &cmd.blocking);
     deps.iter()
         .copied()
         .cartesian_product(new_tasks.iter().copied())

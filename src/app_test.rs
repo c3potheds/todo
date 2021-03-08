@@ -650,6 +650,33 @@ fn new_blocking_and_blocked_by() {
 }
 
 #[test]
+fn new_in_between_blocking_pair() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b", "--chain"]);
+    test(&mut list, &["todo", "new", "c", "-p", "1", "-b", "2"])
+        .validate()
+        .printed_task(&[
+            Expect::Desc("a"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
+        ])
+        .printed_task(&[
+            Expect::Desc("c"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::New),
+        ])
+        .printed_task(&[
+            Expect::Desc("b"),
+            Expect::Number(3),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::None),
+        ])
+        .end();
+}
+
+#[test]
 fn unblock_task_from_direct_dependency() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a", "b"]);
