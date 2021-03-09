@@ -1,6 +1,6 @@
 use chrono::DateTime;
 use chrono::Utc;
-use daggy::Dag;
+use daggy::stable_dag::StableDag;
 use daggy::NodeIndex;
 use daggy::Walker;
 use std::collections::HashMap;
@@ -90,7 +90,7 @@ where
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct TodoList {
-    tasks: Dag<Task, ()>,
+    tasks: StableDag<Task, ()>,
     complete: Vec<TaskId>,
     incomplete: Layering<TaskId>,
 }
@@ -190,7 +190,7 @@ impl TodoList {
 impl TodoList {
     pub fn new() -> Self {
         Self {
-            tasks: Dag::new(),
+            tasks: StableDag::new(),
             complete: Vec::new(),
             incomplete: Layering::new(),
         }
