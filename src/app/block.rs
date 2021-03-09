@@ -2,12 +2,32 @@ use app::util::format_task;
 use app::util::lookup_tasks;
 use cli::Block;
 use itertools::Itertools;
+use model::TaskId;
 use model::TodoList;
 use printing::Action;
 use printing::PrintableError;
 use printing::PrintingContext;
 use printing::TodoPrinter;
 use std::collections::HashSet;
+
+fn print_block_error(
+    printer: &mut impl TodoPrinter,
+    model: &TodoList,
+    blocked: TaskId,
+    blocking: TaskId,
+) {
+    model
+        .get_number(blocked)
+        .zip(model.get_number(blocking))
+        .map(|(cannot_block, requested_dependency)| {
+            printer.print_error(
+                &PrintableError::CannotBlockBecauseWouldCauseCycle {
+                    cannot_block: cannot_block,
+                    requested_dependency: requested_dependency,
+                },
+            )
+        });
+}
 
 pub fn run(
     model: &mut TodoList,
@@ -25,17 +45,7 @@ pub fn run(
             match model.block(blocked).on(blocking) {
                 Ok(()) => vec![blocked, blocking].into_iter(),
                 Err(_) => {
-                    model
-                        .get_number(blocked)
-                        .zip(model.get_number(blocking))
-                        .map(|(cannot_block, requested_dependency)| {
-                            printer.print_error(
-                            &PrintableError::CannotBlockBecauseWouldCauseCycle {
-                                cannot_block: cannot_block,
-                                requested_dependency: requested_dependency,
-                            },
-                        )
-                        });
+                    print_block_error(printer, model, blocked, blocking);
                     vec![].into_iter()
                 }
             }
