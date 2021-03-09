@@ -197,6 +197,34 @@ fn include_complete_in_status() {
 }
 
 #[test]
+fn include_all_in_status() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b", "c", "--chain"]);
+    test(&mut list, &["todo", "check", "1"]);
+    test(&mut list, &["todo", "-a"])
+        .validate()
+        .printed_task(&[
+            Expect::Desc("a"),
+            Expect::Number(0),
+            Expect::Status(TaskStatus::Complete),
+            Expect::Action(Action::None),
+        ])
+        .printed_task(&[
+            Expect::Desc("b"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
+        ])
+        .printed_task(&[
+            Expect::Desc("c"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::None),
+        ])
+        .end();
+}
+
+#[test]
 fn check_one_task() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a", "b", "c"]);

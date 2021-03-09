@@ -51,8 +51,8 @@ pub fn todo(
             printing_context,
             printer,
             &status::Status {
-                include_blocked: options.include_blocked,
-                include_done: options.include_done,
+                include_blocked: options.include_blocked || options.include_all,
+                include_done: options.include_done || options.include_all,
             },
         ),
     }

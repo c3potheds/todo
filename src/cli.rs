@@ -123,4 +123,6 @@ pub struct Options {
         help = "Show complete tasks in the status."
     )]
     pub include_done: bool,
+    #[structopt(long, short = "a", help = "Show all tasks in the status.")]
+    pub include_all: bool,
 }

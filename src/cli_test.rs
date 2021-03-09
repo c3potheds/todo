@@ -32,6 +32,13 @@ fn status_include_done() {
 }
 
 #[test]
+fn status_include_all() {
+    let options = parse(&["todo", "-a"]);
+    assert_eq!(options.cmd, None);
+    assert!(options.include_all);
+}
+
+#[test]
 fn new_one() {
     let options = parse(&["todo", "new", "a"]);
     let cmd = options.cmd.unwrap();
