@@ -90,6 +90,7 @@ impl Display for Action {
 fn format_key(key: &Key) -> String {
     match key {
         &Key::ByNumber(n) => format!("\"{}\"", n),
+        &Key::ByName(ref name) => format!("\"{}\"", name),
     }
 }
 

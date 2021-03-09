@@ -27,7 +27,20 @@ pub fn lookup_tasks<'a>(
     keys: impl IntoIterator<Item = &'a Key>,
 ) -> Vec<TaskId> {
     keys.into_iter()
-        .flat_map(|&Key::ByNumber(n)| model.lookup_by_number(n))
+        .flat_map(|key| match key {
+            &Key::ByNumber(n) => model
+                .lookup_by_number(n)
+                .into_iter()
+                .collect::<Vec<_>>()
+                .into_iter(),
+            &Key::ByName(ref name) => model
+                .all_tasks()
+                .filter(|&id| {
+                    model.get(id).filter(|task| &task.desc == name).is_some()
+                })
+                .collect::<Vec<_>>()
+                .into_iter(),
+        })
         .unique()
         .collect()
 }

@@ -134,6 +134,21 @@ fn new_blocking_short() {
 }
 
 #[test]
+fn new_blocking_by_name() {
+    let options = parse(&["todo", "new", "a.b", "-b", "b"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::New(New {
+            desc: vec!["a.b".to_string()],
+            blocked_by: Vec::new(),
+            blocking: vec![Key::ByName("b".to_string())],
+            chain: false,
+        })
+    );
+}
+
+#[test]
 fn new_chain() {
     let args = ["todo", "new", "a", "b", "c", "--chain"];
     let options = parse(&args);
@@ -173,6 +188,18 @@ fn check_three() {
             keys: vec![Key::ByNumber(1), Key::ByNumber(2), Key::ByNumber(3)]
         })
     );
+}
+
+#[test]
+fn check_by_name() {
+    let options = parse(&["todo", "check", "a"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Check(Check {
+            keys: vec![Key::ByName("a".to_string())],
+        })
+    )
 }
 
 #[test]
@@ -219,6 +246,18 @@ fn restore_multiple_tasks() {
 }
 
 #[test]
+fn restore_by_name() {
+    let options = parse(&["todo", "restore", "b"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Restore(Restore {
+            keys: vec![Key::ByName("b".to_string())],
+        })
+    );
+}
+
+#[test]
 fn block_one_on_one() {
     let options = parse(&["todo", "block", "2", "--on", "1"]);
     let cmd = options.cmd.unwrap();
@@ -254,6 +293,19 @@ fn block_three_on_three() {
         SubCommand::Block(Block {
             keys: vec![Key::ByNumber(1), Key::ByNumber(2), Key::ByNumber(3)],
             on: vec![Key::ByNumber(4), Key::ByNumber(5), Key::ByNumber(6)],
+        })
+    );
+}
+
+#[test]
+fn block_by_name() {
+    let options = parse(&["todo", "block", "a", "--on", "b"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Block(Block {
+            keys: vec![Key::ByName("a".to_string())],
+            on: vec![Key::ByName("b".to_string())],
         })
     );
 }
@@ -299,6 +351,19 @@ fn unblock_three_from_three() {
 }
 
 #[test]
+fn unblock_by_name() {
+    let options = parse(&["todo", "unblock", "a", "--from", "b"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Unblock(Unblock {
+            keys: vec![Key::ByName("a".to_string())],
+            from: vec![Key::ByName("b".to_string())],
+        })
+    );
+}
+
+#[test]
 fn get_one() {
     let options = parse(&["todo", "get", "1"]);
     let cmd = options.cmd.unwrap();
@@ -318,6 +383,18 @@ fn get_three() {
         cmd,
         SubCommand::Get(Get {
             keys: vec![Key::ByNumber(1), Key::ByNumber(2), Key::ByNumber(3)],
+        })
+    );
+}
+
+#[test]
+fn get_by_name() {
+    let options = parse(&["todo", "get", "a"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Get(Get {
+            keys: vec![Key::ByName("a".to_string())],
         })
     );
 }
@@ -356,6 +433,18 @@ fn punt_three() {
             keys: vec![Key::ByNumber(1), Key::ByNumber(2), Key::ByNumber(3)],
         })
     );
+}
+
+#[test]
+fn punt_by_name() {
+    let options = parse(&["todo", "punt", "a"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Punt(Punt {
+            keys: vec![Key::ByName("a".to_string())],
+        })
+    )
 }
 
 #[test]

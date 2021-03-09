@@ -98,6 +98,33 @@ fn new_blocking_complete_task() {
 }
 
 #[test]
+fn new_by_name() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b", "c"]);
+    test(&mut list, &["todo", "new", "d", "-p", "c", "-b", "a"])
+        .validate()
+        .printed_task(&[
+            Expect::Desc("c"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
+        ])
+        .printed_task(&[
+            Expect::Desc("d"),
+            Expect::Number(3),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::New),
+        ])
+        .printed_task(&[
+            Expect::Desc("a"),
+            Expect::Number(4),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::None),
+        ])
+        .end();
+}
+
+#[test]
 fn status_while_empty() {
     let mut list = TodoList::new();
     test(&mut list, &["todo"]).validate().end();
@@ -232,6 +259,21 @@ fn check_one_task() {
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
+            Expect::Number(0),
+            Expect::Status(TaskStatus::Complete),
+            Expect::Action(Action::Check),
+        ])
+        .end();
+}
+
+#[test]
+fn check_by_name() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b", "c"]);
+    test(&mut list, &["todo", "check", "b"])
+        .validate()
+        .printed_task(&[
+            Expect::Desc("b"),
             Expect::Number(0),
             Expect::Status(TaskStatus::Complete),
             Expect::Action(Action::Check),
@@ -398,6 +440,22 @@ fn restore_task_with_complete_antidependency() {
 }
 
 #[test]
+fn restore_by_name() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b"]);
+    test(&mut list, &["todo", "check", "a"]);
+    test(&mut list, &["todo", "restore", "a"])
+        .validate()
+        .printed_task(&[
+            Expect::Desc("a"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
+        ])
+        .end();
+}
+
+#[test]
 #[ignore = "Record warning printing"]
 fn cannot_block_on_self() {
     let mut list = TodoList::new();
@@ -423,6 +481,27 @@ fn block_one_on_one() {
             Expect::Desc("a"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Blocked),
+        ])
+        .end();
+}
+
+#[test]
+fn block_by_name() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b"]);
+    test(&mut list, &["todo", "block", "a", "--on", "b"])
+        .validate()
+        .printed_task(&[
+            Expect::Desc("b"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
+        ])
+        .printed_task(&[
+            Expect::Desc("a"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::Lock),
         ])
         .end();
 }
@@ -952,6 +1031,27 @@ fn unblock_complete_task() {
 }
 
 #[test]
+fn unblock_by_name() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b", "--chain"]);
+    test(&mut list, &["todo", "unblock", "b", "--from", "a"])
+        .validate()
+        .printed_task(&[
+            Expect::Desc("a"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
+        ])
+        .printed_task(&[
+            Expect::Desc("b"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::Unlock),
+        ])
+        .end();
+}
+
+#[test]
 fn new_chain_three() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a", "b", "c", "--chain"])
@@ -1122,6 +1222,27 @@ fn get_shows_transitive_deps_and_adeps() {
 }
 
 #[test]
+fn get_by_name_multiple_matches() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "bob", "frank", "bob"]);
+    test(&mut list, &["todo", "get", "bob"])
+        .validate()
+        .printed_task(&[
+            Expect::Desc("bob"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::Select),
+        ])
+        .printed_task(&[
+            Expect::Desc("bob"),
+            Expect::Number(3),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::Select),
+        ])
+        .end();
+}
+
+#[test]
 fn punt_first_task() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a", "b", "c"]);
@@ -1147,6 +1268,21 @@ fn punt_blocked_task() {
             Expect::Desc("b"),
             Expect::Number(3),
             Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::Punt),
+        ])
+        .end();
+}
+
+#[test]
+fn punt_by_name() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b", "c"]);
+    test(&mut list, &["todo", "punt", "a"])
+        .validate()
+        .printed_task(&[
+            Expect::Desc("a"),
+            Expect::Number(3),
+            Expect::Status(TaskStatus::Incomplete),
             Expect::Action(Action::Punt),
         ])
         .end();

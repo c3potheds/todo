@@ -5,12 +5,16 @@ use structopt::StructOpt;
 #[derive(Debug, PartialEq)]
 pub enum Key {
     ByNumber(i32),
+    ByName(String),
 }
 
 impl FromStr for Key {
     type Err = ParseIntError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Key::ByNumber(s.parse::<i32>()?))
+        match s.parse::<i32>() {
+            Ok(n) => Ok(Key::ByNumber(n)),
+            Err(_) => Ok(Key::ByName(s.to_string())),
+        }
     }
 }
 
