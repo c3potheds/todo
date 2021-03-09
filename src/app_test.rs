@@ -87,6 +87,17 @@ fn new_block_on_complete_task() {
 }
 
 #[test]
+#[ignore = "Need to be able to record errors."]
+fn new_blocking_complete_task() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a"]);
+    test(&mut list, &["todo", "check", "1"]);
+    test(&mut list, &["todo", "new", "b", "-p", "0"])
+        .validate()
+        .end();
+}
+
+#[test]
 fn status_while_empty() {
     let mut list = TodoList::new();
     test(&mut list, &["todo"]).validate().end();
