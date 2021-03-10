@@ -22,7 +22,7 @@ pub fn run(
                 printing_context,
                 model,
                 id,
-                Action::None,
+                Action::Uncheck,
             ))
         });
 }

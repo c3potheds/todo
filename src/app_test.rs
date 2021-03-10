@@ -5,6 +5,8 @@ use model::TodoList;
 use printing::Action;
 use printing::Expect;
 use printing::FakePrinter;
+use printing::PrintableError;
+use printing::PrintableWarning;
 use printing::PrintingContext;
 use std::ffi::OsString;
 use structopt::StructOpt;
@@ -87,13 +89,24 @@ fn new_block_on_complete_task() {
 }
 
 #[test]
-#[ignore = "Need to be able to record errors."]
 fn new_blocking_complete_task() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a"]);
     test(&mut list, &["todo", "check", "1"]);
-    test(&mut list, &["todo", "new", "b", "-p", "0"])
+    test(&mut list, &["todo", "new", "b", "-b", "0"])
         .validate()
+        .printed_task(&[
+            Expect::Desc("b"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::New),
+        ])
+        .printed_task(&[
+            Expect::Desc("a"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::None),
+        ])
         .end();
 }
 
@@ -282,13 +295,17 @@ fn check_by_name() {
 }
 
 #[test]
-#[ignore = "Need to be able to record errors."]
 fn check_task_with_incomplete_dependencies() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a", "b"]);
     test(&mut list, &["todo", "block", "2", "--on", "1"]);
-    // TODO: Print a warning explaining why it can't be checked.
-    test(&mut list, &["todo", "check", "2"]).validate().end();
+    test(&mut list, &["todo", "check", "2"])
+        .validate()
+        .printed_error(&PrintableError::CannotCheckBecauseBlocked {
+            cannot_check: 2,
+            blocked_by: vec![1],
+        })
+        .end();
 }
 
 #[test]
@@ -379,7 +396,12 @@ fn restore_complete_task() {
     test(&mut list, &["todo", "check", "1"]);
     test(&mut list, &["todo", "restore", "0"])
         .validate()
-        .printed_task(&[Expect::Desc("a"), Expect::Number(1)])
+        .printed_task(&[
+            Expect::Desc("a"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::Uncheck),
+        ])
         .end();
 }
 
@@ -395,6 +417,7 @@ fn restore_task_with_negative_number() {
             Expect::Desc("a"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::Uncheck),
         ])
         .end();
 }
@@ -410,12 +433,12 @@ fn restore_same_task_with_multiple_keys() {
             Expect::Desc("a"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::Uncheck),
         ])
         .end();
 }
 
 #[test]
-#[ignore = "TODO: Show implicitly restored tasks."]
 fn restore_task_with_complete_antidependency() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a", "b"]);
@@ -428,14 +451,15 @@ fn restore_task_with_complete_antidependency() {
             Expect::Desc("a"),
             Expect::Number(1),
             Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
+            Expect::Action(Action::Uncheck),
         ])
-        .printed_task(&[
-            Expect::Desc("b"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
-        ])
+        // TODO: Print implicitly unblocked tasks.
+        // .printed_task(&[
+        //     Expect::Desc("b"),
+        //     Expect::Number(2),
+        //     Expect::Status(TaskStatus::Incomplete),
+        //     Expect::Action(Action::Uncheck),
+        // ])
         .end();
 }
 
@@ -450,18 +474,21 @@ fn restore_by_name() {
             Expect::Desc("a"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
+            Expect::Action(Action::Uncheck),
         ])
         .end();
 }
 
 #[test]
-#[ignore = "Record warning printing"]
 fn cannot_block_on_self() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a"]);
     test(&mut list, &["todo", "block", "1", "--on", "1"])
         .validate()
+        .printed_error(&PrintableError::CannotBlockBecauseWouldCauseCycle {
+            cannot_block: 1,
+            requested_dependency: 1,
+        })
         .end();
 }
 
@@ -621,12 +648,17 @@ fn block_multiple_on_following_task() {
 }
 
 #[test]
-#[ignore = "Need to be able to record printed errors."]
 fn cannot_check_blocked_task() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a", "b"]);
     test(&mut list, &["todo", "block", "1", "--on", "2"]);
-    test(&mut list, &["todo", "check", "2"]).validate().end();
+    test(&mut list, &["todo", "check", "2"])
+        .validate()
+        .printed_error(&PrintableError::CannotCheckBecauseBlocked {
+            cannot_check: 2,
+            blocked_by: vec![1],
+        })
+        .end();
 }
 
 #[test]
@@ -997,7 +1029,6 @@ fn status_after_unblocking_task() {
         .end();
 }
 #[test]
-#[ignore = "Need to be able to record warnings."]
 fn unblock_task_from_indirect_dependency() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a", "b", "c"]);
@@ -1005,6 +1036,12 @@ fn unblock_task_from_indirect_dependency() {
     test(&mut list, &["todo", "block", "2", "--on", "1"]);
     test(&mut list, &["todo", "unblock", "3", "--from", "1"])
         .validate()
+        .printed_warning(
+            &PrintableWarning::CannotUnblockBecauseTaskIsNotBlocked {
+                cannot_unblock: 3,
+                requested_unblock_from: 1,
+            },
+        )
         .end();
 }
 

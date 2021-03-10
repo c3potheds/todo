@@ -36,11 +36,14 @@ pub fn run(
     cmd: &Check,
 ) {
     let tasks_to_check = lookup_tasks(model, &cmd.keys);
-    let unlocked_tasks = tasks_to_check
+    let tasks_to_print = tasks_to_check
         .iter()
         .copied()
         .flat_map(|id| match model.check(id) {
-            Ok(unlocked) => unlocked.into_iter(),
+            Ok(mut unlocked) => {
+                unlocked.insert(id);
+                unlocked.into_iter()
+            }
             Err(_) => {
                 print_check_error(printer, model, id);
                 HashSet::new().into_iter()
@@ -49,7 +52,7 @@ pub fn run(
         .collect::<HashSet<_>>();
     model
         .all_tasks()
-        .filter(|id| tasks_to_check.contains(id) || unlocked_tasks.contains(id))
+        .filter(|id| tasks_to_print.contains(id))
         .for_each(|id| {
             printer.print_task(&format_task(
                 printing_context,
