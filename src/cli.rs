@@ -2,7 +2,7 @@ use std::num::ParseIntError;
 use std::str::FromStr;
 use structopt::StructOpt;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Key {
     ByNumber(i32),
     ByName(String),

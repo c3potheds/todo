@@ -365,7 +365,27 @@ fn validate_multiple_tasks() {
 }
 
 #[test]
-#[should_panic(expected = "Missing task")]
+fn validate_warning() {
+    let mut printer = FakePrinter::new();
+    let warning = PrintableWarning::NoMatchFoundForKey {
+        requested_key: Key::ByName("a".to_string()),
+    };
+    printer.print_warning(&warning);
+    printer.validate().printed_warning(&warning).end();
+}
+
+#[test]
+fn validate_error() {
+    let mut printer = FakePrinter::new();
+    let error = PrintableError::CannotBlockBecauseWouldCauseCycle {
+        cannot_block: 1,
+        requested_dependency: 1,
+    };
+    printer.print_error(&error);
+    printer.validate().printed_error(&error).end();
+}
+#[test]
+#[should_panic(expected = "Missing item")]
 fn fail_validation_on_missing_task() {
     let mut printer = FakePrinter::new();
     printer.validate().printed_task(&[Expect::Desc("a")]).end();
@@ -450,4 +470,70 @@ fn fail_validation_on_incorrect_action() {
         .validate()
         .printed_task(&[Expect::Action(Action::None)])
         .end();
+}
+
+#[test]
+#[should_panic(expected = "Unexpected warning")]
+fn fail_validation_on_wrong_warning() {
+    let mut printer = FakePrinter::new();
+    let warning1 = PrintableWarning::NoMatchFoundForKey {
+        requested_key: Key::ByNumber(1),
+    };
+    let warning2 = PrintableWarning::NoMatchFoundForKey {
+        requested_key: Key::ByNumber(2),
+    };
+    printer.print_warning(&warning1);
+    printer.validate().printed_warning(&warning2).end();
+}
+
+#[test]
+#[should_panic(expected = "Expected")]
+fn fail_validation_on_task_instead_of_warning() {
+    let mut printer = FakePrinter::new();
+    let warning =
+        PrintableWarning::CannotPuntBecauseComplete { cannot_punt: 0 };
+    let context = make_printing_context();
+    printer.print_task(&PrintableTask {
+        context: &context,
+        desc: "a",
+        number: 1,
+        status: TaskStatus::Incomplete,
+        action: Action::None,
+    });
+    printer.validate().printed_warning(&warning).end();
+}
+
+#[test]
+#[should_panic(expected = "Unexpected error")]
+fn fail_validation_on_wrong_error() {
+    let mut printer = FakePrinter::new();
+    let error1 = PrintableError::CannotCheckBecauseBlocked {
+        cannot_check: 3,
+        blocked_by: vec![2],
+    };
+    let error2 = PrintableError::CannotCheckBecauseBlocked {
+        cannot_check: 2,
+        blocked_by: vec![1],
+    };
+    printer.print_error(&error1);
+    printer.validate().printed_error(&error2).end();
+}
+
+#[test]
+#[should_panic(expected = "Expected")]
+fn fail_validation_on_task_instead_of_error() {
+    let mut printer = FakePrinter::new();
+    let error = PrintableError::CannotCheckBecauseBlocked {
+        cannot_check: 3,
+        blocked_by: vec![2],
+    };
+    let context = make_printing_context();
+    printer.print_task(&PrintableTask {
+        context: &context,
+        desc: "a",
+        number: 1,
+        status: TaskStatus::Incomplete,
+        action: Action::None,
+    });
+    printer.validate().printed_error(&error).end();
 }

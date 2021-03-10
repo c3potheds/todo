@@ -32,7 +32,7 @@ pub struct PrintableTask<'a> {
     pub action: Action,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum PrintableWarning {
     NoMatchFoundForKey {
         requested_key: Key,
@@ -52,7 +52,7 @@ pub enum PrintableWarning {
     },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum PrintableError {
     CannotCheckBecauseBlocked {
         cannot_check: i32,
@@ -241,9 +241,17 @@ struct PrintedTaskInfo {
     action: Action,
 }
 
+#[derive(Debug)]
+#[cfg(test)]
+enum PrintedItem {
+    Task(PrintedTaskInfo),
+    Warning(PrintableWarning),
+    Error(PrintableError),
+}
+
 #[cfg(test)]
 pub struct FakePrinter {
-    record: Vec<PrintedTaskInfo>,
+    record: Vec<PrintedItem>,
 }
 
 #[derive(Debug)]
@@ -297,17 +305,56 @@ impl<'a> Expect<'a> {
 
 #[cfg(test)]
 pub struct Validation<'a> {
-    record: &'a mut Vec<PrintedTaskInfo>,
+    record: &'a mut Vec<PrintedItem>,
 }
 
 #[cfg(test)]
 impl<'a> Validation<'a> {
-    pub fn printed_task(self, es: &[Expect<'a>]) -> Validation<'a> {
+    fn pop(&mut self, expected: &impl std::fmt::Debug) -> PrintedItem {
         if self.record.len() == 0 {
-            panic!("Missing task: {:#?}", es);
+            panic!("Missing item: {:#?}", expected);
         }
-        let info = self.record.drain(0..1).nth(0).unwrap();
-        es.iter().for_each(|e| e.validate(&info));
+        self.record.drain(0..1).nth(0).unwrap()
+    }
+
+    pub fn printed_task(mut self, es: &[Expect<'a>]) -> Validation<'a> {
+        let item = self.pop(&es);
+        match &item {
+            &PrintedItem::Task(ref info) => {
+                es.iter().for_each(|e| e.validate(info))
+            }
+            _ => {
+                panic!("Expected\n{:#?}\n... but got\n{:#?}", es, item);
+            }
+        };
+        self
+    }
+
+    pub fn printed_warning(
+        mut self,
+        expected: &'a PrintableWarning,
+    ) -> Validation<'a> {
+        let item = self.pop(expected);
+        match &item {
+            &PrintedItem::Warning(ref actual) => {
+                assert_eq!(actual, expected, "Unexpected warning")
+            }
+            _ => panic!("Expected\n{:#?}\n... but got\n{:#?}", expected, item),
+        };
+        self
+    }
+
+    pub fn printed_error(
+        mut self,
+        expected: &'a PrintableError,
+    ) -> Validation<'a> {
+        let item = self.pop(expected);
+        match &item {
+            &PrintedItem::Error(ref actual) => {
+                assert_eq!(actual, expected, "Unexpected error")
+            }
+            _ => panic!("Expected\n{:#?}\n... but got\n{:#?}", expected, item),
+        };
         self
     }
 
@@ -334,19 +381,19 @@ impl FakePrinter {
 #[cfg(test)]
 impl TodoPrinter for FakePrinter {
     fn print_task(&mut self, task: &PrintableTask) {
-        self.record.push(PrintedTaskInfo {
+        self.record.push(PrintedItem::Task(PrintedTaskInfo {
             desc: task.desc.to_string(),
             number: task.number,
             status: task.status,
             action: task.action,
-        });
+        }));
     }
 
-    fn print_warning(&mut self, _warning: &PrintableWarning) {
-        unimplemented!()
+    fn print_warning(&mut self, warning: &PrintableWarning) {
+        self.record.push(PrintedItem::Warning(warning.clone()));
     }
 
-    fn print_error(&mut self, _error: &PrintableError) {
-        unimplemented!()
+    fn print_error(&mut self, error: &PrintableError) {
+        self.record.push(PrintedItem::Error(error.clone()));
     }
 }
