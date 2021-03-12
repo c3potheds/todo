@@ -5,6 +5,7 @@ mod get;
 mod log;
 mod new;
 mod punt;
+mod put;
 mod restore;
 mod status;
 pub mod todo;

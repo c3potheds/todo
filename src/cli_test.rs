@@ -459,3 +459,60 @@ fn edit_with_description() {
         })
     );
 }
+
+#[test]
+fn put_one_before() {
+    let options = parse(&["todo", "put", "a", "--before", "b"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Put(Put {
+            keys: vec![Key::ByName("a".to_string())],
+            before: vec![Key::ByName("b".to_string())],
+            after: vec![],
+        })
+    );
+}
+
+#[test]
+fn put_one_after() {
+    let options = parse(&["todo", "put", "a", "--after", "b"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Put(Put {
+            keys: vec![Key::ByName("a".to_string())],
+            before: vec![],
+            after: vec![Key::ByName("b".to_string())],
+        })
+    );
+}
+
+#[test]
+fn put_multiple_before_and_after() {
+    let options = parse(&[
+        "todo", "put", "a", "b", "c", "--before", "d", "e", "f", "--after",
+        "g", "h", "i",
+    ]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Put(Put {
+            keys: vec![
+                Key::ByName("a".to_string()),
+                Key::ByName("b".to_string()),
+                Key::ByName("c".to_string())
+            ],
+            before: vec![
+                Key::ByName("d".to_string()),
+                Key::ByName("e".to_string()),
+                Key::ByName("f".to_string())
+            ],
+            after: vec![
+                Key::ByName("g".to_string()),
+                Key::ByName("h".to_string()),
+                Key::ByName("i".to_string())
+            ],
+        })
+    );
+}

@@ -5,6 +5,7 @@ use app::get;
 use app::log;
 use app::new;
 use app::punt;
+use app::put;
 use app::restore;
 use app::status;
 use app::unblock;
@@ -45,6 +46,9 @@ pub fn todo(
         }
         Some(SubCommand::Edit(cmd)) => {
             edit::run(model, printing_context, printer, &cmd)
+        }
+        Some(SubCommand::Put(cmd)) => {
+            put::run(model, printing_context, printer, &cmd)
         }
         None => status::run(
             model,
