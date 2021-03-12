@@ -118,13 +118,24 @@ fn format_numbers<I: IntoIterator<Item = i32>>(
 
 impl<'a> Display for PrintableTask<'a> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{} {:>width$} {}",
+        let action_and_number = format!(
+            "{} {:>width$} ",
             self.action,
             format_number(self.number, self.status),
-            self.desc,
-            width = self.context.max_index_digits + ANSI_OFFSET,
+            width = self.context.max_index_digits + ANSI_OFFSET
+        );
+        write!(
+            f,
+            "{}",
+            textwrap::fill(
+                self.desc,
+                textwrap::Options::new(self.context.width)
+                    .initial_indent(&action_and_number)
+                    .break_words(false)
+                    .subsequent_indent(
+                        &" ".repeat(self.context.max_index_digits + 6),
+                    ),
+            )
         )
     }
 }

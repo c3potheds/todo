@@ -6,6 +6,7 @@ extern crate chrono;
 extern crate daggy;
 extern crate itertools;
 extern crate structopt;
+extern crate textwrap;
 
 pub mod app;
 pub mod cli;

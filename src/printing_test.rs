@@ -131,6 +131,32 @@ fn show_empty_box_on_uncheck_action() {
 }
 
 #[test]
+fn text_wrapping() {
+    let context = PrintingContext {
+        max_index_digits: 3,
+        width: 24,
+    };
+    let fmt = format!(
+        "{}",
+        PrintableTask {
+            context: &context,
+            desc: "this task has a long description, much longer than 24 chars",
+            number: 1,
+            status: TaskStatus::Incomplete,
+            action: Action::None,
+        }
+    );
+    assert_eq!(
+        fmt,
+        "      \u{1b}[33m1)\u{1b}[0m this task\n         \
+                                     has a long\n         \
+                                     description,\n         \
+                                     much longer\n         \
+                                     than 24 chars"
+    );
+}
+
+#[test]
 fn display_no_match_found_warning() {
     let fmt = format!(
         "{}",
