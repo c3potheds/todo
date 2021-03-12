@@ -173,7 +173,7 @@ impl TodoList {
                 .iter()
                 .copied()
                 .flat_map(|dep| self.transitive_deps(dep))
-                .collect::<HashSet<_>>()
+                .collect()
     }
 
     pub fn transitive_adeps(&self, id: TaskId) -> HashSet<TaskId> {
@@ -183,7 +183,7 @@ impl TodoList {
                 .iter()
                 .copied()
                 .flat_map(|adep| self.transitive_adeps(adep))
-                .collect::<HashSet<_>>()
+                .collect()
     }
 }
 
