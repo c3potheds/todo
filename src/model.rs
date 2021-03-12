@@ -3,11 +3,13 @@ use chrono::Utc;
 use daggy::stable_dag::StableDag;
 use daggy::NodeIndex;
 use daggy::Walker;
+use std::collections::BTreeSet;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::hash::Hash;
 use std::io::Read;
 use std::io::Write;
+use std::iter::FromIterator;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Deserialize, Serialize)]
 pub struct TaskId(NodeIndex);
@@ -95,6 +97,78 @@ pub struct TodoList {
     incomplete: Layering<TaskId>,
 }
 
+#[derive(Debug)]
+pub struct TaskSet {
+    ids: HashSet<TaskId>,
+}
+
+#[derive(PartialEq, Eq)]
+struct TaskIdWithPosition {
+    position: i32,
+    id: TaskId,
+}
+
+impl PartialOrd for TaskIdWithPosition {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.position.partial_cmp(&other.position)
+    }
+}
+
+impl Ord for TaskIdWithPosition {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.position.cmp(&other.position)
+    }
+}
+
+impl TaskSet {
+    pub fn iter(&self) -> impl Iterator<Item = TaskId> + '_ {
+        self.ids.iter().copied()
+    }
+
+    /// Iterates the set in sorted order, where the ordering is defined by the
+    /// position in the list.
+    pub fn iter_sorted(self, list: &TodoList) -> impl Iterator<Item = TaskId> {
+        self.ids
+            .into_iter()
+            .flat_map(|id| {
+                list.position(id)
+                    .map(|pos| TaskIdWithPosition {
+                        id: id,
+                        position: pos,
+                    })
+                    .into_iter()
+            })
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .map(|task_id_with_pos| task_id_with_pos.id)
+    }
+}
+
+impl IntoIterator for TaskSet {
+    type Item = TaskId;
+    type IntoIter = std::collections::hash_set::IntoIter<TaskId>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.ids.into_iter()
+    }
+}
+
+impl FromIterator<TaskId> for TaskSet {
+    fn from_iter<I: IntoIterator<Item = TaskId>>(iter: I) -> Self {
+        Self {
+            ids: iter.into_iter().collect(),
+        }
+    }
+}
+
+impl std::ops::BitOr for &'_ TaskSet {
+    type Output = TaskSet;
+    fn bitor(self, other: Self) -> Self::Output {
+        TaskSet {
+            ids: &self.ids | &other.ids,
+        }
+    }
+}
+
 impl TodoList {
     fn max_depth_of_deps(&self, id: TaskId) -> Option<usize> {
         self.deps(id)
@@ -150,7 +224,7 @@ impl TodoList {
         })
     }
 
-    pub fn deps(&self, id: TaskId) -> HashSet<TaskId> {
+    pub fn deps(&self, id: TaskId) -> TaskSet {
         self.tasks
             .parents(id.0)
             .iter(&self.tasks)
@@ -158,7 +232,7 @@ impl TodoList {
             .collect()
     }
 
-    pub fn adeps(&self, id: TaskId) -> HashSet<TaskId> {
+    pub fn adeps(&self, id: TaskId) -> TaskSet {
         self.tasks
             .children(id.0)
             .iter(&self.tasks)
@@ -166,23 +240,21 @@ impl TodoList {
             .collect()
     }
 
-    pub fn transitive_deps(&self, id: TaskId) -> HashSet<TaskId> {
+    pub fn transitive_deps(&self, id: TaskId) -> TaskSet {
         let deps = self.deps(id);
         &deps
             | &deps
                 .iter()
-                .copied()
-                .flat_map(|dep| self.transitive_deps(dep))
+                .flat_map(|dep| self.transitive_deps(dep).into_iter())
                 .collect()
     }
 
-    pub fn transitive_adeps(&self, id: TaskId) -> HashSet<TaskId> {
+    pub fn transitive_adeps(&self, id: TaskId) -> TaskSet {
         let adeps = self.adeps(id);
         &adeps
             | &adeps
                 .iter()
-                .copied()
-                .flat_map(|adep| self.transitive_adeps(adep))
+                .flat_map(|adep| self.transitive_adeps(adep).into_iter())
                 .collect()
     }
 }
@@ -217,7 +289,6 @@ impl TodoList {
         let deps = self.deps(id);
         let incomplete_deps: Vec<_> = deps
             .iter()
-            .copied()
             .filter(|dep| self.incomplete.contains(dep))
             .collect();
         if incomplete_deps.len() > 0 {
