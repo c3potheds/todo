@@ -18,7 +18,7 @@ fn print_check_error(
     model.position(id).map(|cannot_check| {
         let blocked_by = model
             .deps(id)
-            .into_iter()
+            .iter_sorted(&model)
             .filter(|&dep| model.status(dep) != Some(TaskStatus::Complete))
             .flat_map(|dep| model.position(dep).into_iter())
             .collect();

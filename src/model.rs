@@ -121,8 +121,11 @@ impl Ord for TaskIdWithPosition {
 }
 
 impl TaskSet {
-    pub fn iter(&self) -> impl Iterator<Item = TaskId> + '_ {
-        self.ids.iter().copied()
+    /// Iterates the set in an arbitrary order. Careful when using this; it may
+    /// cause non-determinism. It is more efficient than iterating in sorted
+    /// order.
+    pub fn iter_unsorted(self) -> impl Iterator<Item = TaskId> {
+        self.ids.into_iter()
     }
 
     /// Iterates the set in sorted order, where the ordering is defined by the
@@ -144,14 +147,6 @@ impl TaskSet {
     }
 }
 
-impl IntoIterator for TaskSet {
-    type Item = TaskId;
-    type IntoIter = std::collections::hash_set::IntoIter<TaskId>;
-    fn into_iter(self) -> Self::IntoIter {
-        self.ids.into_iter()
-    }
-}
-
 impl FromIterator<TaskId> for TaskSet {
     fn from_iter<I: IntoIterator<Item = TaskId>>(iter: I) -> Self {
         Self {
@@ -160,7 +155,7 @@ impl FromIterator<TaskId> for TaskSet {
     }
 }
 
-impl std::ops::BitOr for &'_ TaskSet {
+impl std::ops::BitOr for TaskSet {
     type Output = TaskSet;
     fn bitor(self, other: Self) -> Self::Output {
         TaskSet {
@@ -172,7 +167,7 @@ impl std::ops::BitOr for &'_ TaskSet {
 impl TodoList {
     fn max_depth_of_deps(&self, id: TaskId) -> Option<usize> {
         self.deps(id)
-            .into_iter()
+            .iter_unsorted()
             .flat_map(|dep| {
                 self.incomplete.depth.get(&dep).into_iter().copied()
             })
@@ -217,7 +212,7 @@ impl TodoList {
             }
         }
         .map(|new_depth| {
-            self.adeps(id).into_iter().for_each(|adep| {
+            self.adeps(id).iter_sorted(&self).for_each(|adep| {
                 self.update_depth(adep);
             });
             new_depth
@@ -241,20 +236,20 @@ impl TodoList {
     }
 
     pub fn transitive_deps(&self, id: TaskId) -> TaskSet {
-        let deps = self.deps(id);
-        &deps
-            | &deps
-                .iter()
-                .flat_map(|dep| self.transitive_deps(dep).into_iter())
+        self.deps(id)
+            | self
+                .deps(id)
+                .iter_unsorted()
+                .flat_map(|dep| self.transitive_deps(dep).iter_unsorted())
                 .collect()
     }
 
     pub fn transitive_adeps(&self, id: TaskId) -> TaskSet {
-        let adeps = self.adeps(id);
-        &adeps
-            | &adeps
-                .iter()
-                .flat_map(|adep| self.transitive_adeps(adep).into_iter())
+        self.adeps(id)
+            | self
+                .adeps(id)
+                .iter_unsorted()
+                .flat_map(|adep| self.transitive_adeps(adep).iter_unsorted())
                 .collect()
     }
 }
@@ -288,7 +283,7 @@ impl TodoList {
         }
         let deps = self.deps(id);
         let incomplete_deps: Vec<_> = deps
-            .iter()
+            .iter_sorted(&self)
             .filter(|dep| self.incomplete.contains(dep))
             .collect();
         if incomplete_deps.len() > 0 {
@@ -300,7 +295,7 @@ impl TodoList {
         // Update adeps.
         Ok(self
             .adeps(id)
-            .into_iter()
+            .iter_sorted(&self)
             .filter(|&adep| self.update_depth(adep) == Some(0))
             .collect())
     }
@@ -326,7 +321,7 @@ impl TodoList {
         remove_first_occurrence_from_vec(&mut self.complete, &id);
         // Update adeps.
         Ok(adeps
-            .into_iter()
+            .iter_sorted(&self)
             .filter(|&adep| self.update_depth(adep) == Some(0))
             .collect())
     }

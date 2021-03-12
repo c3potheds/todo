@@ -41,12 +41,12 @@ pub fn run(
     let before_deps: TaskSet = before
         .iter()
         .copied()
-        .flat_map(|id| model.deps(id))
+        .flat_map(|id| model.deps(id).iter_unsorted())
         .collect();
     let after_adeps: TaskSet = after
         .iter()
         .copied()
-        .flat_map(|id| model.adeps(id))
+        .flat_map(|id| model.adeps(id).iter_unsorted())
         .collect();
     let tasks_to_block_on: Vec<_> = after
         .iter()
