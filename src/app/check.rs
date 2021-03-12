@@ -15,12 +15,12 @@ fn print_check_error(
     model: &TodoList,
     id: TaskId,
 ) {
-    model.get_number(id).map(|cannot_check| {
+    model.position(id).map(|cannot_check| {
         let blocked_by = model
             .deps(id)
             .into_iter()
-            .filter(|&dep| model.get_status(dep) != Some(TaskStatus::Complete))
-            .flat_map(|dep| model.get_number(dep).into_iter())
+            .filter(|&dep| model.status(dep) != Some(TaskStatus::Complete))
+            .flat_map(|dep| model.position(dep).into_iter())
             .collect();
         printer.print_error(&PrintableError::CannotCheckBecauseBlocked {
             cannot_check: cannot_check,

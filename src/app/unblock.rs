@@ -16,17 +16,16 @@ fn print_unblock_warning(
     blocking: TaskId,
     blocked: TaskId,
 ) {
-    model
-        .get_number(blocked)
-        .zip(model.get_number(blocking))
-        .map(|(cannot_unblock, requested_unblock_from)| {
+    model.position(blocked).zip(model.position(blocking)).map(
+        |(cannot_unblock, requested_unblock_from)| {
             printer.print_warning(
                 &PrintableWarning::CannotUnblockBecauseTaskIsNotBlocked {
                     cannot_unblock: cannot_unblock,
                     requested_unblock_from: requested_unblock_from,
                 },
             )
-        });
+        },
+    );
 }
 
 pub fn run(

@@ -16,17 +16,16 @@ fn print_block_error(
     blocked: TaskId,
     blocking: TaskId,
 ) {
-    model
-        .get_number(blocked)
-        .zip(model.get_number(blocking))
-        .map(|(cannot_block, requested_dependency)| {
+    model.position(blocked).zip(model.position(blocking)).map(
+        |(cannot_block, requested_dependency)| {
             printer.print_error(
                 &PrintableError::CannotBlockBecauseWouldCauseCycle {
                     cannot_block: cannot_block,
                     requested_dependency: requested_dependency,
                 },
             )
-        });
+        },
+    );
 }
 
 pub fn run(

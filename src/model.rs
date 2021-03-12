@@ -361,7 +361,7 @@ impl TodoList {
         self.tasks.node_weight_mut(id.0)
     }
 
-    pub fn get_number(&self, id: TaskId) -> Option<i32> {
+    pub fn position(&self, id: TaskId) -> Option<i32> {
         self.incomplete
             .iter()
             .position(|&x| x == id)
@@ -375,7 +375,7 @@ impl TodoList {
             })
     }
 
-    pub fn get_status(&self, id: TaskId) -> Option<TaskStatus> {
+    pub fn status(&self, id: TaskId) -> Option<TaskStatus> {
         if self.complete.contains(&id) {
             return Some(TaskStatus::Complete);
         }

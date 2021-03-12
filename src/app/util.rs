@@ -12,12 +12,12 @@ pub fn format_task<'a>(
     id: TaskId,
     action: Action,
 ) -> PrintableTask<'a> {
-    let number = model.get_number(id).unwrap();
+    let number = model.position(id).unwrap();
     PrintableTask {
         context: context,
         desc: &model.get(id).unwrap().desc,
         number: number,
-        status: model.get_status(id).unwrap(),
+        status: model.status(id).unwrap(),
         action: action,
     }
 }

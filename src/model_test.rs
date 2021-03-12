@@ -223,9 +223,9 @@ fn number_of_incomplete_tasks() {
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
     let c = list.add(Task::new("c"));
-    assert_eq!(list.get_number(a), Some(1));
-    assert_eq!(list.get_number(b), Some(2));
-    assert_eq!(list.get_number(c), Some(3));
+    assert_eq!(list.position(a), Some(1));
+    assert_eq!(list.position(b), Some(2));
+    assert_eq!(list.position(c), Some(3));
 }
 
 #[test]
@@ -237,9 +237,9 @@ fn number_of_complete_tasks() {
     list.check(a).expect("Could not check a");
     list.check(b).expect("Could not check b");
     list.check(c).expect("Could not check c");
-    assert_eq!(list.get_number(c), Some(0));
-    assert_eq!(list.get_number(b), Some(-1));
-    assert_eq!(list.get_number(a), Some(-2));
+    assert_eq!(list.position(c), Some(0));
+    assert_eq!(list.position(b), Some(-1));
+    assert_eq!(list.position(a), Some(-2));
 }
 
 #[test]
@@ -249,9 +249,9 @@ fn number_of_task_updates_when_predecessor_completes() {
     let b = list.add(Task::new("b"));
     let c = list.add(Task::new("c"));
     list.check(a).expect("Could not check a");
-    assert_eq!(list.get_number(a), Some(0));
-    assert_eq!(list.get_number(b), Some(1));
-    assert_eq!(list.get_number(c), Some(2));
+    assert_eq!(list.position(a), Some(0));
+    assert_eq!(list.position(b), Some(1));
+    assert_eq!(list.position(c), Some(2));
 }
 
 #[test]
@@ -292,7 +292,7 @@ fn nonexistent_complete_task_by_number() {
 }
 
 #[test]
-fn lookup_by_number_is_inverse_of_get_number() {
+fn lookup_by_number_is_inverse_of_position() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
     list.add(Task::new("b"));
@@ -303,7 +303,7 @@ fn lookup_by_number_is_inverse_of_get_number() {
     list.check(c).expect("Could not check c");
     list.check(e).expect("could not check e");
     for id in list.incomplete_tasks().chain(list.complete_tasks()) {
-        let number = list.get_number(id).unwrap();
+        let number = list.position(id).unwrap();
         let id_from_number = list.lookup_by_number(number).unwrap();
         assert_eq!(id_from_number, id);
     }
@@ -314,7 +314,7 @@ fn restore_incomplete_task() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
     assert!(list.restore(a).is_err());
-    assert_eq!(list.get_number(a), Some(1));
+    assert_eq!(list.position(a), Some(1));
 }
 
 #[test]
@@ -323,7 +323,7 @@ fn restore_complete_task() {
     let a = list.add(Task::new("a"));
     list.check(a).expect("Could not check a");
     list.restore(a).expect("Could not restore a");
-    assert_eq!(list.get_number(a), Some(1));
+    assert_eq!(list.position(a), Some(1));
 }
 
 #[test]
@@ -334,16 +334,16 @@ fn restore_complete_task_to_nonempty_list() {
     let c = list.add(Task::new("c"));
     list.check(a).expect("Could not check a");
     list.restore(a).expect("Could not restore a");
-    assert_eq!(list.get_number(b), Some(1));
-    assert_eq!(list.get_number(c), Some(2));
-    assert_eq!(list.get_number(a), Some(3));
+    assert_eq!(list.position(b), Some(1));
+    assert_eq!(list.position(c), Some(2));
+    assert_eq!(list.position(a), Some(3));
 }
 
 #[test]
 fn status_of_incomplete_task() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
-    assert_eq!(list.get_status(a), Some(TaskStatus::Incomplete));
+    assert_eq!(list.status(a), Some(TaskStatus::Incomplete));
 }
 
 #[test]
@@ -351,7 +351,7 @@ fn status_of_complete_task() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
     list.check(a).expect("Could not check a");
-    assert_eq!(list.get_status(a), Some(TaskStatus::Complete));
+    assert_eq!(list.status(a), Some(TaskStatus::Complete));
 }
 
 #[test]
@@ -360,7 +360,7 @@ fn status_of_blocked_task() {
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
     list.block(b).on(a).expect("Could not block b on a");
-    assert_eq!(list.get_status(b), Some(TaskStatus::Blocked));
+    assert_eq!(list.status(b), Some(TaskStatus::Blocked));
 }
 
 #[test]
@@ -369,8 +369,8 @@ fn ordering_of_blocked_task() {
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
     list.block(b).on(a).expect("Could not block b on a");
-    assert_eq!(list.get_number(a), Some(1));
-    assert_eq!(list.get_number(b), Some(2));
+    assert_eq!(list.position(a), Some(1));
+    assert_eq!(list.position(b), Some(2));
 }
 
 #[test]
@@ -379,8 +379,8 @@ fn blocked_task_appears_after_task_that_blocks_it() {
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
     list.block(a).on(b).expect("Could not block a on b");
-    assert_eq!(list.get_number(b), Some(1));
-    assert_eq!(list.get_number(a), Some(2));
+    assert_eq!(list.position(b), Some(1));
+    assert_eq!(list.position(a), Some(2));
 }
 
 #[test]
@@ -390,8 +390,8 @@ fn cannot_block_blocking_task_on_task_it_blocks() {
     let b = list.add(Task::new("b"));
     list.block(a).on(b).expect("Could not block a on b");
     assert!(list.block(b).on(a).is_err());
-    assert_eq!(list.get_number(b), Some(1));
-    assert_eq!(list.get_number(a), Some(2));
+    assert_eq!(list.position(b), Some(1));
+    assert_eq!(list.position(a), Some(2));
 }
 
 #[test]
@@ -426,13 +426,13 @@ fn chained_blocking() {
     let mut incomplete_tasks = list.incomplete_tasks();
     let mut next = incomplete_tasks.next().unwrap();
     assert_eq!(list.get(next).unwrap().desc, "c");
-    assert_eq!(list.get_status(next).unwrap(), TaskStatus::Incomplete);
+    assert_eq!(list.status(next).unwrap(), TaskStatus::Incomplete);
     next = incomplete_tasks.next().unwrap();
     assert_eq!(list.get(next).unwrap().desc, "b");
-    assert_eq!(list.get_status(next).unwrap(), TaskStatus::Blocked);
+    assert_eq!(list.status(next).unwrap(), TaskStatus::Blocked);
     next = incomplete_tasks.next().unwrap();
     assert_eq!(list.get(next).unwrap().desc, "a");
-    assert_eq!(list.get_status(next).unwrap(), TaskStatus::Blocked);
+    assert_eq!(list.status(next).unwrap(), TaskStatus::Blocked);
 }
 
 #[test]
@@ -492,7 +492,7 @@ fn task_becomes_blocked_if_dependency_is_restored() {
     list.block(b).on(a).expect("Could not block b on a");
     list.check(a).expect("Could not check a");
     list.restore(a).expect("Could not restore a");
-    assert_eq!(list.get_status(b), Some(TaskStatus::Blocked));
+    assert_eq!(list.status(b), Some(TaskStatus::Blocked));
 }
 
 #[test]
@@ -504,7 +504,7 @@ fn complete_task_becomes_blocked_if_dependency_is_restored() {
     list.check(a).expect("Could not check a");
     list.check(b).expect("Could not check b");
     list.restore(a).expect("Could not restore a");
-    assert_eq!(list.get_status(b), Some(TaskStatus::Blocked));
+    assert_eq!(list.status(b), Some(TaskStatus::Blocked));
     let mut incomplete_tasks = list.incomplete_tasks();
     assert_eq!(incomplete_tasks.next(), Some(a));
     assert_eq!(incomplete_tasks.next(), Some(b));
@@ -523,7 +523,7 @@ fn complete_task_becomes_blocked_if_transitive_dependency_is_restored() {
     list.check(b).expect("Could not check b");
     list.check(c).expect("Could not check c");
     list.restore(a).expect("Could not restore a");
-    assert_eq!(list.get_status(c), Some(TaskStatus::Blocked));
+    assert_eq!(list.status(c), Some(TaskStatus::Blocked));
     let mut incomplete_tasks = list.incomplete_tasks();
     assert_eq!(incomplete_tasks.next(), Some(a));
     assert_eq!(incomplete_tasks.next(), Some(b));
@@ -638,7 +638,7 @@ fn newly_unblocked_task_has_incomplete_status() {
     let b = list.add(Task::new("b"));
     list.block(b).on(a).expect("Could not block b on a");
     list.unblock(b).from(a).expect("Could not unblock b from a");
-    assert_eq!(list.get_status(b), Some(TaskStatus::Incomplete));
+    assert_eq!(list.status(b), Some(TaskStatus::Incomplete));
 }
 
 #[test]
@@ -650,8 +650,8 @@ fn unblocked_task_is_still_blocked_if_it_has_remaining_dependencies() {
     list.block(c).on(a).expect("Could not block c on a");
     list.block(c).on(b).expect("Could not block c on b");
     list.unblock(c).from(a).expect("Could not unblock c from a");
-    assert_eq!(list.get_status(c), Some(TaskStatus::Blocked));
-    assert_eq!(list.get_number(c), Some(3));
+    assert_eq!(list.status(c), Some(TaskStatus::Blocked));
+    assert_eq!(list.position(c), Some(3));
 }
 
 #[test]
@@ -857,7 +857,7 @@ fn punt_only_task() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
     list.punt(a).expect("Cannot punt a");
-    assert_eq!(list.get_number(a), Some(1));
+    assert_eq!(list.position(a), Some(1));
 }
 
 #[test]

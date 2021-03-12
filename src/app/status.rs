@@ -18,7 +18,7 @@ pub fn run(
 ) {
     model
         .all_tasks()
-        .filter(|&id| match model.get_status(id) {
+        .filter(|&id| match model.status(id) {
             Some(TaskStatus::Blocked) => cmd.include_blocked,
             Some(TaskStatus::Complete) => cmd.include_done,
             Some(TaskStatus::Incomplete) => true,

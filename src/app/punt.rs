@@ -18,7 +18,7 @@ pub fn run(
         .into_iter()
         .filter(|&id| match model.punt(id) {
             Err(PuntError::TaskIsComplete) => {
-                model.get_number(id).map(|n| {
+                model.position(id).map(|n| {
                     printer.print_warning(
                         &PrintableWarning::CannotPuntBecauseComplete {
                             cannot_punt: n,
