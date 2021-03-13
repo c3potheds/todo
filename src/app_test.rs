@@ -7,7 +7,6 @@ use printing::Expect;
 use printing::FakePrinter;
 use printing::PrintableError;
 use printing::PrintableWarning;
-use printing::PrintingContext;
 use std::ffi::OsString;
 use structopt::StructOpt;
 
@@ -16,14 +15,9 @@ where
     I: IntoIterator,
     I::Item: Into<OsString> + Clone,
 {
-    let printing_context = PrintingContext {
-        // TODO: Get the number of tasks from the list.
-        max_index_digits: 3,
-        width: 80,
-    };
     let mut printer = FakePrinter::new();
     let options = Options::from_iter_safe(args).expect("Could not parse args");
-    todo(list, &printing_context, &mut printer, &options);
+    todo(list, &mut printer, &options);
     printer
 }
 

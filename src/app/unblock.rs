@@ -6,7 +6,6 @@ use model::TaskId;
 use model::TodoList;
 use printing::Action;
 use printing::PrintableWarning;
-use printing::PrintingContext;
 use printing::TodoPrinter;
 use std::collections::HashSet;
 
@@ -30,7 +29,6 @@ fn print_unblock_warning(
 
 pub fn run(
     model: &mut TodoList,
-    printing_context: &PrintingContext,
     printer: &mut impl TodoPrinter,
     cmd: &Unblock,
 ) {
@@ -56,7 +54,6 @@ pub fn run(
         .filter(|id| tasks_to_print.contains(&id))
         .for_each(|id| {
             printer.print_task(&format_task(
-                printing_context,
                 model,
                 id,
                 if tasks_to_unblock.contains(&id) {

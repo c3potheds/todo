@@ -6,15 +6,9 @@ use itertools::Itertools;
 use model::Task;
 use model::TodoList;
 use printing::Action;
-use printing::PrintingContext;
 use printing::TodoPrinter;
 
-pub fn run(
-    model: &mut TodoList,
-    printing_context: &PrintingContext,
-    printer: &mut impl TodoPrinter,
-    cmd: &New,
-) {
+pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &New) {
     let deps = lookup_tasks(&model, &cmd.blocked_by);
     let adeps = lookup_tasks(&model, &cmd.blocking);
     let new_tasks: Vec<_> = cmd
@@ -45,27 +39,12 @@ pub fn run(
         });
     }
     deps.into_iter().for_each(|id| {
-        printer.print_task(&format_task(
-            printing_context,
-            model,
-            id,
-            Action::None,
-        ))
+        printer.print_task(&format_task(model, id, Action::None))
     });
     new_tasks.into_iter().for_each(|id| {
-        printer.print_task(&format_task(
-            printing_context,
-            model,
-            id,
-            Action::New,
-        ))
+        printer.print_task(&format_task(model, id, Action::New))
     });
     adeps.into_iter().for_each(|id| {
-        printer.print_task(&format_task(
-            printing_context,
-            model,
-            id,
-            Action::None,
-        ))
+        printer.print_task(&format_task(model, id, Action::None))
     });
 }

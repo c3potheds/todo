@@ -76,12 +76,11 @@ fn main() -> TodoResult {
         max_index_digits: 3,
         width: term_width,
     };
-    app::todo(
-        &mut model,
-        &printing_context,
-        &mut SimpleTodoPrinter {},
-        &options,
-    );
+    let mut printer = SimpleTodoPrinter {
+        out: std::io::stdout(),
+        context: &printing_context,
+    };
+    app::todo(&mut model, &mut printer, &options);
     let file = File::create(&path)?;
     let writer = BufWriter::new(file);
     save(writer, &model)?;

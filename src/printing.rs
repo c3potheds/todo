@@ -4,11 +4,12 @@ use model::TaskStatus;
 use std::fmt;
 use std::fmt::Display;
 use std::fmt::Formatter;
+use std::io::Write;
 
 pub struct PrintingContext {
     /// The number of digits that task numbers may have, including a minus sign.
     pub max_index_digits: usize,
-    /// The number of columns to render task descriptions in (not used yet).
+    /// The number of columns to render task descriptions in.
     pub width: usize,
 }
 
@@ -25,11 +26,15 @@ pub enum Action {
 }
 
 pub struct PrintableTask<'a> {
-    pub context: &'a PrintingContext,
     pub desc: &'a str,
     pub number: i32,
     pub status: TaskStatus,
     pub action: Action,
+}
+
+struct PrintableTaskWithContext<'a> {
+    context: &'a PrintingContext,
+    task: &'a PrintableTask<'a>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -116,19 +121,19 @@ fn format_numbers<I: IntoIterator<Item = i32>>(
         .join(", ")
 }
 
-impl<'a> Display for PrintableTask<'a> {
+impl<'a> Display for PrintableTaskWithContext<'a> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let action_and_number = format!(
             "{} {:>width$} ",
-            self.action,
-            format_number(self.number, self.status),
+            self.task.action,
+            format_number(self.task.number, self.task.status),
             width = self.context.max_index_digits + ANSI_OFFSET
         );
         write!(
             f,
             "{}",
             textwrap::fill(
-                self.desc,
+                self.task.desc,
                 textwrap::Options::new(self.context.width)
                     .initial_indent(&action_and_number)
                     .break_words(false)
@@ -229,11 +234,22 @@ pub trait TodoPrinter {
     fn print_error(&mut self, error: &PrintableError);
 }
 
-pub struct SimpleTodoPrinter {}
+pub struct SimpleTodoPrinter<'a, Out: Write> {
+    pub out: Out,
+    pub context: &'a PrintingContext,
+}
 
-impl TodoPrinter for SimpleTodoPrinter {
+impl<Out: Write> TodoPrinter for SimpleTodoPrinter<'_, Out> {
     fn print_task(&mut self, task: &PrintableTask) {
-        println!("{}", task);
+        writeln!(
+            self.out,
+            "{}",
+            PrintableTaskWithContext {
+                context: self.context,
+                task: task,
+            }
+        )
+        .unwrap();
     }
     fn print_warning(&mut self, warning: &PrintableWarning) {
         println!("{}", warning);
@@ -331,7 +347,7 @@ impl<'a> Validation<'a> {
     pub fn printed_task(mut self, es: &[Expect<'a>]) -> Validation<'a> {
         let item = self.pop(&es);
         match &item {
-            &PrintedItem::Task(ref info) => {
+            PrintedItem::Task(ref info) => {
                 es.iter().for_each(|e| e.validate(info))
             }
             _ => {
@@ -347,7 +363,7 @@ impl<'a> Validation<'a> {
     ) -> Validation<'a> {
         let item = self.pop(expected);
         match &item {
-            &PrintedItem::Warning(ref actual) => {
+            PrintedItem::Warning(ref actual) => {
                 assert_eq!(actual, expected, "Unexpected warning")
             }
             _ => panic!("Expected\n{:#?}\n... but got\n{:#?}", expected, item),
@@ -361,7 +377,7 @@ impl<'a> Validation<'a> {
     ) -> Validation<'a> {
         let item = self.pop(expected);
         match &item {
-            &PrintedItem::Error(ref actual) => {
+            PrintedItem::Error(ref actual) => {
                 assert_eq!(actual, expected, "Unexpected error")
             }
             _ => panic!("Expected\n{:#?}\n... but got\n{:#?}", expected, item),

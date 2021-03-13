@@ -9,125 +9,117 @@ fn make_printing_context() -> PrintingContext {
     }
 }
 
+fn print_task_with_context(
+    context: &PrintingContext,
+    task: &PrintableTask,
+) -> String {
+    let mut out: Vec<u8> = Vec::new();
+    let mut printer = SimpleTodoPrinter {
+        out: &mut out,
+        context: context,
+    };
+    printer.print_task(task);
+    String::from(std::str::from_utf8(&out).unwrap())
+}
+
+fn print_task<'a>(task: &PrintableTask) -> String {
+    let context = make_printing_context();
+    print_task_with_context(&context, task)
+}
+
 #[test]
 fn fmt_incomplete_task() {
-    let context = make_printing_context();
-    let fmt = format!(
-        "{}",
-        PrintableTask {
-            context: &context,
-            desc: "a",
-            number: 1,
-            status: TaskStatus::Incomplete,
-            action: Action::None,
-        }
-    );
+    let fmt = print_task(&PrintableTask {
+        desc: "a",
+        number: 1,
+        status: TaskStatus::Incomplete,
+        action: Action::None,
+    });
     // The 1) is wrapped in ANSI codes painting it yellow.
-    assert_eq!(fmt, "      \u{1b}[33m1)\u{1b}[0m a");
+    assert_eq!(fmt, "      \u{1b}[33m1)\u{1b}[0m a\n");
 }
 
 #[test]
 fn fmt_complete_task() {
-    let context = make_printing_context();
-    let fmt = format!(
-        "{}",
-        PrintableTask {
-            context: &context,
-            desc: "b",
-            number: 0,
-            status: TaskStatus::Complete,
-            action: Action::None,
-        }
-    );
+    let fmt = print_task(&PrintableTask {
+        desc: "b",
+        number: 0,
+        status: TaskStatus::Complete,
+        action: Action::None,
+    });
     // The 0) is wrapped in ANSI codes painting it green.
-    assert_eq!(fmt, "      \u{1b}[32m0)\u{1b}[0m b");
+    assert_eq!(fmt, "      \u{1b}[32m0)\u{1b}[0m b\n");
 }
 
 #[test]
 fn fmt_blocked_task() {
-    let context = make_printing_context();
-    let fmt = format!(
-        "{}",
-        PrintableTask {
-            context: &context,
-            desc: "c",
-            number: 2,
-            status: TaskStatus::Blocked,
-            action: Action::None
-        }
-    );
+    let fmt = print_task(&PrintableTask {
+        desc: "c",
+        number: 2,
+        status: TaskStatus::Blocked,
+        action: Action::None,
+    });
     // The 2) is wrapped in ANSI codes painting it red.
-    assert_eq!(fmt, "      \u{1b}[31m2)\u{1b}[0m c");
+    assert_eq!(fmt, "      \u{1b}[31m2)\u{1b}[0m c\n");
 }
 
 #[test]
 fn fmt_double_digit_number_in_max_four_digit_environment() {
-    let context = PrintingContext {
-        max_index_digits: 4,
-        width: 80,
-    };
-    let fmt = format!(
-        "{}",
-        PrintableTask {
-            context: &context,
+    let fmt = print_task_with_context(
+        &PrintingContext {
+            max_index_digits: 4,
+            width: 80,
+        },
+        &PrintableTask {
             desc: "hello",
             number: 99,
             status: TaskStatus::Blocked,
             action: Action::None,
-        }
+        },
     );
-    assert_eq!(fmt, "      \u{1b}[31m99)\u{1b}[0m hello");
+    assert_eq!(fmt, "      \u{1b}[31m99)\u{1b}[0m hello\n");
 }
 
 #[test]
 fn fmt_triple_digit_number_in_max_four_digit_environment() {
-    let context = PrintingContext {
-        max_index_digits: 4,
-        width: 80,
-    };
-    let fmt = format!(
-        "{}",
-        PrintableTask {
-            context: &context,
+    let fmt = print_task_with_context(
+        &PrintingContext {
+            max_index_digits: 4,
+            width: 80,
+        },
+        &PrintableTask {
             desc: "hello",
             number: 100,
             status: TaskStatus::Blocked,
             action: Action::None,
-        }
+        },
     );
-    assert_eq!(fmt, "     \u{1b}[31m100)\u{1b}[0m hello");
+    assert_eq!(fmt, "     \u{1b}[31m100)\u{1b}[0m hello\n");
 }
 
 #[test]
 fn show_check_mark_on_check_action() {
-    let context = make_printing_context();
-    let fmt = format!(
-        "{}",
-        PrintableTask {
-            context: &context,
-            desc: "done!",
-            number: 0,
-            status: TaskStatus::Complete,
-            action: Action::Check,
-        }
+    let fmt = print_task(&PrintableTask {
+        desc: "done!",
+        number: 0,
+        status: TaskStatus::Complete,
+        action: Action::Check,
+    });
+    assert_eq!(
+        fmt,
+        "\u{1b}[32m[✓]\u{1b}[0m   \u{1b}[32m0)\u{1b}[0m done!\n"
     );
-    assert_eq!(fmt, "\u{1b}[32m[✓]\u{1b}[0m   \u{1b}[32m0)\u{1b}[0m done!");
 }
 
 #[test]
 fn show_empty_box_on_uncheck_action() {
-    let context = make_printing_context();
-    let fmt = format!(
-        "{}",
-        PrintableTask {
-            context: &context,
-            desc: "oh",
-            number: 1,
-            status: TaskStatus::Incomplete,
-            action: Action::Uncheck,
-        }
-    );
-    assert_eq!(fmt, "\u{1b}[33m[ ]\u{1b}[0m   \u{1b}[33m1)\u{1b}[0m oh");
+    let fmt = print_task(&PrintableTask {
+        desc: "oh",
+        number: 1,
+        status: TaskStatus::Incomplete,
+        action: Action::Uncheck,
+    });
+    assert_eq!(fmt, "\u{1b}[33m[ ]\u{1b}[0m   \u{1b}[33m1)\u{1b}[0m oh\n");
 }
 
 #[test]
@@ -136,15 +128,14 @@ fn text_wrapping() {
         max_index_digits: 3,
         width: 24,
     };
-    let fmt = format!(
-        "{}",
-        PrintableTask {
-            context: &context,
+    let fmt = print_task_with_context(
+        &context,
+        &PrintableTask {
             desc: "this task has a long description, much longer than 24 chars",
             number: 1,
             status: TaskStatus::Incomplete,
             action: Action::None,
-        }
+        },
     );
     assert_eq!(
         fmt,
@@ -152,7 +143,7 @@ fn text_wrapping() {
                                      has a long\n         \
                                      description,\n         \
                                      much longer\n         \
-                                     than 24 chars"
+                                     than 24 chars\n"
     );
 }
 
@@ -296,64 +287,47 @@ fn display_cannot_block_because_would_cause_cycle_error() {
 
 #[test]
 fn show_lock_icon_on_lock_action() {
-    let context = make_printing_context();
-    let fmt = format!(
-        "{}",
-        PrintableTask {
-            context: &context,
-            desc: "blocked",
-            number: 5,
-            status: TaskStatus::Blocked,
-            action: Action::Lock,
-        }
-    );
+    let fmt = print_task(&PrintableTask {
+        desc: "blocked",
+        number: 5,
+        status: TaskStatus::Blocked,
+        action: Action::Lock,
+    });
     assert_eq!(
         fmt,
-        " \u{1b}[31m🔒\u{1b}[0m   \u{1b}[31m5)\u{1b}[0m blocked"
+        " \u{1b}[31m🔒\u{1b}[0m   \u{1b}[31m5)\u{1b}[0m blocked\n"
     );
 }
 
 #[test]
 fn show_unlock_icon_on_unlock_action() {
-    let context = make_printing_context();
-    let fmt = format!(
-        "{}",
-        PrintableTask {
-            context: &context,
-            desc: "unblocked",
-            number: 10,
-            status: TaskStatus::Incomplete,
-            action: Action::Unlock,
-        }
-    );
+    let fmt = print_task(&PrintableTask {
+        desc: "unblocked",
+        number: 10,
+        status: TaskStatus::Incomplete,
+        action: Action::Unlock,
+    });
     assert_eq!(
         fmt,
-        " \u{1b}[32m🔓\u{1b}[0m  \u{1b}[33m10)\u{1b}[0m unblocked"
+        " \u{1b}[32m🔓\u{1b}[0m  \u{1b}[33m10)\u{1b}[0m unblocked\n"
     );
 }
 
 #[test]
 fn show_punt_icon_on_punt_action() {
-    let context = make_printing_context();
-    let fmt = format!(
-        "{}",
-        PrintableTask {
-            context: &context,
-            desc: "punt this",
-            number: 5,
-            status: TaskStatus::Incomplete,
-            action: Action::Punt,
-        }
-    );
-    assert_eq!(fmt, " ⏎    \u{1b}[33m5)\u{1b}[0m punt this");
+    let fmt = print_task(&PrintableTask {
+        desc: "punt this",
+        number: 5,
+        status: TaskStatus::Incomplete,
+        action: Action::Punt,
+    });
+    assert_eq!(fmt, " ⏎    \u{1b}[33m5)\u{1b}[0m punt this\n");
 }
 
 #[test]
 fn validate_single_task() {
     let mut printer = FakePrinter::new();
-    let context = make_printing_context();
     printer.print_task(&PrintableTask {
-        context: &context,
         desc: "a",
         number: 1,
         status: TaskStatus::Incomplete,
@@ -368,16 +342,13 @@ fn validate_single_task() {
 #[test]
 fn validate_multiple_tasks() {
     let mut printer = FakePrinter::new();
-    let context = make_printing_context();
     printer.print_task(&PrintableTask {
-        context: &context,
         desc: "a",
         number: 1,
         status: TaskStatus::Incomplete,
         action: Action::None,
     });
     printer.print_task(&PrintableTask {
-        context: &context,
         desc: "b",
         number: 2,
         status: TaskStatus::Incomplete,
@@ -421,9 +392,7 @@ fn fail_validation_on_missing_task() {
 #[should_panic(expected = "Unexpected description: \"a\"")]
 fn fail_validation_on_incorrect_description() {
     let mut printer = FakePrinter::new();
-    let context = make_printing_context();
     printer.print_task(&PrintableTask {
-        context: &context,
         desc: "a",
         number: 1,
         status: TaskStatus::Incomplete,
@@ -436,9 +405,7 @@ fn fail_validation_on_incorrect_description() {
 #[should_panic(expected = "Unexpected number: 1")]
 fn fail_validation_on_incorrect_number() {
     let mut printer = FakePrinter::new();
-    let context = make_printing_context();
     printer.print_task(&PrintableTask {
-        context: &context,
         desc: "a",
         number: 1,
         status: TaskStatus::Incomplete,
@@ -451,9 +418,7 @@ fn fail_validation_on_incorrect_number() {
 #[should_panic(expected = "Extra tasks were recorded: ")]
 fn fail_validation_on_extra_tasks() {
     let mut printer = FakePrinter::new();
-    let context = make_printing_context();
     printer.print_task(&PrintableTask {
-        context: &context,
         desc: "a",
         number: 1,
         status: TaskStatus::Incomplete,
@@ -466,9 +431,7 @@ fn fail_validation_on_extra_tasks() {
 #[should_panic(expected = "Unexpected status")]
 fn fail_validation_on_incorrect_status() {
     let mut printer = FakePrinter::new();
-    let context = make_printing_context();
     printer.print_task(&PrintableTask {
-        context: &context,
         desc: "a",
         number: 0,
         status: TaskStatus::Incomplete,
@@ -484,9 +447,7 @@ fn fail_validation_on_incorrect_status() {
 #[should_panic(expected = "Unexpected action")]
 fn fail_validation_on_incorrect_action() {
     let mut printer = FakePrinter::new();
-    let context = make_printing_context();
     printer.print_task(&PrintableTask {
-        context: &context,
         desc: "a",
         number: 1,
         status: TaskStatus::Incomplete,
@@ -518,9 +479,7 @@ fn fail_validation_on_task_instead_of_warning() {
     let mut printer = FakePrinter::new();
     let warning =
         PrintableWarning::CannotPuntBecauseComplete { cannot_punt: 0 };
-    let context = make_printing_context();
     printer.print_task(&PrintableTask {
-        context: &context,
         desc: "a",
         number: 1,
         status: TaskStatus::Incomplete,
@@ -553,9 +512,7 @@ fn fail_validation_on_task_instead_of_error() {
         cannot_check: 3,
         blocked_by: vec![2],
     };
-    let context = make_printing_context();
     printer.print_task(&PrintableTask {
-        context: &context,
         desc: "a",
         number: 1,
         status: TaskStatus::Incomplete,

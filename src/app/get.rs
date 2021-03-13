@@ -4,15 +4,9 @@ use cli::Get;
 use model::TaskSet;
 use model::TodoList;
 use printing::Action;
-use printing::PrintingContext;
 use printing::TodoPrinter;
 
-pub fn run(
-    model: &TodoList,
-    printing_context: &PrintingContext,
-    printer: &mut impl TodoPrinter,
-    cmd: &Get,
-) {
+pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Get) {
     let requested_tasks = lookup_tasks(model, &cmd.keys);
     requested_tasks
         .iter()
@@ -26,7 +20,6 @@ pub fn run(
         .iter_sorted(&model)
         .for_each(|id| {
             printer.print_task(&format_task(
-                printing_context,
                 model,
                 id,
                 if requested_tasks.contains(&id) {

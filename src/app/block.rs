@@ -6,7 +6,6 @@ use model::TaskId;
 use model::TodoList;
 use printing::Action;
 use printing::PrintableError;
-use printing::PrintingContext;
 use printing::TodoPrinter;
 use std::collections::HashSet;
 
@@ -28,12 +27,7 @@ fn print_block_error(
     );
 }
 
-pub fn run(
-    model: &mut TodoList,
-    printing_context: &PrintingContext,
-    printer: &mut impl TodoPrinter,
-    cmd: &Block,
-) {
+pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Block) {
     let tasks_to_block = lookup_tasks(&model, &cmd.keys);
     let tasks_to_block_on = lookup_tasks(&model, &cmd.on);
     let tasks_to_print = tasks_to_block
@@ -55,7 +49,6 @@ pub fn run(
         .filter(|id| tasks_to_print.contains(id))
         .for_each(|id| {
             printer.print_task(&format_task(
-                printing_context,
                 model,
                 id,
                 if tasks_to_block.contains(&id) {

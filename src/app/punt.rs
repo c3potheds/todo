@@ -5,15 +5,9 @@ use model::PuntError;
 use model::TodoList;
 use printing::Action;
 use printing::PrintableWarning;
-use printing::PrintingContext;
 use printing::TodoPrinter;
 
-pub fn run(
-    model: &mut TodoList,
-    printing_context: &PrintingContext,
-    printer: &mut impl TodoPrinter,
-    cmd: &Punt,
-) {
+pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Punt) {
     lookup_tasks(&model, &cmd.keys)
         .into_iter()
         .filter(|&id| match model.punt(id) {
@@ -32,11 +26,6 @@ pub fn run(
         .collect::<Vec<_>>()
         .into_iter()
         .for_each(|id| {
-            printer.print_task(&format_task(
-                printing_context,
-                &model,
-                id,
-                Action::Punt,
-            ))
+            printer.print_task(&format_task(&model, id, Action::Punt))
         });
 }
