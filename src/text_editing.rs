@@ -1,0 +1,58 @@
+#[derive(Debug)]
+pub struct Error();
+
+impl From<std::io::Error> for Error {
+    fn from(_: std::io::Error) -> Self {
+        Self()
+    }
+}
+
+pub trait TextEditor {
+    fn edit_text(&self, display: &str) -> Result<String, Error>;
+}
+
+pub struct ScrawlTextEditor;
+
+impl TextEditor for ScrawlTextEditor {
+    fn edit_text(&self, display: &str) -> Result<String, Error> {
+        scrawl::with(display).map_err(|_| Error())
+    }
+}
+
+#[cfg(test)]
+pub struct FakeTextEditor<'a> {
+    user_output: Option<&'a str>,
+    recorded_input: std::cell::RefCell<String>,
+}
+
+#[cfg(test)]
+impl<'a> FakeTextEditor<'a> {
+    pub fn user_will_enter(s: &'a str) -> Self {
+        FakeTextEditor {
+            user_output: Some(s),
+            recorded_input: std::cell::RefCell::default(),
+        }
+    }
+
+    pub fn no_user_output() -> Self {
+        FakeTextEditor {
+            user_output: None,
+            recorded_input: std::cell::RefCell::default(),
+        }
+    }
+
+    pub fn recorded_input(&self) -> std::cell::Ref<String> {
+        self.recorded_input.borrow()
+    }
+}
+
+#[cfg(test)]
+impl TextEditor for FakeTextEditor<'_> {
+    fn edit_text(&self, display: &str) -> Result<String, Error> {
+        self.recorded_input.replace(display.to_string());
+        match &self.user_output {
+            Some(ref output) => Ok(output.to_string()),
+            None => Err(Error()),
+        }
+    }
+}

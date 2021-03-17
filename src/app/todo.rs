@@ -13,16 +13,20 @@ use cli::Options;
 use cli::SubCommand;
 use model::TodoList;
 use printing::TodoPrinter;
+use text_editing::TextEditor;
 
 pub fn todo(
     model: &mut TodoList,
     printer: &mut impl TodoPrinter,
+    text_editor: &impl TextEditor,
     options: &Options,
 ) {
     match &options.cmd {
         Some(SubCommand::Block(cmd)) => block::run(model, printer, &cmd),
         Some(SubCommand::Check(cmd)) => check::run(model, printer, &cmd),
-        Some(SubCommand::Edit(cmd)) => edit::run(model, printer, &cmd),
+        Some(SubCommand::Edit(cmd)) => {
+            edit::run(model, printer, text_editor, &cmd)
+        }
         Some(SubCommand::Get(cmd)) => get::run(model, printer, &cmd),
         Some(SubCommand::Log) => log::run(model, printer),
         Some(SubCommand::New(cmd)) => new::run(model, printer, &cmd),

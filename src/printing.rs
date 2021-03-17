@@ -73,6 +73,16 @@ pub enum PrintableError {
         // TODO: print the path between requested_dependency and cannot_block.
         // cycles: Vec<Vec<i32>>,
     },
+    CannotEditBecauseUnexpectedNumber {
+        requested: i32,
+    },
+    CannotEditBecauseNoTaskWithNumber {
+        requested: i32,
+    },
+    CannotEditBecauseInvalidLine {
+        malformed_line: String,
+    },
+    FailedToUseTextEditor,
 }
 
 const ANSI_OFFSET: usize = 10;
@@ -223,6 +233,19 @@ impl Display for PrintableError {
                     format_number(*cannot_block, TaskStatus::Incomplete),
                     format_number(*requested_dependency, TaskStatus::Blocked),
                 ),
+                PrintableError::CannotEditBecauseUnexpectedNumber {
+                    requested,
+                } => format!(
+                    "Number {}) doesn't correspond to any of requested tasks",
+                    requested,
+                ),
+                PrintableError::CannotEditBecauseNoTaskWithNumber {
+                    requested,
+                } => format!("No task with number {})", requested),
+                PrintableError::CannotEditBecauseInvalidLine{
+                    malformed_line,
+                } => format!("Could not parse line: \"{}\"", malformed_line),
+                PrintableError::FailedToUseTextEditor => format!("Failed to open text editor"),
             }
         )
     }

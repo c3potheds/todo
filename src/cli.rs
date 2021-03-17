@@ -41,9 +41,9 @@ pub struct Check {
 pub struct Edit {
     /// Tasks to edit.
     pub keys: Vec<Key>,
-    /// The new description.
+    /// The new description. If not set, a text editor is used.
     #[structopt(long)]
-    pub desc: String,
+    pub desc: Option<String>,
 }
 
 #[derive(Debug, PartialEq, StructOpt)]

@@ -455,7 +455,20 @@ fn edit_with_description() {
         cmd,
         SubCommand::Edit(Edit {
             keys: vec![Key::ByNumber(10)],
-            desc: "hello".to_string(),
+            desc: Some("hello".to_string()),
+        })
+    );
+}
+
+#[test]
+fn edit_without_description() {
+    let options = parse(&["todo", "edit", "1", "2", "3"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Edit(Edit {
+            keys: vec![Key::ByNumber(1), Key::ByNumber(2), Key::ByNumber(3)],
+            desc: None,
         })
     );
 }

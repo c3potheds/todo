@@ -17,6 +17,7 @@ use todo::model::SaveError;
 use todo::model::TodoList;
 use todo::printing::PrintingContext;
 use todo::printing::SimpleTodoPrinter;
+use todo::text_editing::ScrawlTextEditor;
 
 #[derive(Debug)]
 enum TodoError {
@@ -80,7 +81,8 @@ fn main() -> TodoResult {
         out: std::io::stdout(),
         context: &printing_context,
     };
-    app::todo(&mut model, &mut printer, &options);
+    let text_editor = ScrawlTextEditor;
+    app::todo(&mut model, &mut printer, &text_editor, &options);
     let file = File::create(&path)?;
     let writer = BufWriter::new(file);
     save(writer, &model)?;

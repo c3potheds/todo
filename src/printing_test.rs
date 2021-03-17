@@ -286,6 +286,36 @@ fn display_cannot_block_because_would_cause_cycle_error() {
 }
 
 #[test]
+fn display_cannot_edit_because_unexpected_number_error() {
+    let fmt = format!(
+        "{}",
+        PrintableError::CannotEditBecauseUnexpectedNumber { requested: 0 }
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "\u{1b}[31merror\u{1b}[0m: ",
+            "Number 0) doesn't correspond to any of requested tasks"
+        )
+    );
+}
+
+#[test]
+fn display_cannot_edit_because_no_task_with_number_error() {
+    let fmt = format!(
+        "{}",
+        PrintableError::CannotEditBecauseNoTaskWithNumber { requested: 100 }
+    );
+    assert_eq!(fmt, "\u{1b}[31merror\u{1b}[0m: No task with number 100)");
+}
+
+#[test]
+fn display_failed_to_use_text_editor_error() {
+    let fmt = format!("{}", PrintableError::FailedToUseTextEditor);
+    assert_eq!(fmt, "\u{1b}[31merror\u{1b}[0m: Failed to open text editor");
+}
+
+#[test]
 fn show_lock_icon_on_lock_action() {
     let fmt = print_task(&PrintableTask {
         desc: "blocked",

@@ -5,6 +5,7 @@ extern crate ansi_term;
 extern crate chrono;
 extern crate daggy;
 extern crate itertools;
+extern crate scrawl;
 extern crate structopt;
 extern crate textwrap;
 
@@ -12,6 +13,7 @@ pub mod app;
 pub mod cli;
 pub mod model;
 pub mod printing;
+pub mod text_editing;
 
 #[cfg(test)]
 mod app_test;
@@ -24,3 +26,6 @@ mod model_test;
 
 #[cfg(test)]
 mod printing_test;
+
+#[cfg(test)]
+mod text_editing_test;
