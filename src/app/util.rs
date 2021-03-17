@@ -71,7 +71,6 @@ where
     }
 }
 
-#[allow(dead_code)]
 pub fn pairwise<T, I>(iter: I) -> impl Iterator<Item = (T, T)>
 where
     I: IntoIterator<Item = T>,
