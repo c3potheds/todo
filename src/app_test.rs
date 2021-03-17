@@ -1755,3 +1755,24 @@ fn put_before_and_after() {
         .printed_task(&[Expect::Desc("f")])
         .end();
 }
+
+#[test]
+fn put_causing_cycle() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b", "--chain"]);
+    test(&mut list, &["todo", "put", "a", "--after", "b"])
+        .validate()
+        .printed_error(&PrintableError::CannotBlockBecauseWouldCauseCycle {
+            cannot_block: 1,
+            requested_dependency: 2,
+        })
+        .end();
+    test(&mut list, &["todo", "-a"])
+        .validate()
+        .printed_task(&[
+            Expect::Desc("a"),
+            Expect::Status(TaskStatus::Incomplete),
+        ])
+        .printed_task(&[Expect::Desc("b"), Expect::Status(TaskStatus::Blocked)])
+        .end();
+}
