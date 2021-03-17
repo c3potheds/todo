@@ -529,3 +529,27 @@ fn put_multiple_before_and_after() {
         })
     );
 }
+
+#[test]
+fn find_with_single_string() {
+    let options = parse(&["todo", "find", "hello"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Find(Find {
+            terms: vec!["hello".to_string()],
+        })
+    );
+}
+
+#[test]
+fn find_with_multiple_strings() {
+    let options = parse(&["todo", "find", "hello", "goodbye"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Find(Find {
+            terms: vec!["hello".to_string(), "goodbye".to_string()],
+        })
+    );
+}

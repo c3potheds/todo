@@ -47,6 +47,12 @@ pub struct Edit {
 }
 
 #[derive(Debug, PartialEq, StructOpt)]
+pub struct Find {
+    /// Search terms, which can be a substring of any task description.
+    pub terms: Vec<String>,
+}
+
+#[derive(Debug, PartialEq, StructOpt)]
 #[structopt(setting = structopt::clap::AppSettings::AllowNegativeNumbers)]
 pub struct Get {
     /// Tasks to explore.
@@ -173,6 +179,13 @@ pub enum SubCommand {
     /// information if needed.
     #[structopt(verbatim_doc_comment)]
     Edit(Edit),
+
+    /// Search for tasks with descriptions that contain the given search terms.
+    ///
+    /// The tasks, as always, will be ordered by their canonical numbering.
+    /// The results include complete tasks, incomplete tasks, and blocked tasks.
+    #[structopt(verbatim_doc_comment)]
+    Find(Find),
 
     /// Shows tasks related to given tasks.
     ///

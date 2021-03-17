@@ -1,6 +1,7 @@
 use app::block;
 use app::check;
 use app::edit;
+use app::find;
 use app::get;
 use app::log;
 use app::new;
@@ -27,6 +28,7 @@ pub fn todo(
         Some(SubCommand::Edit(cmd)) => {
             edit::run(model, printer, text_editor, &cmd)
         }
+        Some(SubCommand::Find(cmd)) => find::run(model, printer, &cmd),
         Some(SubCommand::Get(cmd)) => get::run(model, printer, &cmd),
         Some(SubCommand::Log) => log::run(model, printer),
         Some(SubCommand::New(cmd)) => new::run(model, printer, &cmd),
