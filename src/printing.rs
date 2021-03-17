@@ -245,7 +245,9 @@ impl Display for PrintableError {
                 PrintableError::CannotEditBecauseInvalidLine{
                     malformed_line,
                 } => format!("Could not parse line: \"{}\"", malformed_line),
-                PrintableError::FailedToUseTextEditor => format!("Failed to open text editor"),
+                PrintableError::FailedToUseTextEditor => {
+                    format!("Failed to open text editor")
+                }
             }
         )
     }
