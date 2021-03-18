@@ -1,4 +1,5 @@
 use app::block;
+use app::chain;
 use app::check;
 use app::edit;
 use app::find;
@@ -24,6 +25,7 @@ pub fn todo(
 ) {
     match &options.cmd {
         Some(SubCommand::Block(cmd)) => block::run(model, printer, &cmd),
+        Some(SubCommand::Chain(cmd)) => chain::run(model, printer, &cmd),
         Some(SubCommand::Check(cmd)) => check::run(model, printer, &cmd),
         Some(SubCommand::Edit(cmd)) => {
             edit::run(model, printer, text_editor, &cmd)

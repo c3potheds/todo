@@ -553,3 +553,27 @@ fn find_with_multiple_strings() {
         })
     );
 }
+
+#[test]
+fn chain_one() {
+    let options = parse(&["todo", "chain", "1"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Chain(Chain {
+            keys: vec![Key::ByNumber(1)],
+        })
+    );
+}
+
+#[test]
+fn chain_three() {
+    let options = parse(&["todo", "chain", "10", "20", "30"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Chain(Chain {
+            keys: vec![Key::ByNumber(10), Key::ByNumber(20), Key::ByNumber(30)],
+        })
+    );
+}

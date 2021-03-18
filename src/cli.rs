@@ -30,6 +30,13 @@ pub struct Block {
 }
 
 #[derive(Debug, PartialEq, StructOpt)]
+#[structopt(setting = structopt::clap::AppSettings::AllowNegativeNumbers)]
+pub struct Chain {
+    /// Tasks to arrange in a blocking sequence.
+    pub keys: Vec<Key>,
+}
+
+#[derive(Debug, PartialEq, StructOpt)]
 pub struct Check {
     /// Tasks to mark as complete.
     #[structopt(verbatim_doc_comment)]
@@ -156,6 +163,17 @@ pub enum SubCommand {
     /// 'todo help unblock' for more info.
     #[structopt(verbatim_doc_comment)]
     Block(Block),
+
+    /// Chain tasks in a blocking sequence.
+    ///
+    /// Each task will block its successor in the order given. For example, if
+    /// you run:
+    ///
+    ///   todo chain a b c
+    ///
+    /// ... then 'a' will block 'b' and 'b' will block 'c'.
+    #[structopt(verbatim_doc_comment)]
+    Chain(Chain),
 
     /// Marks tasks as complete.
     ///
