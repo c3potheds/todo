@@ -5,7 +5,6 @@ extern crate ansi_term;
 extern crate chrono;
 extern crate daggy;
 extern crate itertools;
-extern crate scrawl;
 extern crate structopt;
 extern crate textwrap;
 
