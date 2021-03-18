@@ -394,7 +394,14 @@ fn log_after_multiple_tasks_completed() {
 fn restore_incomplete_task() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a"]);
-    test(&mut list, &["todo", "restore", "1"]).validate().end();
+    test(&mut list, &["todo", "restore", "1"])
+        .validate()
+        .printed_warning(
+            &PrintableWarning::CannotRestoreBecauseAlreadyIncomplete {
+                cannot_restore: 1,
+            },
+        )
+        .end();
 }
 
 #[test]
@@ -447,6 +454,29 @@ fn restore_same_task_with_multiple_keys() {
 }
 
 #[test]
+fn restore_task_with_incomplete_antidependency() {
+    let mut list = TodoList::new();
+    test(&mut list, &["todo", "new", "a", "b"]);
+    test(&mut list, &["todo", "block", "b", "--on", "a"]);
+    test(&mut list, &["todo", "check", "1"]);
+    test(&mut list, &["todo", "restore", "0"])
+        .validate()
+        .printed_task(&[
+            Expect::Desc("a"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::Uncheck),
+        ])
+        .printed_task(&[
+            Expect::Desc("b"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::Lock),
+        ])
+        .end();
+}
+
+#[test]
 fn restore_task_with_complete_antidependency() {
     let mut list = TodoList::new();
     test(&mut list, &["todo", "new", "a", "b"]);
@@ -455,19 +485,12 @@ fn restore_task_with_complete_antidependency() {
     test(&mut list, &["todo", "check", "1"]);
     test(&mut list, &["todo", "restore", "-1"])
         .validate()
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::Uncheck),
-        ])
-        // TODO: Print implicitly unblocked tasks.
-        // .printed_task(&[
-        //     Expect::Desc("b"),
-        //     Expect::Number(2),
-        //     Expect::Status(TaskStatus::Incomplete),
-        //     Expect::Action(Action::Uncheck),
-        // ])
+        .printed_error(
+            &PrintableError::CannotRestoreBecauseAntidependencyIsComplete {
+                cannot_restore: -1,
+                complete_antidependencies: vec![0],
+            },
+        )
         .end();
 }
 

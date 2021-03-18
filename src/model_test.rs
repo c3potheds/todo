@@ -482,7 +482,19 @@ fn task_becomes_blocked_if_dependency_is_restored() {
 }
 
 #[test]
-fn complete_task_becomes_blocked_if_dependency_is_restored() {
+fn cannot_restore_task_with_complete_adeps() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    list.block(b).on(a).unwrap();
+    list.check(a).unwrap();
+    list.check(b).unwrap();
+    assert_eq!(list.restore(a), Err(RestoreError::WouldRestore(vec![b])));
+}
+
+#[test]
+#[ignore = "Need a way to force restore."]
+fn complete_task_becomes_blocked_if_dependency_is_force_restored() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
@@ -498,7 +510,8 @@ fn complete_task_becomes_blocked_if_dependency_is_restored() {
 }
 
 #[test]
-fn complete_task_becomes_blocked_if_transitive_dependency_is_restored() {
+#[ignore = "Need a way to force restore."]
+fn complete_task_becomes_blocked_if_transitive_dependency_is_force_restored() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));

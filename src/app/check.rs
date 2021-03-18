@@ -30,20 +30,22 @@ fn print_check_error(
 
 pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Check) {
     let tasks_to_check = lookup_tasks(model, &cmd.keys);
-    let tasks_to_print = tasks_to_check
-        .iter()
-        .copied()
-        .flat_map(|id| match model.check(id) {
-            Ok(mut unlocked) => {
-                unlocked.insert(id);
-                unlocked.into_iter()
+    let tasks_to_print = tasks_to_check.iter().copied().fold(
+        HashSet::new(),
+        |mut so_far, id| match model.check(id) {
+            Ok(unlocked) => {
+                so_far.insert(id);
+                unlocked.iter_unsorted().for_each(|u| {
+                    so_far.insert(u);
+                });
+                so_far
             }
             Err(_) => {
                 print_check_error(printer, model, id);
-                HashSet::new().into_iter()
+                so_far
             }
-        })
-        .collect::<HashSet<_>>();
+        },
+    );
     model
         .all_tasks()
         .filter(|id| tasks_to_print.contains(id))

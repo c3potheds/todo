@@ -97,7 +97,7 @@ pub struct TodoList {
     incomplete: Layering<TaskId>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct TaskSet {
     ids: HashSet<TaskId>,
 }
@@ -174,6 +174,8 @@ impl TodoList {
             .max()
     }
 
+    /// Recalculates the depth by adding 1 to the max depth of the task's deps.
+    /// Returns Some with the new depth if a change was made, None otherwise.
     fn update_depth(&mut self, id: TaskId) -> Option<usize> {
         match (
             self.incomplete.depth.get(&id).copied(),
@@ -277,7 +279,9 @@ pub enum CheckError {
 }
 
 impl TodoList {
-    pub fn check(&mut self, id: TaskId) -> Result<HashSet<TaskId>, CheckError> {
+    /// Marks the task with the given id as complete. If successful, returns a
+    /// set of tasks that became unblocked, if any.
+    pub fn check(&mut self, id: TaskId) -> Result<TaskSet, CheckError> {
         if self.complete.contains(&id) {
             return Err(CheckError::TaskIsAlreadyComplete);
         }
@@ -301,28 +305,35 @@ impl TodoList {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum RestoreError {
     TaskIsAlreadyIncomplete,
     WouldRestore(Vec<TaskId>),
 }
 
 impl TodoList {
-    pub fn restore(
-        &mut self,
-        id: TaskId,
-    ) -> Result<HashSet<TaskId>, RestoreError> {
+    /// Marks a complete task as incomplete. If successful, returns a set of
+    /// tasks that become blocked, if any.
+    pub fn restore(&mut self, id: TaskId) -> Result<TaskSet, RestoreError> {
         if !self.complete.contains(&id) {
             return Err(RestoreError::TaskIsAlreadyIncomplete);
         }
-        let adeps = self.adeps(id);
+        let complete_adeps: Vec<_> = self
+            .adeps(id)
+            .iter_sorted(&self)
+            .filter(|adep| self.complete.contains(adep))
+            .collect();
+        if complete_adeps.len() > 0 {
+            return Err(RestoreError::WouldRestore(complete_adeps));
+        }
         self.tasks[id.0].completion_time = None;
         self.incomplete.put_in_layer(id, 0);
         remove_first_occurrence_from_vec(&mut self.complete, &id);
         // Update adeps.
-        Ok(adeps
+        Ok(self
+            .adeps(id)
             .iter_sorted(&self)
-            .filter(|&adep| self.update_depth(adep) == Some(0))
+            .filter(|&adep| self.update_depth(adep) == Some(1))
             .collect())
     }
 }
