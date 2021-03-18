@@ -6,7 +6,6 @@ authors = ["Simeon <simeon.anfinrud@mac.com>"]
 [dependencies]
 ansi_term = "0.12"
 chrono = { version = "0.4", features = ["serde"] }
-clap = "2.33"
 app_dirs = "1.2.1"
 daggy = { version = "0.7", features = ["serde-1", "stable_dag"] }
 itertools = "0.10"
