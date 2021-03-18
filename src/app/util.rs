@@ -37,6 +37,16 @@ pub fn lookup_tasks<'a>(
                 })
                 .collect::<Vec<_>>()
                 .into_iter(),
+            &Key::ByRange(start, end) => model
+                .all_tasks()
+                .filter(|&id| {
+                    model
+                        .position(id)
+                        .filter(|&pos| start <= pos && pos <= end)
+                        .is_some()
+                })
+                .collect::<Vec<_>>()
+                .into_iter(),
         })
         .unique()
         .collect()

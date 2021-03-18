@@ -577,3 +577,15 @@ fn chain_three() {
         })
     );
 }
+
+#[test]
+fn chain_by_range() {
+    let options = parse(&["todo", "chain", "1..5"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Chain(Chain {
+            keys: vec![Key::ByRange(1, 5)],
+        })
+    );
+}

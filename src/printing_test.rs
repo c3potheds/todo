@@ -173,6 +173,20 @@ fn display_no_match_found_for_name_warning() {
 }
 
 #[test]
+fn display_no_match_found_for_range_warning() {
+    let fmt = format!(
+        "{}",
+        PrintableWarning::NoMatchFoundForKey {
+            requested_key: Key::ByRange(10, 20),
+        }
+    );
+    assert_eq!(
+        fmt,
+        "\u{1b}[33mwarning\u{1b}[0m: No match found for range(10..20)"
+    );
+}
+
+#[test]
 fn display_cannot_check_because_already_complete_warning() {
     let fmt = format!(
         "{}",
