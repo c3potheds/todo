@@ -13,6 +13,7 @@ pub mod cli;
 pub mod model;
 pub mod printing;
 pub mod text_editing;
+pub mod time_format;
 
 #[cfg(test)]
 mod app_test;
@@ -28,3 +29,6 @@ mod printing_test;
 
 #[cfg(test)]
 mod text_editing_test;
+
+#[cfg(test)]
+mod time_format_test;
