@@ -10,6 +10,7 @@ use std::io::BufWriter;
 use structopt::StructOpt;
 use todo::app;
 use todo::cli::Options;
+use todo::long_output;
 use todo::model::load;
 use todo::model::save;
 use todo::model::LoadError;
@@ -70,15 +71,18 @@ fn main() -> TodoResult {
     path.push("data.json");
     let mut model = File::open(&path)
         .map_or_else(|_| Ok(TodoList::new()), |file| load(file))?;
-    let (term_width, _term_height) =
+    let (term_width, term_height) =
         term_size::dimensions_stdout().unwrap_or((80, 20));
     let printing_context = PrintingContext {
         // TODO: Get the number of tasks from the list.
         max_index_digits: 3,
         width: term_width,
     };
+    let mut out = long_output::max_lines(term_height)
+        .primary(std::io::stdout())
+        .alternate(|| long_output::Less::new().unwrap());
     let mut printer = SimpleTodoPrinter {
-        out: std::io::stdout(),
+        out: &mut out,
         context: &printing_context,
     };
     let text_editor = ScrawlTextEditor;

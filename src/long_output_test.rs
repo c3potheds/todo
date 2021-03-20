@@ -1,0 +1,36 @@
+use super::long_output;
+use std::io::Write;
+
+#[test]
+fn prints_to_primary_for_short_output() {
+    let mut primary = Vec::new();
+    let mut alternate = Vec::new();
+    {
+        let mut out = long_output::max_lines(10)
+            .primary(&mut primary)
+            .alternate(|| &mut alternate);
+        out.write("a\n".as_bytes()).unwrap();
+        out.write("b\n".as_bytes()).unwrap();
+        out.flush().unwrap();
+    }
+    assert_eq!(primary, "a\nb\n".as_bytes());
+    assert_eq!(alternate, "".as_bytes());
+}
+
+#[test]
+fn prints_to_secondary_for_long_output() {
+    let mut primary = Vec::new();
+    let mut alternate = Vec::new();
+    {
+        let mut out = long_output::max_lines(4)
+            .primary(&mut primary)
+            .alternate(|| &mut alternate);
+        out.write("a\n".as_bytes()).unwrap();
+        out.write("b\n".as_bytes()).unwrap();
+        out.write("c\n".as_bytes()).unwrap();
+        out.write("d\n".as_bytes()).unwrap();
+        out.write("e\n".as_bytes()).unwrap();
+    }
+    assert_eq!(primary, "".as_bytes());
+    assert_eq!(alternate, "a\nb\nc\nd\ne\n".as_bytes());
+}

@@ -10,6 +10,7 @@ extern crate textwrap;
 
 pub mod app;
 pub mod cli;
+pub mod long_output;
 pub mod model;
 pub mod printing;
 pub mod text_editing;
@@ -20,6 +21,9 @@ mod app_test;
 
 #[cfg(test)]
 mod cli_test;
+
+#[cfg(test)]
+mod long_output_test;
 
 #[cfg(test)]
 mod model_test;
