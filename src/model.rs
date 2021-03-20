@@ -482,6 +482,32 @@ impl TodoList {
     pub fn all_tasks(&self) -> impl Iterator<Item = TaskId> + '_ {
         self.complete.iter().copied().chain(self.incomplete_tasks())
     }
+
+    pub fn remove(&mut self, id: TaskId) {
+        if self.incomplete.contains(&id) {
+            self.incomplete
+                .remove_from_layer(&id, self.incomplete.depth[&id]);
+        } else if self.complete.contains(&id) {
+            remove_first_occurrence_from_vec(&mut self.complete, &id);
+        };
+        // If a task is nestled between deps and adeps, maintain the structure
+        // of the graph by blocking the adeps on each of the deps.
+        // E.g. if we remove b from (a <- b <- c), then we get (a <- c).
+        let deps: Vec<_> = self.deps(id).iter_sorted(self).collect();
+        let adeps: Vec<_> = self.adeps(id).iter_sorted(self).collect();
+        use itertools::Itertools;
+        deps.iter().cartesian_product(adeps.iter()).for_each(
+            |(&dep, &adep)| {
+                // It should not be possible to cause a cycle when blocking an
+                // adep on a dep because there would already be a cycle if so.
+                self.block(adep).on(dep).unwrap()
+            },
+        );
+        self.tasks.remove_node(id.0);
+        adeps.into_iter().for_each(|adep| {
+            self.update_depth(adep);
+        });
+    }
 }
 
 #[derive(Debug)]
