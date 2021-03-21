@@ -444,7 +444,7 @@ fn cannot_check_blocked_task() {
     let a = list.add(Task::new("a"));
     let b = list.add(Task::new("b"));
     list.block(b).on(a).expect("Could not block b on a");
-    assert!(list.check(b).is_err());
+    assert_eq!(list.check(b), Err(CheckError::TaskIsBlockedBy(vec![a])));
 }
 
 #[test]
@@ -468,6 +468,37 @@ fn can_check_task_whose_dependencies_are_complete() {
     list.check(a).expect("Could not check a");
     list.check(b).expect("Could not check b");
     list.check(c).expect("Could not check c");
+}
+
+#[test]
+fn force_check_incomplete_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let newly_unblocked = list.force_check(a).unwrap();
+    itertools::assert_equal(newly_unblocked.iter_sorted(&list), vec![]);
+}
+
+#[test]
+fn force_check_blocked_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.block(b).on(a).unwrap();
+    list.block(c).on(b).unwrap();
+    let newly_unblocked = list.force_check(b).unwrap();
+    itertools::assert_equal(newly_unblocked.iter_sorted(&list), vec![c]);
+    assert_eq!(list.status(a), Some(TaskStatus::Complete));
+    assert_eq!(list.status(b), Some(TaskStatus::Complete));
+    assert_eq!(list.status(c), Some(TaskStatus::Incomplete));
+}
+
+#[test]
+fn force_check_complete_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    list.check(a).unwrap();
+    assert_eq!(list.force_check(a), Err(CheckError::TaskIsAlreadyComplete));
 }
 
 #[test]

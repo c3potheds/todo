@@ -278,7 +278,7 @@ impl TodoList {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum CheckError {
     TaskIsAlreadyComplete,
     TaskIsBlockedBy(Vec<TaskId>),
@@ -308,6 +308,31 @@ impl TodoList {
             .iter_sorted(&self)
             .filter(|&adep| self.update_depth(adep) == Some(0))
             .collect())
+    }
+
+    pub fn force_check(&mut self, id: TaskId) -> Result<TaskSet, CheckError> {
+        let check_result = self.check(id);
+        if let Err(CheckError::TaskIsBlockedBy(blocked_by)) = &check_result {
+            let mut unblocked_by_deps = blocked_by.iter().copied().fold(
+                TaskSet::new(),
+                |unblocked_so_far, dep| match self.force_check(dep) {
+                    Ok(newly_unblocked) => unblocked_so_far | newly_unblocked,
+                    Err(CheckError::TaskIsAlreadyComplete) => unblocked_so_far,
+                    Err(CheckError::TaskIsBlockedBy(_)) => panic!(
+                        "force_check() should never return TaskIsBlockedBy"
+                    ),
+                },
+            );
+            unblocked_by_deps.ids.remove(&id);
+            match self.check(id) {
+                Ok(newly_unblocked) => Ok(unblocked_by_deps | newly_unblocked),
+                Err(_) => panic!(
+                    "check() should always succeed once deps are checked"
+                ),
+            }
+        } else {
+            check_result
+        }
     }
 }
 
