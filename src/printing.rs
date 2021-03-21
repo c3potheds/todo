@@ -25,11 +25,52 @@ pub enum Action {
     Punt,
 }
 
+#[derive(Debug, PartialEq, Clone)]
+pub enum LogDate {
+    Invisible,
+    YearMonthDay(u16, u8, u8),
+}
+
+#[derive(Debug)]
+pub enum InvalidDate {
+    YearOutOfRange(u16),
+    MonthOutOfRange(u8),
+    DayOutOfRange(u8),
+}
+
+impl LogDate {
+    pub fn ymd(y: u16, m: u8, d: u8) -> Result<LogDate, InvalidDate> {
+        if y < 1000 || y > 9999 {
+            return Err(InvalidDate::YearOutOfRange(y));
+        }
+        if m == 0 || m > 12 {
+            return Err(InvalidDate::MonthOutOfRange(m));
+        }
+        if d == 0 || d > 31 {
+            return Err(InvalidDate::DayOutOfRange(d));
+        }
+        Ok(LogDate::YearMonthDay(y, m, d))
+    }
+}
+
+impl Display for LogDate {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        match self {
+            LogDate::Invisible => write!(f, "          "),
+            LogDate::YearMonthDay(ref y, ref m, ref d) => {
+                write!(f, "{:04}-{:02}-{:02}", y, m, d)
+            }
+        }
+    }
+}
+
+#[derive(Debug, PartialEq)]
 pub struct PrintableTask<'a> {
     pub desc: &'a str,
     pub number: i32,
     pub status: TaskStatus,
     pub action: Action,
+    pub log_date: Option<LogDate>,
 }
 
 struct PrintableTaskWithContext<'a> {
@@ -134,19 +175,29 @@ fn format_numbers<I: IntoIterator<Item = i32>>(
 
 impl<'a> Display for PrintableTaskWithContext<'a> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        let action_and_number = format!(
-            "{} {:>width$} ",
-            self.task.action,
-            format_number(self.task.number, self.task.status),
-            width = self.context.max_index_digits + ANSI_OFFSET
-        );
+        let start = if let Some(log_date) = &self.task.log_date {
+            format!(
+                "{} {} {:>width$} ",
+                log_date,
+                self.task.action,
+                format_number(self.task.number, self.task.status),
+                width = self.context.max_index_digits + ANSI_OFFSET
+            )
+        } else {
+            format!(
+                "{} {:>width$} ",
+                self.task.action,
+                format_number(self.task.number, self.task.status),
+                width = self.context.max_index_digits + ANSI_OFFSET
+            )
+        };
         write!(
             f,
             "{}",
             textwrap::fill(
                 self.task.desc,
                 textwrap::Options::new(self.context.width)
-                    .initial_indent(&action_and_number)
+                    .initial_indent(&start)
                     .break_words(false)
                     .subsequent_indent(
                         &" ".repeat(self.context.max_index_digits + 6),
@@ -292,6 +343,7 @@ struct PrintedTaskInfo {
     number: i32,
     status: TaskStatus,
     action: Action,
+    log_date: Option<LogDate>,
 }
 
 #[derive(Debug)]
@@ -314,6 +366,7 @@ pub enum Expect<'a> {
     Number(i32),
     Status(TaskStatus),
     Action(Action),
+    LogDate(LogDate),
 }
 
 #[cfg(test)]
@@ -352,6 +405,19 @@ impl<'a> Expect<'a> {
                     );
                 }
             }
+            Expect::LogDate(log_date) => match &info.log_date {
+                Some(actual) => {
+                    if *log_date != *actual {
+                        panic!(
+                            "Unexpected log date: {:?} (Expected {:?}",
+                            actual, log_date
+                        );
+                    }
+                }
+                None => {
+                    panic!("Missing required log date: {:?}", log_date);
+                }
+            },
         }
     }
 }
@@ -439,6 +505,7 @@ impl TodoPrinter for FakePrinter {
             number: task.number,
             status: task.status,
             action: task.action,
+            log_date: task.log_date.clone(),
         }));
     }
 

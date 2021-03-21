@@ -34,6 +34,7 @@ fn fmt_incomplete_task() {
         number: 1,
         status: TaskStatus::Incomplete,
         action: Action::None,
+        log_date: None,
     });
     // The 1) is wrapped in ANSI codes painting it yellow.
     assert_eq!(fmt, "      \u{1b}[33m1)\u{1b}[0m a\n");
@@ -46,6 +47,7 @@ fn fmt_complete_task() {
         number: 0,
         status: TaskStatus::Complete,
         action: Action::None,
+        log_date: None,
     });
     // The 0) is wrapped in ANSI codes painting it green.
     assert_eq!(fmt, "      \u{1b}[32m0)\u{1b}[0m b\n");
@@ -58,6 +60,7 @@ fn fmt_blocked_task() {
         number: 2,
         status: TaskStatus::Blocked,
         action: Action::None,
+        log_date: None,
     });
     // The 2) is wrapped in ANSI codes painting it red.
     assert_eq!(fmt, "      \u{1b}[31m2)\u{1b}[0m c\n");
@@ -75,6 +78,7 @@ fn fmt_double_digit_number_in_max_four_digit_environment() {
             number: 99,
             status: TaskStatus::Blocked,
             action: Action::None,
+            log_date: None,
         },
     );
     assert_eq!(fmt, "      \u{1b}[31m99)\u{1b}[0m hello\n");
@@ -92,6 +96,7 @@ fn fmt_triple_digit_number_in_max_four_digit_environment() {
             number: 100,
             status: TaskStatus::Blocked,
             action: Action::None,
+            log_date: None,
         },
     );
     assert_eq!(fmt, "     \u{1b}[31m100)\u{1b}[0m hello\n");
@@ -104,6 +109,7 @@ fn show_check_mark_on_check_action() {
         number: 0,
         status: TaskStatus::Complete,
         action: Action::Check,
+        log_date: None,
     });
     assert_eq!(
         fmt,
@@ -118,6 +124,7 @@ fn show_empty_box_on_uncheck_action() {
         number: 1,
         status: TaskStatus::Incomplete,
         action: Action::Uncheck,
+        log_date: None,
     });
     assert_eq!(fmt, "\u{1b}[33m[ ]\u{1b}[0m   \u{1b}[33m1)\u{1b}[0m oh\n");
 }
@@ -135,6 +142,7 @@ fn text_wrapping() {
             number: 1,
             status: TaskStatus::Incomplete,
             action: Action::None,
+            log_date: None,
         },
     );
     assert_eq!(
@@ -145,6 +153,42 @@ fn text_wrapping() {
                                      much longer\n         \
                                      than 24 chars\n"
     );
+}
+
+#[test]
+fn visible_log_date() {
+    let fmt = print_task(&PrintableTask {
+        desc: "yeah babi babi babi babi babi babi babi babiru",
+        number: 0,
+        status: TaskStatus::Complete,
+        action: Action::None,
+        log_date: Some(LogDate::ymd(2021, 02, 28).unwrap()),
+    });
+    assert_eq!(
+        fmt,
+        concat!(
+            "2021-02-28       \u{1b}[32m0)\u{1b}[0m ",
+            "yeah babi babi babi babi babi babi babi babiru\n"
+        )
+    )
+}
+
+#[test]
+fn invisible_log_date() {
+    let fmt = print_task(&PrintableTask {
+        desc: "yeah babi babi babi babi babi babi babi babiru",
+        number: 0,
+        status: TaskStatus::Complete,
+        action: Action::None,
+        log_date: Some(LogDate::Invisible),
+    });
+    assert_eq!(
+        fmt,
+        concat!(
+            "                 \u{1b}[32m0)\u{1b}[0m ",
+            "yeah babi babi babi babi babi babi babi babiru\n"
+        )
+    )
 }
 
 #[test]
@@ -336,6 +380,7 @@ fn show_lock_icon_on_lock_action() {
         number: 5,
         status: TaskStatus::Blocked,
         action: Action::Lock,
+        log_date: None,
     });
     assert_eq!(
         fmt,
@@ -350,6 +395,7 @@ fn show_unlock_icon_on_unlock_action() {
         number: 10,
         status: TaskStatus::Incomplete,
         action: Action::Unlock,
+        log_date: None,
     });
     assert_eq!(
         fmt,
@@ -364,6 +410,7 @@ fn show_punt_icon_on_punt_action() {
         number: 5,
         status: TaskStatus::Incomplete,
         action: Action::Punt,
+        log_date: None,
     });
     assert_eq!(fmt, " ⏎    \u{1b}[33m5)\u{1b}[0m punt this\n");
 }
@@ -376,6 +423,7 @@ fn validate_single_task() {
         number: 1,
         status: TaskStatus::Incomplete,
         action: Action::None,
+        log_date: None,
     });
     printer
         .validate()
@@ -391,12 +439,14 @@ fn validate_multiple_tasks() {
         number: 1,
         status: TaskStatus::Incomplete,
         action: Action::None,
+        log_date: None,
     });
     printer.print_task(&PrintableTask {
         desc: "b",
         number: 2,
         status: TaskStatus::Incomplete,
         action: Action::None,
+        log_date: None,
     });
     printer
         .validate()
@@ -441,6 +491,7 @@ fn fail_validation_on_incorrect_description() {
         number: 1,
         status: TaskStatus::Incomplete,
         action: Action::None,
+        log_date: None,
     });
     printer.validate().printed_task(&[Expect::Desc("b")]).end();
 }
@@ -454,6 +505,7 @@ fn fail_validation_on_incorrect_number() {
         number: 1,
         status: TaskStatus::Incomplete,
         action: Action::None,
+        log_date: None,
     });
     printer.validate().printed_task(&[Expect::Number(2)]).end();
 }
@@ -467,6 +519,7 @@ fn fail_validation_on_extra_tasks() {
         number: 1,
         status: TaskStatus::Incomplete,
         action: Action::None,
+        log_date: None,
     });
     printer.validate().end();
 }
@@ -480,6 +533,7 @@ fn fail_validation_on_incorrect_status() {
         number: 0,
         status: TaskStatus::Incomplete,
         action: Action::None,
+        log_date: None,
     });
     printer
         .validate()
@@ -496,6 +550,7 @@ fn fail_validation_on_incorrect_action() {
         number: 1,
         status: TaskStatus::Incomplete,
         action: Action::New,
+        log_date: None,
     });
     printer
         .validate()
@@ -528,6 +583,7 @@ fn fail_validation_on_task_instead_of_warning() {
         number: 1,
         status: TaskStatus::Incomplete,
         action: Action::None,
+        log_date: None,
     });
     printer.validate().printed_warning(&warning).end();
 }
@@ -561,6 +617,41 @@ fn fail_validation_on_task_instead_of_error() {
         number: 1,
         status: TaskStatus::Incomplete,
         action: Action::None,
+        log_date: None,
     });
     printer.validate().printed_error(&error).end();
+}
+
+#[test]
+#[should_panic(expected = "Missing required log date")]
+fn fail_validation_on_missing_log_date() {
+    let mut printer = FakePrinter::new();
+    printer.print_task(&PrintableTask {
+        desc: "a",
+        number: 1,
+        status: TaskStatus::Incomplete,
+        action: Action::None,
+        log_date: None,
+    });
+    printer
+        .validate()
+        .printed_task(&[Expect::LogDate(LogDate::ymd(2021, 03, 21).unwrap())])
+        .end();
+}
+
+#[test]
+#[should_panic(expected = "Unexpected log date")]
+fn fail_validation_on_incorrect_log_date() {
+    let mut printer = FakePrinter::new();
+    printer.print_task(&PrintableTask {
+        desc: "a",
+        number: 1,
+        status: TaskStatus::Incomplete,
+        action: Action::None,
+        log_date: Some(LogDate::Invisible),
+    });
+    printer
+        .validate()
+        .printed_task(&[Expect::LogDate(LogDate::ymd(2021, 03, 21).unwrap())])
+        .end();
 }

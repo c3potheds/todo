@@ -3,6 +3,7 @@ use itertools::Itertools;
 use model::TaskId;
 use model::TodoList;
 use printing::Action;
+use printing::LogDate;
 use printing::PrintableTask;
 
 pub fn format_task<'a>(
@@ -16,6 +17,23 @@ pub fn format_task<'a>(
         number: number,
         status: model.status(id).unwrap(),
         action: action,
+        log_date: None,
+    }
+}
+
+#[allow(dead_code)]
+pub fn format_task_with_date<'a>(
+    model: &'a TodoList,
+    id: TaskId,
+    log_date: LogDate,
+) -> PrintableTask<'a> {
+    let number = model.position(id).unwrap();
+    PrintableTask {
+        desc: &model.get(id).unwrap().desc,
+        number: number,
+        status: model.status(id).unwrap(),
+        action: Action::None,
+        log_date: Some(log_date),
     }
 }
 

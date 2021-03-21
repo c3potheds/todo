@@ -1,8 +1,74 @@
-use super::util::lookup_tasks;
-use super::util::pairwise;
+use super::util::*;
 use cli::Key;
 use model::Task;
+use model::TaskStatus;
 use model::TodoList;
+use printing::Action;
+use printing::LogDate;
+use printing::PrintableTask;
+
+#[test]
+fn format_task_basic() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let actual = format_task(&list, a, Action::None);
+    let expected = PrintableTask {
+        desc: "a",
+        number: 1,
+        status: TaskStatus::Incomplete,
+        action: Action::None,
+        log_date: None,
+    };
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn format_task_with_action() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let actual = format_task(&list, a, Action::Punt);
+    let expected = PrintableTask {
+        desc: "a",
+        number: 1,
+        status: TaskStatus::Incomplete,
+        action: Action::Punt,
+        log_date: None,
+    };
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn format_task_with_invisible_log_date() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    list.check(a).unwrap();
+    let actual = format_task_with_date(&list, a, LogDate::Invisible);
+    let expected = PrintableTask {
+        desc: "a",
+        number: 0,
+        status: TaskStatus::Complete,
+        action: Action::None,
+        log_date: Some(LogDate::Invisible),
+    };
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn format_task_with_visible_log_date() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    list.check(a).unwrap();
+    let actual =
+        format_task_with_date(&list, a, LogDate::ymd(2020, 03, 21).unwrap());
+    let expected = PrintableTask {
+        desc: "a",
+        number: 0,
+        status: TaskStatus::Complete,
+        action: Action::None,
+        log_date: Some(LogDate::YearMonthDay(2020, 03, 21)),
+    };
+    assert_eq!(actual, expected);
+}
 
 #[test]
 fn lookup_by_number() {
