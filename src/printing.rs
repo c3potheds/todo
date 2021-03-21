@@ -111,7 +111,8 @@ pub enum PrintableError {
     CannotBlockBecauseWouldCauseCycle {
         cannot_block: i32,
         requested_dependency: i32,
-        // TODO: print the path between requested_dependency and cannot_block.
+        // TODO(printing.show-cycle): print the path between
+        // requested_dependency and cannot_block.
         // cycles: Vec<Vec<i32>>,
     },
     CannotEditBecauseUnexpectedNumber {

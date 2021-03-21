@@ -63,8 +63,9 @@ fn two_months() {
     let now = Local.ymd(2021, 03, 19).and_hms(12, 00, 00);
     let expected = Local
         .ymd(2021, 05, 19)
-        // TODO: humantime represents a month as 30.44 days. Either snap to the
-        // same time of day as "now" or to the end of the day.
+        // TODO(time-format.end-of-day): humantime represents a month as 30.44
+        // days. Either snap to the same time of day as "now" or to the end of
+        // the day.
         .and_hms(09, 07, 12);
     let actual = parse_time(now, "2 months").unwrap();
     assert_eq!(actual, expected);

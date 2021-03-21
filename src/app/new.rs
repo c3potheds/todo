@@ -20,7 +20,8 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &New) {
         .copied()
         .cartesian_product(new_tasks.iter().copied())
         .for_each(|(dep, new)| {
-            // TODO: print a warning, but continue in the error case.
+            // TODO(app.new.print-warning-on-cycle): print a warning, but
+            // continue in the error case.
             model.block(new).on(dep).expect("Cannot block");
         });
     adeps
@@ -28,7 +29,8 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &New) {
         .copied()
         .cartesian_product(new_tasks.iter().copied())
         .for_each(|(adep, new)| {
-            // TODO: print a warning, but continue in the error case.
+            // TODO(app.new.print-warning-on-cycle): print a warning, but
+            // continue in the error case.
             model.block(adep).on(new).expect("Cannot block");
         });
     if cmd.chain {

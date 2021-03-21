@@ -74,7 +74,7 @@ fn main() -> TodoResult {
     let (term_width, term_height) =
         term_size::dimensions_stdout().unwrap_or((80, 20));
     let printing_context = PrintingContext {
-        // TODO: Get the number of tasks from the list.
+        // TODO(more-than-three-digits): Get the number of tasks from the list.
         max_index_digits: 3,
         width: term_width,
     };
