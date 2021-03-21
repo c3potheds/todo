@@ -113,7 +113,7 @@ impl<A: Write, B: Write, F: FnOnce() -> B> Drop
 
 pub struct Less {
     process: std::process::Child,
-    stdin: std::process::ChildStdin,
+    stdin: Option<std::process::ChildStdin>,
 }
 
 impl Less {
@@ -127,7 +127,7 @@ impl Less {
                 let stdin = child.stdin.take().unwrap();
                 Ok(Less {
                     process: child,
-                    stdin: stdin,
+                    stdin: Some(stdin),
                 })
             })
     }
@@ -135,16 +135,17 @@ impl Less {
 
 impl Write for Less {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        self.stdin.write(buf)
+        self.stdin.as_ref().unwrap().write(buf)
     }
 
     fn flush(&mut self) -> std::io::Result<()> {
-        self.stdin.flush()
+        self.stdin.as_ref().unwrap().flush()
     }
 }
 
 impl Drop for Less {
     fn drop(&mut self) {
+        std::mem::drop(self.stdin.take().unwrap());
         self.process.wait().ok();
     }
 }
