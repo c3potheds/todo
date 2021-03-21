@@ -493,7 +493,6 @@ fn cannot_restore_task_with_complete_adeps() {
 }
 
 #[test]
-#[ignore = "Need a way to force restore."]
 fn complete_task_becomes_blocked_if_dependency_is_force_restored() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
@@ -501,7 +500,7 @@ fn complete_task_becomes_blocked_if_dependency_is_force_restored() {
     list.block(b).on(a).expect("Could not block b on a");
     list.check(a).expect("Could not check a");
     list.check(b).expect("Could not check b");
-    list.restore(a).expect("Could not restore a");
+    list.force_restore(a).expect("Could not restore a");
     assert_eq!(list.status(b), Some(TaskStatus::Blocked));
     let mut incomplete_tasks = list.incomplete_tasks();
     assert_eq!(incomplete_tasks.next(), Some(a));
@@ -510,7 +509,6 @@ fn complete_task_becomes_blocked_if_dependency_is_force_restored() {
 }
 
 #[test]
-#[ignore = "Need a way to force restore."]
 fn complete_task_becomes_blocked_if_transitive_dependency_is_force_restored() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
@@ -521,13 +519,38 @@ fn complete_task_becomes_blocked_if_transitive_dependency_is_force_restored() {
     list.check(a).expect("Could not check a");
     list.check(b).expect("Could not check b");
     list.check(c).expect("Could not check c");
-    list.restore(a).expect("Could not restore a");
+    list.force_restore(a).expect("Could not restore a");
     assert_eq!(list.status(c), Some(TaskStatus::Blocked));
     let mut incomplete_tasks = list.incomplete_tasks();
     assert_eq!(incomplete_tasks.next(), Some(a));
     assert_eq!(incomplete_tasks.next(), Some(b));
     assert_eq!(incomplete_tasks.next(), Some(c));
     assert_eq!(incomplete_tasks.next(), None);
+}
+
+#[test]
+fn force_restore_returns_newly_blocked_tasks_on_success() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.block(b).on(a).unwrap();
+    list.block(c).on(a).unwrap();
+    list.check(a).unwrap();
+    list.check(b).unwrap();
+    list.check(c).unwrap();
+    let newly_blocked = list.force_restore(a).unwrap();
+    itertools::assert_equal(newly_blocked.iter_sorted(&list), vec![b, c]);
+}
+
+#[test]
+fn force_restore_already_incomplete() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    assert_eq!(
+        list.force_restore(a),
+        Err(RestoreError::TaskIsAlreadyIncomplete)
+    );
 }
 
 #[test]

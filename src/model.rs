@@ -121,6 +121,12 @@ impl Ord for TaskIdWithPosition {
 }
 
 impl TaskSet {
+    pub fn new() -> Self {
+        TaskSet {
+            ids: HashSet::new(),
+        }
+    }
+
     /// Iterates the set in an arbitrary order. Careful when using this; it may
     /// cause non-determinism. It is more efficient than iterating in sorted
     /// order.
@@ -335,6 +341,38 @@ impl TodoList {
             .iter_sorted(&self)
             .filter(|&adep| self.update_depth(adep) == Some(1))
             .collect())
+    }
+
+    /// Marks a task as incomplete. If any transitive antidependencies are
+    /// complete, they are also marked as incomplete. If the task is already
+    /// incomplete, returns ResoreError::TaskIsAlreadyIncomplete, but never
+    /// returns WouldRestore.
+    pub fn force_restore(
+        &mut self,
+        id: TaskId,
+    ) -> Result<TaskSet, RestoreError> {
+        let restore_result = self.restore(id);
+        if let Err(RestoreError::WouldRestore(would_restore)) = &restore_result
+        {
+            let blocked_from_adeps = would_restore.iter().copied().fold(
+                TaskSet::new(),
+                |blocked_so_far, adep| match self.force_restore(adep) {
+                    Ok(newly_blocked) => blocked_so_far | newly_blocked,
+                    Err(RestoreError::TaskIsAlreadyIncomplete) => {
+                        blocked_so_far
+                    }
+                    Err(RestoreError::WouldRestore(_)) => panic!(
+                        "force_restore() should never return WouldRestore"
+                    ),
+                },
+            );
+            match self.restore(id) {
+                Ok(newly_blocked) => Ok(newly_blocked | blocked_from_adeps),
+                Err(_) => panic!("restore() should always work after force-restoring all adeps"),
+            }
+        } else {
+            restore_result
+        }
     }
 }
 
