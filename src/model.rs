@@ -393,7 +393,10 @@ impl TodoList {
             );
             match self.restore(id) {
                 Ok(newly_blocked) => Ok(newly_blocked | blocked_from_adeps),
-                Err(_) => panic!("restore() should always work after force-restoring all adeps"),
+                Err(_) => panic!(concat!(
+                    "restore() should always work after ",
+                    "force-restoring all adeps"
+                )),
             }
         } else {
             restore_result
