@@ -61,6 +61,18 @@ impl From<SaveError> for TodoError {
 
 type TodoResult = Result<(), TodoError>;
 
+fn log10(n: usize) -> usize {
+    let mut log = 1;
+    let mut base = 1;
+    loop {
+        if n / base < 10 {
+            return log;
+        }
+        log += 1;
+        base *= 10;
+    }
+}
+
 fn main() -> TodoResult {
     let options = Options::from_args();
     let app_info = AppInfo {
@@ -74,8 +86,11 @@ fn main() -> TodoResult {
     let (term_width, term_height) =
         term_size::dimensions_stdout().unwrap_or((80, 20));
     let printing_context = PrintingContext {
-        // TODO(more-than-three-digits): Get the number of tasks from the list.
-        max_index_digits: 3,
+        max_index_digits: std::cmp::max(
+            // Add one for the minus sign for complete tasks.
+            log10(model.num_complete_tasks()) + 1,
+            log10(model.num_incomplete_tasks()),
+        ),
         width: term_width,
     };
     let mut out = long_output::max_lines(term_height)
@@ -91,4 +106,21 @@ fn main() -> TodoResult {
     let writer = BufWriter::new(file);
     save(writer, &model)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn log10_examples() {
+        assert_eq!(log10(0), 1);
+        assert_eq!(log10(5), 1);
+        assert_eq!(log10(10), 2);
+        assert_eq!(log10(99), 2);
+        assert_eq!(log10(100), 3);
+        assert_eq!(log10(999), 3);
+        assert_eq!(log10(1000), 4);
+        assert_eq!(log10(123456789), 9);
+    }
 }

@@ -1073,3 +1073,23 @@ fn tasks_with_negative_priority_appear_last() {
     let c = list.add(Task::new("c"));
     itertools::assert_equal(list.all_tasks(), vec![a, c, b]);
 }
+
+#[test]
+fn num_incomplete_tasks() {
+    let mut list = TodoList::new();
+    assert_eq!(list.num_incomplete_tasks(), 0);
+    let a = list.add(Task::new("a"));
+    assert_eq!(list.num_incomplete_tasks(), 1);
+    list.check(a).unwrap();
+    assert_eq!(list.num_incomplete_tasks(), 0);
+}
+
+#[test]
+fn num_complete_tasks() {
+    let mut list = TodoList::new();
+    assert_eq!(list.num_complete_tasks(), 0);
+    let a = list.add(Task::new("a"));
+    assert_eq!(list.num_complete_tasks(), 0);
+    list.check(a).unwrap();
+    assert_eq!(list.num_complete_tasks(), 1);
+}

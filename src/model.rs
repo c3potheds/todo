@@ -74,6 +74,10 @@ where
         }
     }
 
+    pub fn len(&self) -> usize {
+        self.layers.iter().map(|layer| layer.len()).sum()
+    }
+
     pub fn bisect_layer(
         &self,
         data: &T,
@@ -576,6 +580,14 @@ impl TodoList {
 
     pub fn all_tasks(&self) -> impl Iterator<Item = TaskId> + '_ {
         self.complete.iter().copied().chain(self.incomplete_tasks())
+    }
+
+    pub fn num_incomplete_tasks(&self) -> usize {
+        self.incomplete.len()
+    }
+
+    pub fn num_complete_tasks(&self) -> usize {
+        self.complete.len()
     }
 
     pub fn remove(&mut self, id: TaskId) {
