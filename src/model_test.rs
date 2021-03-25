@@ -1014,3 +1014,62 @@ fn remove_task_attaches_all_deps_to_adeps() {
     assert_eq!(list.status(d), Some(TaskStatus::Blocked));
     assert_eq!(list.status(e), Some(TaskStatus::Blocked));
 }
+
+#[test]
+fn sorted_by_priority_two_tasks() {
+    let mut list = TodoList::new();
+    let mut task = Task::new("a");
+    task.priority = Some(1);
+    let a = list.add(task);
+    let mut task = Task::new("b");
+    task.priority = Some(2);
+    let b = list.add(task);
+    itertools::assert_equal(list.all_tasks(), vec![b, a]);
+}
+
+#[test]
+fn sorted_by_priority_three_tasks() {
+    let mut list = TodoList::new();
+    let a = {
+        let mut task = Task::new("a");
+        task.priority = Some(1);
+        list.add(task)
+    };
+    let b = {
+        let mut task = Task::new("b");
+        task.priority = Some(2);
+        list.add(task)
+    };
+    let c = {
+        let mut task = Task::new("c");
+        task.priority = Some(3);
+        list.add(task)
+    };
+    itertools::assert_equal(list.all_tasks(), vec![c, b, a]);
+}
+
+#[test]
+fn priority_tasks_before_no_priority_tasks() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = {
+        let mut task = Task::new("b");
+        task.priority = Some(1);
+        list.add(task)
+    };
+    let c = list.add(Task::new("c"));
+    itertools::assert_equal(list.all_tasks(), vec![b, a, c]);
+}
+
+#[test]
+fn tasks_with_negative_priority_appear_last() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = {
+        let mut task = Task::new("b");
+        task.priority = Some(-1);
+        list.add(task)
+    };
+    let c = list.add(Task::new("c"));
+    itertools::assert_equal(list.all_tasks(), vec![a, c, b]);
+}

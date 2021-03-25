@@ -1,3 +1,5 @@
+extern crate bisection;
+
 use chrono::DateTime;
 use chrono::Utc;
 use daggy::stable_dag::StableDag;
@@ -21,11 +23,13 @@ pub enum TaskStatus {
     Blocked,
 }
 
+// NOTE: all new fields need to be Options to allow backwards compatibility.
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct Task {
     pub desc: String,
     pub creation_time: Option<DateTime<Utc>>,
     pub completion_time: Option<DateTime<Utc>>,
+    pub priority: Option<i32>,
 }
 
 impl Task {
@@ -34,6 +38,7 @@ impl Task {
             desc: desc.into(),
             creation_time: Some(Utc::now()),
             completion_time: None,
+            priority: None,
         }
     }
 }
@@ -69,8 +74,22 @@ where
         }
     }
 
-    pub fn put_in_layer(&mut self, data: T, layer: usize) -> bool {
-        self.layer(layer).push(data);
+    pub fn bisect_layer(
+        &self,
+        data: &T,
+        layer: usize,
+        cmp: impl Fn(&T, &T) -> std::cmp::Ordering,
+    ) -> usize {
+        if self.layers.len() <= layer {
+            return 0;
+        }
+        bisection::bisect_right_by(&self.layers[layer], |other| {
+            (&cmp)(other, data)
+        })
+    }
+
+    pub fn put_in_layer(&mut self, data: T, layer: usize, pos: usize) -> bool {
+        self.layer(layer).insert(pos, data);
         self.depth.insert(data, layer);
         true
     }
@@ -171,6 +190,16 @@ impl std::ops::BitOr for TaskSet {
 }
 
 impl TodoList {
+    fn put_in_incomplete_layer(&mut self, id: TaskId, depth: usize) -> bool {
+        let pos = self.incomplete.bisect_layer(&id, depth, |&a, &b| {
+            self.get(a)
+                .and_then(|a| a.priority)
+                .unwrap_or(0)
+                .cmp(&self.get(b).and_then(|b| b.priority).unwrap_or(0))
+        });
+        self.incomplete.put_in_layer(id, depth, pos)
+    }
+
     fn max_depth_of_deps(&self, id: TaskId) -> Option<usize> {
         self.deps(id)
             .iter_unsorted()
@@ -192,7 +221,7 @@ impl TodoList {
             // Task is complete, needs to be put into a layer.
             (None, Some(new_depth)) => {
                 remove_first_occurrence_from_vec(&mut self.complete, &id);
-                self.incomplete.put_in_layer(id, new_depth);
+                self.put_in_incomplete_layer(id, new_depth);
                 Some(new_depth)
             }
             // Task is incomplete and has some incomplete deps.
@@ -203,7 +232,7 @@ impl TodoList {
                 } else {
                     // Depth changed and adeps need to update.
                     self.incomplete.remove_from_layer(&id, old_depth);
-                    self.incomplete.put_in_layer(id, new_depth);
+                    self.put_in_incomplete_layer(id, new_depth);
                     Some(new_depth)
                 }
             }
@@ -214,7 +243,7 @@ impl TodoList {
                     None
                 } else {
                     self.incomplete.remove_from_layer(&id, old_depth);
-                    self.incomplete.put_in_layer(id, 0);
+                    self.put_in_incomplete_layer(id, 0);
                     Some(0)
                 }
             }
@@ -273,7 +302,7 @@ impl TodoList {
 
     pub fn add(&mut self, task: Task) -> TaskId {
         let id = TaskId(self.tasks.add_node(task));
-        self.incomplete.put_in_layer(id, 0);
+        self.put_in_incomplete_layer(id, 0);
         id
     }
 }
@@ -358,7 +387,7 @@ impl TodoList {
             return Err(RestoreError::WouldRestore(complete_adeps));
         }
         self.tasks[id.0].completion_time = None;
-        self.incomplete.put_in_layer(id, 0);
+        self.put_in_incomplete_layer(id, 0);
         remove_first_occurrence_from_vec(&mut self.complete, &id);
         // Update adeps.
         Ok(self
@@ -487,7 +516,7 @@ impl TodoList {
         match self.incomplete.depth.get(&id) {
             Some(&depth) => {
                 self.incomplete.remove_from_layer(&id, depth);
-                self.incomplete.put_in_layer(id, depth);
+                self.put_in_incomplete_layer(id, depth);
                 Ok(())
             }
             None => Err(PuntError::TaskIsComplete),
