@@ -32,11 +32,26 @@ pub struct Task {
     pub priority: Option<i32>,
 }
 
-impl Task {
-    pub fn new<S: Into<String>>(desc: S) -> Task {
-        Task {
+pub struct NewOptions {
+    pub desc: String,
+    pub now: DateTime<Utc>,
+}
+
+impl<S: Into<String>> From<S> for NewOptions {
+    fn from(desc: S) -> Self {
+        Self {
             desc: desc.into(),
-            creation_time: Some(Utc::now()),
+            now: Utc::now(),
+        }
+    }
+}
+
+impl Task {
+    pub fn new<Options: Into<NewOptions>>(options: Options) -> Task {
+        let options = options.into();
+        Task {
+            desc: options.desc,
+            creation_time: Some(options.now),
             completion_time: None,
             priority: None,
         }
@@ -317,14 +332,32 @@ pub enum CheckError {
     TaskIsBlockedBy(Vec<TaskId>),
 }
 
+pub struct CheckOptions {
+    pub id: TaskId,
+    pub now: DateTime<Utc>,
+}
+
+impl From<TaskId> for CheckOptions {
+    fn from(id: TaskId) -> Self {
+        Self {
+            id: id,
+            now: Utc::now(),
+        }
+    }
+}
+
 impl TodoList {
     /// Marks the task with the given id as complete. If successful, returns a
     /// set of tasks that became unblocked, if any.
-    pub fn check(&mut self, id: TaskId) -> Result<TaskSet, CheckError> {
-        if self.complete.contains(&id) {
+    pub fn check<Options: Into<CheckOptions>>(
+        &mut self,
+        options: Options,
+    ) -> Result<TaskSet, CheckError> {
+        let options = options.into();
+        if self.complete.contains(&options.id) {
             return Err(CheckError::TaskIsAlreadyComplete);
         }
-        let deps = self.deps(id);
+        let deps = self.deps(options.id);
         let incomplete_deps: Vec<_> = deps
             .iter_sorted(&self)
             .filter(|dep| self.incomplete.contains(dep))
@@ -332,12 +365,12 @@ impl TodoList {
         if incomplete_deps.len() > 0 {
             return Err(CheckError::TaskIsBlockedBy(incomplete_deps));
         }
-        self.tasks[id.0].completion_time = Some(Utc::now());
-        self.incomplete.remove_from_layer(&id, 0);
-        self.complete.push(id);
+        self.tasks[options.id.0].completion_time = Some(options.now);
+        self.incomplete.remove_from_layer(&options.id, 0);
+        self.complete.push(options.id);
         // Update adeps.
         Ok(self
-            .adeps(id)
+            .adeps(options.id)
             .iter_sorted(&self)
             .filter(|&adep| self.update_depth(adep) == Some(0))
             .collect())

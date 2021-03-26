@@ -1,3 +1,4 @@
+use chrono::TimeZone;
 use model::*;
 
 #[test]
@@ -11,6 +12,16 @@ fn no_tasks() {
 fn new_task_has_creation_time() {
     let task = Task::new("task");
     assert!(task.creation_time.is_some());
+}
+
+#[test]
+fn inject_creation_time() {
+    let now = chrono::Utc.ymd(2021, 03, 26).and_hms(04, 32, 00);
+    let task = Task::new(NewOptions {
+        desc: "a".to_string(),
+        now: now,
+    });
+    assert_eq!(task.creation_time, Some(now));
 }
 
 #[test]
@@ -99,6 +110,15 @@ fn completion_time_of_completed_task_does_not_update_if_checked() {
         .expect_err("Shouldn't have been able to check a");
     let new_completion_time = list.get(a).unwrap().completion_time.unwrap();
     assert_eq!(original_completion_time, new_completion_time);
+}
+
+#[test]
+fn check_by_options_uses_injected_completion_time() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let now = chrono::Utc.ymd(2021, 03, 26).and_hms(04, 27, 00);
+    list.check(CheckOptions { id: a, now: now }).unwrap();
+    assert_eq!(list.get(a).unwrap().completion_time, Some(now));
 }
 
 #[test]
