@@ -2,19 +2,32 @@ use app::util::format_task;
 use app::util::lookup_tasks;
 use app::util::pairwise;
 use cli::New;
+use clock::Clock;
 use itertools::Itertools;
+use model::NewOptions;
 use model::Task;
 use model::TodoList;
 use printing::Action;
 use printing::TodoPrinter;
 
-pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &New) {
+pub fn run(
+    model: &mut TodoList,
+    printer: &mut impl TodoPrinter,
+    clock: &impl Clock,
+    cmd: &New,
+) {
     let deps = lookup_tasks(&model, &cmd.blocked_by);
     let adeps = lookup_tasks(&model, &cmd.blocking);
+    let now = clock.now();
     let new_tasks: Vec<_> = cmd
         .desc
         .iter()
-        .map(|desc| model.add(Task::new(desc)))
+        .map(|desc| {
+            model.add(Task::new(NewOptions {
+                desc: desc.clone(),
+                now: now,
+            }))
+        })
         .collect();
     deps.iter()
         .copied()

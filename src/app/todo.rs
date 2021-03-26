@@ -13,6 +13,7 @@ use app::status;
 use app::unblock;
 use cli::Options;
 use cli::SubCommand;
+use clock::Clock;
 use model::TodoList;
 use printing::TodoPrinter;
 use text_editing::TextEditor;
@@ -21,19 +22,20 @@ pub fn todo(
     model: &mut TodoList,
     printer: &mut impl TodoPrinter,
     text_editor: &impl TextEditor,
+    clock: &impl Clock,
     options: &Options,
 ) {
     match &options.cmd {
         Some(SubCommand::Block(cmd)) => block::run(model, printer, &cmd),
         Some(SubCommand::Chain(cmd)) => chain::run(model, printer, &cmd),
-        Some(SubCommand::Check(cmd)) => check::run(model, printer, &cmd),
+        Some(SubCommand::Check(cmd)) => check::run(model, printer, clock, &cmd),
         Some(SubCommand::Edit(cmd)) => {
             edit::run(model, printer, text_editor, &cmd)
         }
         Some(SubCommand::Find(cmd)) => find::run(model, printer, &cmd),
         Some(SubCommand::Get(cmd)) => get::run(model, printer, &cmd),
         Some(SubCommand::Log) => log::run(model, printer),
-        Some(SubCommand::New(cmd)) => new::run(model, printer, &cmd),
+        Some(SubCommand::New(cmd)) => new::run(model, printer, clock, &cmd),
         Some(SubCommand::Punt(cmd)) => punt::run(model, printer, &cmd),
         Some(SubCommand::Put(cmd)) => put::run(model, printer, &cmd),
         Some(SubCommand::Restore(cmd)) => restore::run(model, printer, &cmd),

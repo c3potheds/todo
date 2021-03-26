@@ -1,6 +1,8 @@
 use app::util::format_task;
 use app::util::lookup_tasks;
 use cli::Check;
+use clock::Clock;
+use model::CheckOptions;
 use model::TaskId;
 use model::TaskStatus;
 use model::TodoList;
@@ -28,11 +30,17 @@ fn print_check_error(
     });
 }
 
-pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Check) {
+pub fn run(
+    model: &mut TodoList,
+    printer: &mut impl TodoPrinter,
+    clock: &impl Clock,
+    cmd: &Check,
+) {
     let tasks_to_check = lookup_tasks(model, &cmd.keys);
+    let now = clock.now();
     let tasks_to_print = tasks_to_check.iter().copied().fold(
         HashSet::new(),
-        |mut so_far, id| match model.check(id) {
+        |mut so_far, id| match model.check(CheckOptions { id: id, now: now }) {
             Ok(unlocked) => {
                 so_far.insert(id);
                 unlocked.iter_unsorted().for_each(|u| {

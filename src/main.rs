@@ -10,6 +10,7 @@ use std::io::BufWriter;
 use structopt::StructOpt;
 use todo::app;
 use todo::cli::Options;
+use todo::clock::SystemClock;
 use todo::long_output;
 use todo::model::load;
 use todo::model::save;
@@ -101,7 +102,13 @@ fn main() -> TodoResult {
         context: &printing_context,
     };
     let text_editor = ScrawlTextEditor;
-    app::todo(&mut model, &mut printer, &text_editor, &options);
+    app::todo(
+        &mut model,
+        &mut printer,
+        &text_editor,
+        &SystemClock,
+        &options,
+    );
     let file = File::create(&path)?;
     let writer = BufWriter::new(file);
     save(writer, &model)?;
