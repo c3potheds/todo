@@ -6,7 +6,7 @@ use time_format::*;
 fn in_five_minutes_abbreviated() {
     let now = Local.ymd(2021, 03, 18).and_hms(12, 00, 00);
     let expected = Local.ymd(2021, 03, 18).and_hms(12, 05, 00);
-    let actual = parse_time(now, "5 min").unwrap();
+    let actual = parse_time(Local, now, "5 min").unwrap();
     assert_eq!(actual, expected);
 }
 
@@ -14,7 +14,7 @@ fn in_five_minutes_abbreviated() {
 fn in_five_minutes_verbose() {
     let now = Local.ymd(2021, 03, 18).and_hms(12, 00, 00);
     let expected = Local.ymd(2021, 03, 18).and_hms(12, 05, 00);
-    let actual = parse_time(now, "5 minutes").unwrap();
+    let actual = parse_time(Local, now, "5 minutes").unwrap();
     assert_eq!(actual, expected);
 }
 
@@ -22,7 +22,7 @@ fn in_five_minutes_verbose() {
 fn in_one_hour() {
     let now = Local.ymd(2021, 03, 18).and_hms(17, 12, 00);
     let expected = Local.ymd(2021, 03, 18).and_hms(18, 12, 00);
-    let actual = parse_time(now, "1 hour").unwrap();
+    let actual = parse_time(Local, now, "1 hour").unwrap();
     assert_eq!(actual, expected);
 }
 
@@ -30,7 +30,7 @@ fn in_one_hour() {
 fn in_two_days() {
     let now = Local.ymd(2021, 03, 18).and_hms(17, 12, 00);
     let expected = Local.ymd(2021, 03, 18).and_hms(18, 12, 00);
-    let actual = parse_time(now, "1 hour").unwrap();
+    let actual = parse_time(Local, now, "1 hour").unwrap();
     assert_eq!(actual, expected);
 }
 
@@ -38,7 +38,7 @@ fn in_two_days() {
 fn in_six_days() {
     let now = Local.ymd(2021, 03, 18).and_hms(20, 05, 00);
     let expected = Local.ymd(2021, 03, 24).and_hms(20, 05, 00);
-    let actual = parse_time(now, "6 days").unwrap();
+    let actual = parse_time(Local, now, "6 days").unwrap();
     assert_eq!(actual, expected);
 }
 
@@ -46,7 +46,7 @@ fn in_six_days() {
 fn in_two_weeks() {
     let now = Local.ymd(2021, 03, 19).and_hms(23, 23, 00);
     let expected = Local.ymd(2021, 04, 02).and_hms(23, 23, 00);
-    let actual = parse_time(now, "2 weeks").unwrap();
+    let actual = parse_time(Local, now, "2 weeks").unwrap();
     assert_eq!(actual, expected);
 }
 
@@ -54,7 +54,7 @@ fn in_two_weeks() {
 fn across_leap_year() {
     let now = Local.ymd(2020, 02, 27).and_hms(12, 00, 00);
     let expected = Local.ymd(2020, 03, 01).and_hms(12, 00, 00);
-    let actual = parse_time(now, "3 days").unwrap();
+    let actual = parse_time(Local, now, "3 days").unwrap();
     assert_eq!(actual, expected);
 }
 
@@ -67,7 +67,7 @@ fn two_months() {
         // days. Either snap to the same time of day as "now" or to the end of
         // the day.
         .and_hms(09, 07, 12);
-    let actual = parse_time(now, "2 months").unwrap();
+    let actual = parse_time(Local, now, "2 months").unwrap();
     assert_eq!(actual, expected);
 }
 
@@ -76,7 +76,7 @@ fn two_months() {
 fn next_monday() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let expected = Local.ymd(2021, 03, 22).and_hms(23, 59, 59);
-    let actual = parse_time(now, "monday").unwrap();
+    let actual = parse_time(Local, now, "monday").unwrap();
     assert_eq!(actual, expected);
 }
 
@@ -85,7 +85,7 @@ fn next_monday() {
 fn wednesday_abbreviated() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let expected = Local.ymd(2021, 03, 24).and_hms(23, 59, 59);
-    let actual = parse_time(now, "wed").unwrap();
+    let actual = parse_time(Local, now, "wed").unwrap();
     assert_eq!(actual, expected);
 }
 
@@ -94,7 +94,7 @@ fn wednesday_abbreviated() {
 fn last_monday() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let expected = Local.ymd(2021, 03, 15).and_hms(23, 59, 59);
-    let actual = parse_time(now, "last monday").unwrap();
+    let actual = parse_time(Local, now, "last monday").unwrap();
     assert_eq!(actual, expected);
 }
 
@@ -103,7 +103,7 @@ fn last_monday() {
 fn today() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let expected = Local.ymd(2021, 03, 19).and_hms(23, 59, 59);
-    let actual = parse_time(now, "today").unwrap();
+    let actual = parse_time(Local, now, "today").unwrap();
     assert_eq!(actual, expected);
 }
 
@@ -112,34 +112,31 @@ fn today() {
 fn tomorrow() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let expected = Local.ymd(2021, 03, 20).and_hms(23, 59, 59);
-    let actual = parse_time(now, "tomorrow").unwrap();
+    let actual = parse_time(Local, now, "tomorrow").unwrap();
     assert_eq!(actual, expected);
 }
 
 #[test]
-#[ignore = "todo-dev.time-format.time-of-day"]
 fn five_o_clock_pm_verbose() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let expected = Local.ymd(2021, 03, 19).and_hms(17, 00, 00);
-    let actual = parse_time(now, "5:00 pm").unwrap();
+    let actual = parse_time(Local, now, "5:00 pm").unwrap();
     assert_eq!(actual, expected);
 }
 
 #[test]
-#[ignore = "todo-dev.time-format.time-of-day"]
 fn five_o_clock_pm_abbreviated() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let expected = Local.ymd(2021, 03, 19).and_hms(17, 00, 00);
-    let actual = parse_time(now, "5pm").unwrap();
+    let actual = parse_time(Local, now, "5pm").unwrap();
     assert_eq!(actual, expected);
 }
 
 #[test]
-#[ignore = "todo-dev.time-format.time-of-day"]
 fn am_next_day() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let expected = Local.ymd(2021, 03, 20).and_hms(05, 00, 00);
-    let actual = parse_time(now, "5am").unwrap();
+    let actual = parse_time(Local, now, "5am").unwrap();
     assert_eq!(actual, expected);
 }
 

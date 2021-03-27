@@ -1,15 +1,168 @@
 extern crate humantime;
 
 use chrono::DateTime;
+use chrono::Datelike;
 use chrono::TimeZone;
 
-pub fn parse_time<Tz: TimeZone>(
+#[derive(Debug)]
+pub struct ParseTimeError;
+
+enum Midi {
+    Am,
+    Pm,
+}
+
+enum ParseTimeOfDayState {
+    ParsingNumber {
+        number_so_far: (usize, usize),
+    },
+    ParsingTimeOClock {
+        hour: u8,
+        minute_so_far: (usize, usize),
+    },
+    ExpectingAm {
+        hour: u8,
+        minute: u8,
+    },
+    ExpectingPm {
+        hour: u8,
+        minute: u8,
+    },
+    FullInfo {
+        hour: u8,
+        minute: u8,
+        midi: Midi,
+    },
+}
+
+fn parse_time_of_day<Tz: TimeZone>(
+    tz: Tz,
     now: DateTime<Tz>,
     s: &str,
-) -> Result<DateTime<Tz>, humantime::DurationError> {
-    humantime::parse_duration(s).map(|duration: std::time::Duration| {
-        now + chrono::Duration::milliseconds(duration.as_millis() as i64)
-    })
+) -> Result<DateTime<Tz>, ParseTimeError> {
+    s.chars()
+        .filter(|c| !c.is_whitespace())
+        .try_fold(
+            ParseTimeOfDayState::ParsingNumber {
+                number_so_far: (0, 0),
+            },
+            |state, c| match (state, c) {
+                (
+                    ParseTimeOfDayState::ParsingNumber { number_so_far },
+                    '0'..='9',
+                ) => {
+                    let (start, end) = number_so_far;
+                    Ok(ParseTimeOfDayState::ParsingNumber {
+                        number_so_far: (start, end + 1),
+                    })
+                }
+                (ParseTimeOfDayState::ParsingNumber { number_so_far }, ':') => {
+                    let (start, end) = number_so_far;
+                    Ok(ParseTimeOfDayState::ParsingTimeOClock {
+                        hour: s[start..end].parse::<u8>().unwrap(),
+                        minute_so_far: (end + 1, end + 1),
+                    })
+                }
+                (ParseTimeOfDayState::ParsingNumber { number_so_far }, 'a') => {
+                    let (start, end) = number_so_far;
+                    Ok(ParseTimeOfDayState::ExpectingAm {
+                        hour: s[start..end].parse::<u8>().unwrap(),
+                        minute: 00,
+                    })
+                }
+                (ParseTimeOfDayState::ParsingNumber { number_so_far }, 'p') => {
+                    let (start, end) = number_so_far;
+                    Ok(ParseTimeOfDayState::ExpectingPm {
+                        hour: s[start..end].parse::<u8>().unwrap(),
+                        minute: 00,
+                    })
+                }
+                (
+                    ParseTimeOfDayState::ParsingTimeOClock {
+                        hour,
+                        minute_so_far,
+                    },
+                    '0'..='9',
+                ) => {
+                    let (start, end) = minute_so_far;
+                    Ok(ParseTimeOfDayState::ParsingTimeOClock {
+                        hour: hour,
+                        minute_so_far: (start, end + 1),
+                    })
+                }
+                (
+                    ParseTimeOfDayState::ParsingTimeOClock {
+                        hour,
+                        minute_so_far,
+                    },
+                    'a',
+                ) => {
+                    let (start, end) = minute_so_far;
+                    Ok(ParseTimeOfDayState::ExpectingAm {
+                        hour: hour,
+                        minute: s[start..end].parse::<u8>().unwrap(),
+                    })
+                }
+                (
+                    ParseTimeOfDayState::ParsingTimeOClock {
+                        hour,
+                        minute_so_far,
+                    },
+                    'p',
+                ) => {
+                    let (start, end) = minute_so_far;
+                    Ok(ParseTimeOfDayState::ExpectingPm {
+                        hour: hour,
+                        minute: s[start..end].parse::<u8>().unwrap(),
+                    })
+                }
+                (ParseTimeOfDayState::ExpectingAm { hour, minute }, 'm') => {
+                    Ok(ParseTimeOfDayState::FullInfo {
+                        hour: hour,
+                        minute: minute,
+                        midi: Midi::Am,
+                    })
+                }
+                (ParseTimeOfDayState::ExpectingPm { hour, minute }, 'm') => {
+                    Ok(ParseTimeOfDayState::FullInfo {
+                        hour: hour,
+                        minute: minute,
+                        midi: Midi::Pm,
+                    })
+                }
+                _ => Err(ParseTimeError),
+            },
+        )
+        .and_then(|state| match state {
+            ParseTimeOfDayState::FullInfo { hour, minute, midi } => {
+                let hour = (hour
+                    + match midi {
+                        Midi::Am => 0,
+                        Midi::Pm => 12,
+                    }) as u32;
+                let mut target = tz
+                    .ymd(now.year(), now.month(), now.day())
+                    .and_hms(hour, minute as u32, 00);
+                if target < now {
+                    target = target.with_day(target.day() + 1).unwrap();
+                }
+                Ok(target)
+            }
+            _ => Err(ParseTimeError),
+        })
+}
+
+pub fn parse_time<Tz: TimeZone>(
+    tz: Tz,
+    now: DateTime<Tz>,
+    s: &str,
+) -> Result<DateTime<Tz>, ParseTimeError> {
+    humantime::parse_duration(s)
+        .map(|duration: std::time::Duration| {
+            now.clone()
+                + chrono::Duration::milliseconds(duration.as_millis() as i64)
+        })
+        .or_else(|_| parse_time_of_day(tz, now, s))
 }
 
 // The humantime::format_duration() function will format durations like "5m 32s"
