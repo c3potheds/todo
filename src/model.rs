@@ -327,6 +327,12 @@ impl TodoList {
 }
 
 #[derive(Debug, PartialEq)]
+pub struct ForceChecked {
+    pub completed: TaskSet,
+    pub unblocked: TaskSet,
+}
+
+#[derive(Debug, PartialEq)]
 pub enum CheckError {
     TaskIsAlreadyComplete,
     TaskIsBlockedBy(Vec<TaskId>),
@@ -376,30 +382,54 @@ impl TodoList {
             .collect())
     }
 
-    pub fn force_check(&mut self, id: TaskId) -> Result<TaskSet, CheckError> {
+    pub fn force_check(
+        &mut self,
+        id: TaskId,
+    ) -> Result<ForceChecked, CheckError> {
         let check_result = self.check(id);
         if let Err(CheckError::TaskIsBlockedBy(blocked_by)) = &check_result {
-            let mut unblocked_by_deps = blocked_by.iter().copied().fold(
-                TaskSet::new(),
-                |unblocked_so_far, dep| match self.force_check(dep) {
-                    Ok(newly_unblocked) => unblocked_so_far | newly_unblocked,
-                    Err(CheckError::TaskIsAlreadyComplete) => unblocked_so_far,
+            let mut result = blocked_by.iter().copied().fold(
+                ForceChecked {
+                    completed: TaskSet::new(),
+                    unblocked: TaskSet::new(),
+                },
+                |result, dep| match self.force_check(dep) {
+                    Ok(ForceChecked {
+                        completed,
+                        unblocked,
+                    }) => ForceChecked {
+                        completed: completed,
+                        unblocked: result.unblocked | unblocked,
+                    },
+                    Err(CheckError::TaskIsAlreadyComplete) => result,
                     Err(CheckError::TaskIsBlockedBy(_)) => panic!(
                         "force_check() should never return TaskIsBlockedBy"
                     ),
                 },
             );
-            unblocked_by_deps.ids.remove(&id);
+            result.unblocked.ids.remove(&id);
             match self.check(id) {
-                Ok(newly_unblocked) => Ok(unblocked_by_deps | newly_unblocked),
+                Ok(newly_unblocked) => Ok(ForceChecked {
+                    completed: result.completed | std::iter::once(id).collect(),
+                    unblocked: result.unblocked | newly_unblocked,
+                }),
                 Err(_) => panic!(
                     "check() should always succeed once deps are checked"
                 ),
             }
         } else {
-            check_result
+            Ok(ForceChecked {
+                completed: std::iter::once(id).collect(),
+                unblocked: check_result?,
+            })
         }
     }
+}
+
+#[derive(Debug, PartialEq)]
+pub struct ForceRestored {
+    pub restored: TaskSet,
+    pub blocked: TaskSet,
 }
 
 #[derive(Debug, PartialEq)]
@@ -441,31 +471,41 @@ impl TodoList {
     pub fn force_restore(
         &mut self,
         id: TaskId,
-    ) -> Result<TaskSet, RestoreError> {
+    ) -> Result<ForceRestored, RestoreError> {
         let restore_result = self.restore(id);
         if let Err(RestoreError::WouldRestore(would_restore)) = &restore_result
         {
-            let blocked_from_adeps = would_restore.iter().copied().fold(
-                TaskSet::new(),
-                |blocked_so_far, adep| match self.force_restore(adep) {
-                    Ok(newly_blocked) => blocked_so_far | newly_blocked,
-                    Err(RestoreError::TaskIsAlreadyIncomplete) => {
-                        blocked_so_far
-                    }
+            let result = would_restore.iter().copied().fold(
+                ForceRestored {
+                    restored: TaskSet::new(),
+                    blocked: TaskSet::new(),
+                },
+                |result, adep| match self.force_restore(adep) {
+                    Ok(ForceRestored { restored, blocked }) => ForceRestored {
+                        restored: result.restored | restored,
+                        blocked: result.blocked | blocked,
+                    },
+                    Err(RestoreError::TaskIsAlreadyIncomplete) => result,
                     Err(RestoreError::WouldRestore(_)) => panic!(
                         "force_restore() should never return WouldRestore"
                     ),
                 },
             );
             match self.restore(id) {
-                Ok(newly_blocked) => Ok(newly_blocked | blocked_from_adeps),
+                Ok(newly_blocked) => Ok(ForceRestored {
+                    restored: result.restored | std::iter::once(id).collect(),
+                    blocked: result.blocked | newly_blocked,
+                }),
                 Err(_) => panic!(concat!(
                     "restore() should always work after ",
                     "force-restoring all adeps"
                 )),
             }
         } else {
-            restore_result
+            Ok(ForceRestored {
+                restored: std::iter::once(id).collect(),
+                blocked: restore_result?,
+            })
         }
     }
 }

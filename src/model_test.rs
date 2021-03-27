@@ -494,8 +494,9 @@ fn can_check_task_whose_dependencies_are_complete() {
 fn force_check_incomplete_task() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
-    let newly_unblocked = list.force_check(a).unwrap();
-    itertools::assert_equal(newly_unblocked.iter_sorted(&list), vec![]);
+    let result = list.force_check(a).unwrap();
+    itertools::assert_equal(result.completed.iter_sorted(&list), vec![a]);
+    itertools::assert_equal(result.unblocked.iter_sorted(&list), vec![]);
 }
 
 #[test]
@@ -506,8 +507,9 @@ fn force_check_blocked_task() {
     let c = list.add(Task::new("c"));
     list.block(b).on(a).unwrap();
     list.block(c).on(b).unwrap();
-    let newly_unblocked = list.force_check(b).unwrap();
-    itertools::assert_equal(newly_unblocked.iter_sorted(&list), vec![c]);
+    let result = list.force_check(b).unwrap();
+    itertools::assert_equal(result.completed.iter_sorted(&list), vec![a, b]);
+    itertools::assert_equal(result.unblocked.iter_sorted(&list), vec![c]);
     assert_eq!(list.status(a), Some(TaskStatus::Complete));
     assert_eq!(list.status(b), Some(TaskStatus::Complete));
     assert_eq!(list.status(c), Some(TaskStatus::Incomplete));
@@ -590,8 +592,9 @@ fn force_restore_returns_newly_blocked_tasks_on_success() {
     list.check(a).unwrap();
     list.check(b).unwrap();
     list.check(c).unwrap();
-    let newly_blocked = list.force_restore(a).unwrap();
-    itertools::assert_equal(newly_blocked.iter_sorted(&list), vec![b, c]);
+    let result = list.force_restore(a).unwrap();
+    itertools::assert_equal(result.restored.iter_sorted(&list), vec![a, b, c]);
+    itertools::assert_equal(result.blocked.iter_sorted(&list), vec![b, c]);
 }
 
 #[test]
