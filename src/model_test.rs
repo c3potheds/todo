@@ -1098,6 +1098,49 @@ fn tasks_with_negative_priority_appear_last() {
 }
 
 #[test]
+fn sort_by_implicit_priority() {
+    let mut list = TodoList::new();
+    let a = list.add({
+        let mut task = Task::new("a");
+        task.priority = Some(1);
+        task
+    });
+    let b = list.add(Task::new("b"));
+    let c = list.add({
+        let mut task = Task::new("c");
+        task.priority = Some(2);
+        task
+    });
+    list.block(c).on(b).unwrap();
+    // b appears first because it has an implicit priority of 2, higher than
+    // a's priority of 1.
+    itertools::assert_equal(list.all_tasks(), vec![b, a, c]);
+}
+
+#[test]
+fn implicit_priority_resets_if_adep_with_priority_is_unblocked() {
+    let mut list = TodoList::new();
+    let a = list.add({
+        let mut task = Task::new("a");
+        task.priority = Some(1);
+        task
+    });
+    let b = list.add(Task::new("b"));
+    let c = list.add({
+        let mut task = Task::new("c");
+        task.priority = Some(2);
+        task
+    });
+    list.block(c).on(b).unwrap();
+    list.unblock(c).from(b).unwrap();
+    // c appears first because it has the highest priority, followed by a, which
+    // has its own explicit priority. b had c's implicit priority before, but
+    // because c was unblocked from b, b no longer has an implicit priority, and
+    // so goes last.
+    itertools::assert_equal(list.all_tasks(), vec![c, a, b]);
+}
+
+#[test]
 fn num_incomplete_tasks() {
     let mut list = TodoList::new();
     assert_eq!(list.num_incomplete_tasks(), 0);

@@ -209,12 +209,22 @@ impl std::ops::BitOr for TaskSet {
 }
 
 impl TodoList {
+    fn implicit_priority(&self, id: TaskId) -> i32 {
+        self.get(id)
+            .into_iter()
+            .flat_map(|task| task.priority)
+            .chain(
+                self.adeps(id)
+                    .iter_unsorted()
+                    .map(|adep| self.implicit_priority(adep)),
+            )
+            .max()
+            .unwrap_or(0)
+    }
+
     fn put_in_incomplete_layer(&mut self, id: TaskId, depth: usize) -> bool {
         let pos = self.incomplete.bisect_layer(&id, depth, |&a, &b| {
-            self.get(a)
-                .and_then(|a| a.priority)
-                .unwrap_or(0)
-                .cmp(&self.get(b).and_then(|b| b.priority).unwrap_or(0))
+            self.implicit_priority(a).cmp(&self.implicit_priority(b))
         });
         self.incomplete.put_in_layer(id, depth, pos)
     }
@@ -541,10 +551,15 @@ impl<'a> Block<'a> {
         if blocking == self.blocked {
             return Err(BlockError::WouldBlockOnSelf);
         }
+        let old_priority = self.list.implicit_priority(blocking);
         self.list
             .tasks
             .update_edge(blocking.0, self.blocked.0, ())?;
         self.list.update_depth(self.blocked);
+        let new_priority = self.list.implicit_priority(blocking);
+        if old_priority != new_priority {
+            self.list.punt(blocking).unwrap();
+        }
         Ok(())
     }
 }
@@ -574,11 +589,16 @@ impl<'a> Unblock<'a> {
         if blocking == self.blocked {
             return Err(UnblockError::WouldUnblockFromSelf);
         }
+        let old_priority = self.list.implicit_priority(blocking);
         match self.list.tasks.find_edge(blocking.0, self.blocked.0) {
             Some(e) => self.list.tasks.remove_edge(e),
             None => return Err(UnblockError::WasNotDirectlyBlocking),
         };
         self.list.update_depth(self.blocked);
+        let new_priority = self.list.implicit_priority(blocking);
+        if old_priority != new_priority {
+            self.list.punt(blocking).unwrap();
+        }
         Ok(())
     }
 }
