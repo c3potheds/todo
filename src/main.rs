@@ -94,7 +94,9 @@ fn main() -> TodoResult {
         ),
         width: term_width,
     };
-    let mut out = long_output::max_lines(term_height)
+    // Subtract 1 from the term height to leave room for the input prompt after
+    // the program finishes.
+    let mut out = long_output::max_lines(term_height - 1)
         .primary(std::io::stdout())
         .alternate(|| long_output::Less::new().unwrap());
     let mut printer = SimpleTodoPrinter {
