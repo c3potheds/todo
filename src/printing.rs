@@ -128,6 +128,8 @@ pub enum PrintableError {
 }
 
 const ANSI_OFFSET: usize = 10;
+const SELECTOR_OFFSET: usize = 6;
+const LOG_DATE_OFFSET: usize = 11;
 
 impl Display for Action {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
@@ -200,9 +202,15 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
                 textwrap::Options::new(self.context.width)
                     .initial_indent(&start)
                     .break_words(false)
-                    .subsequent_indent(
-                        &" ".repeat(self.context.max_index_digits + 6),
-                    ),
+                    .subsequent_indent(&" ".repeat(
+                        self.context.max_index_digits
+                            + SELECTOR_OFFSET
+                            + if self.task.log_date.is_some() {
+                                LOG_DATE_OFFSET
+                            } else {
+                                0
+                            }
+                    ),),
             )
         )
     }

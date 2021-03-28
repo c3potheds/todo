@@ -156,6 +156,33 @@ fn text_wrapping() {
 }
 
 #[test]
+fn text_wrapping_with_log_date() {
+    let context = PrintingContext {
+        max_index_digits: 3,
+        width: 34,
+    };
+    let fmt = print_task_with_context(
+        &context,
+        &PrintableTask {
+            desc: "what a long description, it needs multiple lines",
+            number: 0,
+            status: TaskStatus::Complete,
+            action: Action::None,
+            log_date: Some(LogDate::YearMonthDay(2020, 03, 15)),
+        },
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "2020-03-15       \u{1b}[32m0)\u{1b}[0m what a long\n",
+            "                    description,\n",
+            "                    it needs\n",
+            "                    multiple lines\n"
+        )
+    )
+}
+
+#[test]
 fn visible_log_date() {
     let fmt = print_task(&PrintableTask {
         desc: "yeah babi babi babi babi babi babi babi babiru",
