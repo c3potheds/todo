@@ -111,6 +111,20 @@ pub struct New {
     #[structopt(long, short = "b", value_name = "keys")]
     pub blocking: Vec<Key>,
 
+    /// Put the new tasks before these tasks.
+    ///
+    /// This blocks the given "before" tasks on the new tasks, and block the new
+    /// tasks on the deps of the "before" tasks.
+    #[structopt(long, value_name = "keys")]
+    pub before: Vec<Key>,
+
+    /// Put the new tasks after these tasks.
+    ///
+    /// This blocks the new tasks on the given "after" tasks, and block the
+    /// adeps of the "after" tasks on the new tasks.
+    #[structopt(long, value_name = "keys")]
+    pub after: Vec<Key>,
+
     /// Put the new tasks in a blocking sequence.
     ///
     /// For example, if you do:

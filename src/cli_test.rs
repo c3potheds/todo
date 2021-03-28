@@ -48,6 +48,8 @@ fn new_one() {
             desc: vec!["a".to_string()],
             blocked_by: Vec::new(),
             blocking: Vec::new(),
+            before: Vec::new(),
+            after: Vec::new(),
             chain: false,
         })
     );
@@ -64,6 +66,8 @@ fn new_three() {
             desc: vec!["a".to_string(), "b".to_string(), "c".to_string()],
             blocked_by: Vec::new(),
             blocking: Vec::new(),
+            before: Vec::new(),
+            after: Vec::new(),
             chain: false,
         })
     );
@@ -80,6 +84,8 @@ fn new_blocked_by_long() {
             desc: vec!["b".to_string()],
             blocked_by: vec![Key::ByNumber(1)],
             blocking: Vec::new(),
+            before: Vec::new(),
+            after: Vec::new(),
             chain: false,
         }),
     );
@@ -96,6 +102,8 @@ fn new_blocked_by_short() {
             desc: vec!["b".to_string()],
             blocked_by: vec![Key::ByNumber(1)],
             blocking: Vec::new(),
+            before: Vec::new(),
+            after: Vec::new(),
             chain: false,
         }),
     );
@@ -112,6 +120,8 @@ fn new_blocking_long() {
             desc: vec!["b".to_string()],
             blocked_by: Vec::new(),
             blocking: vec![Key::ByNumber(1)],
+            before: Vec::new(),
+            after: Vec::new(),
             chain: false,
         }),
     );
@@ -128,6 +138,8 @@ fn new_blocking_short() {
             desc: vec!["c".to_string()],
             blocked_by: Vec::new(),
             blocking: vec![Key::ByNumber(1), Key::ByNumber(2)],
+            before: Vec::new(),
+            after: Vec::new(),
             chain: false,
         }),
     );
@@ -143,6 +155,8 @@ fn new_blocking_by_name() {
             desc: vec!["a.b".to_string()],
             blocked_by: Vec::new(),
             blocking: vec![Key::ByName("b".to_string())],
+            before: Vec::new(),
+            after: Vec::new(),
             chain: false,
         })
     );
@@ -159,7 +173,27 @@ fn new_chain() {
             desc: vec!["a".to_string(), "b".to_string(), "c".to_string()],
             blocked_by: Vec::new(),
             blocking: Vec::new(),
+            before: Vec::new(),
+            after: Vec::new(),
             chain: true,
+        })
+    );
+}
+
+#[test]
+fn new_before_after() {
+    let args = ["todo", "new", "c", "--before", "a", "--after", "b"];
+    let options = parse(&args);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::New(New {
+            desc: vec!["c".to_string()],
+            blocked_by: Vec::new(),
+            blocking: Vec::new(),
+            before: vec![Key::ByName("a".to_string())],
+            after: vec![Key::ByName("b".to_string())],
+            chain: false,
         })
     );
 }
