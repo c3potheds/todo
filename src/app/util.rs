@@ -18,6 +18,7 @@ pub fn format_task<'a>(
         status: model.status(id).unwrap(),
         action: action,
         log_date: None,
+        priority: None,
     }
 }
 
@@ -34,6 +35,7 @@ pub fn format_task_with_date<'a>(
         status: model.status(id).unwrap(),
         action: Action::None,
         log_date: Some(log_date),
+        priority: None,
     }
 }
 

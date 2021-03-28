@@ -71,6 +71,7 @@ pub struct PrintableTask<'a> {
     pub status: TaskStatus,
     pub action: Action,
     pub log_date: Option<LogDate>,
+    pub priority: Option<i32>,
 }
 
 struct PrintableTaskWithContext<'a> {
@@ -178,7 +179,7 @@ fn format_numbers<I: IntoIterator<Item = i32>>(
 
 impl<'a> Display for PrintableTaskWithContext<'a> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        let start = if let Some(log_date) = &self.task.log_date {
+        let mut start = if let Some(log_date) = &self.task.log_date {
             format!(
                 "{} {} {:>width$} ",
                 log_date,
@@ -194,6 +195,16 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
                 width = self.context.max_index_digits + ANSI_OFFSET
             )
         };
+        if let Some(priority) = &self.task.priority {
+            start.push_str(
+                &Color::Blue
+                    .on(Color::White)
+                    .bold()
+                    .paint(format!("P{}", priority))
+                    .to_string(),
+            );
+            start.push_str(" ");
+        }
         write!(
             f,
             "{}",
@@ -210,7 +221,7 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
                             } else {
                                 0
                             }
-                    ),),
+                    )),
             )
         )
     }

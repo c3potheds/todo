@@ -35,6 +35,7 @@ fn fmt_incomplete_task() {
         status: TaskStatus::Incomplete,
         action: Action::None,
         log_date: None,
+        priority: None,
     });
     // The 1) is wrapped in ANSI codes painting it yellow.
     assert_eq!(fmt, "      \u{1b}[33m1)\u{1b}[0m a\n");
@@ -48,6 +49,7 @@ fn fmt_complete_task() {
         status: TaskStatus::Complete,
         action: Action::None,
         log_date: None,
+        priority: None,
     });
     // The 0) is wrapped in ANSI codes painting it green.
     assert_eq!(fmt, "      \u{1b}[32m0)\u{1b}[0m b\n");
@@ -61,6 +63,7 @@ fn fmt_blocked_task() {
         status: TaskStatus::Blocked,
         action: Action::None,
         log_date: None,
+        priority: None,
     });
     // The 2) is wrapped in ANSI codes painting it red.
     assert_eq!(fmt, "      \u{1b}[31m2)\u{1b}[0m c\n");
@@ -79,6 +82,7 @@ fn fmt_double_digit_number_in_max_four_digit_environment() {
             status: TaskStatus::Blocked,
             action: Action::None,
             log_date: None,
+            priority: None,
         },
     );
     assert_eq!(fmt, "      \u{1b}[31m99)\u{1b}[0m hello\n");
@@ -97,6 +101,7 @@ fn fmt_triple_digit_number_in_max_four_digit_environment() {
             status: TaskStatus::Blocked,
             action: Action::None,
             log_date: None,
+            priority: None,
         },
     );
     assert_eq!(fmt, "     \u{1b}[31m100)\u{1b}[0m hello\n");
@@ -110,6 +115,7 @@ fn show_check_mark_on_check_action() {
         status: TaskStatus::Complete,
         action: Action::Check,
         log_date: None,
+        priority: None,
     });
     assert_eq!(
         fmt,
@@ -125,6 +131,7 @@ fn show_empty_box_on_uncheck_action() {
         status: TaskStatus::Incomplete,
         action: Action::Uncheck,
         log_date: None,
+        priority: None,
     });
     assert_eq!(fmt, "\u{1b}[33m[ ]\u{1b}[0m   \u{1b}[33m1)\u{1b}[0m oh\n");
 }
@@ -143,6 +150,7 @@ fn text_wrapping() {
             status: TaskStatus::Incomplete,
             action: Action::None,
             log_date: None,
+            priority: None,
         },
     );
     assert_eq!(
@@ -169,6 +177,7 @@ fn text_wrapping_with_log_date() {
             status: TaskStatus::Complete,
             action: Action::None,
             log_date: Some(LogDate::YearMonthDay(2020, 03, 15)),
+            priority: None,
         },
     );
     assert_eq!(
@@ -179,7 +188,7 @@ fn text_wrapping_with_log_date() {
             "                    it needs\n",
             "                    multiple lines\n"
         )
-    )
+    );
 }
 
 #[test]
@@ -190,6 +199,7 @@ fn visible_log_date() {
         status: TaskStatus::Complete,
         action: Action::None,
         log_date: Some(LogDate::ymd(2021, 02, 28).unwrap()),
+        priority: None,
     });
     assert_eq!(
         fmt,
@@ -197,7 +207,7 @@ fn visible_log_date() {
             "2021-02-28       \u{1b}[32m0)\u{1b}[0m ",
             "yeah babi babi babi babi babi babi babi babiru\n"
         )
-    )
+    );
 }
 
 #[test]
@@ -208,6 +218,7 @@ fn invisible_log_date() {
         status: TaskStatus::Complete,
         action: Action::None,
         log_date: Some(LogDate::Invisible),
+        priority: None,
     });
     assert_eq!(
         fmt,
@@ -215,7 +226,23 @@ fn invisible_log_date() {
             "                 \u{1b}[32m0)\u{1b}[0m ",
             "yeah babi babi babi babi babi babi babi babiru\n"
         )
-    )
+    );
+}
+
+#[test]
+fn show_priority_on_task() {
+    let fmt = print_task(&PrintableTask {
+        desc: "a",
+        number: 1,
+        status: TaskStatus::Incomplete,
+        action: Action::None,
+        log_date: None,
+        priority: Some(1),
+    });
+    assert_eq!(
+        fmt,
+        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;47;34mP1\u{1b}[0m a\n"
+    );
 }
 
 #[test]
@@ -408,6 +435,7 @@ fn show_lock_icon_on_lock_action() {
         status: TaskStatus::Blocked,
         action: Action::Lock,
         log_date: None,
+        priority: None,
     });
     assert_eq!(
         fmt,
@@ -423,6 +451,7 @@ fn show_unlock_icon_on_unlock_action() {
         status: TaskStatus::Incomplete,
         action: Action::Unlock,
         log_date: None,
+        priority: None,
     });
     assert_eq!(
         fmt,
@@ -438,6 +467,7 @@ fn show_punt_icon_on_punt_action() {
         status: TaskStatus::Incomplete,
         action: Action::Punt,
         log_date: None,
+        priority: None,
     });
     assert_eq!(fmt, " ⏎    \u{1b}[33m5)\u{1b}[0m punt this\n");
 }
@@ -451,6 +481,7 @@ fn validate_single_task() {
         status: TaskStatus::Incomplete,
         action: Action::None,
         log_date: None,
+        priority: None,
     });
     printer
         .validate()
@@ -467,6 +498,7 @@ fn validate_multiple_tasks() {
         status: TaskStatus::Incomplete,
         action: Action::None,
         log_date: None,
+        priority: None,
     });
     printer.print_task(&PrintableTask {
         desc: "b",
@@ -474,6 +506,7 @@ fn validate_multiple_tasks() {
         status: TaskStatus::Incomplete,
         action: Action::None,
         log_date: None,
+        priority: None,
     });
     printer
         .validate()
@@ -519,6 +552,7 @@ fn fail_validation_on_incorrect_description() {
         status: TaskStatus::Incomplete,
         action: Action::None,
         log_date: None,
+        priority: None,
     });
     printer.validate().printed_task(&[Expect::Desc("b")]).end();
 }
@@ -533,6 +567,7 @@ fn fail_validation_on_incorrect_number() {
         status: TaskStatus::Incomplete,
         action: Action::None,
         log_date: None,
+        priority: None,
     });
     printer.validate().printed_task(&[Expect::Number(2)]).end();
 }
@@ -547,6 +582,7 @@ fn fail_validation_on_extra_tasks() {
         status: TaskStatus::Incomplete,
         action: Action::None,
         log_date: None,
+        priority: None,
     });
     printer.validate().end();
 }
@@ -561,6 +597,7 @@ fn fail_validation_on_incorrect_status() {
         status: TaskStatus::Incomplete,
         action: Action::None,
         log_date: None,
+        priority: None,
     });
     printer
         .validate()
@@ -578,6 +615,7 @@ fn fail_validation_on_incorrect_action() {
         status: TaskStatus::Incomplete,
         action: Action::New,
         log_date: None,
+        priority: None,
     });
     printer
         .validate()
@@ -611,6 +649,7 @@ fn fail_validation_on_task_instead_of_warning() {
         status: TaskStatus::Incomplete,
         action: Action::None,
         log_date: None,
+        priority: None,
     });
     printer.validate().printed_warning(&warning).end();
 }
@@ -645,6 +684,7 @@ fn fail_validation_on_task_instead_of_error() {
         status: TaskStatus::Incomplete,
         action: Action::None,
         log_date: None,
+        priority: None,
     });
     printer.validate().printed_error(&error).end();
 }
@@ -659,6 +699,7 @@ fn fail_validation_on_missing_log_date() {
         status: TaskStatus::Incomplete,
         action: Action::None,
         log_date: None,
+        priority: None,
     });
     printer
         .validate()
@@ -676,6 +717,7 @@ fn fail_validation_on_incorrect_log_date() {
         status: TaskStatus::Incomplete,
         action: Action::None,
         log_date: Some(LogDate::Invisible),
+        priority: None,
     });
     printer
         .validate()

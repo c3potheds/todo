@@ -18,6 +18,7 @@ fn format_task_basic() {
         status: TaskStatus::Incomplete,
         action: Action::None,
         log_date: None,
+        priority: None,
     };
     assert_eq!(actual, expected);
 }
@@ -33,6 +34,7 @@ fn format_task_with_action() {
         status: TaskStatus::Incomplete,
         action: Action::Punt,
         log_date: None,
+        priority: None,
     };
     assert_eq!(actual, expected);
 }
@@ -49,6 +51,7 @@ fn format_task_with_invisible_log_date() {
         status: TaskStatus::Complete,
         action: Action::None,
         log_date: Some(LogDate::Invisible),
+        priority: None,
     };
     assert_eq!(actual, expected);
 }
@@ -66,6 +69,7 @@ fn format_task_with_visible_log_date() {
         status: TaskStatus::Complete,
         action: Action::None,
         log_date: Some(LogDate::YearMonthDay(2020, 03, 21)),
+        priority: None,
     };
     assert_eq!(actual, expected);
 }
