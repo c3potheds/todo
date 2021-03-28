@@ -11,6 +11,7 @@ extern crate textwrap;
 pub mod app;
 pub mod cli;
 pub mod clock;
+pub mod config;
 pub mod long_output;
 pub mod model;
 pub mod printing;
