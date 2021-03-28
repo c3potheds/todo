@@ -172,7 +172,8 @@ fn check_one() {
     assert_eq!(
         cmd,
         SubCommand::Check(Check {
-            keys: vec![Key::ByNumber(1)]
+            keys: vec![Key::ByNumber(1)],
+            force: false,
         })
     );
 }
@@ -185,7 +186,8 @@ fn check_three() {
     assert_eq!(
         cmd,
         SubCommand::Check(Check {
-            keys: vec![Key::ByNumber(1), Key::ByNumber(2), Key::ByNumber(3)]
+            keys: vec![Key::ByNumber(1), Key::ByNumber(2), Key::ByNumber(3)],
+            force: false,
         })
     );
 }
@@ -198,6 +200,20 @@ fn check_by_name() {
         cmd,
         SubCommand::Check(Check {
             keys: vec![Key::ByName("a".to_string())],
+            force: false,
+        })
+    )
+}
+
+#[test]
+fn check_force() {
+    let options = parse(&["todo", "check", "10", "--force"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Check(Check {
+            keys: vec![Key::ByNumber(10)],
+            force: true,
         })
     )
 }
