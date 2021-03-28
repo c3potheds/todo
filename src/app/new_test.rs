@@ -3,6 +3,7 @@ use model::TaskStatus;
 use model::TodoList;
 use printing::Action;
 use printing::Expect;
+use printing::PrintableError;
 
 #[test]
 fn new_one_task() {
@@ -523,6 +524,26 @@ fn new_one_after_three() {
             Expect::Number(5),
             Expect::Status(TaskStatus::Blocked),
             Expect::Action(Action::Lock),
+        ])
+        .end();
+}
+
+#[test]
+#[ignore = "app.new.print-warning-on-cycle"]
+fn print_warning_on_cycle() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain");
+    fix.test("todo new c -p b -b a")
+        .validate()
+        .printed_error(&PrintableError::CannotBlockBecauseWouldCauseCycle {
+            cannot_block: 3,
+            requested_dependency: 1,
+        })
+        .printed_task(&[
+            Expect::Desc("c"),
+            Expect::Number(3),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::New),
         ])
         .end();
 }
