@@ -232,7 +232,8 @@ fn restore_one_task() {
     assert_eq!(
         cmd,
         SubCommand::Restore(Restore {
-            keys: vec![Key::ByNumber(1)]
+            keys: vec![Key::ByNumber(1)],
+            force: false,
         })
     );
 }
@@ -245,6 +246,7 @@ fn restore_task_with_negative_number() {
         cmd,
         SubCommand::Restore(Restore {
             keys: vec![Key::ByNumber(-1)],
+            force: false,
         })
     );
 }
@@ -257,6 +259,7 @@ fn restore_multiple_tasks() {
         cmd,
         SubCommand::Restore(Restore {
             keys: vec![Key::ByNumber(0), Key::ByNumber(-1), Key::ByNumber(-2)],
+            force: false,
         })
     );
 }
@@ -269,8 +272,22 @@ fn restore_by_name() {
         cmd,
         SubCommand::Restore(Restore {
             keys: vec![Key::ByName("b".to_string())],
+            force: false,
         })
     );
+}
+
+#[test]
+fn restore_force() {
+    let options = parse(&["todo", "restore", "-10", "--force"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Restore(Restore {
+            keys: vec![Key::ByNumber(-10)],
+            force: true,
+        })
+    )
 }
 
 #[test]
