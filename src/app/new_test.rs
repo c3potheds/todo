@@ -418,3 +418,111 @@ fn new_one_before_three() {
         ])
         .end();
 }
+
+#[test]
+#[ignore = "app.new.after"]
+fn new_one_after_one() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c --chain");
+    fix.test("todo new d --after b")
+        .validate()
+        .printed_task(&[
+            Expect::Desc("b"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::None),
+        ])
+        .printed_task(&[
+            Expect::Desc("d"),
+            Expect::Number(3),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::New),
+        ])
+        .printed_task(&[
+            Expect::Desc("c"),
+            Expect::Number(4),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::Lock),
+        ])
+        .end();
+}
+
+#[test]
+#[ignore = "app.new.after"]
+fn new_three_after_one() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c --chain");
+    fix.test("todo new d e f --after b")
+        .validate()
+        .printed_task(&[
+            Expect::Desc("b"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::None),
+        ])
+        .printed_task(&[
+            Expect::Desc("d"),
+            Expect::Number(3),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::New),
+        ])
+        .printed_task(&[
+            Expect::Desc("e"),
+            Expect::Number(4),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::New),
+        ])
+        .printed_task(&[
+            Expect::Desc("f"),
+            Expect::Number(5),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::New),
+        ])
+        .printed_task(&[
+            Expect::Desc("c"),
+            Expect::Number(6),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::Lock),
+        ])
+        .end();
+}
+
+#[test]
+#[ignore = "app.new.after"]
+fn new_one_after_three() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c d --chain");
+    fix.test("todo new e --after a b c")
+        .validate()
+        .printed_task(&[
+            Expect::Desc("a"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::None),
+        ])
+        .printed_task(&[
+            Expect::Desc("b"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::None),
+        ])
+        .printed_task(&[
+            Expect::Desc("c"),
+            Expect::Number(3),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::None),
+        ])
+        .printed_task(&[
+            Expect::Desc("e"),
+            Expect::Number(4),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::New),
+        ])
+        .printed_task(&[
+            Expect::Desc("d"),
+            Expect::Number(5),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::Lock),
+        ])
+        .end();
+}
