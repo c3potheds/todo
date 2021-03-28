@@ -14,17 +14,17 @@ pub fn run(
     model: &mut TodoList,
     printer: &mut impl TodoPrinter,
     clock: &impl Clock,
-    cmd: &New,
+    cmd: New,
 ) {
     let deps = lookup_tasks(&model, &cmd.blocked_by);
     let adeps = lookup_tasks(&model, &cmd.blocking);
     let now = clock.now();
     let new_tasks: Vec<_> = cmd
         .desc
-        .iter()
+        .into_iter()
         .map(|desc| {
             model.add(Task::new(NewOptions {
-                desc: desc.clone(),
+                desc: desc,
                 now: now,
             }))
         })

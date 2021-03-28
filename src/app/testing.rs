@@ -29,7 +29,7 @@ where
 {
     let mut printer = FakePrinter::new();
     let options = Options::from_iter_safe(args).expect("Could not parse args");
-    crate::app::todo(list, &mut printer, text_editor, &SystemClock, &options);
+    crate::app::todo(list, &mut printer, text_editor, &SystemClock, options);
     printer
 }
 
@@ -57,7 +57,7 @@ impl<'a> Fixture<'a> {
             &mut printer,
             &self.text_editor,
             &self.clock,
-            &options,
+            options,
         );
         printer
     }

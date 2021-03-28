@@ -109,7 +109,7 @@ fn main() -> TodoResult {
         &mut printer,
         &text_editor,
         &SystemClock,
-        &options,
+        options,
     );
     let file = File::create(&path)?;
     let writer = BufWriter::new(file);

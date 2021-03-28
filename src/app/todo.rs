@@ -23,9 +23,9 @@ pub fn todo(
     printer: &mut impl TodoPrinter,
     text_editor: &impl TextEditor,
     clock: &impl Clock,
-    options: &Options,
+    options: Options,
 ) {
-    match &options.cmd {
+    match options.cmd {
         Some(SubCommand::Block(cmd)) => block::run(model, printer, &cmd),
         Some(SubCommand::Chain(cmd)) => chain::run(model, printer, &cmd),
         Some(SubCommand::Check(cmd)) => check::run(model, printer, clock, &cmd),
@@ -35,7 +35,7 @@ pub fn todo(
         Some(SubCommand::Find(cmd)) => find::run(model, printer, &cmd),
         Some(SubCommand::Get(cmd)) => get::run(model, printer, &cmd),
         Some(SubCommand::Log) => log::run(model, printer),
-        Some(SubCommand::New(cmd)) => new::run(model, printer, clock, &cmd),
+        Some(SubCommand::New(cmd)) => new::run(model, printer, clock, cmd),
         Some(SubCommand::Punt(cmd)) => punt::run(model, printer, &cmd),
         Some(SubCommand::Put(cmd)) => put::run(model, printer, &cmd),
         Some(SubCommand::Restore(cmd)) => restore::run(model, printer, &cmd),
