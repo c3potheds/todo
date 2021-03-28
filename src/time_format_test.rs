@@ -72,7 +72,6 @@ fn two_months() {
 }
 
 #[test]
-#[ignore = "todo-dev.time-format.day-of-week"]
 fn next_monday() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let expected = Local.ymd(2021, 03, 22).and_hms(23, 59, 59);
@@ -81,7 +80,6 @@ fn next_monday() {
 }
 
 #[test]
-#[ignore = "todo-dev.time-format.day-of-week"]
 fn wednesday_abbreviated() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let expected = Local.ymd(2021, 03, 24).and_hms(23, 59, 59);
@@ -99,7 +97,6 @@ fn last_monday() {
 }
 
 #[test]
-#[ignore = "todo-dev.time-format.today"]
 fn today() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let expected = Local.ymd(2021, 03, 19).and_hms(23, 59, 59);
@@ -108,7 +105,6 @@ fn today() {
 }
 
 #[test]
-#[ignore = "todo-dev.time-format.tomorrow"]
 fn tomorrow() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let expected = Local.ymd(2021, 03, 20).and_hms(23, 59, 59);

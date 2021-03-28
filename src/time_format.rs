@@ -152,6 +152,33 @@ fn parse_time_of_day<Tz: TimeZone>(
         })
 }
 
+fn end_of_day<Tz: TimeZone>(datetime: DateTime<Tz>) -> DateTime<Tz> {
+    use chrono::Timelike;
+    datetime
+        .with_hour(23)
+        .unwrap()
+        .with_minute(59)
+        .unwrap()
+        .with_second(59)
+        .unwrap()
+}
+
+fn parse_day_of_week<Tz: TimeZone>(
+    now: DateTime<Tz>,
+    s: &str,
+) -> Result<DateTime<Tz>, ParseTimeError> {
+    use std::str::FromStr;
+    chrono::Weekday::from_str(s)
+        .map(|weekday| {
+            let mut fast_forwarded = now + chrono::Duration::days(1);
+            while fast_forwarded.weekday() != weekday {
+                fast_forwarded = fast_forwarded + chrono::Duration::days(1);
+            }
+            end_of_day(fast_forwarded)
+        })
+        .map_err(|_| ParseTimeError)
+}
+
 pub fn parse_time<Tz: TimeZone>(
     tz: Tz,
     now: DateTime<Tz>,
@@ -162,7 +189,22 @@ pub fn parse_time<Tz: TimeZone>(
             now.clone()
                 + chrono::Duration::milliseconds(duration.as_millis() as i64)
         })
-        .or_else(|_| parse_time_of_day(tz, now, s))
+        .or_else(|_| parse_time_of_day(tz, now.clone(), s))
+        .or_else(|_| parse_day_of_week(now.clone(), s))
+        .or_else(|_| {
+            if s == "today" {
+                Ok(end_of_day(now.clone()))
+            } else {
+                Err(ParseTimeError)
+            }
+        })
+        .or_else(|_| {
+            if s == "tomorrow" {
+                Ok(end_of_day(now.clone() + chrono::Duration::days(1)))
+            } else {
+                Err(ParseTimeError)
+            }
+        })
 }
 
 // The humantime::format_duration() function will format durations like "5m 32s"
