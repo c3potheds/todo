@@ -656,3 +656,44 @@ fn chain_by_range() {
         })
     );
 }
+
+#[test]
+fn path_by_number() {
+    let options = parse(&["todo", "path", "10", "20"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Path(Path {
+            from: Key::ByNumber(10),
+            to: Key::ByNumber(20),
+        })
+    );
+}
+
+#[test]
+fn path_by_name() {
+    let options = parse(&["todo", "path", "a", "b"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Path(Path {
+            from: Key::ByName("a".to_string()),
+            to: Key::ByName("b".to_string()),
+        })
+    );
+}
+
+#[test]
+fn path_missing_to() {
+    Options::from_iter_safe(&["todo", "path", "a"]).unwrap_err();
+}
+
+#[test]
+fn path_missing_from() {
+    Options::from_iter_safe(&["todo", "path"]).unwrap_err();
+}
+
+#[test]
+fn path_too_many_args() {
+    Options::from_iter_safe(&["todo", "path", "1", "2", "3"]).unwrap_err();
+}

@@ -142,6 +142,15 @@ pub struct New {
 
 #[derive(Debug, PartialEq, StructOpt)]
 #[structopt(setting = structopt::clap::AppSettings::AllowNegativeNumbers)]
+pub struct Path {
+    /// The least dependent task.
+    pub from: Key,
+    /// The most dependent task.
+    pub to: Key,
+}
+
+#[derive(Debug, PartialEq, StructOpt)]
+#[structopt(setting = structopt::clap::AppSettings::AllowNegativeNumbers)]
 pub struct Punt {
     /// Tasks to punt.
     pub keys: Vec<Key>,
@@ -310,6 +319,14 @@ pub enum SubCommand {
     /// in a single command.
     #[structopt(verbatim_doc_comment)]
     New(New),
+
+    /// Show the dependency paths between two tasks.
+    ///
+    /// The given two tasks will be displayed at the start and end of the list,
+    /// with any tasks that are antidependencies of the first and dependencies
+    /// of the second printed in between, in order.
+    #[structopt(verbatim_doc_comment)]
+    Path(Path),
 
     /// Punts tasks to the end of the list.
     ///
