@@ -21,12 +21,13 @@ pub fn run(model: &TodoList, printer: &mut impl TodoPrinter) {
                         completion_time.day() as u8,
                     )
                 });
-        formatted_task.log_date = Some(if to_show != most_recent_shown {
-            most_recent_shown = to_show.clone();
-            to_show.unwrap()
-        } else {
-            LogDate::Invisible
-        });
+        formatted_task =
+            formatted_task.log_date(if to_show != most_recent_shown {
+                most_recent_shown = to_show.clone();
+                to_show.unwrap()
+            } else {
+                LogDate::Invisible
+            });
         printer.print_task(&formatted_task);
     });
 }

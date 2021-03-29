@@ -66,12 +66,40 @@ impl Display for LogDate {
 
 #[derive(Debug, PartialEq)]
 pub struct PrintableTask<'a> {
-    pub desc: &'a str,
-    pub number: i32,
-    pub status: TaskStatus,
-    pub action: Action,
-    pub log_date: Option<LogDate>,
-    pub priority: Option<i32>,
+    desc: &'a str,
+    number: i32,
+    status: TaskStatus,
+    action: Action,
+    log_date: Option<LogDate>,
+    priority: Option<i32>,
+}
+
+impl<'a> PrintableTask<'a> {
+    pub fn new(desc: &'a str, number: i32, status: TaskStatus) -> Self {
+        Self {
+            desc: desc,
+            number: number,
+            status: status,
+            action: Action::None,
+            log_date: None,
+            priority: None,
+        }
+    }
+
+    pub fn action(mut self, action: Action) -> Self {
+        self.action = action;
+        self
+    }
+
+    pub fn log_date(mut self, log_date: LogDate) -> Self {
+        self.log_date = Some(log_date);
+        self
+    }
+
+    pub fn priority(mut self, priority: i32) -> Self {
+        self.priority = Some(priority);
+        self
+    }
 }
 
 struct PrintableTaskWithContext<'a> {

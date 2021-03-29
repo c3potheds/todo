@@ -29,42 +29,21 @@ fn print_task<'a>(task: &PrintableTask) -> String {
 
 #[test]
 fn fmt_incomplete_task() {
-    let fmt = print_task(&PrintableTask {
-        desc: "a",
-        number: 1,
-        status: TaskStatus::Incomplete,
-        action: Action::None,
-        log_date: None,
-        priority: None,
-    });
+    let fmt = print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
     // The 1) is wrapped in ANSI codes painting it yellow.
     assert_eq!(fmt, "      \u{1b}[33m1)\u{1b}[0m a\n");
 }
 
 #[test]
 fn fmt_complete_task() {
-    let fmt = print_task(&PrintableTask {
-        desc: "b",
-        number: 0,
-        status: TaskStatus::Complete,
-        action: Action::None,
-        log_date: None,
-        priority: None,
-    });
+    let fmt = print_task(&PrintableTask::new("b", 0, TaskStatus::Complete));
     // The 0) is wrapped in ANSI codes painting it green.
     assert_eq!(fmt, "      \u{1b}[32m0)\u{1b}[0m b\n");
 }
 
 #[test]
 fn fmt_blocked_task() {
-    let fmt = print_task(&PrintableTask {
-        desc: "c",
-        number: 2,
-        status: TaskStatus::Blocked,
-        action: Action::None,
-        log_date: None,
-        priority: None,
-    });
+    let fmt = print_task(&PrintableTask::new("c", 2, TaskStatus::Blocked));
     // The 2) is wrapped in ANSI codes painting it red.
     assert_eq!(fmt, "      \u{1b}[31m2)\u{1b}[0m c\n");
 }
@@ -76,14 +55,7 @@ fn fmt_double_digit_number_in_max_four_digit_environment() {
             max_index_digits: 4,
             width: 80,
         },
-        &PrintableTask {
-            desc: "hello",
-            number: 99,
-            status: TaskStatus::Blocked,
-            action: Action::None,
-            log_date: None,
-            priority: None,
-        },
+        &PrintableTask::new("hello", 99, TaskStatus::Blocked),
     );
     assert_eq!(fmt, "      \u{1b}[31m99)\u{1b}[0m hello\n");
 }
@@ -95,28 +67,17 @@ fn fmt_triple_digit_number_in_max_four_digit_environment() {
             max_index_digits: 4,
             width: 80,
         },
-        &PrintableTask {
-            desc: "hello",
-            number: 100,
-            status: TaskStatus::Blocked,
-            action: Action::None,
-            log_date: None,
-            priority: None,
-        },
+        &PrintableTask::new("hello", 100, TaskStatus::Blocked),
     );
     assert_eq!(fmt, "     \u{1b}[31m100)\u{1b}[0m hello\n");
 }
 
 #[test]
 fn show_check_mark_on_check_action() {
-    let fmt = print_task(&PrintableTask {
-        desc: "done!",
-        number: 0,
-        status: TaskStatus::Complete,
-        action: Action::Check,
-        log_date: None,
-        priority: None,
-    });
+    let fmt = print_task(
+        &PrintableTask::new("done!", 0, TaskStatus::Complete)
+            .action(Action::Check),
+    );
     assert_eq!(
         fmt,
         "\u{1b}[32m[✓]\u{1b}[0m   \u{1b}[32m0)\u{1b}[0m done!\n"
@@ -125,14 +86,10 @@ fn show_check_mark_on_check_action() {
 
 #[test]
 fn show_empty_box_on_uncheck_action() {
-    let fmt = print_task(&PrintableTask {
-        desc: "oh",
-        number: 1,
-        status: TaskStatus::Incomplete,
-        action: Action::Uncheck,
-        log_date: None,
-        priority: None,
-    });
+    let fmt = print_task(
+        &PrintableTask::new("oh", 1, TaskStatus::Incomplete)
+            .action(Action::Uncheck),
+    );
     assert_eq!(fmt, "\u{1b}[33m[ ]\u{1b}[0m   \u{1b}[33m1)\u{1b}[0m oh\n");
 }
 
@@ -144,14 +101,11 @@ fn text_wrapping() {
     };
     let fmt = print_task_with_context(
         &context,
-        &PrintableTask {
-            desc: "this task has a long description, much longer than 24 chars",
-            number: 1,
-            status: TaskStatus::Incomplete,
-            action: Action::None,
-            log_date: None,
-            priority: None,
-        },
+        &PrintableTask::new(
+            "this task has a long description, much longer than 24 chars",
+            1,
+            TaskStatus::Incomplete,
+        ),
     );
     assert_eq!(
         fmt,
@@ -171,14 +125,12 @@ fn text_wrapping_with_log_date() {
     };
     let fmt = print_task_with_context(
         &context,
-        &PrintableTask {
-            desc: "what a long description, it needs multiple lines",
-            number: 0,
-            status: TaskStatus::Complete,
-            action: Action::None,
-            log_date: Some(LogDate::YearMonthDay(2020, 03, 15)),
-            priority: None,
-        },
+        &PrintableTask::new(
+            "what a long description, it needs multiple lines",
+            0,
+            TaskStatus::Complete,
+        )
+        .log_date(LogDate::YearMonthDay(2020, 03, 15)),
     );
     assert_eq!(
         fmt,
@@ -193,14 +145,14 @@ fn text_wrapping_with_log_date() {
 
 #[test]
 fn visible_log_date() {
-    let fmt = print_task(&PrintableTask {
-        desc: "yeah babi babi babi babi babi babi babi babiru",
-        number: 0,
-        status: TaskStatus::Complete,
-        action: Action::None,
-        log_date: Some(LogDate::ymd(2021, 02, 28).unwrap()),
-        priority: None,
-    });
+    let fmt = print_task(
+        &PrintableTask::new(
+            "yeah babi babi babi babi babi babi babi babiru",
+            0,
+            TaskStatus::Complete,
+        )
+        .log_date(LogDate::ymd(2021, 02, 28).unwrap()),
+    );
     assert_eq!(
         fmt,
         concat!(
@@ -212,14 +164,14 @@ fn visible_log_date() {
 
 #[test]
 fn invisible_log_date() {
-    let fmt = print_task(&PrintableTask {
-        desc: "yeah babi babi babi babi babi babi babi babiru",
-        number: 0,
-        status: TaskStatus::Complete,
-        action: Action::None,
-        log_date: Some(LogDate::Invisible),
-        priority: None,
-    });
+    let fmt = print_task(
+        &PrintableTask::new(
+            "yeah babi babi babi babi babi babi babi babiru",
+            0,
+            TaskStatus::Complete,
+        )
+        .log_date(LogDate::Invisible),
+    );
     assert_eq!(
         fmt,
         concat!(
@@ -231,14 +183,9 @@ fn invisible_log_date() {
 
 #[test]
 fn show_priority_on_task() {
-    let fmt = print_task(&PrintableTask {
-        desc: "a",
-        number: 1,
-        status: TaskStatus::Incomplete,
-        action: Action::None,
-        log_date: None,
-        priority: Some(1),
-    });
+    let fmt = print_task(
+        &PrintableTask::new("a", 1, TaskStatus::Incomplete).priority(1),
+    );
     assert_eq!(
         fmt,
         "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;47;34mP1\u{1b}[0m a\n"
@@ -429,14 +376,10 @@ fn display_failed_to_use_text_editor_error() {
 
 #[test]
 fn show_lock_icon_on_lock_action() {
-    let fmt = print_task(&PrintableTask {
-        desc: "blocked",
-        number: 5,
-        status: TaskStatus::Blocked,
-        action: Action::Lock,
-        log_date: None,
-        priority: None,
-    });
+    let fmt = print_task(
+        &PrintableTask::new("blocked", 5, TaskStatus::Blocked)
+            .action(Action::Lock),
+    );
     assert_eq!(
         fmt,
         " \u{1b}[31m🔒\u{1b}[0m   \u{1b}[31m5)\u{1b}[0m blocked\n"
@@ -445,14 +388,10 @@ fn show_lock_icon_on_lock_action() {
 
 #[test]
 fn show_unlock_icon_on_unlock_action() {
-    let fmt = print_task(&PrintableTask {
-        desc: "unblocked",
-        number: 10,
-        status: TaskStatus::Incomplete,
-        action: Action::Unlock,
-        log_date: None,
-        priority: None,
-    });
+    let fmt = print_task(
+        &PrintableTask::new("unblocked", 10, TaskStatus::Incomplete)
+            .action(Action::Unlock),
+    );
     assert_eq!(
         fmt,
         " \u{1b}[32m🔓\u{1b}[0m  \u{1b}[33m10)\u{1b}[0m unblocked\n"
@@ -461,28 +400,17 @@ fn show_unlock_icon_on_unlock_action() {
 
 #[test]
 fn show_punt_icon_on_punt_action() {
-    let fmt = print_task(&PrintableTask {
-        desc: "punt this",
-        number: 5,
-        status: TaskStatus::Incomplete,
-        action: Action::Punt,
-        log_date: None,
-        priority: None,
-    });
+    let fmt = print_task(
+        &PrintableTask::new("punt this", 5, TaskStatus::Incomplete)
+            .action(Action::Punt),
+    );
     assert_eq!(fmt, " ⏎    \u{1b}[33m5)\u{1b}[0m punt this\n");
 }
 
 #[test]
 fn validate_single_task() {
     let mut printer = FakePrinter::new();
-    printer.print_task(&PrintableTask {
-        desc: "a",
-        number: 1,
-        status: TaskStatus::Incomplete,
-        action: Action::None,
-        log_date: None,
-        priority: None,
-    });
+    printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
     printer
         .validate()
         .printed_task(&[Expect::Desc("a"), Expect::Number(1)])
@@ -492,22 +420,8 @@ fn validate_single_task() {
 #[test]
 fn validate_multiple_tasks() {
     let mut printer = FakePrinter::new();
-    printer.print_task(&PrintableTask {
-        desc: "a",
-        number: 1,
-        status: TaskStatus::Incomplete,
-        action: Action::None,
-        log_date: None,
-        priority: None,
-    });
-    printer.print_task(&PrintableTask {
-        desc: "b",
-        number: 2,
-        status: TaskStatus::Incomplete,
-        action: Action::None,
-        log_date: None,
-        priority: None,
-    });
+    printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
+    printer.print_task(&PrintableTask::new("b", 2, TaskStatus::Incomplete));
     printer
         .validate()
         .printed_task(&[Expect::Desc("a"), Expect::Number(1)])
@@ -546,14 +460,7 @@ fn fail_validation_on_missing_task() {
 #[should_panic(expected = "Unexpected description: \"a\"")]
 fn fail_validation_on_incorrect_description() {
     let mut printer = FakePrinter::new();
-    printer.print_task(&PrintableTask {
-        desc: "a",
-        number: 1,
-        status: TaskStatus::Incomplete,
-        action: Action::None,
-        log_date: None,
-        priority: None,
-    });
+    printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
     printer.validate().printed_task(&[Expect::Desc("b")]).end();
 }
 
@@ -561,14 +468,7 @@ fn fail_validation_on_incorrect_description() {
 #[should_panic(expected = "Unexpected number: 1")]
 fn fail_validation_on_incorrect_number() {
     let mut printer = FakePrinter::new();
-    printer.print_task(&PrintableTask {
-        desc: "a",
-        number: 1,
-        status: TaskStatus::Incomplete,
-        action: Action::None,
-        log_date: None,
-        priority: None,
-    });
+    printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
     printer.validate().printed_task(&[Expect::Number(2)]).end();
 }
 
@@ -576,14 +476,7 @@ fn fail_validation_on_incorrect_number() {
 #[should_panic(expected = "Extra tasks were recorded: ")]
 fn fail_validation_on_extra_tasks() {
     let mut printer = FakePrinter::new();
-    printer.print_task(&PrintableTask {
-        desc: "a",
-        number: 1,
-        status: TaskStatus::Incomplete,
-        action: Action::None,
-        log_date: None,
-        priority: None,
-    });
+    printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
     printer.validate().end();
 }
 
@@ -591,14 +484,7 @@ fn fail_validation_on_extra_tasks() {
 #[should_panic(expected = "Unexpected status")]
 fn fail_validation_on_incorrect_status() {
     let mut printer = FakePrinter::new();
-    printer.print_task(&PrintableTask {
-        desc: "a",
-        number: 0,
-        status: TaskStatus::Incomplete,
-        action: Action::None,
-        log_date: None,
-        priority: None,
-    });
+    printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
     printer
         .validate()
         .printed_task(&[Expect::Status(TaskStatus::Complete)])
@@ -609,14 +495,9 @@ fn fail_validation_on_incorrect_status() {
 #[should_panic(expected = "Unexpected action")]
 fn fail_validation_on_incorrect_action() {
     let mut printer = FakePrinter::new();
-    printer.print_task(&PrintableTask {
-        desc: "a",
-        number: 1,
-        status: TaskStatus::Incomplete,
-        action: Action::New,
-        log_date: None,
-        priority: None,
-    });
+    printer.print_task(
+        &PrintableTask::new("a", 1, TaskStatus::Incomplete).action(Action::New),
+    );
     printer
         .validate()
         .printed_task(&[Expect::Action(Action::None)])
@@ -643,14 +524,7 @@ fn fail_validation_on_task_instead_of_warning() {
     let mut printer = FakePrinter::new();
     let warning =
         PrintableWarning::CannotPuntBecauseComplete { cannot_punt: 0 };
-    printer.print_task(&PrintableTask {
-        desc: "a",
-        number: 1,
-        status: TaskStatus::Incomplete,
-        action: Action::None,
-        log_date: None,
-        priority: None,
-    });
+    printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
     printer.validate().printed_warning(&warning).end();
 }
 
@@ -678,14 +552,7 @@ fn fail_validation_on_task_instead_of_error() {
         cannot_check: 3,
         blocked_by: vec![2],
     };
-    printer.print_task(&PrintableTask {
-        desc: "a",
-        number: 1,
-        status: TaskStatus::Incomplete,
-        action: Action::None,
-        log_date: None,
-        priority: None,
-    });
+    printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
     printer.validate().printed_error(&error).end();
 }
 
@@ -693,14 +560,7 @@ fn fail_validation_on_task_instead_of_error() {
 #[should_panic(expected = "Missing required log date")]
 fn fail_validation_on_missing_log_date() {
     let mut printer = FakePrinter::new();
-    printer.print_task(&PrintableTask {
-        desc: "a",
-        number: 1,
-        status: TaskStatus::Incomplete,
-        action: Action::None,
-        log_date: None,
-        priority: None,
-    });
+    printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
     printer
         .validate()
         .printed_task(&[Expect::LogDate(LogDate::ymd(2021, 03, 21).unwrap())])
@@ -711,14 +571,10 @@ fn fail_validation_on_missing_log_date() {
 #[should_panic(expected = "Unexpected log date")]
 fn fail_validation_on_incorrect_log_date() {
     let mut printer = FakePrinter::new();
-    printer.print_task(&PrintableTask {
-        desc: "a",
-        number: 1,
-        status: TaskStatus::Incomplete,
-        action: Action::None,
-        log_date: Some(LogDate::Invisible),
-        priority: None,
-    });
+    printer.print_task(
+        &PrintableTask::new("a", 1, TaskStatus::Incomplete)
+            .log_date(LogDate::Invisible),
+    );
     printer
         .validate()
         .printed_task(&[Expect::LogDate(LogDate::ymd(2021, 03, 21).unwrap())])

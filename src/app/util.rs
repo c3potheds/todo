@@ -12,14 +12,12 @@ pub fn format_task<'a>(
     action: Action,
 ) -> PrintableTask<'a> {
     let number = model.position(id).unwrap();
-    PrintableTask {
-        desc: &model.get(id).unwrap().desc,
-        number: number,
-        status: model.status(id).unwrap(),
-        action: action,
-        log_date: None,
-        priority: None,
-    }
+    PrintableTask::new(
+        &model.get(id).unwrap().desc,
+        number,
+        model.status(id).unwrap(),
+    )
+    .action(action)
 }
 
 #[allow(dead_code)]
@@ -29,14 +27,12 @@ pub fn format_task_with_date<'a>(
     log_date: LogDate,
 ) -> PrintableTask<'a> {
     let number = model.position(id).unwrap();
-    PrintableTask {
-        desc: &model.get(id).unwrap().desc,
-        number: number,
-        status: model.status(id).unwrap(),
-        action: Action::None,
-        log_date: Some(log_date),
-        priority: None,
-    }
+    PrintableTask::new(
+        &model.get(id).unwrap().desc,
+        number,
+        model.status(id).unwrap(),
+    )
+    .log_date(log_date)
 }
 
 pub fn lookup_tasks<'a>(

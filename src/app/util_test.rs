@@ -12,14 +12,7 @@ fn format_task_basic() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
     let actual = format_task(&list, a, Action::None);
-    let expected = PrintableTask {
-        desc: "a",
-        number: 1,
-        status: TaskStatus::Incomplete,
-        action: Action::None,
-        log_date: None,
-        priority: None,
-    };
+    let expected = PrintableTask::new("a", 1, TaskStatus::Incomplete);
     assert_eq!(actual, expected);
 }
 
@@ -28,14 +21,8 @@ fn format_task_with_action() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
     let actual = format_task(&list, a, Action::Punt);
-    let expected = PrintableTask {
-        desc: "a",
-        number: 1,
-        status: TaskStatus::Incomplete,
-        action: Action::Punt,
-        log_date: None,
-        priority: None,
-    };
+    let expected =
+        PrintableTask::new("a", 1, TaskStatus::Incomplete).action(Action::Punt);
     assert_eq!(actual, expected);
 }
 
@@ -45,14 +32,8 @@ fn format_task_with_invisible_log_date() {
     let a = list.add(Task::new("a"));
     list.check(a).unwrap();
     let actual = format_task_with_date(&list, a, LogDate::Invisible);
-    let expected = PrintableTask {
-        desc: "a",
-        number: 0,
-        status: TaskStatus::Complete,
-        action: Action::None,
-        log_date: Some(LogDate::Invisible),
-        priority: None,
-    };
+    let expected = PrintableTask::new("a", 0, TaskStatus::Complete)
+        .log_date(LogDate::Invisible);
     assert_eq!(actual, expected);
 }
 
@@ -63,14 +44,8 @@ fn format_task_with_visible_log_date() {
     list.check(a).unwrap();
     let actual =
         format_task_with_date(&list, a, LogDate::ymd(2020, 03, 21).unwrap());
-    let expected = PrintableTask {
-        desc: "a",
-        number: 0,
-        status: TaskStatus::Complete,
-        action: Action::None,
-        log_date: Some(LogDate::YearMonthDay(2020, 03, 21)),
-        priority: None,
-    };
+    let expected = PrintableTask::new("a", 0, TaskStatus::Complete)
+        .log_date(LogDate::YearMonthDay(2020, 03, 21));
     assert_eq!(actual, expected);
 }
 
