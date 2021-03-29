@@ -37,7 +37,7 @@ fn in_two_days() {
 #[test]
 fn in_six_days() {
     let now = Local.ymd(2021, 03, 18).and_hms(20, 05, 00);
-    let expected = Local.ymd(2021, 03, 24).and_hms(20, 05, 00);
+    let expected = Local.ymd(2021, 03, 24).and_hms(23, 59, 59);
     let actual = parse_time(Local, now, "6 days").unwrap();
     assert_eq!(actual, expected);
 }
@@ -45,7 +45,7 @@ fn in_six_days() {
 #[test]
 fn in_two_weeks() {
     let now = Local.ymd(2021, 03, 19).and_hms(23, 23, 00);
-    let expected = Local.ymd(2021, 04, 02).and_hms(23, 23, 00);
+    let expected = Local.ymd(2021, 04, 02).and_hms(23, 59, 59);
     let actual = parse_time(Local, now, "2 weeks").unwrap();
     assert_eq!(actual, expected);
 }
@@ -53,7 +53,7 @@ fn in_two_weeks() {
 #[test]
 fn across_leap_year() {
     let now = Local.ymd(2020, 02, 27).and_hms(12, 00, 00);
-    let expected = Local.ymd(2020, 03, 01).and_hms(12, 00, 00);
+    let expected = Local.ymd(2020, 03, 01).and_hms(23, 59, 59);
     let actual = parse_time(Local, now, "3 days").unwrap();
     assert_eq!(actual, expected);
 }
@@ -61,12 +61,7 @@ fn across_leap_year() {
 #[test]
 fn two_months() {
     let now = Local.ymd(2021, 03, 19).and_hms(12, 00, 00);
-    let expected = Local
-        .ymd(2021, 05, 19)
-        // TODO(time-format.end-of-day): humantime represents a month as 30.44
-        // days. Either snap to the same time of day as "now" or to the end of
-        // the day.
-        .and_hms(09, 07, 12);
+    let expected = Local.ymd(2021, 05, 19).and_hms(23, 59, 59);
     let actual = parse_time(Local, now, "2 months").unwrap();
     assert_eq!(actual, expected);
 }

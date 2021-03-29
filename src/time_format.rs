@@ -186,8 +186,12 @@ pub fn parse_time<Tz: TimeZone>(
 ) -> Result<DateTime<Tz>, ParseTimeError> {
     humantime::parse_duration(s)
         .map(|duration: std::time::Duration| {
-            now.clone()
-                + chrono::Duration::milliseconds(duration.as_millis() as i64)
+            let mut datetime = now.clone()
+                + chrono::Duration::milliseconds(duration.as_millis() as i64);
+            if chrono::Duration::days(1).to_std().unwrap() <= duration {
+                datetime = end_of_day(datetime);
+            }
+            datetime
         })
         .or_else(|_| parse_time_of_day(tz, now.clone(), s))
         .or_else(|_| parse_day_of_week(now.clone(), s))
