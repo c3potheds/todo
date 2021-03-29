@@ -406,6 +406,14 @@ pub enum SubCommand {
     #[structopt(verbatim_doc_comment)]
     Restore(Restore),
 
+    /// Shows top-level tasks, i.e. tasks with no antidependencies.
+    ///
+    /// One can represent "categories" for tasks by blocking a task representing
+    /// a category on the tasks that should be in that category. When running
+    /// this command, you can see all "uncategorized" tasks.
+    #[structopt(verbatim_doc_comment)]
+    Top,
+
     /// Unblock tasks from other tasks.
     ///
     /// This is the "undo" operation for the 'block' command.

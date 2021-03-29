@@ -725,3 +725,10 @@ fn rm_by_name() {
         })
     );
 }
+
+#[test]
+fn top() {
+    let options = parse(&["todo", "top"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(cmd, SubCommand::Top);
+}

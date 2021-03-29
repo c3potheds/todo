@@ -48,6 +48,7 @@ pub fn todo(
         Some(SubCommand::Put(cmd)) => put::run(model, printer, &cmd),
         Some(SubCommand::Restore(cmd)) => restore::run(model, printer, &cmd),
         Some(SubCommand::Rm(_)) => unimplemented!(),
+        Some(SubCommand::Top) => unimplemented!(),
         Some(SubCommand::Unblock(cmd)) => unblock::run(model, printer, &cmd),
         None => status::run(model, printer, &status_options(options)),
     }
