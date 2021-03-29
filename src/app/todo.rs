@@ -18,6 +18,13 @@ use model::TodoList;
 use printing::TodoPrinter;
 use text_editing::TextEditor;
 
+fn status_options(options: Options) -> status::Status {
+    status::Status {
+        include_blocked: options.include_blocked || options.include_all,
+        include_done: options.include_done || options.include_all,
+    }
+}
+
 pub fn todo(
     model: &mut TodoList,
     printer: &mut impl TodoPrinter,
@@ -42,13 +49,6 @@ pub fn todo(
         Some(SubCommand::Restore(cmd)) => restore::run(model, printer, &cmd),
         Some(SubCommand::Rm(_)) => unimplemented!(),
         Some(SubCommand::Unblock(cmd)) => unblock::run(model, printer, &cmd),
-        None => status::run(
-            model,
-            printer,
-            &status::Status {
-                include_blocked: options.include_blocked || options.include_all,
-                include_done: options.include_done || options.include_all,
-            },
-        ),
+        None => status::run(model, printer, &status_options(options)),
     }
 }
