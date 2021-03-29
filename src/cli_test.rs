@@ -697,3 +697,31 @@ fn path_missing_from() {
 fn path_too_many_args() {
     Options::from_iter_safe(&["todo", "path", "1", "2", "3"]).unwrap_err();
 }
+
+#[test]
+fn rm_by_number() {
+    let options = parse(&["todo", "rm", "1", "2"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Rm(Rm {
+            keys: vec![Key::ByNumber(1), Key::ByNumber(2)],
+        })
+    );
+}
+
+#[test]
+fn rm_by_name() {
+    let options = parse(&["todo", "rm", "a", "b", "c"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Rm(Rm {
+            keys: vec![
+                Key::ByName("a".to_string()),
+                Key::ByName("b".to_string()),
+                Key::ByName("c".to_string()),
+            ],
+        })
+    );
+}

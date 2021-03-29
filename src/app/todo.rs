@@ -40,6 +40,7 @@ pub fn todo(
         Some(SubCommand::Punt(cmd)) => punt::run(model, printer, &cmd),
         Some(SubCommand::Put(cmd)) => put::run(model, printer, &cmd),
         Some(SubCommand::Restore(cmd)) => restore::run(model, printer, &cmd),
+        Some(SubCommand::Rm(_)) => unimplemented!(),
         Some(SubCommand::Unblock(cmd)) => unblock::run(model, printer, &cmd),
         None => status::run(
             model,
