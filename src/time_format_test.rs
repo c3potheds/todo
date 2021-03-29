@@ -83,11 +83,18 @@ fn wednesday_abbreviated() {
 }
 
 #[test]
-#[ignore = "todo-dev.time-format.day-of-week.previous"]
 fn last_monday() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let expected = Local.ymd(2021, 03, 15).and_hms(23, 59, 59);
     let actual = parse_time(Local, now, "last monday").unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn last_tuesday_when_today_is_tuesday() {
+    let now = Local.ymd(2021, 03, 30).and_hms(10, 00, 00);
+    let expected = Local.ymd(2021, 03, 23).and_hms(23, 59, 59);
+    let actual = parse_time(Local, now, "last tue").unwrap();
     assert_eq!(actual, expected);
 }
 

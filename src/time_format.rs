@@ -209,6 +209,20 @@ pub fn parse_time<Tz: TimeZone>(
                 Err(ParseTimeError)
             }
         })
+        .or_else(|_| {
+            let mut chunks = s.split_whitespace();
+            match chunks.next() {
+                Some("last") => match chunks.next() {
+                    Some(dow) => parse_day_of_week(
+                        now.clone() - chrono::Duration::days(1),
+                        dow,
+                    )
+                    .map(|datetime| datetime - chrono::Duration::days(7)),
+                    _ => Err(ParseTimeError),
+                },
+                _ => Err(ParseTimeError),
+            }
+        })
 }
 
 // The humantime::format_duration() function will format durations like "5m 32s"
