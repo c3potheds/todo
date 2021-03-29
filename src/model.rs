@@ -119,6 +119,22 @@ where
             .is_some()
     }
 
+    pub fn position(&self, data: &T) -> Option<usize> {
+        self.depth.get(data).and_then(|&depth| {
+            self.layers[depth]
+                .iter()
+                .position(|item| item == data)
+                .map(|pos| {
+                    pos + self
+                        .layers
+                        .iter()
+                        .map(|layer| layer.len())
+                        .take(depth)
+                        .sum::<usize>()
+                })
+        })
+    }
+
     pub fn iter(&self) -> impl Iterator<Item = &T> + '_ {
         self.layers.iter().flat_map(|layer| layer.iter())
     }
@@ -632,8 +648,7 @@ impl TodoList {
 
     pub fn position(&self, id: TaskId) -> Option<i32> {
         self.incomplete
-            .iter()
-            .position(|&x| x == id)
+            .position(&id)
             .map(|pos| (pos as i32) + 1)
             .or_else(|| {
                 self.complete
