@@ -40,87 +40,84 @@ fn parse_time_of_day_step(
     state: ParseTimeOfDayState,
     c: char,
 ) -> Result<ParseTimeOfDayState, ParseTimeError> {
+    use self::ParseTimeOfDayState::*;
     match (state, c) {
-        (ParseTimeOfDayState::ParsingNumber { number_so_far }, '0'..='9') => {
+        (ParsingNumber { number_so_far }, '0'..='9') => {
             let (start, end) = number_so_far;
-            Ok(ParseTimeOfDayState::ParsingNumber {
+            Ok(ParsingNumber {
                 number_so_far: (start, end + 1),
             })
         }
-        (ParseTimeOfDayState::ParsingNumber { number_so_far }, ':') => {
+        (ParsingNumber { number_so_far }, ':') => {
             let (start, end) = number_so_far;
-            Ok(ParseTimeOfDayState::ParsingTimeOClock {
+            Ok(ParsingTimeOClock {
                 hour: s[start..end].parse::<u8>().unwrap(),
                 minute_so_far: (end + 1, end + 1),
             })
         }
-        (ParseTimeOfDayState::ParsingNumber { number_so_far }, 'a') => {
+        (ParsingNumber { number_so_far }, 'a') => {
             let (start, end) = number_so_far;
-            Ok(ParseTimeOfDayState::ExpectingAm {
+            Ok(ExpectingAm {
                 hour: s[start..end].parse::<u8>().unwrap(),
                 minute: 00,
             })
         }
-        (ParseTimeOfDayState::ParsingNumber { number_so_far }, 'p') => {
+        (ParsingNumber { number_so_far }, 'p') => {
             let (start, end) = number_so_far;
-            Ok(ParseTimeOfDayState::ExpectingPm {
+            Ok(ExpectingPm {
                 hour: s[start..end].parse::<u8>().unwrap(),
                 minute: 00,
             })
         }
         (
-            ParseTimeOfDayState::ParsingTimeOClock {
+            ParsingTimeOClock {
                 hour,
                 minute_so_far,
             },
             '0'..='9',
         ) => {
             let (start, end) = minute_so_far;
-            Ok(ParseTimeOfDayState::ParsingTimeOClock {
+            Ok(ParsingTimeOClock {
                 hour: hour,
                 minute_so_far: (start, end + 1),
             })
         }
         (
-            ParseTimeOfDayState::ParsingTimeOClock {
+            ParsingTimeOClock {
                 hour,
                 minute_so_far,
             },
             'a',
         ) => {
             let (start, end) = minute_so_far;
-            Ok(ParseTimeOfDayState::ExpectingAm {
+            Ok(ExpectingAm {
                 hour: hour,
                 minute: s[start..end].parse::<u8>().unwrap(),
             })
         }
         (
-            ParseTimeOfDayState::ParsingTimeOClock {
+            ParsingTimeOClock {
                 hour,
                 minute_so_far,
             },
             'p',
         ) => {
             let (start, end) = minute_so_far;
-            Ok(ParseTimeOfDayState::ExpectingPm {
+            Ok(ExpectingPm {
                 hour: hour,
                 minute: s[start..end].parse::<u8>().unwrap(),
             })
         }
-        (ParseTimeOfDayState::ExpectingAm { hour, minute }, 'm') => {
-            Ok(ParseTimeOfDayState::FullInfo {
-                hour: hour,
-                minute: minute,
-                midi: Midi::Am,
-            })
-        }
-        (ParseTimeOfDayState::ExpectingPm { hour, minute }, 'm') => {
-            Ok(ParseTimeOfDayState::FullInfo {
-                hour: hour,
-                minute: minute,
-                midi: Midi::Pm,
-            })
-        }
+        (ExpectingAm { hour, minute }, 'm') => Ok(FullInfo {
+            hour: hour,
+            minute: minute,
+            midi: Midi::Am,
+        }),
+        (ExpectingPm { hour, minute }, 'm') => Ok(FullInfo {
+            hour: hour,
+            minute: minute,
+            midi: Midi::Pm,
+        }),
         _ => Err(ParseTimeError),
     }
 }
