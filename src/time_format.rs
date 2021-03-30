@@ -165,6 +165,30 @@ fn end_of_day<Tz: TimeZone>(datetime: DateTime<Tz>) -> DateTime<Tz> {
         .unwrap()
 }
 
+fn end_of_month<Tz: TimeZone>(datetime: DateTime<Tz>) -> DateTime<Tz> {
+    // Increment the datetime by a day until the month changes.
+    let this_month = datetime.month();
+    let mut forward = datetime.clone();
+    loop {
+        let next = forward.clone() + chrono::Duration::days(1);
+        if next.month() != this_month {
+            return end_of_day(forward);
+        }
+        forward = next;
+    }
+}
+
+fn end_of_month_after<Tz: TimeZone>(
+    datetime: DateTime<Tz>,
+    month: chrono::Month,
+) -> DateTime<Tz> {
+    if datetime.month() == month.number_from_month() {
+        end_of_month(datetime)
+    } else {
+        end_of_month_after(datetime + chrono::Duration::days(28), month)
+    }
+}
+
 fn parse_day_of_week<Tz: TimeZone>(
     now: DateTime<Tz>,
     s: &str,
@@ -195,7 +219,6 @@ pub fn parse_time<Tz: TimeZone>(
             }
             datetime
         })
-        .or_else(|_| parse_time_of_day(tz, now.clone(), s))
         .or_else(|_| parse_day_of_week(now.clone(), s))
         .or_else(|_| {
             if s == "today" {
@@ -222,9 +245,14 @@ pub fn parse_time<Tz: TimeZone>(
                     .map(|datetime| datetime - chrono::Duration::days(7)),
                     _ => Err(ParseTimeError),
                 },
+                Some(chunk) => chunk
+                    .parse::<chrono::Month>()
+                    .map(|month| end_of_month_after(now.clone(), month))
+                    .map_err(|_| ParseTimeError),
                 _ => Err(ParseTimeError),
             }
         })
+        .or_else(|_| parse_time_of_day(tz, now.clone(), s))
 }
 
 // The humantime::format_duration() function will format durations like "5m 32s"

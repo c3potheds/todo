@@ -139,6 +139,38 @@ fn am_next_day() {
 }
 
 #[test]
+fn month_without_day_next_month() {
+    let now = Local.ymd(2021, 03, 30).and_hms(10, 00, 00);
+    let expected = Local.ymd(2021, 04, 30).and_hms(23, 59, 59);
+    let actual = parse_time(Local, now, "april").unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn month_without_day_in_four_months() {
+    let now = Local.ymd(2021, 03, 30).and_hms(10, 00, 00);
+    let expected = Local.ymd(2021, 07, 31).and_hms(23, 59, 59);
+    let actual = parse_time(Local, now, "july").unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn month_without_day_february() {
+    let now = Local.ymd(2020, 12, 25).and_hms(00, 00, 00);
+    let expected = Local.ymd(2021, 02, 28).and_hms(23, 59, 59);
+    let actual = parse_time(Local, now, "feb").unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn month_without_day_february_leap_year() {
+    let now = Local.ymd(2019, 12, 25).and_hms(00, 00, 00);
+    let expected = Local.ymd(2020, 02, 29).and_hms(23, 59, 59);
+    let actual = parse_time(Local, now, "feb").unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
 fn relative_time_in_five_minutes() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let then = Local.ymd(2021, 03, 19).and_hms(10, 05, 00);
