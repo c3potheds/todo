@@ -6,6 +6,7 @@ mod find;
 mod get;
 mod log;
 mod new;
+mod path;
 mod punt;
 mod put;
 mod restore;
@@ -39,6 +40,9 @@ mod log_test;
 
 #[cfg(test)]
 mod new_test;
+
+#[cfg(test)]
+mod path_test;
 
 #[cfg(test)]
 mod punt_test;

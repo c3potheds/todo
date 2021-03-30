@@ -154,6 +154,10 @@ pub enum PrintableError {
         malformed_line: String,
     },
     FailedToUseTextEditor,
+    AmbiguousKey {
+        key: Key,
+        matches: Vec<i32>,
+    },
 }
 
 const ANSI_OFFSET: usize = 10;
@@ -347,7 +351,16 @@ impl Display for PrintableError {
                 } => format!("Could not parse line: \"{}\"", malformed_line),
                 PrintableError::FailedToUseTextEditor => {
                     format!("Failed to open text editor")
-                }
+                },
+                PrintableError::AmbiguousKey{ key, matches } => {
+                    format!("Ambiguous key {} matches multiple tasks: {}",
+                        format_key(key),
+                        format_numbers(
+                            matches.iter().copied(),
+                            TaskStatus::Incomplete
+                        )
+                    )
+                },
             }
         )
     }

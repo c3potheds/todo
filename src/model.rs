@@ -224,6 +224,15 @@ impl std::ops::BitOr for TaskSet {
     }
 }
 
+impl std::ops::BitAnd for TaskSet {
+    type Output = TaskSet;
+    fn bitand(self, other: Self) -> Self::Output {
+        TaskSet {
+            ids: &self.ids & &other.ids,
+        }
+    }
+}
+
 impl TodoList {
     fn implicit_priority(&self, id: TaskId) -> i32 {
         self.get(id)

@@ -6,6 +6,7 @@ use app::find;
 use app::get;
 use app::log;
 use app::new;
+use app::path;
 use app::punt;
 use app::put;
 use app::restore;
@@ -42,7 +43,7 @@ pub fn todo(
         Some(SubCommand::Find(cmd)) => find::run(model, printer, &cmd),
         Some(SubCommand::Get(cmd)) => get::run(model, printer, &cmd),
         Some(SubCommand::Log) => log::run(model, printer),
-        Some(SubCommand::Path(_)) => unimplemented!(),
+        Some(SubCommand::Path(cmd)) => path::run(model, printer, &cmd),
         Some(SubCommand::New(cmd)) => new::run(model, printer, clock, cmd),
         Some(SubCommand::Punt(cmd)) => punt::run(model, printer, &cmd),
         Some(SubCommand::Put(cmd)) => put::run(model, printer, &cmd),
