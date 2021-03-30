@@ -1,4 +1,4 @@
-use app::testing::test;
+use app::testing::*;
 use model::TaskStatus;
 use model::TodoList;
 use printing::Action;
@@ -80,6 +80,38 @@ fn unblock_by_name() {
         ])
         .printed_task(&[
             Expect::Desc("b"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::Unlock),
+        ])
+        .end();
+}
+
+#[test]
+fn unblock_from_all() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b");
+    fix.test("todo new c -p a b");
+    fix.test("todo unblock c")
+        .validate()
+        .printed_task(&[
+            Expect::Desc("c"),
+            Expect::Number(3),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::Unlock),
+        ])
+        .end();
+}
+
+#[test]
+fn unblock_from_all2() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain");
+    fix.test("todo new c -p a b");
+    fix.test("todo unblock c")
+        .validate()
+        .printed_task(&[
+            Expect::Desc("c"),
             Expect::Number(2),
             Expect::Status(TaskStatus::Incomplete),
             Expect::Action(Action::Unlock),

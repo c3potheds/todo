@@ -3,11 +3,11 @@ use app::util::lookup_tasks;
 use cli::Unblock;
 use itertools::Itertools;
 use model::TaskId;
+use model::TaskSet;
 use model::TodoList;
 use printing::Action;
 use printing::PrintableWarning;
 use printing::TodoPrinter;
-use std::collections::HashSet;
 
 fn print_unblock_warning(
     printer: &mut impl TodoPrinter,
@@ -27,14 +27,13 @@ fn print_unblock_warning(
     );
 }
 
-pub fn run(
+fn unblock_from_given(
     model: &mut TodoList,
     printer: &mut impl TodoPrinter,
-    cmd: &Unblock,
-) {
-    let tasks_to_unblock = lookup_tasks(&model, &cmd.keys);
-    let tasks_to_unblock_from = lookup_tasks(&model, &cmd.from);
-    let tasks_to_print = tasks_to_unblock
+    tasks_to_unblock: &Vec<TaskId>,
+    tasks_to_unblock_from: &Vec<TaskId>,
+) -> TaskSet {
+    tasks_to_unblock
         .iter()
         .copied()
         .cartesian_product(tasks_to_unblock_from.iter().copied())
@@ -47,20 +46,52 @@ pub fn run(
                 }
             }
         })
-        .collect::<HashSet<_>>();
+        .collect()
+}
 
-    model
-        .all_tasks()
-        .filter(|id| tasks_to_print.contains(&id))
-        .for_each(|id| {
-            printer.print_task(&format_task(
-                model,
-                id,
-                if tasks_to_unblock.contains(&id) {
-                    Action::Unlock
-                } else {
-                    Action::None
-                },
-            ));
-        });
+fn unblock_from_all(
+    model: &mut TodoList,
+    tasks_to_unblock: &Vec<TaskId>,
+) -> TaskSet {
+    tasks_to_unblock
+        .iter()
+        .copied()
+        .map(|id| {
+            model
+                .deps(id)
+                .iter_unsorted()
+                .for_each(|dep| model.unblock(id).from(dep).unwrap());
+            id
+        })
+        .collect()
+}
+
+pub fn run(
+    model: &mut TodoList,
+    printer: &mut impl TodoPrinter,
+    cmd: &Unblock,
+) {
+    let tasks_to_unblock = lookup_tasks(&model, &cmd.keys);
+    let tasks_to_unblock_from = lookup_tasks(&model, &cmd.from);
+    let tasks_to_print = if tasks_to_unblock_from.is_empty() {
+        unblock_from_all(model, &tasks_to_unblock)
+    } else {
+        unblock_from_given(
+            model,
+            printer,
+            &tasks_to_unblock,
+            &tasks_to_unblock_from,
+        )
+    };
+    tasks_to_print.iter_sorted(model).for_each(|id| {
+        printer.print_task(&format_task(
+            model,
+            id,
+            if tasks_to_unblock.contains(&id) {
+                Action::Unlock
+            } else {
+                Action::None
+            },
+        ));
+    });
 }
