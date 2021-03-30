@@ -247,8 +247,18 @@ pub fn parse_time<Tz: TimeZone>(
                 },
                 Some(chunk) => chunk
                     .parse::<chrono::Month>()
-                    .map(|month| end_of_month_after(now.clone(), month))
-                    .map_err(|_| ParseTimeError),
+                    .map_err(|_| ParseTimeError)
+                    .and_then(|month| match chunks.next() {
+                        Some(chunk) => chunk
+                            .parse::<u32>()
+                            .map_err(|_| ParseTimeError)
+                            .map(|day| {
+                                end_of_month_after(now.clone(), month)
+                                    .with_day(day)
+                                    .unwrap()
+                            }),
+                        None => Ok(end_of_month_after(now.clone(), month)),
+                    }),
                 _ => Err(ParseTimeError),
             }
         })

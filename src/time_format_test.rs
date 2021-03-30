@@ -171,6 +171,22 @@ fn month_without_day_february_leap_year() {
 }
 
 #[test]
+fn month_with_day() {
+    let now = Local.ymd(2021, 04, 01).and_hms(11, 00, 00);
+    let expected = Local.ymd(2021, 07, 04).and_hms(23, 59, 59);
+    let actual = parse_time(Local, now, "july 4").unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn month_without_day_this_month() {
+    let now = Local.ymd(2021, 04, 01).and_hms(09, 00, 00);
+    let expected = Local.ymd(2021, 04, 30).and_hms(23, 59, 59);
+    let actual = parse_time(Local, now, "april").unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
 fn relative_time_in_five_minutes() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let then = Local.ymd(2021, 03, 19).and_hms(10, 05, 00);
