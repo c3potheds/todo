@@ -35,12 +35,12 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Put) {
     let before_deps: TaskSet = before
         .iter()
         .copied()
-        .flat_map(|id| model.deps(id).iter_unsorted())
+        .flat_map(|id| model.deps(id).into_iter_unsorted())
         .collect();
     let after_adeps: TaskSet = after
         .iter()
         .copied()
-        .flat_map(|id| model.adeps(id).iter_unsorted())
+        .flat_map(|id| model.adeps(id).into_iter_unsorted())
         .collect();
     let tasks_to_block_on: Vec<_> = after
         .iter()

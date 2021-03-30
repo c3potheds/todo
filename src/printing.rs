@@ -17,6 +17,7 @@ pub struct PrintingContext {
 pub enum Action {
     None,
     New,
+    Delete,
     Check,
     Uncheck,
     Lock,
@@ -169,6 +170,7 @@ impl Display for Action {
         match self {
             Action::None => write!(f, "{}", "   "),
             Action::New => write!(f, "{}", Color::Green.paint("NEW")),
+            Action::Delete => write!(f, "{}", Color::Red.paint("DEL")),
             Action::Check => write!(f, "{}", Color::Green.paint("[✓]")),
             Action::Uncheck => write!(f, "{}", Color::Yellow.paint("[ ]")),
             Action::Lock => write!(f, " {}", Color::Red.paint("🔒")),
@@ -192,6 +194,7 @@ fn format_number(number: i32, status: TaskStatus) -> String {
         TaskStatus::Complete => Color::Green,
         TaskStatus::Incomplete => Color::Yellow,
         TaskStatus::Blocked => Color::Red,
+        TaskStatus::Removed => Color::Red,
     };
     let mut indexing = number.to_string();
     indexing.push_str(")");

@@ -21,6 +21,7 @@ pub enum TaskStatus {
     Complete,
     Incomplete,
     Blocked,
+    Removed,
 }
 
 // NOTE: all new fields need to be Options to allow backwards compatibility.
@@ -184,16 +185,23 @@ impl TaskSet {
     /// Iterates the set in an arbitrary order. Careful when using this; it may
     /// cause non-determinism. It is more efficient than iterating in sorted
     /// order.
-    pub fn iter_unsorted(self) -> impl Iterator<Item = TaskId> {
+    pub fn iter_unsorted(&self) -> impl Iterator<Item = TaskId> + '_ {
+        self.ids.iter().copied()
+    }
+
+    pub fn into_iter_unsorted(self) -> impl Iterator<Item = TaskId> {
         self.ids.into_iter()
     }
 
     /// Iterates the set in sorted order, where the ordering is defined by the
     /// position in the list.
-    pub fn iter_sorted(self, list: &TodoList) -> impl Iterator<Item = TaskId> {
+    pub fn iter_sorted(
+        &self,
+        list: &TodoList,
+    ) -> impl Iterator<Item = TaskId> + '_ {
         self.ids
-            .into_iter()
-            .flat_map(|id| {
+            .iter()
+            .flat_map(|&id| {
                 list.position(id)
                     .map(|pos| TaskIdWithPosition {
                         id: id,
@@ -240,7 +248,7 @@ impl TodoList {
             .flat_map(|task| task.priority)
             .chain(
                 self.adeps(id)
-                    .iter_unsorted()
+                    .into_iter_unsorted()
                     .map(|adep| self.implicit_priority(adep)),
             )
             .max()
@@ -256,7 +264,7 @@ impl TodoList {
 
     fn max_depth_of_deps(&self, id: TaskId) -> Option<usize> {
         self.deps(id)
-            .iter_unsorted()
+            .into_iter_unsorted()
             .flat_map(|dep| {
                 self.incomplete.depth.get(&dep).into_iter().copied()
             })
@@ -330,8 +338,8 @@ impl TodoList {
         self.deps(id)
             | self
                 .deps(id)
-                .iter_unsorted()
-                .flat_map(|dep| self.transitive_deps(dep).iter_unsorted())
+                .into_iter_unsorted()
+                .flat_map(|dep| self.transitive_deps(dep).into_iter_unsorted())
                 .collect()
     }
 
@@ -340,7 +348,9 @@ impl TodoList {
             | self
                 .adeps(id)
                 .iter_unsorted()
-                .flat_map(|adep| self.transitive_adeps(adep).iter_unsorted())
+                .flat_map(|adep| {
+                    self.transitive_adeps(adep).into_iter_unsorted()
+                })
                 .collect()
     }
 }
@@ -707,7 +717,9 @@ impl TodoList {
         self.complete.len()
     }
 
-    pub fn remove(&mut self, id: TaskId) {
+    /// Returns the antidependencies of the removed task. These antidependencies
+    /// are automatically blocked on the dependencies of the removed task.
+    pub fn remove(&mut self, id: TaskId) -> TaskSet {
         if self.incomplete.contains(&id) {
             self.incomplete
                 .remove_from_layer(&id, self.incomplete.depth[&id]);
@@ -717,20 +729,23 @@ impl TodoList {
         // If a task is nestled between deps and adeps, maintain the structure
         // of the graph by blocking the adeps on each of the deps.
         // E.g. if we remove b from (a <- b <- c), then we get (a <- c).
-        let deps: Vec<_> = self.deps(id).iter_sorted(self).collect();
-        let adeps: Vec<_> = self.adeps(id).iter_sorted(self).collect();
+        let deps = self.deps(id);
+        let adeps = self.adeps(id);
         use itertools::Itertools;
-        deps.iter().cartesian_product(adeps.iter()).for_each(
-            |(&dep, &adep)| {
+        deps.iter_sorted(self)
+            .cartesian_product(
+                adeps.iter_sorted(self).collect::<Vec<_>>().into_iter(),
+            )
+            .for_each(|(dep, adep)| {
                 // It should not be possible to cause a cycle when blocking an
                 // adep on a dep because there would already be a cycle if so.
                 self.block(adep).on(dep).unwrap()
-            },
-        );
+            });
         self.tasks.remove_node(id.0);
-        adeps.into_iter().for_each(|adep| {
+        adeps.iter_sorted(self).for_each(|adep| {
             self.update_depth(adep);
         });
+        adeps
     }
 }
 

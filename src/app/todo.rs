@@ -10,6 +10,7 @@ use app::path;
 use app::punt;
 use app::put;
 use app::restore;
+use app::rm;
 use app::status;
 use app::unblock;
 use cli::Options;
@@ -48,7 +49,7 @@ pub fn todo(
         Some(SubCommand::Punt(cmd)) => punt::run(model, printer, &cmd),
         Some(SubCommand::Put(cmd)) => put::run(model, printer, &cmd),
         Some(SubCommand::Restore(cmd)) => restore::run(model, printer, &cmd),
-        Some(SubCommand::Rm(_)) => unimplemented!(),
+        Some(SubCommand::Rm(cmd)) => rm::run(model, printer, cmd),
         Some(SubCommand::Top) => unimplemented!(),
         Some(SubCommand::Unblock(cmd)) => unblock::run(model, printer, &cmd),
         None => status::run(model, printer, &status_options(options)),

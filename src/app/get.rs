@@ -13,7 +13,7 @@ pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Get) {
         .copied()
         .flat_map(|id| {
             (model.transitive_deps(id) | model.transitive_adeps(id))
-                .iter_unsorted()
+                .into_iter_unsorted()
                 .chain(std::iter::once(id))
         })
         .collect::<TaskSet>()
