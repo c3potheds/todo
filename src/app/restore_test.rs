@@ -127,7 +127,6 @@ fn restore_by_name() {
 }
 
 #[test]
-#[ignore = "app.restore.force"]
 fn force_restore_complete_task() {
     let mut fix = Fixture::new();
     fix.test("todo new a");
@@ -144,7 +143,6 @@ fn force_restore_complete_task() {
 }
 
 #[test]
-#[ignore = "app.restore.force"]
 fn force_restore_incomplete_task() {
     let mut fix = Fixture::new();
     fix.test("todo new a");
@@ -159,7 +157,6 @@ fn force_restore_incomplete_task() {
 }
 
 #[test]
-#[ignore = "app.restore.force"]
 fn force_restore_task_with_complete_adeps() {
     let mut fix = Fixture::new();
     fix.test("todo new a b --chain");
@@ -182,7 +179,6 @@ fn force_restore_task_with_complete_adeps() {
 }
 
 #[test]
-#[ignore = "app.restore.force"]
 fn force_restore_task_with_complete_adeps_with_complete_adeps() {
     let mut fix = Fixture::new();
     fix.test("todo new a b c --chain");
@@ -211,7 +207,6 @@ fn force_restore_task_with_complete_adeps_with_complete_adeps() {
 }
 
 #[test]
-#[ignore = "app.restore.force"]
 fn force_restore_task_with_complete_and_incomplete_adeps() {
     let mut fix = Fixture::new();
     fix.test("todo new a b c d --chain");
@@ -235,6 +230,12 @@ fn force_restore_task_with_complete_and_incomplete_adeps() {
             Expect::Number(3),
             Expect::Status(TaskStatus::Blocked),
             Expect::Action(Action::Uncheck),
+        ])
+        .printed_task(&[
+            Expect::Desc("d"),
+            Expect::Number(4),
+            Expect::Status(TaskStatus::Blocked),
+            Expect::Action(Action::Lock),
         ])
         .end();
 }
