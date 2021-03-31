@@ -51,6 +51,7 @@ fn new_one() {
             before: Vec::new(),
             after: Vec::new(),
             chain: false,
+            priority: None,
         })
     );
 }
@@ -69,6 +70,7 @@ fn new_three() {
             before: Vec::new(),
             after: Vec::new(),
             chain: false,
+            priority: None,
         })
     );
 }
@@ -87,6 +89,7 @@ fn new_blocked_by_long() {
             before: Vec::new(),
             after: Vec::new(),
             chain: false,
+            priority: None,
         }),
     );
 }
@@ -105,6 +108,7 @@ fn new_blocked_by_short() {
             before: Vec::new(),
             after: Vec::new(),
             chain: false,
+            priority: None,
         }),
     );
 }
@@ -123,6 +127,7 @@ fn new_blocking_long() {
             before: Vec::new(),
             after: Vec::new(),
             chain: false,
+            priority: None,
         }),
     );
 }
@@ -141,6 +146,7 @@ fn new_blocking_short() {
             before: Vec::new(),
             after: Vec::new(),
             chain: false,
+            priority: None,
         }),
     );
 }
@@ -158,6 +164,7 @@ fn new_blocking_by_name() {
             before: Vec::new(),
             after: Vec::new(),
             chain: false,
+            priority: None,
         })
     );
 }
@@ -176,6 +183,7 @@ fn new_chain() {
             before: Vec::new(),
             after: Vec::new(),
             chain: true,
+            priority: None,
         })
     );
 }
@@ -194,8 +202,63 @@ fn new_before_after() {
             before: vec![Key::ByName("a".to_string())],
             after: vec![Key::ByName("b".to_string())],
             chain: false,
+            priority: None,
         })
     );
+}
+
+#[test]
+fn new_one_with_priority() {
+    let options = parse(&["todo", "new", "a", "--priority", "1"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::New(New {
+            desc: vec!["a".to_string()],
+            blocked_by: Vec::new(),
+            blocking: Vec::new(),
+            before: Vec::new(),
+            after: Vec::new(),
+            chain: false,
+            priority: Some(1),
+        })
+    )
+}
+
+#[test]
+fn new_three_with_priority() {
+    let options = parse(&["todo", "new", "a", "b", "c", "--priority", "2"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::New(New {
+            desc: vec!["a".to_string(), "b".to_string(), "c".to_string()],
+            blocked_by: Vec::new(),
+            blocking: Vec::new(),
+            before: Vec::new(),
+            after: Vec::new(),
+            chain: false,
+            priority: Some(2),
+        })
+    )
+}
+
+#[test]
+fn new_with_negative_priority() {
+    let options = parse(&["todo", "new", "a", "--priority", "-3"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::New(New {
+            desc: vec!["a".to_string()],
+            blocked_by: Vec::new(),
+            blocking: Vec::new(),
+            before: Vec::new(),
+            after: Vec::new(),
+            chain: false,
+            priority: Some(-3),
+        })
+    )
 }
 
 #[test]

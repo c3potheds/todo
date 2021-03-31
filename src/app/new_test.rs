@@ -547,3 +547,71 @@ fn print_warning_on_cycle() {
         ])
         .end();
 }
+
+#[test]
+#[ignore = "app.new.priority"]
+fn new_with_priority() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a --priority 1")
+        .validate()
+        .printed_task(&[
+            Expect::Desc("a"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::New),
+            Expect::Priority(1),
+        ])
+        .end();
+}
+
+#[test]
+#[ignore = "app.new.priority"]
+fn new_task_with_priority_inserted_before_unprioritized_tasks() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b");
+    fix.test("todo new c --priority 1")
+        .validate()
+        .printed_task(&[
+            Expect::Desc("c"),
+            Expect::Number(1),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::New),
+            Expect::Priority(1),
+        ])
+        .end();
+}
+
+#[test]
+#[ignore = "app.new.priority"]
+fn new_task_with_negative_priority_inserted_after_unprioritized_tasks() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b");
+    fix.test("todo new c --priority -1")
+        .validate()
+        .printed_task(&[
+            Expect::Desc("c"),
+            Expect::Number(3),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::New),
+            Expect::Priority(-1),
+        ])
+        .end();
+}
+
+#[test]
+#[ignore = "app.new.priority"]
+fn new_task_with_priority_inserted_in_sorted_order() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a --priority 1");
+    fix.test("todo new b --priority 3");
+    fix.test("todo new c --priority 2")
+        .validate()
+        .printed_task(&[
+            Expect::Desc("c"),
+            Expect::Number(2),
+            Expect::Status(TaskStatus::Incomplete),
+            Expect::Action(Action::New),
+            Expect::Priority(2),
+        ])
+        .end();
+}

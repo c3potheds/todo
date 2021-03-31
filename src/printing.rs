@@ -408,6 +408,7 @@ struct PrintedTaskInfo {
     status: TaskStatus,
     action: Action,
     log_date: Option<LogDate>,
+    priority: Option<i32>,
 }
 
 #[derive(Debug)]
@@ -431,6 +432,7 @@ pub enum Expect<'a> {
     Status(TaskStatus),
     Action(Action),
     LogDate(LogDate),
+    Priority(i32),
 }
 
 #[cfg(test)]
@@ -480,6 +482,19 @@ impl<'a> Expect<'a> {
                 }
                 None => {
                     panic!("Missing required log date: {:?}", log_date);
+                }
+            },
+            Expect::Priority(expected) => match &info.priority {
+                Some(actual) => {
+                    if *actual != *expected {
+                        panic!(
+                            "Unexpected priority: {:?} (Expected {:?}",
+                            actual, expected
+                        );
+                    }
+                }
+                None => {
+                    panic!("Missing required priority: {:?}", expected);
                 }
             },
         }
@@ -570,6 +585,7 @@ impl TodoPrinter for FakePrinter {
             status: task.status,
             action: task.action,
             log_date: task.log_date.clone(),
+            priority: task.priority,
         }));
     }
 

@@ -138,6 +138,20 @@ pub struct New {
     /// a time.
     #[structopt(long, verbatim_doc_comment)]
     pub chain: bool,
+
+    /// Assign a priority to the new tasks.
+    ///
+    /// When a task has a priority, it will show up before all other tasks with
+    /// lower priorities. Tasks with no priority have an implicit priority of 0.
+    /// Tasks may have negative priorities, in which case they show up after all
+    /// unprioritized tasks.
+    ///
+    /// A task inherits an implicit priority from its antidependencies. The
+    /// implicit priority of a task is the maximum implicit or explicit priority
+    /// of all its antidependencies. This means tasks in --blocked-by may be
+    /// reordered if you assign a priority!
+    #[structopt(long)]
+    pub priority: Option<i32>,
 }
 
 #[derive(Debug, PartialEq, StructOpt)]
