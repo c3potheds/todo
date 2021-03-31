@@ -12,12 +12,17 @@ pub fn format_task<'a>(
     action: Action,
 ) -> PrintableTask<'a> {
     let number = model.position(id).unwrap();
-    PrintableTask::new(
+    let result = PrintableTask::new(
         &model.get(id).unwrap().desc,
         number,
         model.status(id).unwrap(),
     )
-    .action(action)
+    .action(action);
+    match model.get(id).unwrap().priority {
+        Some(0) => result,
+        Some(p) => result.priority(p),
+        None => result,
+    }
 }
 
 #[allow(dead_code)]
