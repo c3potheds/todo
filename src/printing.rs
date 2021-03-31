@@ -515,6 +515,25 @@ impl<'a> Validation<'a> {
         self.record.drain(0..1).nth(0).unwrap()
     }
 
+    pub fn printed_exact_task(
+        self,
+        task: &PrintableTask<'a>,
+    ) -> Validation<'a> {
+        let mut expectations = vec![
+            Expect::Desc(task.desc),
+            Expect::Number(task.number),
+            Expect::Status(task.status),
+            Expect::Action(task.action),
+        ];
+        if let Some(log_date) = &task.log_date {
+            expectations.push(Expect::LogDate(log_date.clone()));
+        }
+        if let Some(priority) = task.priority {
+            expectations.push(Expect::Priority(priority));
+        }
+        self.printed_task(&expectations)
+    }
+
     pub fn printed_task(mut self, es: &[Expect<'a>]) -> Validation<'a> {
         let item = self.pop(&es);
         match &item {

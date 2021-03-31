@@ -430,6 +430,30 @@ fn validate_multiple_tasks() {
 }
 
 #[test]
+fn validate_exact_task() {
+    let mut printer = FakePrinter::new();
+    printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
+    printer
+        .validate()
+        .printed_exact_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete))
+        .end();
+}
+
+#[test]
+fn validate_multiple_exact_tasks() {
+    let mut printer = FakePrinter::new();
+    printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
+    printer.print_task(&PrintableTask::new("b", 2, TaskStatus::Incomplete));
+    printer.print_task(&PrintableTask::new("c", 3, TaskStatus::Incomplete));
+    printer
+        .validate()
+        .printed_exact_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete))
+        .printed_exact_task(&PrintableTask::new("b", 2, TaskStatus::Incomplete))
+        .printed_exact_task(&PrintableTask::new("c", 3, TaskStatus::Incomplete))
+        .end();
+}
+
+#[test]
 fn validate_warning() {
     let mut printer = FakePrinter::new();
     let warning = PrintableWarning::NoMatchFoundForKey {
@@ -457,6 +481,16 @@ fn fail_validation_on_missing_task() {
 }
 
 #[test]
+#[should_panic(expected = "Missing item")]
+fn fail_validation_on_missing_task_exact() {
+    let mut printer = FakePrinter::new();
+    printer
+        .validate()
+        .printed_exact_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete))
+        .end();
+}
+
+#[test]
 #[should_panic(expected = "Unexpected description: \"a\"")]
 fn fail_validation_on_incorrect_description() {
     let mut printer = FakePrinter::new();
@@ -465,11 +499,33 @@ fn fail_validation_on_incorrect_description() {
 }
 
 #[test]
+#[should_panic(expected = "Unexpected description: \"a\"")]
+fn fail_validation_on_incorrect_description_exact() {
+    let mut printer = FakePrinter::new();
+    printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
+    printer
+        .validate()
+        .printed_exact_task(&PrintableTask::new("b", 1, TaskStatus::Incomplete))
+        .end();
+}
+
+#[test]
 #[should_panic(expected = "Unexpected number: 1")]
 fn fail_validation_on_incorrect_number() {
     let mut printer = FakePrinter::new();
     printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
     printer.validate().printed_task(&[Expect::Number(2)]).end();
+}
+
+#[test]
+#[should_panic(expected = "Unexpected number: 1")]
+fn fail_validation_on_incorrect_number_exact() {
+    let mut printer = FakePrinter::new();
+    printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
+    printer
+        .validate()
+        .printed_exact_task(&PrintableTask::new("a", 2, TaskStatus::Incomplete))
+        .end();
 }
 
 #[test]
@@ -492,6 +548,17 @@ fn fail_validation_on_incorrect_status() {
 }
 
 #[test]
+#[should_panic(expected = "Unexpected status")]
+fn fail_validation_on_incorrect_status_exact() {
+    let mut printer = FakePrinter::new();
+    printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
+    printer
+        .validate()
+        .printed_exact_task(&PrintableTask::new("a", 1, TaskStatus::Blocked))
+        .end();
+}
+
+#[test]
 #[should_panic(expected = "Unexpected action")]
 fn fail_validation_on_incorrect_action() {
     let mut printer = FakePrinter::new();
@@ -501,6 +568,22 @@ fn fail_validation_on_incorrect_action() {
     printer
         .validate()
         .printed_task(&[Expect::Action(Action::None)])
+        .end();
+}
+
+#[test]
+#[should_panic(expected = "Unexpected action")]
+fn fail_validation_on_incorrect_action_exact() {
+    let mut printer = FakePrinter::new();
+    printer.print_task(
+        &PrintableTask::new("a", 1, TaskStatus::Incomplete).action(Action::New),
+    );
+    printer
+        .validate()
+        .printed_exact_task(
+            &PrintableTask::new("a", 1, TaskStatus::Incomplete)
+                .action(Action::Select),
+        )
         .end();
 }
 
@@ -568,6 +651,20 @@ fn fail_validation_on_missing_log_date() {
 }
 
 #[test]
+#[should_panic(expected = "Missing required log date")]
+fn fail_validation_on_missing_log_date_exact() {
+    let mut printer = FakePrinter::new();
+    printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
+    printer
+        .validate()
+        .printed_exact_task(
+            &PrintableTask::new("a", 1, TaskStatus::Incomplete)
+                .log_date(LogDate::YearMonthDay(2021, 04, 01)),
+        )
+        .end();
+}
+
+#[test]
 #[should_panic(expected = "Unexpected log date")]
 fn fail_validation_on_incorrect_log_date() {
     let mut printer = FakePrinter::new();
@@ -578,5 +675,49 @@ fn fail_validation_on_incorrect_log_date() {
     printer
         .validate()
         .printed_task(&[Expect::LogDate(LogDate::ymd(2021, 03, 21).unwrap())])
+        .end();
+}
+
+#[test]
+#[should_panic(expected = "Unexpected log date")]
+fn fail_validation_on_incorrect_log_date_exact() {
+    let mut printer = FakePrinter::new();
+    printer.print_task(
+        &PrintableTask::new("a", 1, TaskStatus::Incomplete)
+            .log_date(LogDate::Invisible),
+    );
+    printer
+        .validate()
+        .printed_exact_task(
+            &PrintableTask::new("a", 1, TaskStatus::Incomplete)
+                .log_date(LogDate::YearMonthDay(2021, 04, 01)),
+        )
+        .end();
+}
+
+#[test]
+#[should_panic(expected = "Missing required priority")]
+fn fail_validation_on_missing_priority_exact() {
+    let mut printer = FakePrinter::new();
+    printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
+    printer
+        .validate()
+        .printed_exact_task(
+            &PrintableTask::new("a", 1, TaskStatus::Incomplete).priority(1),
+        )
+        .end();
+}
+
+#[test]
+#[should_panic(expected = "Extraneous priority")]
+#[ignore = "printing.extraneous-priority"]
+fn fail_validation_on_extraneous_priority() {
+    let mut printer = FakePrinter::new();
+    printer.print_task(
+        &PrintableTask::new("a", 1, TaskStatus::Incomplete).priority(1),
+    );
+    printer
+        .validate()
+        .printed_exact_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete))
         .end();
 }
