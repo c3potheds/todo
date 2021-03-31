@@ -217,7 +217,19 @@ fn check_same_task_twice_in_one_command() {
 }
 
 #[test]
-#[ignore = "todo-dev.app.check.force"]
+fn check_complete_task() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a");
+    fix.test("todo check a");
+    fix.test("todo check a")
+        .validate()
+        .printed_warning(&PrintableWarning::CannotCheckBecauseAlreadyComplete {
+            cannot_check: 0,
+        })
+        .end();
+}
+
+#[test]
 fn force_check_incomplete_task() {
     let mut fix = Fixture::new();
     fix.test("todo new a");
@@ -233,7 +245,6 @@ fn force_check_incomplete_task() {
 }
 
 #[test]
-#[ignore = "todo-dev.app.check.force"]
 fn force_check_blocked_task() {
     let mut fix = Fixture::new();
     fix.test("todo new a b --chain");
@@ -255,7 +266,6 @@ fn force_check_blocked_task() {
 }
 
 #[test]
-#[ignore = "todo-dev.app.check.force"]
 fn force_check_transitively_blocked_task() {
     let mut fix = Fixture::new();
     fix.test("todo new a b c --chain");
@@ -263,13 +273,13 @@ fn force_check_transitively_blocked_task() {
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
-            Expect::Number(-1),
+            Expect::Number(-2),
             Expect::Status(TaskStatus::Complete),
             Expect::Action(Action::Check),
         ])
         .printed_task(&[
             Expect::Desc("b"),
-            Expect::Number(0),
+            Expect::Number(-1),
             Expect::Status(TaskStatus::Complete),
             Expect::Action(Action::Check),
         ])
@@ -283,7 +293,6 @@ fn force_check_transitively_blocked_task() {
 }
 
 #[test]
-#[ignore = "todo-dev.app.check.force"]
 fn force_check_task_with_complete_deps() {
     let mut fix = Fixture::new();
     fix.test("todo new a b");
@@ -293,7 +302,7 @@ fn force_check_task_with_complete_deps() {
         .validate()
         .printed_task(&[
             Expect::Desc("b"),
-            Expect::Number(0),
+            Expect::Number(-1),
             Expect::Status(TaskStatus::Complete),
             Expect::Action(Action::Check),
         ])
@@ -307,7 +316,6 @@ fn force_check_task_with_complete_deps() {
 }
 
 #[test]
-#[ignore = "todo-dev.app.check.force"]
 fn force_check_complete_task() {
     let mut fix = Fixture::new();
     fix.test("todo new a");
@@ -315,7 +323,7 @@ fn force_check_complete_task() {
     fix.test("todo check a --force")
         .validate()
         .printed_warning(&PrintableWarning::CannotCheckBecauseAlreadyComplete {
-            cannot_check: 1,
+            cannot_check: 0,
         })
         .end();
 }

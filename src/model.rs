@@ -383,6 +383,7 @@ pub enum CheckError {
     TaskIsBlockedBy(Vec<TaskId>),
 }
 
+#[derive(Clone, Copy)]
 pub struct CheckOptions {
     pub id: TaskId,
     pub now: DateTime<Utc>,
@@ -427,11 +428,12 @@ impl TodoList {
             .collect())
     }
 
-    pub fn force_check(
+    pub fn force_check<Options: Into<CheckOptions>>(
         &mut self,
-        id: TaskId,
+        options: Options,
     ) -> Result<ForceChecked, CheckError> {
-        let check_result = self.check(id);
+        let options = options.into();
+        let check_result = self.check(options.id);
         if let Err(CheckError::TaskIsBlockedBy(blocked_by)) = &check_result {
             let mut result = blocked_by.iter().copied().fold(
                 ForceChecked {
@@ -452,10 +454,11 @@ impl TodoList {
                     ),
                 },
             );
-            result.unblocked.ids.remove(&id);
-            match self.check(id) {
+            result.unblocked.ids.remove(&options.id);
+            match self.check(options) {
                 Ok(newly_unblocked) => Ok(ForceChecked {
-                    completed: result.completed | std::iter::once(id).collect(),
+                    completed: result.completed
+                        | std::iter::once(options.id).collect(),
                     unblocked: result.unblocked | newly_unblocked,
                 }),
                 Err(_) => panic!(
@@ -464,7 +467,7 @@ impl TodoList {
             }
         } else {
             Ok(ForceChecked {
-                completed: std::iter::once(id).collect(),
+                completed: std::iter::once(options.id).collect(),
                 unblocked: check_result?,
             })
         }
