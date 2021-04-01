@@ -4,7 +4,6 @@ use model::Task;
 use model::TaskStatus;
 use model::TodoList;
 use printing::Action;
-use printing::LogDate;
 use printing::PrintableTask;
 
 #[test]
@@ -23,29 +22,6 @@ fn format_task_with_action() {
     let actual = format_task(&list, a, Action::Punt);
     let expected =
         PrintableTask::new("a", 1, TaskStatus::Incomplete).action(Action::Punt);
-    assert_eq!(actual, expected);
-}
-
-#[test]
-fn format_task_with_invisible_log_date() {
-    let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    list.check(a).unwrap();
-    let actual = format_task_with_date(&list, a, LogDate::Invisible);
-    let expected = PrintableTask::new("a", 0, TaskStatus::Complete)
-        .log_date(LogDate::Invisible);
-    assert_eq!(actual, expected);
-}
-
-#[test]
-fn format_task_with_visible_log_date() {
-    let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    list.check(a).unwrap();
-    let actual =
-        format_task_with_date(&list, a, LogDate::ymd(2020, 03, 21).unwrap());
-    let expected = PrintableTask::new("a", 0, TaskStatus::Complete)
-        .log_date(LogDate::YearMonthDay(2020, 03, 21));
     assert_eq!(actual, expected);
 }
 
