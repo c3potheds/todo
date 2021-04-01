@@ -6,6 +6,7 @@ use clock::Clock;
 use itertools::Itertools;
 use model::NewOptions;
 use model::Task;
+use model::TaskSet;
 use model::TodoList;
 use printing::Action;
 use printing::TodoPrinter;
@@ -16,8 +17,34 @@ pub fn run(
     clock: &impl Clock,
     cmd: New,
 ) {
-    let deps = lookup_tasks(&model, &cmd.blocked_by);
-    let adeps = lookup_tasks(&model, &cmd.blocking);
+    let deps = lookup_tasks(model, &cmd.blocked_by);
+    let adeps = lookup_tasks(model, &cmd.blocking);
+    let before = lookup_tasks(model, &cmd.before);
+    let before_deps = before
+        .iter()
+        .copied()
+        .flat_map(|id| model.deps(id).into_iter_unsorted())
+        .collect::<TaskSet>();
+    let after = lookup_tasks(model, &cmd.after);
+    let after_adeps = after
+        .iter()
+        .copied()
+        .flat_map(|id| model.adeps(id).into_iter_unsorted())
+        .collect::<TaskSet>();
+    let deps = deps
+        .into_iter()
+        .chain(before_deps.into_iter_unsorted())
+        .chain(after.into_iter())
+        .collect::<TaskSet>()
+        .iter_sorted(model)
+        .collect::<Vec<_>>();
+    let adeps = adeps
+        .into_iter()
+        .chain(before.into_iter())
+        .chain(after_adeps.into_iter_unsorted())
+        .collect::<TaskSet>()
+        .iter_sorted(model)
+        .collect::<Vec<_>>();
     let now = clock.now();
     let new_tasks: Vec<_> = cmd
         .desc
