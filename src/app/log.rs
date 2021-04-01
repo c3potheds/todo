@@ -1,5 +1,6 @@
 use app::util::format_task;
 use chrono::Datelike;
+use chrono::Local;
 use model::TodoList;
 use printing::LogDate;
 use printing::TodoPrinter;
@@ -14,6 +15,7 @@ pub fn run(model: &TodoList, printer: &mut impl TodoPrinter) {
                 .unwrap()
                 .completion_time
                 .map(|completion_time| {
+                    let completion_time = completion_time.with_timezone(&Local);
                     LogDate::YearMonthDay(
                         completion_time.year() as u16,
                         completion_time.month() as u8,

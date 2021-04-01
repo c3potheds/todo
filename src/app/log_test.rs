@@ -1,4 +1,5 @@
 use app::testing::*;
+use chrono::Local;
 use chrono::TimeZone;
 use chrono::Utc;
 use model::TaskStatus;
@@ -59,10 +60,16 @@ fn log_after_multiple_tasks_completed() {
 #[test]
 fn log_shows_date_when_it_changes() {
     let mut fix = Fixture::new();
-    fix.clock.now = Utc.ymd(2021, 01, 01).and_hms(00, 00, 00);
+    fix.clock.now = Local
+        .ymd(2021, 01, 01)
+        .and_hms(00, 00, 00)
+        .with_timezone(&Utc);
     fix.test("todo new a b c d");
     fix.test("todo check a b");
-    fix.clock.now = Utc.ymd(2021, 01, 02).and_hms(00, 00, 00);
+    fix.clock.now = Local
+        .ymd(2021, 01, 02)
+        .and_hms(00, 00, 00)
+        .with_timezone(&Utc);
     fix.test("todo check c d");
     fix.test("todo log")
         .validate()
