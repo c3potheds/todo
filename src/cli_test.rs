@@ -793,5 +793,37 @@ fn rm_by_name() {
 fn top() {
     let options = parse(&["todo", "top"]);
     let cmd = options.cmd.unwrap();
-    assert_eq!(cmd, SubCommand::Top);
+    assert_eq!(
+        cmd,
+        SubCommand::Top(Top {
+            keys: Vec::new(),
+            include_done: false,
+        })
+    );
+}
+
+#[test]
+fn top_include_done_long() {
+    let options = parse(&["todo", "top", "--include-done"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Top(Top {
+            keys: Vec::new(),
+            include_done: true,
+        })
+    );
+}
+
+#[test]
+fn top_include_done_short() {
+    let options = parse(&["todo", "top", "-d"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Top(Top {
+            keys: Vec::new(),
+            include_done: true,
+        })
+    );
 }

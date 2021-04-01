@@ -207,6 +207,19 @@ pub struct Rm {
 
 #[derive(Debug, PartialEq, StructOpt)]
 #[structopt(setting = structopt::clap::AppSettings::AllowNegativeNumbers)]
+pub struct Top {
+    /// Tasks to find the top level underneath. If none are specified, shows the
+    /// top-level tasks, i.e. tasks with no antidependencies. These may function
+    /// as "categories" for high-level projects.
+    pub keys: Vec<Key>,
+
+    /// If passed, shows top-level complete tasks too.
+    #[structopt(long, short = "d")]
+    pub include_done: bool,
+}
+
+#[derive(Debug, PartialEq, StructOpt)]
+#[structopt(setting = structopt::clap::AppSettings::AllowNegativeNumbers)]
 pub struct Unblock {
     /// Tasks to unblock.
     pub keys: Vec<Key>,
@@ -384,6 +397,18 @@ pub enum SubCommand {
     #[structopt(verbatim_doc_comment)]
     Put(Put),
 
+    /// Restore completed tasks.
+    ///
+    /// This resets the completion status of the given tasks and puts them back
+    /// in the list of incomplete tasks, as if they had never been completed.
+    ///
+    /// A task cannot be restored if there are complete tasks that are blocked
+    /// on it. The complete blocked tasks must be restored first, just as
+    /// incomplete blocking tasks must be completed before the task they block
+    /// is completed.
+    #[structopt(verbatim_doc_comment)]
+    Restore(Restore),
+
     /// Removes tasks from the list permanently.
     ///
     /// This is not the same as the 'check' command, which marks tasks as
@@ -408,25 +433,13 @@ pub enum SubCommand {
     #[structopt(verbatim_doc_comment)]
     Rm(Rm),
 
-    /// Restore completed tasks.
-    ///
-    /// This resets the completion status of the given tasks and puts them back
-    /// in the list of incomplete tasks, as if they had never been completed.
-    ///
-    /// A task cannot be restored if there are complete tasks that are blocked
-    /// on it. The complete blocked tasks must be restored first, just as
-    /// incomplete blocking tasks must be completed before the task they block
-    /// is completed.
-    #[structopt(verbatim_doc_comment)]
-    Restore(Restore),
-
     /// Shows top-level tasks, i.e. tasks with no antidependencies.
     ///
     /// One can represent "categories" for tasks by blocking a task representing
     /// a category on the tasks that should be in that category. When running
     /// this command, you can see all "uncategorized" tasks.
     #[structopt(verbatim_doc_comment)]
-    Top,
+    Top(Top),
 
     /// Unblock tasks from other tasks.
     ///

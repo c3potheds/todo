@@ -13,6 +13,7 @@ mod restore;
 mod rm;
 mod status;
 pub mod todo;
+mod top;
 mod unblock;
 mod util;
 
@@ -59,6 +60,9 @@ mod rm_test;
 
 #[cfg(test)]
 mod status_test;
+
+#[cfg(test)]
+mod top_test;
 
 #[cfg(test)]
 mod unblock_test;

@@ -193,6 +193,10 @@ impl TaskSet {
         self.ids.into_iter()
     }
 
+    pub fn contains(&self, id: TaskId) -> bool {
+        self.ids.contains(&id)
+    }
+
     /// Iterates the set in sorted order, where the ordering is defined by the
     /// position in the list.
     pub fn iter_sorted(

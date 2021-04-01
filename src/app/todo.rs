@@ -12,6 +12,7 @@ use app::put;
 use app::restore;
 use app::rm;
 use app::status;
+use app::top;
 use app::unblock;
 use cli::Options;
 use cli::SubCommand;
@@ -28,30 +29,29 @@ fn status_options(options: Options) -> status::Status {
 }
 
 pub fn todo(
-    model: &mut TodoList,
+    list: &mut TodoList,
     printer: &mut impl TodoPrinter,
     text_editor: &impl TextEditor,
     clock: &impl Clock,
     options: Options,
 ) {
+    use self::SubCommand::*;
     match options.cmd {
-        Some(SubCommand::Block(cmd)) => block::run(model, printer, &cmd),
-        Some(SubCommand::Chain(cmd)) => chain::run(model, printer, &cmd),
-        Some(SubCommand::Check(cmd)) => check::run(model, printer, clock, &cmd),
-        Some(SubCommand::Edit(cmd)) => {
-            edit::run(model, printer, text_editor, &cmd)
-        }
-        Some(SubCommand::Find(cmd)) => find::run(model, printer, &cmd),
-        Some(SubCommand::Get(cmd)) => get::run(model, printer, &cmd),
-        Some(SubCommand::Log) => log::run(model, printer),
-        Some(SubCommand::Path(cmd)) => path::run(model, printer, &cmd),
-        Some(SubCommand::New(cmd)) => new::run(model, printer, clock, cmd),
-        Some(SubCommand::Punt(cmd)) => punt::run(model, printer, &cmd),
-        Some(SubCommand::Put(cmd)) => put::run(model, printer, &cmd),
-        Some(SubCommand::Restore(cmd)) => restore::run(model, printer, &cmd),
-        Some(SubCommand::Rm(cmd)) => rm::run(model, printer, cmd),
-        Some(SubCommand::Top) => unimplemented!(),
-        Some(SubCommand::Unblock(cmd)) => unblock::run(model, printer, &cmd),
-        None => status::run(model, printer, &status_options(options)),
+        Some(Block(cmd)) => block::run(list, printer, &cmd),
+        Some(Chain(cmd)) => chain::run(list, printer, &cmd),
+        Some(Check(cmd)) => check::run(list, printer, clock, &cmd),
+        Some(Edit(cmd)) => edit::run(list, printer, text_editor, &cmd),
+        Some(Find(cmd)) => find::run(list, printer, &cmd),
+        Some(Get(cmd)) => get::run(list, printer, &cmd),
+        Some(Log) => log::run(list, printer),
+        Some(Path(cmd)) => path::run(list, printer, &cmd),
+        Some(New(cmd)) => new::run(list, printer, clock, cmd),
+        Some(Punt(cmd)) => punt::run(list, printer, &cmd),
+        Some(Put(cmd)) => put::run(list, printer, &cmd),
+        Some(Restore(cmd)) => restore::run(list, printer, &cmd),
+        Some(Rm(cmd)) => rm::run(list, printer, cmd),
+        Some(Top(cmd)) => top::run(list, printer, &cmd),
+        Some(Unblock(cmd)) => unblock::run(list, printer, &cmd),
+        None => status::run(list, printer, &status_options(options)),
     }
 }
