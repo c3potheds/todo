@@ -1,7 +1,6 @@
 use app::util::format_task;
 use model::TaskStatus;
 use model::TodoList;
-use printing::Action;
 use printing::TodoPrinter;
 
 pub struct Status {
@@ -25,7 +24,5 @@ pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Status) {
             }
             None => false,
         })
-        .for_each(|id| {
-            printer.print_task(&format_task(model, id, Action::None))
-        })
+        .for_each(|id| printer.print_task(&format_task(model, id)))
 }

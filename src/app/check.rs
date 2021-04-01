@@ -137,9 +137,9 @@ pub fn run(
             ),
         });
     result.completed.iter_sorted(model).for_each(|id| {
-        printer.print_task(&format_task(model, id, Action::Check))
+        printer.print_task(&format_task(model, id).action(Action::Check))
     });
     result.unblocked.iter_sorted(model).for_each(|id| {
-        printer.print_task(&format_task(model, id, Action::Unlock))
+        printer.print_task(&format_task(model, id).action(Action::Unlock))
     });
 }

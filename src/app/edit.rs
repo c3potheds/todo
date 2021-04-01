@@ -5,7 +5,6 @@ use itertools::Itertools;
 use model::TaskId;
 use model::TaskSet;
 use model::TodoList;
-use printing::Action;
 use printing::PrintableError;
 use printing::TodoPrinter;
 use text_editing::TextEditor;
@@ -39,9 +38,7 @@ fn edit_with_description(
         })
         .collect::<TaskSet>()
         .iter_sorted(model)
-        .for_each(|id| {
-            printer.print_task(&format_task(model, id, Action::None))
-        });
+        .for_each(|id| printer.print_task(&format_task(model, id)));
 }
 
 enum EditError {
@@ -125,9 +122,7 @@ fn edit_with_text_editor(
         })
         .collect::<TaskSet>()
         .iter_sorted(model)
-        .for_each(|id| {
-            printer.print_task(&format_task(model, id, Action::None))
-        })
+        .for_each(|id| printer.print_task(&format_task(model, id)))
 }
 
 pub fn run(

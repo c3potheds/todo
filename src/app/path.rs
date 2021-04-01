@@ -55,9 +55,7 @@ pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Path) {
         return;
     }
     tasks_in_path.into_iter().for_each(|id| {
-        printer.print_task(&format_task(
-            model,
-            id,
+        printer.print_task(&format_task(model, id).action(
             if id == from[0] || id == to[0] {
                 Action::Select
             } else {

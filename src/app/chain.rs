@@ -42,13 +42,13 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Chain) {
         .collect::<TaskSet>()
         .iter_sorted(model)
         .for_each(|id| {
-            printer.print_task(&format_task(
-                model,
-                id,
-                first
-                    .filter(|fs| fs.iter().any(|&f| f == id))
-                    .map(|_| Action::None)
-                    .unwrap_or(Action::Lock),
-            ));
+            printer.print_task(
+                &format_task(model, id).action(
+                    first
+                        .filter(|fs| fs.iter().any(|&f| f == id))
+                        .map(|_| Action::None)
+                        .unwrap_or(Action::Lock),
+                ),
+            );
         });
 }

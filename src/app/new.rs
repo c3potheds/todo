@@ -80,13 +80,12 @@ pub fn run(
             )
         });
     }
-    deps.into_iter().for_each(|id| {
-        printer.print_task(&format_task(model, id, Action::None))
-    });
+    deps.into_iter()
+        .for_each(|id| printer.print_task(&format_task(model, id)));
     new_tasks.into_iter().for_each(|id| {
-        printer.print_task(&format_task(model, id, Action::New))
+        printer.print_task(&format_task(model, id).action(Action::New))
     });
-    adeps.into_iter().for_each(|id| {
-        printer.print_task(&format_task(model, id, Action::None))
-    });
+    adeps
+        .into_iter()
+        .for_each(|id| printer.print_task(&format_task(model, id)));
 }

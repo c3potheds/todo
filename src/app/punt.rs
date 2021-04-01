@@ -26,6 +26,6 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Punt) {
         .collect::<Vec<_>>()
         .into_iter()
         .for_each(|id| {
-            printer.print_task(&format_task(&model, id, Action::Punt))
+            printer.print_task(&format_task(&model, id).action(Action::Punt))
         });
 }

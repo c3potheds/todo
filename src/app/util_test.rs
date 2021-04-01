@@ -10,7 +10,7 @@ use printing::PrintableTask;
 fn format_task_basic() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
-    let actual = format_task(&list, a, Action::None);
+    let actual = format_task(&list, a);
     let expected = PrintableTask::new("a", 1, TaskStatus::Incomplete);
     assert_eq!(actual, expected);
 }
@@ -19,7 +19,7 @@ fn format_task_basic() {
 fn format_task_with_action() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
-    let actual = format_task(&list, a, Action::Punt);
+    let actual = format_task(&list, a).action(Action::Punt);
     let expected =
         PrintableTask::new("a", 1, TaskStatus::Incomplete).action(Action::Punt);
     assert_eq!(actual, expected);
@@ -33,7 +33,7 @@ fn format_task_with_priority() {
         task.priority = Some(1);
         task
     });
-    let actual = format_task(&list, a, Action::None);
+    let actual = format_task(&list, a);
     let expected =
         PrintableTask::new("a", 1, TaskStatus::Incomplete).priority(1);
     assert_eq!(actual, expected);
@@ -47,7 +47,7 @@ fn format_task_with_zero_priority() {
         task.priority = Some(0);
         task
     });
-    let actual = format_task(&list, a, Action::None);
+    let actual = format_task(&list, a);
     let expected = PrintableTask::new("a", 1, TaskStatus::Incomplete);
     assert_eq!(actual, expected);
 }

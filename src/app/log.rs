@@ -1,14 +1,13 @@
 use app::util::format_task;
 use chrono::Datelike;
 use model::TodoList;
-use printing::Action;
 use printing::LogDate;
 use printing::TodoPrinter;
 
 pub fn run(model: &TodoList, printer: &mut impl TodoPrinter) {
     let mut most_recent_shown = None;
     model.complete_tasks().for_each(|id| {
-        let mut formatted_task = format_task(model, id, Action::None);
+        let mut formatted_task = format_task(model, id);
         let to_show =
             model
                 .get(id)

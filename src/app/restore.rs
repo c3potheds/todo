@@ -129,11 +129,11 @@ pub fn run(
     let mut do_not_print_again = HashSet::new();
     result.restored.iter_sorted(model).for_each(|id| {
         do_not_print_again.insert(id);
-        printer.print_task(&format_task(model, id, Action::Uncheck))
+        printer.print_task(&format_task(model, id).action(Action::Uncheck))
     });
     result.blocked.iter_sorted(model).for_each(|id| {
         if !do_not_print_again.contains(&id) {
-            printer.print_task(&format_task(model, id, Action::Lock));
+            printer.print_task(&format_task(model, id).action(Action::Lock));
         }
     });
 }

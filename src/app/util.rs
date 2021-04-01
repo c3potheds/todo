@@ -2,21 +2,15 @@ use cli::Key;
 use itertools::Itertools;
 use model::TaskId;
 use model::TodoList;
-use printing::Action;
 use printing::PrintableTask;
 
-pub fn format_task<'a>(
-    model: &'a TodoList,
-    id: TaskId,
-    action: Action,
-) -> PrintableTask<'a> {
+pub fn format_task<'a>(model: &'a TodoList, id: TaskId) -> PrintableTask<'a> {
     let number = model.position(id).unwrap();
     let result = PrintableTask::new(
         &model.get(id).unwrap().desc,
         number,
         model.status(id).unwrap(),
-    )
-    .action(action);
+    );
     match model.get(id).unwrap().priority {
         Some(0) => result,
         Some(p) => result.priority(p),

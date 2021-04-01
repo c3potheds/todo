@@ -84,9 +84,7 @@ pub fn run(
         )
     };
     tasks_to_print.iter_sorted(model).for_each(|id| {
-        printer.print_task(&format_task(
-            model,
-            id,
+        printer.print_task(&format_task(model, id).action(
             if tasks_to_unblock.contains(&id) {
                 Action::Unlock
             } else {

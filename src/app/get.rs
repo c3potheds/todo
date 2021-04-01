@@ -19,9 +19,7 @@ pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Get) {
         .collect::<TaskSet>()
         .iter_sorted(&model)
         .for_each(|id| {
-            printer.print_task(&format_task(
-                model,
-                id,
+            printer.print_task(&format_task(model, id).action(
                 if requested_tasks.contains(&id) {
                     Action::Select
                 } else {

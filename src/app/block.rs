@@ -48,14 +48,12 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Block) {
         .all_tasks()
         .filter(|id| tasks_to_print.contains(id))
         .for_each(|id| {
-            printer.print_task(&format_task(
-                model,
-                id,
+            printer.print_task(&format_task(model, id).action(
                 if tasks_to_block.contains(&id) {
                     Action::Lock
                 } else {
                     Action::None
                 },
-            ));
+            ))
         });
 }
