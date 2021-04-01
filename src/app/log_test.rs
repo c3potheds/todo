@@ -1,4 +1,4 @@
-use app::testing::*;
+use app::testing::Fixture;
 use chrono::Local;
 use chrono::TimeZone;
 use chrono::Utc;

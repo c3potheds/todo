@@ -1,14 +1,13 @@
-use app::testing::*;
+use app::testing::Fixture;
 use model::TaskStatus;
-use model::TodoList;
 use printing::Action;
 use printing::Expect;
 
 #[test]
 fn punt_first_task() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c"]);
-    test(&mut list, &["todo", "punt", "1"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c");
+    fix.test("todo punt 1")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -21,10 +20,10 @@ fn punt_first_task() {
 
 #[test]
 fn punt_blocked_task() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a"]);
-    test(&mut list, &["todo", "new", "b", "c", "-p", "1"]);
-    test(&mut list, &["todo", "punt", "2"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a");
+    fix.test("todo new b c -p 1");
+    fix.test("todo punt 2")
         .validate()
         .printed_task(&[
             Expect::Desc("b"),
@@ -37,9 +36,9 @@ fn punt_blocked_task() {
 
 #[test]
 fn punt_by_name() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c"]);
-    test(&mut list, &["todo", "punt", "a"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c");
+    fix.test("todo punt a")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),

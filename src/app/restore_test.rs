@@ -1,6 +1,5 @@
-use app::testing::*;
+use app::testing::Fixture;
 use model::TaskStatus;
-use model::TodoList;
 use printing::Action;
 use printing::Expect;
 use printing::PrintableError;
@@ -8,9 +7,9 @@ use printing::PrintableWarning;
 
 #[test]
 fn restore_incomplete_task() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a"]);
-    test(&mut list, &["todo", "restore", "1"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a");
+    fix.test("todo restore 1")
         .validate()
         .printed_warning(
             &PrintableWarning::CannotRestoreBecauseAlreadyIncomplete {
@@ -22,10 +21,10 @@ fn restore_incomplete_task() {
 
 #[test]
 fn restore_complete_task() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a"]);
-    test(&mut list, &["todo", "check", "1"]);
-    test(&mut list, &["todo", "restore", "0"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a");
+    fix.test("todo check 1");
+    fix.test("todo restore 0")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -38,11 +37,11 @@ fn restore_complete_task() {
 
 #[test]
 fn restore_task_with_negative_number() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c"]);
-    test(&mut list, &["todo", "check", "1"]);
-    test(&mut list, &["todo", "check", "1"]);
-    test(&mut list, &["todo", "restore", "-1"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c");
+    fix.test("todo check 1");
+    fix.test("todo check 1");
+    fix.test("todo restore -1")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -55,10 +54,10 @@ fn restore_task_with_negative_number() {
 
 #[test]
 fn restore_same_task_with_multiple_keys() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b"]);
-    test(&mut list, &["todo", "check", "1"]);
-    test(&mut list, &["todo", "restore", "0", "0"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b");
+    fix.test("todo check 1");
+    fix.test("todo restore 0 0")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -71,11 +70,11 @@ fn restore_same_task_with_multiple_keys() {
 
 #[test]
 fn restore_task_with_incomplete_antidependency() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b"]);
-    test(&mut list, &["todo", "block", "b", "--on", "a"]);
-    test(&mut list, &["todo", "check", "1"]);
-    test(&mut list, &["todo", "restore", "0"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b");
+    fix.test("todo block b --on a");
+    fix.test("todo check 1");
+    fix.test("todo restore 0")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -94,12 +93,12 @@ fn restore_task_with_incomplete_antidependency() {
 
 #[test]
 fn restore_task_with_complete_antidependency() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b"]);
-    test(&mut list, &["todo", "block", "b", "--on", "a"]);
-    test(&mut list, &["todo", "check", "1"]);
-    test(&mut list, &["todo", "check", "1"]);
-    test(&mut list, &["todo", "restore", "-1"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b");
+    fix.test("todo block b --on a");
+    fix.test("todo check 1");
+    fix.test("todo check 1");
+    fix.test("todo restore -1")
         .validate()
         .printed_error(
             &PrintableError::CannotRestoreBecauseAntidependencyIsComplete {
@@ -112,10 +111,10 @@ fn restore_task_with_complete_antidependency() {
 
 #[test]
 fn restore_by_name() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b"]);
-    test(&mut list, &["todo", "check", "a"]);
-    test(&mut list, &["todo", "restore", "a"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b");
+    fix.test("todo check a");
+    fix.test("todo restore a")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),

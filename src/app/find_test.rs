@@ -1,14 +1,13 @@
-use app::testing::*;
+use app::testing::Fixture;
 use model::TaskStatus;
-use model::TodoList;
 use printing::Action;
 use printing::Expect;
 
 #[test]
 fn find_with_exact_match() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c"]);
-    test(&mut list, &["todo", "find", "b"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c");
+    fix.test("todo find b")
         .validate()
         .printed_task(&[
             Expect::Desc("b"),
@@ -21,9 +20,9 @@ fn find_with_exact_match() {
 
 #[test]
 fn find_with_substring_match() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "aaa", "aba", "aca"]);
-    test(&mut list, &["todo", "find", "b"])
+    let mut fix = Fixture::new();
+    fix.test("todo new aaa aba aca");
+    fix.test("todo find b")
         .validate()
         .printed_task(&[
             Expect::Desc("aba"),
@@ -36,9 +35,9 @@ fn find_with_substring_match() {
 
 #[test]
 fn find_with_multiple_matches() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "aaa", "aba", "aca"]);
-    test(&mut list, &["todo", "find", "a"])
+    let mut fix = Fixture::new();
+    fix.test("todo new aaa aba aca");
+    fix.test("todo find a")
         .validate()
         .printed_task(&[
             Expect::Desc("aaa"),
@@ -63,10 +62,10 @@ fn find_with_multiple_matches() {
 
 #[test]
 fn find_includes_complete_tasks() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "aaa", "aba", "aca"]);
-    test(&mut list, &["todo", "check", "2"]);
-    test(&mut list, &["todo", "find", "b"])
+    let mut fix = Fixture::new();
+    fix.test("todo new aaa aba aca");
+    fix.test("todo check 2");
+    fix.test("todo find b")
         .validate()
         .printed_task(&[
             Expect::Desc("aba"),
@@ -79,9 +78,9 @@ fn find_includes_complete_tasks() {
 
 #[test]
 fn find_includes_blocked_tasks() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "aaa", "aba", "aca", "--chain"]);
-    test(&mut list, &["todo", "find", "b"])
+    let mut fix = Fixture::new();
+    fix.test("todo new aaa aba aca --chain");
+    fix.test("todo find b")
         .validate()
         .printed_task(&[
             Expect::Desc("aba"),
@@ -94,9 +93,9 @@ fn find_includes_blocked_tasks() {
 
 #[test]
 fn find_case_insensitive() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "AAA", "aaa"]);
-    test(&mut list, &["todo", "find", "aa"])
+    let mut fix = Fixture::new();
+    fix.test("todo new AAA aaa");
+    fix.test("todo find aa")
         .validate()
         .printed_task(&[
             Expect::Desc("AAA"),

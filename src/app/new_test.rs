@@ -1,14 +1,13 @@
-use app::testing::*;
+use app::testing::Fixture;
 use model::TaskStatus;
-use model::TodoList;
 use printing::Action;
 use printing::Expect;
 use printing::PrintableError;
 
 #[test]
 fn new_one_task() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -20,8 +19,8 @@ fn new_one_task() {
 
 #[test]
 fn new_multiple_tasks() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -46,10 +45,10 @@ fn new_multiple_tasks() {
 
 #[test]
 fn new_block_on_complete_task() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a"]);
-    test(&mut list, &["todo", "check", "1"]);
-    test(&mut list, &["todo", "new", "b", "-p", "0"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a");
+    fix.test("todo check 1");
+    fix.test("todo new b -p 0")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -68,10 +67,10 @@ fn new_block_on_complete_task() {
 
 #[test]
 fn new_blocking_complete_task() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a"]);
-    test(&mut list, &["todo", "check", "1"]);
-    test(&mut list, &["todo", "new", "b", "-b", "0"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a");
+    fix.test("todo check 1");
+    fix.test("todo new b -b 0")
         .validate()
         .printed_task(&[
             Expect::Desc("b"),
@@ -90,9 +89,9 @@ fn new_blocking_complete_task() {
 
 #[test]
 fn new_by_name() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c"]);
-    test(&mut list, &["todo", "new", "d", "-p", "c", "-b", "a"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c");
+    fix.test("todo new d -p c -b a")
         .validate()
         .printed_task(&[
             Expect::Desc("c"),
@@ -117,8 +116,8 @@ fn new_by_name() {
 
 #[test]
 fn new_chain_three() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c", "--chain"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c --chain")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -143,9 +142,9 @@ fn new_chain_three() {
 
 #[test]
 fn new_one_blocking_one() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a"]);
-    test(&mut list, &["todo", "new", "b", "--blocking", "1"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a");
+    fix.test("todo new b --blocking 1")
         .validate()
         .printed_task(&[
             Expect::Desc("b"),
@@ -164,9 +163,9 @@ fn new_one_blocking_one() {
 
 #[test]
 fn new_blocked_by_one() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a"]);
-    test(&mut list, &["todo", "new", "b", "--blocked-by", "1"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a");
+    fix.test("todo new b --blocked-by 1")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -185,9 +184,9 @@ fn new_blocked_by_one() {
 
 #[test]
 fn new_one_blocking_one_short() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a"]);
-    test(&mut list, &["todo", "new", "b", "-b", "1"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a");
+    fix.test("todo new b -b 1")
         .validate()
         .printed_task(&[
             Expect::Desc("b"),
@@ -206,9 +205,9 @@ fn new_one_blocking_one_short() {
 
 #[test]
 fn new_blocked_by_one_short() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a"]);
-    test(&mut list, &["todo", "new", "b", "-p", "1"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a");
+    fix.test("todo new b -p 1")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -227,9 +226,9 @@ fn new_blocked_by_one_short() {
 
 #[test]
 fn new_blocking_multiple() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c"]);
-    test(&mut list, &["todo", "new", "d", "-b", "1", "2", "3"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c");
+    fix.test("todo new d -b 1 2 3")
         .validate()
         .printed_task(&[
             Expect::Desc("d"),
@@ -260,9 +259,9 @@ fn new_blocking_multiple() {
 
 #[test]
 fn new_blocking_and_blocked_by() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b"]);
-    test(&mut list, &["todo", "new", "c", "-p", "1", "-b", "2"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b");
+    fix.test("todo new c -p 1 -b 2")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -287,9 +286,9 @@ fn new_blocking_and_blocked_by() {
 
 #[test]
 fn new_in_between_blocking_pair() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "--chain"]);
-    test(&mut list, &["todo", "new", "c", "-p", "1", "-b", "2"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain");
+    fix.test("todo new c -p 1 -b 2")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),

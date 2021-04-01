@@ -1,16 +1,15 @@
-use app::testing::*;
+use app::testing::Fixture;
 use model::TaskStatus;
-use model::TodoList;
 use printing::Action;
 use printing::Expect;
 use printing::PrintableWarning;
 
 #[test]
 fn unblock_task_from_direct_dependency() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b"]);
-    test(&mut list, &["todo", "block", "2", "--on", "1"]);
-    test(&mut list, &["todo", "unblock", "2", "--from", "1"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b");
+    fix.test("todo block 2 --on 1");
+    fix.test("todo unblock 2 --from 1")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -29,11 +28,11 @@ fn unblock_task_from_direct_dependency() {
 
 #[test]
 fn unblock_task_from_indirect_dependency() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c"]);
-    test(&mut list, &["todo", "block", "3", "--on", "2"]);
-    test(&mut list, &["todo", "block", "2", "--on", "1"]);
-    test(&mut list, &["todo", "unblock", "3", "--from", "1"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c");
+    fix.test("todo block 3 --on 2");
+    fix.test("todo block 2 --on 1");
+    fix.test("todo unblock 3 --from 1")
         .validate()
         .printed_warning(
             &PrintableWarning::CannotUnblockBecauseTaskIsNotBlocked {
@@ -46,10 +45,10 @@ fn unblock_task_from_indirect_dependency() {
 
 #[test]
 fn unblock_complete_task() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "--chain"]);
-    test(&mut list, &["todo", "check", "1", "2"]);
-    test(&mut list, &["todo", "unblock", "0", "--from", "-1"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain");
+    fix.test("todo check 1 2");
+    fix.test("todo unblock 0 --from -1")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -68,9 +67,9 @@ fn unblock_complete_task() {
 
 #[test]
 fn unblock_by_name() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "--chain"]);
-    test(&mut list, &["todo", "unblock", "b", "--from", "a"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain");
+    fix.test("todo unblock b --from a")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),

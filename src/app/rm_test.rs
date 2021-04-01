@@ -1,4 +1,4 @@
-use app::testing::*;
+use app::testing::Fixture;
 use model::TaskStatus;
 use printing::Action;
 use printing::Expect;

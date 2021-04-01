@@ -1,20 +1,19 @@
-use app::testing::*;
+use app::testing::Fixture;
 use model::TaskStatus;
-use model::TodoList;
 use printing::Action;
 use printing::Expect;
 
 #[test]
 fn status_while_empty() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo"]).validate().end();
+    let mut fix = Fixture::new();
+    fix.test("todo").validate().end();
 }
 
 #[test]
 fn status_after_added_tasks() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c"]);
-    test(&mut list, &["todo"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c");
+    fix.test("todo")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -39,10 +38,10 @@ fn status_after_added_tasks() {
 
 #[test]
 fn status_does_not_include_blocked_tasks() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c"]);
-    test(&mut list, &["todo", "block", "2", "--on", "1"]);
-    test(&mut list, &["todo"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c");
+    fix.test("todo block 2 --on 1");
+    fix.test("todo")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -61,10 +60,10 @@ fn status_does_not_include_blocked_tasks() {
 
 #[test]
 fn include_blocked_in_status() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b"]);
-    test(&mut list, &["todo", "block", "1", "--on", "2"]);
-    test(&mut list, &["todo", "-b"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b");
+    fix.test("todo block 1 --on 2");
+    fix.test("todo -b")
         .validate()
         .printed_task(&[
             Expect::Desc("b"),
@@ -83,10 +82,10 @@ fn include_blocked_in_status() {
 
 #[test]
 fn include_complete_in_status() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b"]);
-    test(&mut list, &["todo", "check", "1"]);
-    test(&mut list, &["todo", "-d"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b");
+    fix.test("todo check 1");
+    fix.test("todo -d")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -105,10 +104,10 @@ fn include_complete_in_status() {
 
 #[test]
 fn include_all_in_status() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c", "--chain"]);
-    test(&mut list, &["todo", "check", "1"]);
-    test(&mut list, &["todo", "-a"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c --chain");
+    fix.test("todo check 1");
+    fix.test("todo -a")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -133,24 +132,10 @@ fn include_all_in_status() {
 
 #[test]
 fn status_after_check_multiple_tasks() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c"]);
-    test(&mut list, &["todo", "check", "2", "3"])
-        .validate()
-        .printed_task(&[
-            Expect::Desc("b"),
-            Expect::Number(-1),
-            Expect::Status(TaskStatus::Complete),
-            Expect::Action(Action::Check),
-        ])
-        .printed_task(&[
-            Expect::Desc("c"),
-            Expect::Number(0),
-            Expect::Status(TaskStatus::Complete),
-            Expect::Action(Action::Check),
-        ])
-        .end();
-    test(&mut list, &["todo"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c");
+    fix.test("todo check 2 3");
+    fix.test("todo")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -163,11 +148,11 @@ fn status_after_check_multiple_tasks() {
 
 #[test]
 fn status_after_unblocking_task() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b"]);
-    test(&mut list, &["todo", "block", "2", "--on", "1"]);
-    test(&mut list, &["todo", "unblock", "2", "--from", "1"]);
-    test(&mut list, &["todo"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b");
+    fix.test("todo block 2 --on 1");
+    fix.test("todo unblock 2 --from 1");
+    fix.test("todo")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),

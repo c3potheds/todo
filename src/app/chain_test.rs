@@ -1,22 +1,21 @@
-use app::testing::*;
+use app::testing::Fixture;
 use model::TaskStatus;
-use model::TodoList;
 use printing::Action;
 use printing::Expect;
 use printing::PrintableError;
 
 #[test]
 fn chain_one() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a"]);
-    test(&mut list, &["todo", "chain", "a"]).validate().end();
+    let mut fix = Fixture::new();
+    fix.test("todo new a");
+    fix.test("todo chain a").validate().end();
 }
 
 #[test]
 fn chain_three() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c", "d", "e"]);
-    test(&mut list, &["todo", "chain", "a", "b", "c"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c d e");
+    fix.test("todo chain a b c")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -41,9 +40,9 @@ fn chain_three() {
 
 #[test]
 fn chain_would_cause_cycle() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "--chain"]);
-    test(&mut list, &["todo", "chain", "b", "a"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain");
+    fix.test("todo chain b a")
         .validate()
         .printed_error(&PrintableError::CannotBlockBecauseWouldCauseCycle {
             cannot_block: 1,

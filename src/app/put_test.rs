@@ -1,15 +1,14 @@
-use app::testing::*;
+use app::testing::Fixture;
 use model::TaskStatus;
-use model::TodoList;
 use printing::Action;
 use printing::Expect;
 use printing::PrintableError;
 
 #[test]
 fn put_one_after_one() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b"]);
-    test(&mut list, &["todo", "put", "a", "--after", "b"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b");
+    fix.test("todo put a --after b")
         .validate()
         .printed_task(&[
             Expect::Desc("b"),
@@ -28,9 +27,9 @@ fn put_one_after_one() {
 
 #[test]
 fn put_three_after_one() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c", "d"]);
-    test(&mut list, &["todo", "put", "a", "b", "c", "--after", "d"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c d");
+    fix.test("todo put a b c --after d")
         .validate()
         .printed_task(&[
             Expect::Desc("d"),
@@ -61,9 +60,9 @@ fn put_three_after_one() {
 
 #[test]
 fn put_one_after_three() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c", "d"]);
-    test(&mut list, &["todo", "put", "a", "--after", "b", "c", "d"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c d");
+    fix.test("todo put a --after b c d")
         .validate()
         .printed_task(&[
             Expect::Desc("b"),
@@ -94,10 +93,10 @@ fn put_one_after_three() {
 
 #[test]
 fn put_after_task_with_adeps() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "--chain"]);
-    test(&mut list, &["todo", "new", "c"]);
-    test(&mut list, &["todo", "put", "c", "--after", "a"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain");
+    fix.test("todo new c");
+    fix.test("todo put c --after a")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -122,9 +121,9 @@ fn put_after_task_with_adeps() {
 
 #[test]
 fn put_one_before_one() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b"]);
-    test(&mut list, &["todo", "put", "b", "--before", "a"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b");
+    fix.test("todo put b --before a")
         .validate()
         .printed_task(&[
             Expect::Desc("b"),
@@ -143,9 +142,9 @@ fn put_one_before_one() {
 
 #[test]
 fn put_three_before_one() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c", "d"]);
-    test(&mut list, &["todo", "put", "b", "c", "d", "--before", "a"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c d");
+    fix.test("todo put b c d --before a")
         .validate()
         .printed_task(&[
             Expect::Desc("b"),
@@ -176,9 +175,9 @@ fn put_three_before_one() {
 
 #[test]
 fn put_one_before_three() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c", "d"]);
-    test(&mut list, &["todo", "put", "d", "--before", "a", "b", "c"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c d");
+    fix.test("todo put d --before a b c")
         .validate()
         .printed_task(&[
             Expect::Desc("d"),
@@ -209,10 +208,10 @@ fn put_one_before_three() {
 
 #[test]
 fn put_before_task_with_deps() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "--chain"]);
-    test(&mut list, &["todo", "new", "c"]);
-    test(&mut list, &["todo", "put", "c", "--before", "b"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain");
+    fix.test("todo new c");
+    fix.test("todo put c --before b")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -237,11 +236,11 @@ fn put_before_task_with_deps() {
 
 #[test]
 fn put_before_and_after() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c", "--chain"]);
-    test(&mut list, &["todo", "new", "d", "e", "f", "--chain"]);
-    test(&mut list, &["todo", "new", "g"]);
-    test(&mut list, &["todo", "put", "g", "-b", "b", "-a", "e"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c --chain");
+    fix.test("todo new d e f --chain");
+    fix.test("todo new g");
+    fix.test("todo put g -b b -a e")
         .validate()
         .printed_task(&[Expect::Desc("a")])
         .printed_task(&[Expect::Desc("e")])
@@ -253,16 +252,16 @@ fn put_before_and_after() {
 
 #[test]
 fn put_causing_cycle() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "--chain"]);
-    test(&mut list, &["todo", "put", "a", "--after", "b"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain");
+    fix.test("todo put a --after b")
         .validate()
         .printed_error(&PrintableError::CannotBlockBecauseWouldCauseCycle {
             cannot_block: 1,
             requested_dependency: 2,
         })
         .end();
-    test(&mut list, &["todo", "-a"])
+    fix.test("todo -a")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),

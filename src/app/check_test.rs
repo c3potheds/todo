@@ -1,6 +1,5 @@
-use app::testing::*;
+use app::testing::Fixture;
 use model::TaskStatus;
-use model::TodoList;
 use printing::Action;
 use printing::Expect;
 use printing::PrintableError;
@@ -8,9 +7,9 @@ use printing::PrintableWarning;
 
 #[test]
 fn check_one_task() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c"]);
-    test(&mut list, &["todo", "check", "1"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c");
+    fix.test("todo check 1")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -23,9 +22,9 @@ fn check_one_task() {
 
 #[test]
 fn check_by_name() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c"]);
-    test(&mut list, &["todo", "check", "b"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c");
+    fix.test("todo check b")
         .validate()
         .printed_task(&[
             Expect::Desc("b"),
@@ -38,10 +37,10 @@ fn check_by_name() {
 
 #[test]
 fn check_task_with_incomplete_dependencies() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b"]);
-    test(&mut list, &["todo", "block", "2", "--on", "1"]);
-    test(&mut list, &["todo", "check", "2"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b");
+    fix.test("todo block 2 --on 1");
+    fix.test("todo check 2")
         .validate()
         .printed_error(&PrintableError::CannotCheckBecauseBlocked {
             cannot_check: 2,
@@ -52,10 +51,10 @@ fn check_task_with_incomplete_dependencies() {
 
 #[test]
 fn cannot_check_blocked_task() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b"]);
-    test(&mut list, &["todo", "block", "1", "--on", "2"]);
-    test(&mut list, &["todo", "check", "2"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b");
+    fix.test("todo block 1 --on 2");
+    fix.test("todo check 2")
         .validate()
         .printed_error(&PrintableError::CannotCheckBecauseBlocked {
             cannot_check: 2,
@@ -66,10 +65,10 @@ fn cannot_check_blocked_task() {
 
 #[test]
 fn check_newly_unblocked_task() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b"]);
-    test(&mut list, &["todo", "block", "1", "--on", "2"]);
-    test(&mut list, &["todo", "check", "1"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b");
+    fix.test("todo block 1 --on 2");
+    fix.test("todo check 1")
         .validate()
         .printed_task(&[
             Expect::Desc("b"),
@@ -84,7 +83,7 @@ fn check_newly_unblocked_task() {
             Expect::Action(Action::Unlock),
         ])
         .end();
-    test(&mut list, &["todo", "check", "1"])
+    fix.test("todo check 1")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -96,10 +95,10 @@ fn check_newly_unblocked_task() {
 
 #[test]
 fn check_newly_unblocked_task_with_multiple_dependencies() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c"]);
-    test(&mut list, &["todo", "block", "1", "--on", "2", "3"]);
-    test(&mut list, &["todo", "check", "1", "2"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c");
+    fix.test("todo block 1 --on 2 3");
+    fix.test("todo check 1 2")
         .validate()
         .printed_task(&[
             Expect::Desc("b"),
@@ -120,7 +119,7 @@ fn check_newly_unblocked_task_with_multiple_dependencies() {
             Expect::Action(Action::Unlock),
         ])
         .end();
-    test(&mut list, &["todo", "check", "1"])
+    fix.test("todo check 1")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -132,11 +131,11 @@ fn check_newly_unblocked_task_with_multiple_dependencies() {
 
 #[test]
 fn check_newly_unblocked_task_with_chained_dependencies() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c"]);
-    test(&mut list, &["todo", "block", "3", "--on", "2"]);
-    test(&mut list, &["todo", "block", "2", "--on", "1"]);
-    test(&mut list, &["todo", "check", "1"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c");
+    fix.test("todo block 3 --on 2");
+    fix.test("todo block 2 --on 1");
+    fix.test("todo check 1")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -151,7 +150,7 @@ fn check_newly_unblocked_task_with_chained_dependencies() {
             Expect::Action(Action::Unlock),
         ])
         .end();
-    test(&mut list, &["todo", "check", "1"])
+    fix.test("todo check 1")
         .validate()
         .printed_task(&[
             Expect::Desc("b"),
@@ -166,7 +165,7 @@ fn check_newly_unblocked_task_with_chained_dependencies() {
             Expect::Action(Action::Unlock),
         ])
         .end();
-    test(&mut list, &["todo", "check", "1"])
+    fix.test("todo check 1")
         .validate()
         .printed_task(&[
             Expect::Desc("c"),
@@ -179,10 +178,10 @@ fn check_newly_unblocked_task_with_chained_dependencies() {
 
 #[test]
 fn check_does_not_show_adeps_that_are_not_unlocked() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a"]);
-    test(&mut list, &["todo", "new", "b", "c", "-p", "1", "--chain"]);
-    test(&mut list, &["todo", "check", "1"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a");
+    fix.test("todo new b c -p 1 --chain");
+    fix.test("todo check 1")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -203,9 +202,9 @@ fn check_does_not_show_adeps_that_are_not_unlocked() {
 
 #[test]
 fn check_same_task_twice_in_one_command() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a"]);
-    test(&mut list, &["todo", "check", "1", "1"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a");
+    fix.test("todo check 1 1")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),

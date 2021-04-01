@@ -1,15 +1,14 @@
-use app::testing::*;
+use app::testing::Fixture;
 use model::TaskStatus;
-use model::TodoList;
 use printing::Action;
 use printing::Expect;
 use printing::PrintableError;
 
 #[test]
 fn block_one_on_one() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b"]);
-    test(&mut list, &["todo", "block", "1", "--on", "2"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b");
+    fix.test("todo block 1 --on 2")
         .validate()
         .printed_task(&[
             Expect::Desc("b"),
@@ -27,9 +26,9 @@ fn block_one_on_one() {
 
 #[test]
 fn block_by_name() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b"]);
-    test(&mut list, &["todo", "block", "a", "--on", "b"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b");
+    fix.test("todo block a --on b")
         .validate()
         .printed_task(&[
             Expect::Desc("b"),
@@ -48,9 +47,9 @@ fn block_by_name() {
 
 #[test]
 fn block_one_on_three() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c", "d"]);
-    test(&mut list, &["todo", "block", "1", "--on", "2", "3", "4"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c d");
+    fix.test("todo block 1 --on 2 3 4")
         .validate()
         .printed_task(&[
             Expect::Desc("b"),
@@ -80,9 +79,9 @@ fn block_one_on_three() {
 
 #[test]
 fn block_three_on_one() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c", "d"]);
-    test(&mut list, &["todo", "block", "1", "2", "3", "--on", "4"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c d");
+    fix.test("todo block 1 2 3 --on 4")
         .validate()
         .printed_task(&[
             Expect::Desc("d"),
@@ -113,10 +112,10 @@ fn block_three_on_one() {
 
 #[test]
 fn block_on_complete_task() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c"]);
-    test(&mut list, &["todo", "check", "1", "2"]);
-    test(&mut list, &["todo", "block", "1", "--on", "-1"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c");
+    fix.test("todo check 1 2");
+    fix.test("todo block 1 --on -1")
         .validate()
         .printed_task(&[
             Expect::Desc("a"),
@@ -135,9 +134,9 @@ fn block_on_complete_task() {
 
 #[test]
 fn block_multiple_on_following_task() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a", "b", "c", "d"]);
-    test(&mut list, &["todo", "block", "1", "2", "--on", "3"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c d");
+    fix.test("todo block 1 2 --on 3")
         .validate()
         .printed_task(&[
             Expect::Desc("c"),
@@ -162,9 +161,9 @@ fn block_multiple_on_following_task() {
 
 #[test]
 fn cannot_block_on_self() {
-    let mut list = TodoList::new();
-    test(&mut list, &["todo", "new", "a"]);
-    test(&mut list, &["todo", "block", "1", "--on", "1"])
+    let mut fix = Fixture::new();
+    fix.test("todo new a");
+    fix.test("todo block 1 --on 1")
         .validate()
         .printed_error(&PrintableError::CannotBlockBecauseWouldCauseCycle {
             cannot_block: 1,
