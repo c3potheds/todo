@@ -426,7 +426,7 @@ pub struct FakePrinter {
 
 #[derive(Debug)]
 #[cfg(test)]
-pub enum Expect<'a> {
+enum Expect<'a> {
     Desc(&'a str),
     Number(i32),
     Status(TaskStatus),
@@ -534,7 +534,7 @@ impl<'a> Validation<'a> {
         self.printed_task(&expectations)
     }
 
-    pub fn printed_task(mut self, es: &[Expect<'a>]) -> Validation<'a> {
+    fn printed_task(mut self, es: &[Expect<'a>]) -> Validation<'a> {
         let item = self.pop(&es);
         match &item {
             PrintedItem::Task(ref info) => {
