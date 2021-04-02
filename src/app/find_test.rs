@@ -1,7 +1,6 @@
 use app::testing::Fixture;
-use model::TaskStatus;
-use printing::Action;
-use printing::Expect;
+use model::TaskStatus::*;
+use printing::PrintableTask;
 
 #[test]
 fn find_with_exact_match() {
@@ -9,12 +8,7 @@ fn find_with_exact_match() {
     fix.test("todo new a b c");
     fix.test("todo find b")
         .validate()
-        .printed_task(&[
-            Expect::Desc("b"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
-        ])
+        .printed_exact_task(&PrintableTask::new("b", 2, Incomplete))
         .end();
 }
 
@@ -24,12 +18,7 @@ fn find_with_substring_match() {
     fix.test("todo new aaa aba aca");
     fix.test("todo find b")
         .validate()
-        .printed_task(&[
-            Expect::Desc("aba"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
-        ])
+        .printed_exact_task(&PrintableTask::new("aba", 2, Incomplete))
         .end();
 }
 
@@ -39,24 +28,9 @@ fn find_with_multiple_matches() {
     fix.test("todo new aaa aba aca");
     fix.test("todo find a")
         .validate()
-        .printed_task(&[
-            Expect::Desc("aaa"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
-        ])
-        .printed_task(&[
-            Expect::Desc("aba"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
-        ])
-        .printed_task(&[
-            Expect::Desc("aca"),
-            Expect::Number(3),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
-        ])
+        .printed_exact_task(&PrintableTask::new("aaa", 1, Incomplete))
+        .printed_exact_task(&PrintableTask::new("aba", 2, Incomplete))
+        .printed_exact_task(&PrintableTask::new("aca", 3, Incomplete))
         .end();
 }
 
@@ -67,12 +41,7 @@ fn find_includes_complete_tasks() {
     fix.test("todo check 2");
     fix.test("todo find b")
         .validate()
-        .printed_task(&[
-            Expect::Desc("aba"),
-            Expect::Number(0),
-            Expect::Status(TaskStatus::Complete),
-            Expect::Action(Action::None),
-        ])
+        .printed_exact_task(&PrintableTask::new("aba", 0, Complete))
         .end();
 }
 
@@ -82,12 +51,7 @@ fn find_includes_blocked_tasks() {
     fix.test("todo new aaa aba aca --chain");
     fix.test("todo find b")
         .validate()
-        .printed_task(&[
-            Expect::Desc("aba"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::None),
-        ])
+        .printed_exact_task(&PrintableTask::new("aba", 2, Blocked))
         .end();
 }
 
@@ -97,17 +61,7 @@ fn find_case_insensitive() {
     fix.test("todo new AAA aaa");
     fix.test("todo find aa")
         .validate()
-        .printed_task(&[
-            Expect::Desc("AAA"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
-        ])
-        .printed_task(&[
-            Expect::Desc("aaa"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
-        ])
+        .printed_exact_task(&PrintableTask::new("AAA", 1, Incomplete))
+        .printed_exact_task(&PrintableTask::new("aaa", 2, Incomplete))
         .end();
 }

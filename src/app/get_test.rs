@@ -1,7 +1,7 @@
 use app::testing::Fixture;
-use model::TaskStatus;
-use printing::Action;
-use printing::Expect;
+use model::TaskStatus::*;
+use printing::Action::*;
+use printing::PrintableTask;
 
 #[test]
 fn get_incomplete_task() {
@@ -9,12 +9,9 @@ fn get_incomplete_task() {
     fix.test("todo new a b c");
     fix.test("todo get 2")
         .validate()
-        .printed_task(&[
-            Expect::Desc("b"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::Select),
-        ])
+        .printed_exact_task(
+            &PrintableTask::new("b", 2, Incomplete).action(Select),
+        )
         .end();
 }
 
@@ -25,12 +22,9 @@ fn get_complete_task() {
     fix.test("todo check 1 2 3");
     fix.test("todo get -2")
         .validate()
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(-2),
-            Expect::Status(TaskStatus::Complete),
-            Expect::Action(Action::Select),
-        ])
+        .printed_exact_task(
+            &PrintableTask::new("a", -2, Complete).action(Select),
+        )
         .end();
 }
 
@@ -40,24 +34,15 @@ fn get_multiple_tasks() {
     fix.test("todo new a b c d e");
     fix.test("todo get 2 3 4")
         .validate()
-        .printed_task(&[
-            Expect::Desc("b"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::Select),
-        ])
-        .printed_task(&[
-            Expect::Desc("c"),
-            Expect::Number(3),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::Select),
-        ])
-        .printed_task(&[
-            Expect::Desc("d"),
-            Expect::Number(4),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::Select),
-        ])
+        .printed_exact_task(
+            &PrintableTask::new("b", 2, Incomplete).action(Select),
+        )
+        .printed_exact_task(
+            &PrintableTask::new("c", 3, Incomplete).action(Select),
+        )
+        .printed_exact_task(
+            &PrintableTask::new("d", 4, Incomplete).action(Select),
+        )
         .end();
 }
 
@@ -68,18 +53,8 @@ fn get_shows_blocking_tasks() {
     fix.test("todo block 2 --on 1");
     fix.test("todo get 2")
         .validate()
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
-        ])
-        .printed_task(&[
-            Expect::Desc("b"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::Select),
-        ])
+        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_exact_task(&PrintableTask::new("b", 2, Blocked).action(Select))
         .end();
 }
 
@@ -90,18 +65,10 @@ fn get_shows_blocked_tasks() {
     fix.test("todo block 2 --on 1");
     fix.test("todo get 1")
         .validate()
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::Select),
-        ])
-        .printed_task(&[
-            Expect::Desc("b"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::None),
-        ])
+        .printed_exact_task(
+            &PrintableTask::new("a", 1, Incomplete).action(Select),
+        )
+        .printed_exact_task(&PrintableTask::new("b", 2, Blocked))
         .end();
 }
 
@@ -111,36 +78,11 @@ fn get_shows_transitive_deps_and_adeps() {
     fix.test("todo new a b c d e --chain");
     fix.test("todo get 3")
         .validate()
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
-        ])
-        .printed_task(&[
-            Expect::Desc("b"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::None),
-        ])
-        .printed_task(&[
-            Expect::Desc("c"),
-            Expect::Number(3),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::Select),
-        ])
-        .printed_task(&[
-            Expect::Desc("d"),
-            Expect::Number(4),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::None),
-        ])
-        .printed_task(&[
-            Expect::Desc("e"),
-            Expect::Number(5),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::None),
-        ])
+        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_exact_task(&PrintableTask::new("b", 2, Blocked))
+        .printed_exact_task(&PrintableTask::new("c", 3, Blocked).action(Select))
+        .printed_exact_task(&PrintableTask::new("d", 4, Blocked))
+        .printed_exact_task(&PrintableTask::new("e", 5, Blocked))
         .end();
 }
 
@@ -150,17 +92,11 @@ fn get_by_name_multiple_matches() {
     fix.test("todo new bob frank bob");
     fix.test("todo get bob")
         .validate()
-        .printed_task(&[
-            Expect::Desc("bob"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::Select),
-        ])
-        .printed_task(&[
-            Expect::Desc("bob"),
-            Expect::Number(3),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::Select),
-        ])
+        .printed_exact_task(
+            &PrintableTask::new("bob", 1, Incomplete).action(Select),
+        )
+        .printed_exact_task(
+            &PrintableTask::new("bob", 3, Incomplete).action(Select),
+        )
         .end();
 }

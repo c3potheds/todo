@@ -1,8 +1,8 @@
 use app::testing::Fixture;
-use model::TaskStatus;
-use printing::Action;
-use printing::Expect;
+use model::TaskStatus::*;
+use printing::Action::*;
 use printing::PrintableError;
+use printing::PrintableTask;
 
 #[test]
 fn chain_one() {
@@ -17,24 +17,9 @@ fn chain_three() {
     fix.test("todo new a b c d e");
     fix.test("todo chain a b c")
         .validate()
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
-        ])
-        .printed_task(&[
-            Expect::Desc("b"),
-            Expect::Number(4),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::Lock),
-        ])
-        .printed_task(&[
-            Expect::Desc("c"),
-            Expect::Number(5),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::Lock),
-        ])
+        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_exact_task(&PrintableTask::new("b", 4, Blocked).action(Lock))
+        .printed_exact_task(&PrintableTask::new("c", 5, Blocked).action(Lock))
         .end();
 }
 

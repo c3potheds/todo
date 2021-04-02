@@ -1,7 +1,7 @@
 use app::testing::Fixture;
-use model::TaskStatus;
-use printing::Action;
-use printing::Expect;
+use model::TaskStatus::*;
+use printing::Action::*;
+use printing::PrintableTask;
 
 #[test]
 fn punt_first_task() {
@@ -9,12 +9,9 @@ fn punt_first_task() {
     fix.test("todo new a b c");
     fix.test("todo punt 1")
         .validate()
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(3),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::Punt),
-        ])
+        .printed_exact_task(
+            &PrintableTask::new("a", 3, Incomplete).action(Punt),
+        )
         .end();
 }
 
@@ -25,12 +22,7 @@ fn punt_blocked_task() {
     fix.test("todo new b c -p 1");
     fix.test("todo punt 2")
         .validate()
-        .printed_task(&[
-            Expect::Desc("b"),
-            Expect::Number(3),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::Punt),
-        ])
+        .printed_exact_task(&PrintableTask::new("b", 3, Blocked).action(Punt))
         .end();
 }
 
@@ -40,11 +32,8 @@ fn punt_by_name() {
     fix.test("todo new a b c");
     fix.test("todo punt a")
         .validate()
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(3),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::Punt),
-        ])
+        .printed_exact_task(
+            &PrintableTask::new("a", 3, Incomplete).action(Punt),
+        )
         .end();
 }

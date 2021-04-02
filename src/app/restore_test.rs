@@ -1,8 +1,8 @@
 use app::testing::Fixture;
-use model::TaskStatus;
-use printing::Action;
-use printing::Expect;
+use model::TaskStatus::*;
+use printing::Action::*;
 use printing::PrintableError;
+use printing::PrintableTask;
 use printing::PrintableWarning;
 
 #[test]
@@ -26,12 +26,9 @@ fn restore_complete_task() {
     fix.test("todo check 1");
     fix.test("todo restore 0")
         .validate()
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::Uncheck),
-        ])
+        .printed_exact_task(
+            &PrintableTask::new("a", 1, Incomplete).action(Uncheck),
+        )
         .end();
 }
 
@@ -43,12 +40,9 @@ fn restore_task_with_negative_number() {
     fix.test("todo check 1");
     fix.test("todo restore -1")
         .validate()
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::Uncheck),
-        ])
+        .printed_exact_task(
+            &PrintableTask::new("a", 2, Incomplete).action(Uncheck),
+        )
         .end();
 }
 
@@ -59,12 +53,9 @@ fn restore_same_task_with_multiple_keys() {
     fix.test("todo check 1");
     fix.test("todo restore 0 0")
         .validate()
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::Uncheck),
-        ])
+        .printed_exact_task(
+            &PrintableTask::new("a", 2, Incomplete).action(Uncheck),
+        )
         .end();
 }
 
@@ -76,18 +67,10 @@ fn restore_task_with_incomplete_antidependency() {
     fix.test("todo check 1");
     fix.test("todo restore 0")
         .validate()
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::Uncheck),
-        ])
-        .printed_task(&[
-            Expect::Desc("b"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::Lock),
-        ])
+        .printed_exact_task(
+            &PrintableTask::new("a", 1, Incomplete).action(Uncheck),
+        )
+        .printed_exact_task(&PrintableTask::new("b", 2, Blocked).action(Lock))
         .end();
 }
 
@@ -116,12 +99,9 @@ fn restore_by_name() {
     fix.test("todo check a");
     fix.test("todo restore a")
         .validate()
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::Uncheck),
-        ])
+        .printed_exact_task(
+            &PrintableTask::new("a", 2, Incomplete).action(Uncheck),
+        )
         .end();
 }
 
@@ -132,12 +112,9 @@ fn force_restore_complete_task() {
     fix.test("todo check a");
     fix.test("todo restore a --force")
         .validate()
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::Uncheck),
-        ])
+        .printed_exact_task(
+            &PrintableTask::new("a", 1, Incomplete).action(Uncheck),
+        )
         .end();
 }
 
@@ -162,18 +139,12 @@ fn force_restore_task_with_complete_adeps() {
     fix.test("todo check a b");
     fix.test("todo restore a --force")
         .validate()
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::Uncheck),
-        ])
-        .printed_task(&[
-            Expect::Desc("b"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::Uncheck),
-        ])
+        .printed_exact_task(
+            &PrintableTask::new("a", 1, Incomplete).action(Uncheck),
+        )
+        .printed_exact_task(
+            &PrintableTask::new("b", 2, Blocked).action(Uncheck),
+        )
         .end();
 }
 
@@ -184,24 +155,15 @@ fn force_restore_task_with_complete_adeps_with_complete_adeps() {
     fix.test("todo check a b c");
     fix.test("todo restore a --force")
         .validate()
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::Uncheck),
-        ])
-        .printed_task(&[
-            Expect::Desc("b"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::Uncheck),
-        ])
-        .printed_task(&[
-            Expect::Desc("c"),
-            Expect::Number(3),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::Uncheck),
-        ])
+        .printed_exact_task(
+            &PrintableTask::new("a", 1, Incomplete).action(Uncheck),
+        )
+        .printed_exact_task(
+            &PrintableTask::new("b", 2, Blocked).action(Uncheck),
+        )
+        .printed_exact_task(
+            &PrintableTask::new("c", 3, Blocked).action(Uncheck),
+        )
         .end();
 }
 
@@ -212,29 +174,15 @@ fn force_restore_task_with_complete_and_incomplete_adeps() {
     fix.test("todo check a b c");
     fix.test("todo restore a --force")
         .validate()
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::Uncheck),
-        ])
-        .printed_task(&[
-            Expect::Desc("b"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::Uncheck),
-        ])
-        .printed_task(&[
-            Expect::Desc("c"),
-            Expect::Number(3),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::Uncheck),
-        ])
-        .printed_task(&[
-            Expect::Desc("d"),
-            Expect::Number(4),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::Lock),
-        ])
+        .printed_exact_task(
+            &PrintableTask::new("a", 1, Incomplete).action(Uncheck),
+        )
+        .printed_exact_task(
+            &PrintableTask::new("b", 2, Blocked).action(Uncheck),
+        )
+        .printed_exact_task(
+            &PrintableTask::new("c", 3, Blocked).action(Uncheck),
+        )
+        .printed_exact_task(&PrintableTask::new("d", 4, Blocked).action(Lock))
         .end();
 }

@@ -1,8 +1,8 @@
 use app::testing::Fixture;
-use model::TaskStatus;
-use printing::Action;
-use printing::Expect;
+use model::TaskStatus::*;
+use printing::Action::*;
 use printing::PrintableError;
+use printing::PrintableTask;
 
 #[test]
 fn block_one_on_one() {
@@ -10,17 +10,8 @@ fn block_one_on_one() {
     fix.test("todo new a b");
     fix.test("todo block 1 --on 2")
         .validate()
-        .printed_task(&[
-            Expect::Desc("b"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
-        ])
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Blocked),
-        ])
+        .printed_exact_task(&PrintableTask::new("b", 1, Incomplete))
+        .printed_exact_task(&PrintableTask::new("a", 2, Blocked).action(Lock))
         .end();
 }
 
@@ -30,18 +21,8 @@ fn block_by_name() {
     fix.test("todo new a b");
     fix.test("todo block a --on b")
         .validate()
-        .printed_task(&[
-            Expect::Desc("b"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
-        ])
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::Lock),
-        ])
+        .printed_exact_task(&PrintableTask::new("b", 1, Incomplete))
+        .printed_exact_task(&PrintableTask::new("a", 2, Blocked).action(Lock))
         .end();
 }
 
@@ -51,29 +32,10 @@ fn block_one_on_three() {
     fix.test("todo new a b c d");
     fix.test("todo block 1 --on 2 3 4")
         .validate()
-        .printed_task(&[
-            Expect::Desc("b"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
-        ])
-        .printed_task(&[
-            Expect::Desc("c"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
-        ])
-        .printed_task(&[
-            Expect::Desc("d"),
-            Expect::Number(3),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
-        ])
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(4),
-            Expect::Status(TaskStatus::Blocked),
-        ])
+        .printed_exact_task(&PrintableTask::new("b", 1, Incomplete))
+        .printed_exact_task(&PrintableTask::new("c", 2, Incomplete))
+        .printed_exact_task(&PrintableTask::new("d", 3, Incomplete))
+        .printed_exact_task(&PrintableTask::new("a", 4, Blocked).action(Lock))
         .end();
 }
 
@@ -83,30 +45,10 @@ fn block_three_on_one() {
     fix.test("todo new a b c d");
     fix.test("todo block 1 2 3 --on 4")
         .validate()
-        .printed_task(&[
-            Expect::Desc("d"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
-        ])
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::Lock),
-        ])
-        .printed_task(&[
-            Expect::Desc("b"),
-            Expect::Number(3),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::Lock),
-        ])
-        .printed_task(&[
-            Expect::Desc("c"),
-            Expect::Number(4),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::Lock),
-        ])
+        .printed_exact_task(&PrintableTask::new("d", 1, Incomplete))
+        .printed_exact_task(&PrintableTask::new("a", 2, Blocked).action(Lock))
+        .printed_exact_task(&PrintableTask::new("b", 3, Blocked).action(Lock))
+        .printed_exact_task(&PrintableTask::new("c", 4, Blocked).action(Lock))
         .end();
 }
 
@@ -117,18 +59,10 @@ fn block_on_complete_task() {
     fix.test("todo check 1 2");
     fix.test("todo block 1 --on -1")
         .validate()
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(-1),
-            Expect::Status(TaskStatus::Complete),
-            Expect::Action(Action::None),
-        ])
-        .printed_task(&[
-            Expect::Desc("c"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::Lock),
-        ])
+        .printed_exact_task(&PrintableTask::new("a", -1, Complete))
+        .printed_exact_task(
+            &PrintableTask::new("c", 1, Incomplete).action(Lock),
+        )
         .end();
 }
 
@@ -138,24 +72,9 @@ fn block_multiple_on_following_task() {
     fix.test("todo new a b c d");
     fix.test("todo block 1 2 --on 3")
         .validate()
-        .printed_task(&[
-            Expect::Desc("c"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
-        ])
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(3),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::Lock),
-        ])
-        .printed_task(&[
-            Expect::Desc("b"),
-            Expect::Number(4),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::Lock),
-        ])
+        .printed_exact_task(&PrintableTask::new("c", 1, Incomplete))
+        .printed_exact_task(&PrintableTask::new("a", 3, Blocked).action(Lock))
+        .printed_exact_task(&PrintableTask::new("b", 4, Blocked).action(Lock))
         .end();
 }
 

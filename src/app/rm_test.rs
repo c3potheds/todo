@@ -1,7 +1,7 @@
-use app::testing::Fixture;
-use model::TaskStatus;
-use printing::Action;
-use printing::Expect;
+use app::testing::*;
+use model::TaskStatus::*;
+use printing::Action::*;
+use printing::PrintableTask;
 
 #[test]
 fn rm_nonexistent_task() {
@@ -15,12 +15,7 @@ fn rm_only_task() {
     fix.test("todo new a");
     fix.test("todo rm a")
         .validate()
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Removed),
-            Expect::Action(Action::Delete),
-        ])
+        .printed_exact_task(&PrintableTask::new("a", 1, Removed).action(Delete))
         .end();
 }
 
@@ -30,18 +25,8 @@ fn rm_task_with_adeps() {
     fix.test("todo new a b --chain");
     fix.test("todo rm a")
         .validate()
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Removed),
-            Expect::Action(Action::Delete),
-        ])
-        .printed_task(&[
-            Expect::Desc("b"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
-        ])
+        .printed_exact_task(&PrintableTask::new("a", 1, Removed).action(Delete))
+        .printed_exact_task(&PrintableTask::new("b", 1, Incomplete))
         .end();
 }
 
@@ -51,18 +36,8 @@ fn rm_task_with_deps_and_adeps() {
     fix.test("todo new a b c --chain");
     fix.test("todo rm b")
         .validate()
-        .printed_task(&[
-            Expect::Desc("b"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Removed),
-            Expect::Action(Action::Delete),
-        ])
-        .printed_task(&[
-            Expect::Desc("c"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Blocked),
-            Expect::Action(Action::None),
-        ])
+        .printed_exact_task(&PrintableTask::new("b", 2, Removed).action(Delete))
+        .printed_exact_task(&PrintableTask::new("c", 2, Blocked))
         .end();
 }
 
@@ -72,39 +47,14 @@ fn rm_three_tasks() {
     fix.test("todo new a b c d e");
     fix.test("todo rm a c e")
         .validate()
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Removed),
-            Expect::Action(Action::Delete),
-        ])
-        .printed_task(&[
-            Expect::Desc("c"),
-            Expect::Number(3),
-            Expect::Status(TaskStatus::Removed),
-            Expect::Action(Action::Delete),
-        ])
-        .printed_task(&[
-            Expect::Desc("e"),
-            Expect::Number(5),
-            Expect::Status(TaskStatus::Removed),
-            Expect::Action(Action::Delete),
-        ])
+        .printed_exact_task(&PrintableTask::new("a", 1, Removed).action(Delete))
+        .printed_exact_task(&PrintableTask::new("c", 3, Removed).action(Delete))
+        .printed_exact_task(&PrintableTask::new("e", 5, Removed).action(Delete))
         .end();
     fix.test("todo")
         .validate()
-        .printed_task(&[
-            Expect::Desc("b"),
-            Expect::Number(1),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
-        ])
-        .printed_task(&[
-            Expect::Desc("d"),
-            Expect::Number(2),
-            Expect::Status(TaskStatus::Incomplete),
-            Expect::Action(Action::None),
-        ])
+        .printed_exact_task(&PrintableTask::new("b", 1, Incomplete))
+        .printed_exact_task(&PrintableTask::new("d", 2, Incomplete))
         .end();
 }
 
@@ -115,11 +65,6 @@ fn rm_complete_task() {
     fix.test("todo check a");
     fix.test("todo rm a")
         .validate()
-        .printed_task(&[
-            Expect::Desc("a"),
-            Expect::Number(0),
-            Expect::Status(TaskStatus::Removed),
-            Expect::Action(Action::Delete),
-        ])
+        .printed_exact_task(&PrintableTask::new("a", 0, Removed).action(Delete))
         .end();
 }
