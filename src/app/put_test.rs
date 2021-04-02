@@ -10,8 +10,8 @@ fn put_one_after_one() {
     fix.test("todo new a b");
     fix.test("todo put a --after b")
         .validate()
-        .printed_exact_task(&PrintableTask::new("b", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("a", 2, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete))
+        .printed_task(&PrintableTask::new("a", 2, Blocked).action(Lock))
         .end();
 }
 
@@ -21,10 +21,10 @@ fn put_three_after_one() {
     fix.test("todo new a b c d");
     fix.test("todo put a b c --after d")
         .validate()
-        .printed_exact_task(&PrintableTask::new("d", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("a", 2, Blocked).action(Lock))
-        .printed_exact_task(&PrintableTask::new("b", 3, Blocked).action(Lock))
-        .printed_exact_task(&PrintableTask::new("c", 4, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("d", 1, Incomplete))
+        .printed_task(&PrintableTask::new("a", 2, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("b", 3, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("c", 4, Blocked).action(Lock))
         .end();
 }
 
@@ -34,10 +34,10 @@ fn put_one_after_three() {
     fix.test("todo new a b c d");
     fix.test("todo put a --after b c d")
         .validate()
-        .printed_exact_task(&PrintableTask::new("b", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("c", 2, Incomplete))
-        .printed_exact_task(&PrintableTask::new("d", 3, Incomplete))
-        .printed_exact_task(&PrintableTask::new("a", 4, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete))
+        .printed_task(&PrintableTask::new("c", 2, Incomplete))
+        .printed_task(&PrintableTask::new("d", 3, Incomplete))
+        .printed_task(&PrintableTask::new("a", 4, Blocked).action(Lock))
         .end();
 }
 
@@ -48,9 +48,9 @@ fn put_after_task_with_adeps() {
     fix.test("todo new c");
     fix.test("todo put c --after a")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("c", 2, Blocked).action(Lock))
-        .printed_exact_task(&PrintableTask::new("b", 3, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("c", 2, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("b", 3, Blocked).action(Lock))
         .end();
 }
 
@@ -60,8 +60,8 @@ fn put_one_before_one() {
     fix.test("todo new a b");
     fix.test("todo put b --before a")
         .validate()
-        .printed_exact_task(&PrintableTask::new("b", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("a", 2, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete))
+        .printed_task(&PrintableTask::new("a", 2, Blocked).action(Lock))
         .end();
 }
 
@@ -71,10 +71,10 @@ fn put_three_before_one() {
     fix.test("todo new a b c d");
     fix.test("todo put b c d --before a")
         .validate()
-        .printed_exact_task(&PrintableTask::new("b", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("c", 2, Incomplete))
-        .printed_exact_task(&PrintableTask::new("d", 3, Incomplete))
-        .printed_exact_task(&PrintableTask::new("a", 4, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete))
+        .printed_task(&PrintableTask::new("c", 2, Incomplete))
+        .printed_task(&PrintableTask::new("d", 3, Incomplete))
+        .printed_task(&PrintableTask::new("a", 4, Blocked).action(Lock))
         .end();
 }
 
@@ -84,10 +84,10 @@ fn put_one_before_three() {
     fix.test("todo new a b c d");
     fix.test("todo put d --before a b c")
         .validate()
-        .printed_exact_task(&PrintableTask::new("d", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("a", 2, Blocked).action(Lock))
-        .printed_exact_task(&PrintableTask::new("b", 3, Blocked).action(Lock))
-        .printed_exact_task(&PrintableTask::new("c", 4, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("d", 1, Incomplete))
+        .printed_task(&PrintableTask::new("a", 2, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("b", 3, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("c", 4, Blocked).action(Lock))
         .end();
 }
 
@@ -98,9 +98,9 @@ fn put_before_task_with_deps() {
     fix.test("todo new c");
     fix.test("todo put c --before b")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("c", 2, Blocked).action(Lock))
-        .printed_exact_task(&PrintableTask::new("b", 3, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("c", 2, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("b", 3, Blocked).action(Lock))
         .end();
 }
 
@@ -112,11 +112,11 @@ fn put_before_and_after() {
     fix.test("todo new g");
     fix.test("todo put g -b b -a e")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("e", 3, Blocked))
-        .printed_exact_task(&PrintableTask::new("g", 4, Blocked).action(Lock))
-        .printed_exact_task(&PrintableTask::new("b", 5, Blocked).action(Lock))
-        .printed_exact_task(&PrintableTask::new("f", 6, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("e", 3, Blocked))
+        .printed_task(&PrintableTask::new("g", 4, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("b", 5, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("f", 6, Blocked).action(Lock))
         .end();
 }
 
@@ -133,7 +133,7 @@ fn put_causing_cycle() {
         .end();
     fix.test("todo -a")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("b", 2, Blocked))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("b", 2, Blocked))
         .end();
 }

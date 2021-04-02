@@ -19,10 +19,8 @@ fn path_between_tasks_with_direct_dependency() {
     fix.test("todo new a b --chain");
     fix.test("todo path a b")
         .validate()
-        .printed_exact_task(
-            &PrintableTask::new("a", 1, Incomplete).action(Select),
-        )
-        .printed_exact_task(&PrintableTask::new("b", 2, Blocked).action(Select))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Select))
+        .printed_task(&PrintableTask::new("b", 2, Blocked).action(Select))
         .end();
 }
 
@@ -32,11 +30,9 @@ fn path_between_tasks_with_indirect_dependency() {
     fix.test("todo new a b c --chain");
     fix.test("todo path a c")
         .validate()
-        .printed_exact_task(
-            &PrintableTask::new("a", 1, Incomplete).action(Select),
-        )
-        .printed_exact_task(&PrintableTask::new("b", 2, Blocked))
-        .printed_exact_task(&PrintableTask::new("c", 3, Blocked).action(Select))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Select))
+        .printed_task(&PrintableTask::new("b", 2, Blocked))
+        .printed_task(&PrintableTask::new("c", 3, Blocked).action(Select))
         .end();
 }
 

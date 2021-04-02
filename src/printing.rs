@@ -515,10 +515,7 @@ impl<'a> Validation<'a> {
         self.record.drain(0..1).nth(0).unwrap()
     }
 
-    pub fn printed_exact_task(
-        self,
-        task: &PrintableTask<'a>,
-    ) -> Validation<'a> {
+    pub fn printed_task(self, task: &PrintableTask<'a>) -> Validation<'a> {
         let mut expectations = vec![
             Expect::Desc(task.desc),
             Expect::Number(task.number),
@@ -531,10 +528,10 @@ impl<'a> Validation<'a> {
         if let Some(priority) = task.priority {
             expectations.push(Expect::Priority(priority));
         }
-        self.printed_task(&expectations)
+        self.printed_task_impl(&expectations)
     }
 
-    fn printed_task(mut self, es: &[Expect<'a>]) -> Validation<'a> {
+    fn printed_task_impl(mut self, es: &[Expect<'a>]) -> Validation<'a> {
         let item = self.pop(&es);
         match &item {
             PrintedItem::Task(ref info) => {

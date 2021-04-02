@@ -11,10 +11,8 @@ fn unblock_task_from_direct_dependency() {
     fix.test("todo block 2 --on 1");
     fix.test("todo unblock 2 --from 1")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_exact_task(
-            &PrintableTask::new("b", 2, Incomplete).action(Unlock),
-        )
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("b", 2, Incomplete).action(Unlock))
         .end();
 }
 
@@ -42,10 +40,8 @@ fn unblock_complete_task() {
     fix.test("todo check 1 2");
     fix.test("todo unblock 0 --from -1")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", -1, Complete))
-        .printed_exact_task(
-            &PrintableTask::new("b", 0, Complete).action(Unlock),
-        )
+        .printed_task(&PrintableTask::new("a", -1, Complete))
+        .printed_task(&PrintableTask::new("b", 0, Complete).action(Unlock))
         .end();
 }
 
@@ -55,10 +51,8 @@ fn unblock_by_name() {
     fix.test("todo new a b --chain");
     fix.test("todo unblock b --from a")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_exact_task(
-            &PrintableTask::new("b", 2, Incomplete).action(Unlock),
-        )
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("b", 2, Incomplete).action(Unlock))
         .end();
 }
 
@@ -69,9 +63,7 @@ fn unblock_from_all() {
     fix.test("todo new c -p a b");
     fix.test("todo unblock c")
         .validate()
-        .printed_exact_task(
-            &PrintableTask::new("c", 3, Incomplete).action(Unlock),
-        )
+        .printed_task(&PrintableTask::new("c", 3, Incomplete).action(Unlock))
         .end();
 }
 
@@ -82,8 +74,6 @@ fn unblock_from_all2() {
     fix.test("todo new c -p a b");
     fix.test("todo unblock c")
         .validate()
-        .printed_exact_task(
-            &PrintableTask::new("c", 2, Incomplete).action(Unlock),
-        )
+        .printed_task(&PrintableTask::new("c", 2, Incomplete).action(Unlock))
         .end();
 }

@@ -17,9 +17,9 @@ fn chain_three() {
     fix.test("todo new a b c d e");
     fix.test("todo chain a b c")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("b", 4, Blocked).action(Lock))
-        .printed_exact_task(&PrintableTask::new("c", 5, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("b", 4, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("c", 5, Blocked).action(Lock))
         .end();
 }
 

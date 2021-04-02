@@ -408,26 +408,26 @@ fn show_punt_icon_on_punt_action() {
 }
 
 #[test]
-fn validate_exact_task() {
+fn validate_task() {
     let mut printer = FakePrinter::new();
     printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
     printer
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete))
+        .printed_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete))
         .end();
 }
 
 #[test]
-fn validate_multiple_exact_tasks() {
+fn validate_multiple_tasks() {
     let mut printer = FakePrinter::new();
     printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
     printer.print_task(&PrintableTask::new("b", 2, TaskStatus::Incomplete));
     printer.print_task(&PrintableTask::new("c", 3, TaskStatus::Incomplete));
     printer
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete))
-        .printed_exact_task(&PrintableTask::new("b", 2, TaskStatus::Incomplete))
-        .printed_exact_task(&PrintableTask::new("c", 3, TaskStatus::Incomplete))
+        .printed_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete))
+        .printed_task(&PrintableTask::new("b", 2, TaskStatus::Incomplete))
+        .printed_task(&PrintableTask::new("c", 3, TaskStatus::Incomplete))
         .end();
 }
 
@@ -458,7 +458,7 @@ fn fail_validation_on_missing_task_exact() {
     let mut printer = FakePrinter::new();
     printer
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete))
+        .printed_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete))
         .end();
 }
 
@@ -469,7 +469,7 @@ fn fail_validation_on_incorrect_description_exact() {
     printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
     printer
         .validate()
-        .printed_exact_task(&PrintableTask::new("b", 1, TaskStatus::Incomplete))
+        .printed_task(&PrintableTask::new("b", 1, TaskStatus::Incomplete))
         .end();
 }
 
@@ -480,7 +480,7 @@ fn fail_validation_on_incorrect_number_exact() {
     printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
     printer
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 2, TaskStatus::Incomplete))
+        .printed_task(&PrintableTask::new("a", 2, TaskStatus::Incomplete))
         .end();
 }
 
@@ -499,7 +499,7 @@ fn fail_validation_on_incorrect_status_exact() {
     printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
     printer
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, TaskStatus::Blocked))
+        .printed_task(&PrintableTask::new("a", 1, TaskStatus::Blocked))
         .end();
 }
 
@@ -512,7 +512,7 @@ fn fail_validation_on_incorrect_action_exact() {
     );
     printer
         .validate()
-        .printed_exact_task(
+        .printed_task(
             &PrintableTask::new("a", 1, TaskStatus::Incomplete)
                 .action(Action::Select),
         )
@@ -578,7 +578,7 @@ fn fail_validation_on_missing_log_date_exact() {
     printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
     printer
         .validate()
-        .printed_exact_task(
+        .printed_task(
             &PrintableTask::new("a", 1, TaskStatus::Incomplete)
                 .log_date(LogDate::YearMonthDay(2021, 04, 01)),
         )
@@ -595,7 +595,7 @@ fn fail_validation_on_incorrect_log_date_exact() {
     );
     printer
         .validate()
-        .printed_exact_task(
+        .printed_task(
             &PrintableTask::new("a", 1, TaskStatus::Incomplete)
                 .log_date(LogDate::YearMonthDay(2021, 04, 01)),
         )
@@ -609,7 +609,7 @@ fn fail_validation_on_missing_priority_exact() {
     printer.print_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete));
     printer
         .validate()
-        .printed_exact_task(
+        .printed_task(
             &PrintableTask::new("a", 1, TaskStatus::Incomplete).priority(1),
         )
         .end();
@@ -625,6 +625,6 @@ fn fail_validation_on_extraneous_priority() {
     );
     printer
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete))
+        .printed_task(&PrintableTask::new("a", 1, TaskStatus::Incomplete))
         .end();
 }

@@ -10,7 +10,7 @@ fn edit_one_task() {
     fix.test("todo new a");
     fix.test("todo edit 1 --desc b")
         .validate()
-        .printed_exact_task(&PrintableTask::new("b", 1, Incomplete))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete))
         .end();
 }
 
@@ -20,9 +20,9 @@ fn edit_multiple_tasks() {
     fix.test("todo new a b c");
     fix.test("todo edit 1 2 3 --desc d")
         .validate()
-        .printed_exact_task(&PrintableTask::new("d", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("d", 2, Incomplete))
-        .printed_exact_task(&PrintableTask::new("d", 3, Incomplete))
+        .printed_task(&PrintableTask::new("d", 1, Incomplete))
+        .printed_task(&PrintableTask::new("d", 2, Incomplete))
+        .printed_task(&PrintableTask::new("d", 3, Incomplete))
         .end();
 }
 
@@ -33,7 +33,7 @@ fn edit_with_text_editor_happy_path() {
     fix.text_editor = FakeTextEditor::user_will_enter("1) b\n");
     fix.test("todo edit 1")
         .validate()
-        .printed_exact_task(&PrintableTask::new("b", 1, Incomplete))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete))
         .end();
     assert_eq!(*fix.text_editor.recorded_input(), "1) a");
 }
@@ -45,11 +45,7 @@ fn edit_with_text_editor_long_desc_later_task() {
     fix.text_editor = FakeTextEditor::user_will_enter("3) this is serious\n");
     fix.test("todo edit 3")
         .validate()
-        .printed_exact_task(&PrintableTask::new(
-            "this is serious",
-            3,
-            Incomplete,
-        ))
+        .printed_task(&PrintableTask::new("this is serious", 3, Incomplete))
         .end();
     assert_eq!(*fix.text_editor.recorded_input(), "3) c");
 }
@@ -61,9 +57,9 @@ fn edit_multiple_tasks_with_text_editor() {
     fix.text_editor = FakeTextEditor::user_will_enter("1) d\n2) e\n3) f\n");
     fix.test("todo edit 1 2 3")
         .validate()
-        .printed_exact_task(&PrintableTask::new("d", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("e", 2, Incomplete))
-        .printed_exact_task(&PrintableTask::new("f", 3, Incomplete))
+        .printed_task(&PrintableTask::new("d", 1, Incomplete))
+        .printed_task(&PrintableTask::new("e", 2, Incomplete))
+        .printed_task(&PrintableTask::new("f", 3, Incomplete))
         .end();
     assert_eq!(*fix.text_editor.recorded_input(), "1) a\n2) b\n3) c");
 }

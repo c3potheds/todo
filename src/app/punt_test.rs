@@ -9,9 +9,7 @@ fn punt_first_task() {
     fix.test("todo new a b c");
     fix.test("todo punt 1")
         .validate()
-        .printed_exact_task(
-            &PrintableTask::new("a", 3, Incomplete).action(Punt),
-        )
+        .printed_task(&PrintableTask::new("a", 3, Incomplete).action(Punt))
         .end();
 }
 
@@ -22,7 +20,7 @@ fn punt_blocked_task() {
     fix.test("todo new b c -p 1");
     fix.test("todo punt 2")
         .validate()
-        .printed_exact_task(&PrintableTask::new("b", 3, Blocked).action(Punt))
+        .printed_task(&PrintableTask::new("b", 3, Blocked).action(Punt))
         .end();
 }
 
@@ -32,8 +30,6 @@ fn punt_by_name() {
     fix.test("todo new a b c");
     fix.test("todo punt a")
         .validate()
-        .printed_exact_task(
-            &PrintableTask::new("a", 3, Incomplete).action(Punt),
-        )
+        .printed_task(&PrintableTask::new("a", 3, Incomplete).action(Punt))
         .end();
 }

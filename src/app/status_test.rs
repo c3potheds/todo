@@ -14,9 +14,9 @@ fn status_after_added_tasks() {
     fix.test("todo new a b c");
     fix.test("todo")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("b", 2, Incomplete))
-        .printed_exact_task(&PrintableTask::new("c", 3, Incomplete))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("b", 2, Incomplete))
+        .printed_task(&PrintableTask::new("c", 3, Incomplete))
         .end();
 }
 
@@ -27,8 +27,8 @@ fn status_does_not_include_blocked_tasks() {
     fix.test("todo block 2 --on 1");
     fix.test("todo")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("c", 2, Incomplete))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("c", 2, Incomplete))
         .end();
 }
 
@@ -39,8 +39,8 @@ fn include_blocked_in_status() {
     fix.test("todo block 1 --on 2");
     fix.test("todo -b")
         .validate()
-        .printed_exact_task(&PrintableTask::new("b", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("a", 2, Blocked))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete))
+        .printed_task(&PrintableTask::new("a", 2, Blocked))
         .end();
 }
 
@@ -51,8 +51,8 @@ fn include_complete_in_status() {
     fix.test("todo check 1");
     fix.test("todo -d")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 0, Complete))
-        .printed_exact_task(&PrintableTask::new("b", 1, Incomplete))
+        .printed_task(&PrintableTask::new("a", 0, Complete))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete))
         .end();
 }
 
@@ -63,9 +63,9 @@ fn include_all_in_status() {
     fix.test("todo check 1");
     fix.test("todo -a")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 0, Complete))
-        .printed_exact_task(&PrintableTask::new("b", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("c", 2, Blocked))
+        .printed_task(&PrintableTask::new("a", 0, Complete))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete))
+        .printed_task(&PrintableTask::new("c", 2, Blocked))
         .end();
 }
 
@@ -76,7 +76,7 @@ fn status_after_check_multiple_tasks() {
     fix.test("todo check 2 3");
     fix.test("todo")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
         .end();
 }
 
@@ -88,7 +88,7 @@ fn status_after_unblocking_task() {
     fix.test("todo unblock 2 --from 1");
     fix.test("todo")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("b", 2, Incomplete))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("b", 2, Incomplete))
         .end();
 }

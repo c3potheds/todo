@@ -9,7 +9,7 @@ fn new_one_task() {
     let mut fix = Fixture::new();
     fix.test("todo new a")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(New))
         .end();
 }
 
@@ -18,9 +18,9 @@ fn new_multiple_tasks() {
     let mut fix = Fixture::new();
     fix.test("todo new a b c")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete).action(New))
-        .printed_exact_task(&PrintableTask::new("b", 2, Incomplete).action(New))
-        .printed_exact_task(&PrintableTask::new("c", 3, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("b", 2, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("c", 3, Incomplete).action(New))
         .end();
 }
 
@@ -31,8 +31,8 @@ fn new_block_on_complete_task() {
     fix.test("todo check 1");
     fix.test("todo new b -p 0")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 0, Complete))
-        .printed_exact_task(&PrintableTask::new("b", 1, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("a", 0, Complete))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete).action(New))
         .end();
 }
 
@@ -43,8 +43,8 @@ fn new_blocking_complete_task() {
     fix.test("todo check 1");
     fix.test("todo new b -b 0")
         .validate()
-        .printed_exact_task(&PrintableTask::new("b", 1, Incomplete).action(New))
-        .printed_exact_task(&PrintableTask::new("a", 2, Blocked))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("a", 2, Blocked))
         .end();
 }
 
@@ -54,9 +54,9 @@ fn new_by_name() {
     fix.test("todo new a b c");
     fix.test("todo new d -p c -b a")
         .validate()
-        .printed_exact_task(&PrintableTask::new("c", 2, Incomplete))
-        .printed_exact_task(&PrintableTask::new("d", 3, Blocked).action(New))
-        .printed_exact_task(&PrintableTask::new("a", 4, Blocked))
+        .printed_task(&PrintableTask::new("c", 2, Incomplete))
+        .printed_task(&PrintableTask::new("d", 3, Blocked).action(New))
+        .printed_task(&PrintableTask::new("a", 4, Blocked))
         .end();
 }
 
@@ -65,9 +65,9 @@ fn new_chain_three() {
     let mut fix = Fixture::new();
     fix.test("todo new a b c --chain")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete).action(New))
-        .printed_exact_task(&PrintableTask::new("b", 2, Blocked).action(New))
-        .printed_exact_task(&PrintableTask::new("c", 3, Blocked).action(New))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("b", 2, Blocked).action(New))
+        .printed_task(&PrintableTask::new("c", 3, Blocked).action(New))
         .end();
 }
 
@@ -77,8 +77,8 @@ fn new_one_blocking_one() {
     fix.test("todo new a");
     fix.test("todo new b --blocking 1")
         .validate()
-        .printed_exact_task(&PrintableTask::new("b", 1, Incomplete).action(New))
-        .printed_exact_task(&PrintableTask::new("a", 2, Blocked))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("a", 2, Blocked))
         .end();
 }
 
@@ -88,8 +88,8 @@ fn new_blocked_by_one() {
     fix.test("todo new a");
     fix.test("todo new b --blocked-by 1")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("b", 2, Blocked).action(New))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("b", 2, Blocked).action(New))
         .end();
 }
 
@@ -99,8 +99,8 @@ fn new_one_blocking_one_short() {
     fix.test("todo new a");
     fix.test("todo new b -b 1")
         .validate()
-        .printed_exact_task(&PrintableTask::new("b", 1, Incomplete).action(New))
-        .printed_exact_task(&PrintableTask::new("a", 2, Blocked))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("a", 2, Blocked))
         .end();
 }
 
@@ -110,8 +110,8 @@ fn new_blocked_by_one_short() {
     fix.test("todo new a");
     fix.test("todo new b -p 1")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("b", 2, Blocked).action(New))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("b", 2, Blocked).action(New))
         .end();
 }
 
@@ -121,10 +121,10 @@ fn new_blocking_multiple() {
     fix.test("todo new a b c");
     fix.test("todo new d -b 1 2 3")
         .validate()
-        .printed_exact_task(&PrintableTask::new("d", 1, Incomplete).action(New))
-        .printed_exact_task(&PrintableTask::new("a", 2, Blocked))
-        .printed_exact_task(&PrintableTask::new("b", 3, Blocked))
-        .printed_exact_task(&PrintableTask::new("c", 4, Blocked))
+        .printed_task(&PrintableTask::new("d", 1, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("a", 2, Blocked))
+        .printed_task(&PrintableTask::new("b", 3, Blocked))
+        .printed_task(&PrintableTask::new("c", 4, Blocked))
         .end();
 }
 
@@ -134,9 +134,9 @@ fn new_blocking_and_blocked_by() {
     fix.test("todo new a b");
     fix.test("todo new c -p 1 -b 2")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("c", 2, Blocked).action(New))
-        .printed_exact_task(&PrintableTask::new("b", 3, Blocked))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("c", 2, Blocked).action(New))
+        .printed_task(&PrintableTask::new("b", 3, Blocked))
         .end();
 }
 
@@ -146,9 +146,9 @@ fn new_in_between_blocking_pair() {
     fix.test("todo new a b --chain");
     fix.test("todo new c -p 1 -b 2")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("c", 2, Blocked).action(New))
-        .printed_exact_task(&PrintableTask::new("b", 3, Blocked))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("c", 2, Blocked).action(New))
+        .printed_task(&PrintableTask::new("b", 3, Blocked))
         .end();
 }
 
@@ -158,9 +158,9 @@ fn new_one_before_one() {
     fix.test("todo new a b c --chain");
     fix.test("todo new d --before b")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("d", 2, Blocked).action(New))
-        .printed_exact_task(&PrintableTask::new("b", 3, Blocked))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("d", 2, Blocked).action(New))
+        .printed_task(&PrintableTask::new("b", 3, Blocked))
         .end();
 }
 
@@ -170,11 +170,11 @@ fn new_three_before_one() {
     fix.test("todo new a b c --chain");
     fix.test("todo new d e f --before b")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("d", 2, Blocked).action(New))
-        .printed_exact_task(&PrintableTask::new("e", 3, Blocked).action(New))
-        .printed_exact_task(&PrintableTask::new("f", 4, Blocked).action(New))
-        .printed_exact_task(&PrintableTask::new("b", 5, Blocked))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("d", 2, Blocked).action(New))
+        .printed_task(&PrintableTask::new("e", 3, Blocked).action(New))
+        .printed_task(&PrintableTask::new("f", 4, Blocked).action(New))
+        .printed_task(&PrintableTask::new("b", 5, Blocked))
         .end();
 }
 
@@ -185,11 +185,11 @@ fn new_one_before_three() {
     fix.test("todo new b c d -p a");
     fix.test("todo new e --before b c d")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("e", 2, Blocked).action(New))
-        .printed_exact_task(&PrintableTask::new("b", 3, Blocked))
-        .printed_exact_task(&PrintableTask::new("c", 4, Blocked))
-        .printed_exact_task(&PrintableTask::new("d", 5, Blocked))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("e", 2, Blocked).action(New))
+        .printed_task(&PrintableTask::new("b", 3, Blocked))
+        .printed_task(&PrintableTask::new("c", 4, Blocked))
+        .printed_task(&PrintableTask::new("d", 5, Blocked))
         .end();
 }
 
@@ -199,9 +199,9 @@ fn new_one_after_one() {
     fix.test("todo new a b c --chain");
     fix.test("todo new d --after b")
         .validate()
-        .printed_exact_task(&PrintableTask::new("b", 2, Blocked))
-        .printed_exact_task(&PrintableTask::new("d", 3, Blocked).action(New))
-        .printed_exact_task(&PrintableTask::new("c", 4, Blocked))
+        .printed_task(&PrintableTask::new("b", 2, Blocked))
+        .printed_task(&PrintableTask::new("d", 3, Blocked).action(New))
+        .printed_task(&PrintableTask::new("c", 4, Blocked))
         .end();
 }
 
@@ -211,11 +211,11 @@ fn new_three_after_one() {
     fix.test("todo new a b c --chain");
     fix.test("todo new d e f --after b")
         .validate()
-        .printed_exact_task(&PrintableTask::new("b", 2, Blocked))
-        .printed_exact_task(&PrintableTask::new("d", 3, Blocked).action(New))
-        .printed_exact_task(&PrintableTask::new("e", 4, Blocked).action(New))
-        .printed_exact_task(&PrintableTask::new("f", 5, Blocked).action(New))
-        .printed_exact_task(&PrintableTask::new("c", 6, Blocked))
+        .printed_task(&PrintableTask::new("b", 2, Blocked))
+        .printed_task(&PrintableTask::new("d", 3, Blocked).action(New))
+        .printed_task(&PrintableTask::new("e", 4, Blocked).action(New))
+        .printed_task(&PrintableTask::new("f", 5, Blocked).action(New))
+        .printed_task(&PrintableTask::new("c", 6, Blocked))
         .end();
 }
 
@@ -226,11 +226,11 @@ fn new_one_after_three() {
     fix.test("todo new d -p a b c");
     fix.test("todo new e --after a b c")
         .validate()
-        .printed_exact_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_exact_task(&PrintableTask::new("b", 2, Incomplete))
-        .printed_exact_task(&PrintableTask::new("c", 3, Incomplete))
-        .printed_exact_task(&PrintableTask::new("e", 4, Blocked).action(New))
-        .printed_exact_task(&PrintableTask::new("d", 5, Blocked))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("b", 2, Incomplete))
+        .printed_task(&PrintableTask::new("c", 3, Incomplete))
+        .printed_task(&PrintableTask::new("e", 4, Blocked).action(New))
+        .printed_task(&PrintableTask::new("d", 5, Blocked))
         .end();
 }
 
@@ -245,7 +245,7 @@ fn print_warning_on_cycle() {
             cannot_block: 3,
             requested_dependency: 1,
         })
-        .printed_exact_task(&PrintableTask::new("c", 3, Blocked).action(New))
+        .printed_task(&PrintableTask::new("c", 3, Blocked).action(New))
         .end();
 }
 
@@ -255,7 +255,7 @@ fn new_with_priority() {
     let mut fix = Fixture::new();
     fix.test("todo new a --priority 1")
         .validate()
-        .printed_exact_task(
+        .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
                 .action(New)
                 .priority(1),
@@ -270,7 +270,7 @@ fn new_task_with_priority_inserted_before_unprioritized_tasks() {
     fix.test("todo new a b");
     fix.test("todo new c --priority 1")
         .validate()
-        .printed_exact_task(
+        .printed_task(
             &PrintableTask::new("c", 1, Incomplete)
                 .action(New)
                 .priority(1),
@@ -285,7 +285,7 @@ fn new_task_with_negative_priority_inserted_after_unprioritized_tasks() {
     fix.test("todo new a b");
     fix.test("todo new c --priority -1")
         .validate()
-        .printed_exact_task(
+        .printed_task(
             &PrintableTask::new("c", 3, Incomplete)
                 .action(New)
                 .priority(-1),
@@ -301,7 +301,7 @@ fn new_task_with_priority_inserted_in_sorted_order() {
     fix.test("todo new b --priority 3");
     fix.test("todo new c --priority 2")
         .validate()
-        .printed_exact_task(
+        .printed_task(
             &PrintableTask::new("c", 2, Incomplete)
                 .action(New)
                 .priority(2),

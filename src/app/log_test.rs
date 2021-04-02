@@ -20,7 +20,7 @@ fn log_after_single_task_completed() {
     fix.test("todo check 2");
     fix.test("todo log")
         .validate()
-        .printed_exact_task(
+        .printed_task(
             &PrintableTask::new("b", 0, Complete)
                 .log_date(YearMonthDay(2021, 03, 26)),
         )
@@ -35,11 +35,11 @@ fn log_after_multiple_tasks_completed() {
     fix.test("todo check 1 3");
     fix.test("todo log")
         .validate()
-        .printed_exact_task(
+        .printed_task(
             &PrintableTask::new("c", 0, Complete)
                 .log_date(YearMonthDay(2021, 03, 26)),
         )
-        .printed_exact_task(
+        .printed_task(
             &PrintableTask::new("a", -1, Complete)
                 // Don't repeat the log date if it's the same.
                 .log_date(Invisible),
@@ -63,18 +63,18 @@ fn log_shows_date_when_it_changes() {
     fix.test("todo check c d");
     fix.test("todo log")
         .validate()
-        .printed_exact_task(
+        .printed_task(
             &PrintableTask::new("d", 0, Complete)
                 .log_date(YearMonthDay(2021, 01, 02)),
         )
-        .printed_exact_task(
+        .printed_task(
             &PrintableTask::new("c", -1, Complete).log_date(Invisible),
         )
-        .printed_exact_task(
+        .printed_task(
             &PrintableTask::new("b", -2, Complete)
                 .log_date(YearMonthDay(2021, 01, 01)),
         )
-        .printed_exact_task(
+        .printed_task(
             &PrintableTask::new("a", -3, Complete).log_date(Invisible),
         )
         .end();
