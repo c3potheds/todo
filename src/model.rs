@@ -36,6 +36,7 @@ pub struct Task {
 pub struct NewOptions {
     pub desc: String,
     pub now: DateTime<Utc>,
+    pub priority: Option<i32>,
 }
 
 impl<S: Into<String>> From<S> for NewOptions {
@@ -43,6 +44,7 @@ impl<S: Into<String>> From<S> for NewOptions {
         Self {
             desc: desc.into(),
             now: Utc::now(),
+            priority: None,
         }
     }
 }
@@ -54,7 +56,7 @@ impl Task {
             desc: options.desc,
             creation_time: Some(options.now),
             completion_time: None,
-            priority: None,
+            priority: options.priority,
         }
     }
 }

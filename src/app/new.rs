@@ -46,6 +46,7 @@ pub fn run(
         .iter_sorted(model)
         .collect::<Vec<_>>();
     let now = clock.now();
+    let priority = cmd.priority;
     let new_tasks: Vec<_> = cmd
         .desc
         .into_iter()
@@ -53,6 +54,7 @@ pub fn run(
             model.add(Task::new(NewOptions {
                 desc: desc,
                 now: now,
+                priority: priority,
             }))
         })
         .collect();

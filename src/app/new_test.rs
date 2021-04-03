@@ -250,7 +250,6 @@ fn print_warning_on_cycle() {
 }
 
 #[test]
-#[ignore = "app.new.priority"]
 fn new_with_priority() {
     let mut fix = Fixture::new();
     fix.test("todo new a --priority 1")
@@ -264,7 +263,6 @@ fn new_with_priority() {
 }
 
 #[test]
-#[ignore = "app.new.priority"]
 fn new_task_with_priority_inserted_before_unprioritized_tasks() {
     let mut fix = Fixture::new();
     fix.test("todo new a b");
@@ -279,7 +277,6 @@ fn new_task_with_priority_inserted_before_unprioritized_tasks() {
 }
 
 #[test]
-#[ignore = "app.new.priority"]
 fn new_task_with_negative_priority_inserted_after_unprioritized_tasks() {
     let mut fix = Fixture::new();
     fix.test("todo new a b");
@@ -294,7 +291,6 @@ fn new_task_with_negative_priority_inserted_after_unprioritized_tasks() {
 }
 
 #[test]
-#[ignore = "app.new.priority"]
 fn new_task_with_priority_inserted_in_sorted_order() {
     let mut fix = Fixture::new();
     fix.test("todo new a --priority 1");

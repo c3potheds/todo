@@ -20,6 +20,7 @@ fn inject_creation_time() {
     let task = Task::new(NewOptions {
         desc: "a".to_string(),
         now: now,
+        priority: None,
     });
     assert_eq!(task.creation_time, Some(now));
 }
