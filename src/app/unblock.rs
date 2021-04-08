@@ -6,6 +6,7 @@ use model::TaskId;
 use model::TaskSet;
 use model::TodoList;
 use printing::Action;
+use printing::PrintableError;
 use printing::PrintableWarning;
 use printing::TodoPrinter;
 
@@ -73,6 +74,12 @@ pub fn run(
 ) {
     let tasks_to_unblock = lookup_tasks(&model, &cmd.keys);
     let tasks_to_unblock_from = lookup_tasks(&model, &cmd.from);
+    if !cmd.from.is_empty() && tasks_to_unblock_from.is_empty() {
+        printer.print_error(&PrintableError::NoMatchForKeys {
+            keys: cmd.from.clone(),
+        });
+        return;
+    }
     let tasks_to_print = if tasks_to_unblock_from.is_empty() {
         unblock_from_all(model, &tasks_to_unblock)
     } else {

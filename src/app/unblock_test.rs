@@ -1,6 +1,8 @@
 use app::testing::Fixture;
+use cli::Key;
 use model::TaskStatus::*;
 use printing::Action::*;
+use printing::PrintableError;
 use printing::PrintableTask;
 use printing::PrintableWarning;
 
@@ -75,5 +77,17 @@ fn unblock_from_all2() {
     fix.test("todo unblock c")
         .validate()
         .printed_task(&PrintableTask::new("c", 2, Incomplete).action(Unlock))
+        .end();
+}
+
+#[test]
+fn unblock_from_matchless_key_is_error() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain");
+    fix.test("todo unblock b --from c")
+        .validate()
+        .printed_error(&PrintableError::NoMatchForKeys {
+            keys: vec![Key::ByName("c".to_string())],
+        })
         .end();
 }

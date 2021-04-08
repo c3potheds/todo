@@ -159,6 +159,9 @@ pub enum PrintableError {
         key: Key,
         matches: Vec<i32>,
     },
+    NoMatchForKeys {
+        keys: Vec<Key>,
+    },
 }
 
 const ANSI_OFFSET: usize = 10;
@@ -354,7 +357,7 @@ impl Display for PrintableError {
                 } => format!("Could not parse line: \"{}\"", malformed_line),
                 PrintableError::FailedToUseTextEditor => {
                     format!("Failed to open text editor")
-                },
+                }
                 PrintableError::AmbiguousKey{ key, matches } => {
                     format!("Ambiguous key {} matches multiple tasks: {}",
                         format_key(key),
@@ -363,7 +366,16 @@ impl Display for PrintableError {
                             TaskStatus::Incomplete
                         )
                     )
-                },
+                }
+                PrintableError::NoMatchForKeys{ keys } => {
+                    format!(
+                        "No match for keys {}",
+                        keys.iter()
+                            .map(|key| format_key(key))
+                            .collect::<Vec<_>>()
+                            .join(", "),
+                    )
+                }
             }
         )
     }
