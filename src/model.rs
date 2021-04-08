@@ -32,12 +32,14 @@ pub struct Task {
     pub completion_time: Option<DateTime<Utc>>,
     pub priority: Option<i32>,
     pub implicit_priority: Option<i32>,
+    pub due_date: Option<DateTime<Utc>>,
 }
 
 pub struct NewOptions {
     pub desc: String,
     pub now: DateTime<Utc>,
     pub priority: Option<i32>,
+    pub due_date: Option<DateTime<Utc>>,
 }
 
 impl<S: Into<String>> From<S> for NewOptions {
@@ -46,6 +48,7 @@ impl<S: Into<String>> From<S> for NewOptions {
             desc: desc.into(),
             now: Utc::now(),
             priority: None,
+            due_date: None,
         }
     }
 }
@@ -59,6 +62,7 @@ impl Task {
             completion_time: None,
             priority: options.priority,
             implicit_priority: options.priority.or_else(|| Some(0)),
+            due_date: options.due_date,
         }
     }
 }

@@ -55,6 +55,7 @@ pub fn run(
                 desc: desc,
                 now: now,
                 priority: priority,
+                due_date: None,
             }))
         })
         .collect();

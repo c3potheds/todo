@@ -21,6 +21,7 @@ fn inject_creation_time() {
         desc: "a".to_string(),
         now: now,
         priority: None,
+        due_date: None,
     });
     assert_eq!(task.creation_time, Some(now));
 }
@@ -1225,6 +1226,7 @@ fn implicit_priority_of_task_with_explicit_priority() {
         desc: "a".to_string(),
         now: chrono::Utc::now(),
         priority: Some(1),
+        due_date: None,
     }));
     assert_eq!(list.get(a).unwrap().implicit_priority, Some(1));
 }
@@ -1237,6 +1239,7 @@ fn implicit_priority_of_task_with_prioritized_adep() {
         desc: "b".to_string(),
         now: chrono::Utc::now(),
         priority: Some(1),
+        due_date: None,
     }));
     assert_eq!(list.get(a).unwrap().implicit_priority, Some(0));
     list.block(b).on(a).unwrap();
@@ -1376,4 +1379,33 @@ fn set_priority_shows_affected_deps() {
     );
     // a and c have a higher implicit priority than b, so should appear first.
     assert_eq!(list.all_tasks().collect::<Vec<_>>(), vec![a, c, b, d]);
+}
+
+#[test]
+fn get_due_date() {
+    let mut list = TodoList::new();
+    let a = list.add({
+        let mut task = Task::new("a");
+        task.due_date = Some(chrono::Utc.ymd(2021, 04, 08).and_hms(23, 59, 59));
+        task
+    });
+    assert_eq!(
+        list.get(a).unwrap().due_date.unwrap(),
+        chrono::Utc.ymd(2021, 04, 08).and_hms(23, 59, 59)
+    );
+}
+
+#[test]
+fn due_date_from_new_options() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new(NewOptions {
+        desc: "a".to_string(),
+        now: chrono::Utc::now(),
+        priority: None,
+        due_date: Some(chrono::Utc.ymd(2021, 04, 09).and_hms(12, 00, 00)),
+    }));
+    assert_eq!(
+        list.get(a).unwrap().due_date.unwrap(),
+        chrono::Utc.ymd(2021, 04, 09).and_hms(12, 00, 00)
+    );
 }
