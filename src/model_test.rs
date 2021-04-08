@@ -1048,9 +1048,11 @@ fn sorted_by_priority_two_tasks() {
     let mut list = TodoList::new();
     let mut task = Task::new("a");
     task.priority = Some(1);
+    task.implicit_priority = Some(1);
     let a = list.add(task);
     let mut task = Task::new("b");
     task.priority = Some(2);
+    task.implicit_priority = Some(2);
     let b = list.add(task);
     itertools::assert_equal(list.all_tasks(), vec![b, a]);
 }
@@ -1061,16 +1063,19 @@ fn sorted_by_priority_three_tasks() {
     let a = {
         let mut task = Task::new("a");
         task.priority = Some(1);
+        task.implicit_priority = Some(1);
         list.add(task)
     };
     let b = {
         let mut task = Task::new("b");
         task.priority = Some(2);
+        task.implicit_priority = Some(2);
         list.add(task)
     };
     let c = {
         let mut task = Task::new("c");
         task.priority = Some(3);
+        task.implicit_priority = Some(3);
         list.add(task)
     };
     itertools::assert_equal(list.all_tasks(), vec![c, b, a]);
@@ -1083,6 +1088,7 @@ fn priority_tasks_before_no_priority_tasks() {
     let b = {
         let mut task = Task::new("b");
         task.priority = Some(1);
+        task.implicit_priority = Some(1);
         list.add(task)
     };
     let c = list.add(Task::new("c"));
@@ -1096,6 +1102,7 @@ fn tasks_with_negative_priority_appear_last() {
     let b = {
         let mut task = Task::new("b");
         task.priority = Some(-1);
+        task.implicit_priority = Some(-1);
         list.add(task)
     };
     let c = list.add(Task::new("c"));
@@ -1108,12 +1115,14 @@ fn sort_by_implicit_priority() {
     let a = list.add({
         let mut task = Task::new("a");
         task.priority = Some(1);
+        task.implicit_priority = Some(1);
         task
     });
     let b = list.add(Task::new("b"));
     let c = list.add({
         let mut task = Task::new("c");
         task.priority = Some(2);
+        task.implicit_priority = Some(2);
         task
     });
     list.block(c).on(b).unwrap();
@@ -1123,17 +1132,37 @@ fn sort_by_implicit_priority() {
 }
 
 #[test]
+fn transitive_deps_sorted_by_priority() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    let d = list.add({
+        let mut task = Task::new("d");
+        task.priority = Some(1);
+        task.implicit_priority = Some(1);
+        task
+    });
+    list.block(c).on(b).unwrap();
+    list.block(d).on(c).unwrap();
+    assert_eq!(list.position(b), Some(1));
+    itertools::assert_equal(list.all_tasks(), vec![b, a, c, d]);
+}
+
+#[test]
 fn implicit_priority_resets_if_adep_with_priority_is_unblocked() {
     let mut list = TodoList::new();
     let a = list.add({
         let mut task = Task::new("a");
         task.priority = Some(1);
+        task.implicit_priority = Some(1);
         task
     });
     let b = list.add(Task::new("b"));
     let c = list.add({
         let mut task = Task::new("c");
         task.priority = Some(2);
+        task.implicit_priority = Some(2);
         task
     });
     list.block(c).on(b).unwrap();
@@ -1142,7 +1171,7 @@ fn implicit_priority_resets_if_adep_with_priority_is_unblocked() {
     // has its own explicit priority. b had c's implicit priority before, but
     // because c was unblocked from b, b no longer has an implicit priority, and
     // so goes last.
-    itertools::assert_equal(list.all_tasks(), vec![c, a, b]);
+    assert_eq!(list.all_tasks().collect::<Vec<_>>(), vec![c, a, b]);
 }
 
 #[test]
@@ -1163,4 +1192,188 @@ fn num_complete_tasks() {
     assert_eq!(list.num_complete_tasks(), 0);
     list.check(a).unwrap();
     assert_eq!(list.num_complete_tasks(), 1);
+}
+
+#[test]
+fn set_desc_existent() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    assert!(list.set_desc(a, "b"));
+    assert_eq!(list.get(a).unwrap().desc, "b");
+}
+
+#[test]
+fn set_desc_nonexistent() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    list.remove(a);
+    assert!(!list.set_desc(a, "b"));
+    assert_eq!(list.get(a), None);
+}
+
+#[test]
+fn implicit_priority_of_unprioritized_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    assert_eq!(list.get(a).unwrap().implicit_priority, Some(0));
+}
+
+#[test]
+fn implicit_priority_of_task_with_explicit_priority() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new(NewOptions {
+        desc: "a".to_string(),
+        now: chrono::Utc::now(),
+        priority: Some(1),
+    }));
+    assert_eq!(list.get(a).unwrap().implicit_priority, Some(1));
+}
+
+#[test]
+fn implicit_priority_of_task_with_prioritized_adep() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new(NewOptions {
+        desc: "b".to_string(),
+        now: chrono::Utc::now(),
+        priority: Some(1),
+    }));
+    assert_eq!(list.get(a).unwrap().implicit_priority, Some(0));
+    list.block(b).on(a).unwrap();
+    assert_eq!(list.get(a).unwrap().implicit_priority, Some(1));
+}
+
+#[test]
+fn set_priority_simple() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    assert_eq!(list.get(a).and_then(|task| task.priority), None);
+    list.set_priority(a, 1);
+    assert_eq!(list.get(a).and_then(|task| task.priority), Some(1));
+}
+
+#[test]
+fn set_priority_updates_deps_position() {
+    let mut list = TodoList::new();
+    list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.block(c).on(b).unwrap();
+    assert_eq!(list.position(b), Some(2));
+    list.set_priority(c, 1);
+    assert_eq!(list.position(b), Some(1));
+    assert_eq!(list.get(b).unwrap().implicit_priority, Some(1));
+}
+
+#[test]
+fn set_priority_updates_transitive_deps_position() {
+    let mut list = TodoList::new();
+    list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    let d = list.add(Task::new("d"));
+    list.block(c).on(b).unwrap();
+    list.block(d).on(c).unwrap();
+    list.set_priority(d, 1);
+    assert_eq!(list.position(b), Some(1));
+    assert_eq!(list.get(b).unwrap().implicit_priority, Some(1));
+}
+
+#[test]
+fn set_priority_does_not_return_unaffected_tasks() {
+    let mut list = TodoList::new();
+    list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let affected = list.set_priority(b, 1);
+    itertools::assert_equal(affected.iter_sorted(&list), vec![b]);
+}
+
+#[test]
+fn set_priority_returns_empty_set_if_priority_is_same() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let affected = list.set_priority(a, 0);
+    itertools::assert_equal(affected.iter_sorted(&list), vec![]);
+}
+
+#[test]
+fn set_priority_returns_affected_tasks() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.block(c).on(a).unwrap();
+    list.block(c).on(b).unwrap();
+    let affected = list.set_priority(c, 1);
+    itertools::assert_equal(affected.iter_sorted(&list), vec![a, b, c]);
+}
+
+#[test]
+fn set_priority_returns_transitively_affected_tasks() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.block(c).on(b).unwrap();
+    list.block(b).on(a).unwrap();
+    let affected = list.set_priority(c, 1);
+    itertools::assert_equal(affected.iter_sorted(&list), vec![a, b, c]);
+}
+
+#[test]
+fn set_priority_returns_empty_set_if_task_is_removed() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    list.remove(a);
+    let affected = list.set_priority(a, 1);
+    itertools::assert_equal(affected.iter_sorted(&list), vec![]);
+}
+
+#[test]
+fn set_priority_includes_complete_deps() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    list.block(b).on(a).unwrap();
+    list.check(a).unwrap();
+    let affected = list.set_priority(b, 1);
+    itertools::assert_equal(affected.iter_sorted(&list), vec![a, b]);
+}
+
+#[test]
+fn set_priority_shows_affected_deps_without_b() {
+    let mut list = TodoList::new();
+    let b = list.add(Task::new("b"));
+    let e = list.add(Task::new("e"));
+    let a = list.add(Task::new("a"));
+    let c = list.add(Task::new("c"));
+    let d = list.add(Task::new("d"));
+    list.block(d).on(a).unwrap();
+    list.block(d).on(c).unwrap();
+    assert_eq!(list.all_tasks().collect::<Vec<_>>(), vec![b, e, a, c, d]);
+    let affected = list.set_priority(d, 1);
+    assert_eq!(
+        affected.iter_sorted(&list).collect::<Vec<_>>(),
+        vec![a, c, d]
+    );
+    assert_eq!(list.all_tasks().collect::<Vec<_>>(), vec![a, c, b, e, d]);
+}
+
+#[test]
+fn set_priority_shows_affected_deps() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    let d = list.add(Task::new("d"));
+    list.block(d).on(a).unwrap();
+    list.block(d).on(c).unwrap();
+    assert_eq!(list.all_tasks().collect::<Vec<_>>(), vec![a, b, c, d]);
+    let affected = list.set_priority(d, 1);
+    assert_eq!(
+        affected.iter_sorted(&list).collect::<Vec<_>>(),
+        vec![a, c, d]
+    );
+    // a and c have a higher implicit priority than b, so should appear first.
+    assert_eq!(list.all_tasks().collect::<Vec<_>>(), vec![a, c, b, d]);
 }

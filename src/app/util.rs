@@ -5,16 +5,15 @@ use model::TodoList;
 use printing::PrintableTask;
 
 pub fn format_task<'a>(model: &'a TodoList, id: TaskId) -> PrintableTask<'a> {
-    let number = model.position(id).unwrap();
-    let result = PrintableTask::new(
-        &model.get(id).unwrap().desc,
-        number,
-        model.status(id).unwrap(),
-    );
-    match model.get(id).unwrap().priority {
-        Some(0) => result,
-        Some(p) => result.priority(p),
-        None => result,
+    match (model.get(id), model.position(id), model.status(id)) {
+        (Some(task), Some(pos), Some(status)) => {
+            let result = PrintableTask::new(&task.desc, pos, status);
+            match task.implicit_priority {
+                None | Some(0) => result,
+                Some(p) => result.priority(p),
+            }
+        }
+        _ => panic!("Failed to get task info for id {:?}", id),
     }
 }
 

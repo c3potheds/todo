@@ -30,12 +30,7 @@ fn edit_with_description(
 ) {
     ids.iter()
         .copied()
-        .flat_map(|id| {
-            model
-                .get_mut(id)
-                .map(|mut task| task.desc = desc.to_string())
-                .map(|_| id)
-        })
+        .filter(|&id| model.set_desc(id, desc))
         .collect::<TaskSet>()
         .iter_sorted(model)
         .for_each(|id| printer.print_task(&format_task(model, id)));
@@ -90,12 +85,7 @@ fn update_desc(
             None
         }
     }
-    .and_then(|id| {
-        model.get_mut(id).map(|mut task| {
-            task.desc = desc.to_string();
-            id
-        })
-    })
+    .filter(|&id| model.set_desc(id, desc))
 }
 
 fn edit_with_text_editor(

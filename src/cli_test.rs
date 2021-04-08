@@ -827,3 +827,29 @@ fn top_include_done_short() {
         })
     );
 }
+
+#[test]
+fn priority_assign_to_one_task() {
+    let options = parse(&["todo", "priority", "1", "--is", "2"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Priority(Priority {
+            keys: vec![Key::ByNumber(1)],
+            priority: 2,
+        })
+    );
+}
+
+#[test]
+fn priority_assign_to_three_tasks() {
+    let options = parse(&["todo", "priority", "1", "2", "3", "--is", "-1"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Priority(Priority {
+            keys: vec![Key::ByNumber(1), Key::ByNumber(2), Key::ByNumber(3)],
+            priority: -1,
+        })
+    );
+}

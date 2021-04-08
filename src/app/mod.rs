@@ -7,6 +7,7 @@ mod get;
 mod log;
 mod new;
 mod path;
+mod priority;
 mod punt;
 mod put;
 mod restore;
@@ -45,6 +46,9 @@ mod new_test;
 
 #[cfg(test)]
 mod path_test;
+
+#[cfg(test)]
+mod priority_test;
 
 #[cfg(test)]
 mod punt_test;

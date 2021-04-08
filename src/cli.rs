@@ -165,6 +165,16 @@ pub struct Path {
 
 #[derive(Debug, PartialEq, StructOpt)]
 #[structopt(setting = structopt::clap::AppSettings::AllowNegativeNumbers)]
+pub struct Priority {
+    /// Tasks to assign a priority to.
+    pub keys: Vec<Key>,
+    /// The priority level for the tasks.
+    #[structopt(long = "is", short = "P")]
+    pub priority: i32,
+}
+
+#[derive(Debug, PartialEq, StructOpt)]
+#[structopt(setting = structopt::clap::AppSettings::AllowNegativeNumbers)]
 pub struct Punt {
     /// Tasks to punt.
     pub keys: Vec<Key>,
@@ -361,6 +371,27 @@ pub enum SubCommand {
     /// of the second printed in between, in order.
     #[structopt(verbatim_doc_comment)]
     Path(Path),
+
+    /// Assign priority levels to given tasks.
+    ///
+    /// The ordering of tasks is determined first by the dependency structure.
+    /// The "depth" of a task is how many dependency edges one needs to travel
+    /// to reach a task with no incomplete dependencies. (By this definition,
+    /// unblocked tasks have a depth of 0.) Tasks with the same "depth" are then
+    /// sorted by priority, with higher-priority tasks appearing before lower-
+    /// priority tasks. Tasks by default have a priority of 0. Tasks may have
+    /// negative priorities, in which case they'll appear after the default-
+    /// priority tasks.
+    ///
+    /// All dependent tasks will inherit an implicit priority, which overrides
+    /// the explicit priority if it's greater. For example, if task "a" blocks
+    /// task "b", and "b" has a higher priority, then "a" will be treated as if
+    /// it has "b"'s priority. If the dependency relationship is broken, e.g.
+    /// through the 'unblock' or 'rm' command, then "a"'s canonical priority
+    /// will again be its own explicit priority (unless, of course, "a" has any
+    /// other transitive antidependencies with a higher priority).
+    #[structopt(verbatim_doc_comment)]
+    Priority(Priority),
 
     /// Punts tasks to the end of the list.
     ///

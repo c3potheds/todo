@@ -31,6 +31,7 @@ pub struct Task {
     pub creation_time: Option<DateTime<Utc>>,
     pub completion_time: Option<DateTime<Utc>>,
     pub priority: Option<i32>,
+    pub implicit_priority: Option<i32>,
 }
 
 pub struct NewOptions {
@@ -57,6 +58,7 @@ impl Task {
             creation_time: Some(options.now),
             completion_time: None,
             priority: options.priority,
+            implicit_priority: options.priority.or_else(|| Some(0)),
         }
     }
 }
@@ -110,10 +112,9 @@ where
         })
     }
 
-    pub fn put_in_layer(&mut self, data: T, layer: usize, pos: usize) -> bool {
+    pub fn put_in_layer(&mut self, data: T, layer: usize, pos: usize) {
         self.layer(layer).insert(pos, data);
         self.depth.insert(data, layer);
-        true
     }
 
     pub fn remove_from_layer(&mut self, data: &T, layer: usize) -> bool {
@@ -248,24 +249,29 @@ impl std::ops::BitAnd for TaskSet {
 }
 
 impl TodoList {
-    fn implicit_priority(&self, id: TaskId) -> i32 {
+    fn calculate_implicit_priority(&self, id: TaskId) -> i32 {
         self.get(id)
             .into_iter()
-            .flat_map(|task| task.priority)
-            .chain(
-                self.adeps(id)
-                    .into_iter_unsorted()
-                    .map(|adep| self.implicit_priority(adep)),
-            )
+            .map(|task| task.priority.unwrap_or(0))
+            .chain(self.adeps(id).into_iter_unsorted().flat_map(|adep| {
+                self.get(adep)
+                    .map(|task| task.implicit_priority.unwrap_or(0))
+                    .into_iter()
+            }))
             .max()
             .unwrap_or(0)
     }
 
-    fn put_in_incomplete_layer(&mut self, id: TaskId, depth: usize) -> bool {
+    fn put_in_incomplete_layer(&mut self, id: TaskId, depth: usize) -> usize {
         let pos = self.incomplete.bisect_layer(&id, depth, |&a, &b| {
-            self.implicit_priority(a).cmp(&self.implicit_priority(b))
+            self.get(a)
+                .unwrap()
+                .implicit_priority
+                .unwrap_or(0)
+                .cmp(&self.get(b).unwrap().implicit_priority.unwrap_or(0))
         });
-        self.incomplete.put_in_layer(id, depth, pos)
+        self.incomplete.put_in_layer(id, depth, pos);
+        pos
     }
 
     fn max_depth_of_deps(&self, id: TaskId) -> Option<usize> {
@@ -322,6 +328,29 @@ impl TodoList {
             });
             new_depth
         })
+    }
+
+    // Returns a TaskSet of affected tasks.
+    fn update_priority(&mut self, id: TaskId) -> TaskSet {
+        match self.get(id).map(|task| task.implicit_priority.unwrap_or(0)) {
+            Some(old_priority) => {
+                let new_priority = self.calculate_implicit_priority(id);
+                if old_priority == new_priority {
+                    return TaskSet::new();
+                }
+                self.tasks.node_weight_mut(id.0).unwrap().implicit_priority =
+                    Some(new_priority);
+                self.punt(id).unwrap_or_default();
+                self.deps(id)
+                    .iter_sorted(self)
+                    .flat_map(|dep| {
+                        self.update_priority(dep).into_iter_unsorted()
+                    })
+                    .chain(std::iter::once(id))
+                    .collect()
+            }
+            None => TaskSet::new(),
+        }
     }
 
     pub fn deps(&self, id: TaskId) -> TaskSet {
@@ -595,15 +624,11 @@ impl<'a> Block<'a> {
         if blocking == self.blocked {
             return Err(BlockError::WouldBlockOnSelf);
         }
-        let old_priority = self.list.implicit_priority(blocking);
         self.list
             .tasks
             .update_edge(blocking.0, self.blocked.0, ())?;
         self.list.update_depth(self.blocked);
-        let new_priority = self.list.implicit_priority(blocking);
-        if old_priority != new_priority {
-            self.list.punt(blocking).unwrap();
-        }
+        self.list.update_priority(blocking);
         Ok(())
     }
 }
@@ -633,16 +658,12 @@ impl<'a> Unblock<'a> {
         if blocking == self.blocked {
             return Err(UnblockError::WouldUnblockFromSelf);
         }
-        let old_priority = self.list.implicit_priority(blocking);
         match self.list.tasks.find_edge(blocking.0, self.blocked.0) {
             Some(e) => self.list.tasks.remove_edge(e),
             None => return Err(UnblockError::WasNotDirectlyBlocking),
         };
         self.list.update_depth(self.blocked);
-        let new_priority = self.list.implicit_priority(blocking);
-        if old_priority != new_priority {
-            self.list.punt(blocking).unwrap();
-        }
+        self.list.update_priority(blocking);
         Ok(())
     }
 }
@@ -670,8 +691,21 @@ impl TodoList {
         self.tasks.node_weight(id.0)
     }
 
-    pub fn get_mut(&mut self, id: TaskId) -> Option<&mut Task> {
-        self.tasks.node_weight_mut(id.0)
+    pub fn set_desc(&mut self, id: TaskId, desc: &str) -> bool {
+        self.tasks
+            .node_weight_mut(id.0)
+            .map(|task| task.desc = desc.to_string())
+            .is_some()
+    }
+
+    pub fn set_priority(&mut self, id: TaskId, priority: i32) -> TaskSet {
+        match self.tasks.node_weight_mut(id.0) {
+            Some(task) => {
+                task.priority = Some(priority);
+                self.update_priority(id)
+            }
+            None => TaskSet::new(),
+        }
     }
 
     pub fn position(&self, id: TaskId) -> Option<i32> {

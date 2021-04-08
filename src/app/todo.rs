@@ -7,6 +7,7 @@ use app::get;
 use app::log;
 use app::new;
 use app::path;
+use app::priority;
 use app::punt;
 use app::put;
 use app::restore;
@@ -46,6 +47,7 @@ pub fn todo(
         Some(Log) => log::run(list, printer),
         Some(Path(cmd)) => path::run(list, printer, &cmd),
         Some(New(cmd)) => new::run(list, printer, clock, cmd),
+        Some(Priority(cmd)) => priority::run(list, printer, &cmd),
         Some(Punt(cmd)) => punt::run(list, printer, &cmd),
         Some(Put(cmd)) => put::run(list, printer, &cmd),
         Some(Restore(cmd)) => restore::run(list, printer, &cmd),
