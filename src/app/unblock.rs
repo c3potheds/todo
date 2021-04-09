@@ -40,10 +40,10 @@ fn unblock_from_given(
         .cartesian_product(tasks_to_unblock_from.iter().copied())
         .flat_map(|(blocked, blocking)| {
             match model.unblock(blocked).from(blocking) {
-                Ok(()) => vec![blocking, blocked].into_iter(),
+                Ok(affected) => affected.into_iter_unsorted(),
                 Err(_) => {
                     print_unblock_warning(printer, model, blocking, blocked);
-                    vec![].into_iter()
+                    TaskSet::new().into_iter_unsorted()
                 }
             }
         })
@@ -58,10 +58,9 @@ fn unblock_from_all(
         .iter()
         .copied()
         .map(|id| {
-            model
-                .deps(id)
-                .iter_unsorted()
-                .for_each(|dep| model.unblock(id).from(dep).unwrap());
+            model.deps(id).iter_unsorted().for_each(|dep| {
+                model.unblock(id).from(dep).unwrap();
+            });
             id
         })
         .collect()

@@ -461,6 +461,57 @@ fn indirect_blocking_cycle() {
 }
 
 #[test]
+fn block_returns_affected_tasks() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.block(b).on(a).unwrap();
+    let affected = list
+        .block(c)
+        .on(b)
+        .unwrap()
+        .iter_sorted(&list)
+        .collect::<Vec<_>>();
+    assert_eq!(affected, vec![b, c]);
+}
+
+#[test]
+fn block_returns_affected_task_priority_update() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.set_priority(c, 1);
+    list.block(b).on(a).unwrap();
+    let affected = list
+        .block(c)
+        .on(b)
+        .unwrap()
+        .iter_sorted(&list)
+        .collect::<Vec<_>>();
+    assert_eq!(affected, vec![a, b, c]);
+}
+
+#[test]
+fn block_does_not_return_unaffected_task_priority_update() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.set_priority(a, 1);
+    list.set_priority(c, 1);
+    list.block(b).on(a).unwrap();
+    let affected = list
+        .block(c)
+        .on(b)
+        .unwrap()
+        .iter_sorted(&list)
+        .collect::<Vec<_>>();
+    assert_eq!(affected, vec![b, c]);
+}
+
+#[test]
 fn cannot_check_blocked_task() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
@@ -750,6 +801,58 @@ fn partially_unblocked_task_moves_to_lowest_possible_layer() {
     assert_eq!(incomplete_tasks.next(), Some(c));
     assert_eq!(incomplete_tasks.next(), Some(d));
     assert_eq!(incomplete_tasks.next(), None);
+}
+
+#[test]
+fn unblock_returns_affected_tasks() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    list.block(b).on(a).unwrap();
+    let affected = list
+        .unblock(b)
+        .from(a)
+        .unwrap()
+        .iter_sorted(&list)
+        .collect::<Vec<_>>();
+    assert_eq!(affected, vec![a, b]);
+}
+
+#[test]
+fn unblock_returns_affected_tasks_priority_update() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.block(b).on(a).unwrap();
+    list.block(c).on(b).unwrap();
+    list.set_priority(c, 1);
+    let affected = list
+        .unblock(c)
+        .from(b)
+        .unwrap()
+        .iter_sorted(&list)
+        .collect::<Vec<_>>();
+    assert_eq!(affected, vec![c, a, b]);
+}
+
+#[test]
+fn unblock_does_not_return_unaffected_tasks_priority_update() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new("b"));
+    let c = list.add(Task::new("c"));
+    list.block(b).on(a).unwrap();
+    list.block(c).on(b).unwrap();
+    list.set_priority(a, 1);
+    list.set_priority(c, 1);
+    let affected = list
+        .unblock(c)
+        .from(b)
+        .unwrap()
+        .iter_sorted(&list)
+        .collect::<Vec<_>>();
+    assert_eq!(affected, vec![c, b]);
 }
 
 #[test]
@@ -1379,6 +1482,21 @@ fn set_priority_shows_affected_deps() {
     );
     // a and c have a higher implicit priority than b, so should appear first.
     assert_eq!(list.all_tasks().collect::<Vec<_>>(), vec![a, c, b, d]);
+}
+
+#[test]
+fn set_priority_with_no_affected_deps() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    list.set_priority(a, 1);
+    let b = list.add(Task::new("b"));
+    list.block(b).on(a).unwrap();
+    assert_eq!(
+        list.set_priority(b, 1)
+            .iter_sorted(&list)
+            .collect::<Vec<_>>(),
+        vec![b]
+    );
 }
 
 #[test]

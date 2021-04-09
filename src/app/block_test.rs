@@ -88,3 +88,32 @@ fn cannot_block_on_self() {
         })
         .end();
 }
+
+#[test]
+fn block_updates_implicit_priority_of_deps() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain");
+    fix.test("todo new c --priority 1");
+    fix.test("todo block c --on b")
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).priority(1))
+        .printed_task(&PrintableTask::new("b", 2, Blocked).priority(1))
+        .printed_task(
+            &PrintableTask::new("c", 3, Blocked).action(Lock).priority(1),
+        )
+        .end();
+}
+
+#[test]
+fn block_does_not_print_priority_updates_for_unaffected_deps() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain --priority 1");
+    fix.test("todo new c --priority 1");
+    fix.test("todo block c --on b")
+        .validate()
+        .printed_task(&PrintableTask::new("b", 2, Blocked).priority(1))
+        .printed_task(
+            &PrintableTask::new("c", 3, Blocked).action(Lock).priority(1),
+        )
+        .end();
+}

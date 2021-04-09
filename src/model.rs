@@ -189,6 +189,12 @@ impl TaskSet {
         }
     }
 
+    pub fn of(id: TaskId) -> Self {
+        TaskSet {
+            ids: HashSet::from_iter(std::iter::once(id)),
+        }
+    }
+
     /// Iterates the set in an arbitrary order. Careful when using this; it may
     /// cause non-determinism. It is more efficient than iterating in sorted
     /// order.
@@ -624,7 +630,7 @@ impl From<daggy::WouldCycle<()>> for BlockError {
 }
 
 impl<'a> Block<'a> {
-    pub fn on(self, blocking: TaskId) -> Result<(), BlockError> {
+    pub fn on(self, blocking: TaskId) -> Result<TaskSet, BlockError> {
         if blocking == self.blocked {
             return Err(BlockError::WouldBlockOnSelf);
         }
@@ -632,8 +638,9 @@ impl<'a> Block<'a> {
             .tasks
             .update_edge(blocking.0, self.blocked.0, ())?;
         self.list.update_depth(self.blocked);
-        self.list.update_priority(blocking);
-        Ok(())
+        Ok(self.list.update_priority(blocking)
+            | TaskSet::of(self.blocked)
+            | TaskSet::of(blocking))
     }
 }
 
@@ -658,7 +665,7 @@ pub enum UnblockError {
 }
 
 impl<'a> Unblock<'a> {
-    pub fn from(self, blocking: TaskId) -> Result<(), UnblockError> {
+    pub fn from(self, blocking: TaskId) -> Result<TaskSet, UnblockError> {
         if blocking == self.blocked {
             return Err(UnblockError::WouldUnblockFromSelf);
         }
@@ -667,8 +674,9 @@ impl<'a> Unblock<'a> {
             None => return Err(UnblockError::WasNotDirectlyBlocking),
         };
         self.list.update_depth(self.blocked);
-        self.list.update_priority(blocking);
-        Ok(())
+        Ok(self.list.update_priority(blocking)
+            | TaskSet::of(self.blocked)
+            | TaskSet::of(blocking))
     }
 }
 
@@ -786,7 +794,7 @@ impl TodoList {
             .for_each(|(dep, adep)| {
                 // It should not be possible to cause a cycle when blocking an
                 // adep on a dep because there would already be a cycle if so.
-                self.block(adep).on(dep).unwrap()
+                self.block(adep).on(dep).unwrap();
             });
         self.tasks.remove_node(id.0);
         adeps.iter_sorted(self).for_each(|adep| {

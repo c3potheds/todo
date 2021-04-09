@@ -80,7 +80,7 @@ pub fn run(
         pairwise(new_tasks.iter().copied()).for_each(|(a, b)| {
             model.block(b).on(a).expect(
                 "This should never happen because all blocking tasks are new",
-            )
+            );
         });
     }
     deps.into_iter()

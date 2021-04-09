@@ -91,3 +91,40 @@ fn unblock_from_matchless_key_is_error() {
         })
         .end();
 }
+
+#[test]
+fn unblock_updates_priority() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain --priority 1");
+    fix.test("Todo new c --priority 2");
+    fix.test("todo block c --on b");
+    fix.test("todo unblock c --from b")
+        .validate()
+        // c is printed first, because its priority is higher.
+        .printed_task(
+            &PrintableTask::new("c", 1, Incomplete)
+                .action(Unlock)
+                .priority(2),
+        )
+        // a and b have their priorities reset to 1.
+        .printed_task(&PrintableTask::new("a", 2, Incomplete).priority(1))
+        .printed_task(&PrintableTask::new("b", 3, Blocked).priority(1))
+        .end();
+}
+
+#[test]
+fn unblock_does_not_show_unaffected_priority() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain --priority 1");
+    fix.test("Todo new c --priority 1");
+    fix.test("todo block c --on b");
+    fix.test("todo unblock c --from b")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("c", 2, Incomplete)
+                .action(Unlock)
+                .priority(1),
+        )
+        .printed_task(&PrintableTask::new("b", 3, Blocked).priority(1))
+        .end();
+}

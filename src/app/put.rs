@@ -72,7 +72,7 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Put) {
         .into_iter()
         .flat_map(|(blocked, blocking)| {
             match model.block(blocked).on(blocking) {
-                Ok(()) => {
+                Ok(_) => {
                     blocked_tasks.insert(blocked);
                     vec![blocked, blocking].into_iter()
                 }
