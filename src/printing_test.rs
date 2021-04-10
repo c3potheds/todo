@@ -188,7 +188,7 @@ fn show_priority_on_task() {
     );
     assert_eq!(
         fmt,
-        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;47;34mP1\u{1b}[0m a\n"
+        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;35mP1\u{1b}[0m a\n"
     );
 }
 

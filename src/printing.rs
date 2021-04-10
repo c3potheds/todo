@@ -233,14 +233,22 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
                 width = self.context.max_index_digits + ANSI_OFFSET
             )
         };
-        if let Some(priority) = &self.task.priority {
-            start.push_str(
-                &Color::Blue
-                    .on(Color::White)
-                    .bold()
-                    .paint(format!("P{}", priority))
-                    .to_string(),
-            );
+        if let Some(priority) = self.task.priority {
+            let color = match priority.abs() {
+                6..=i32::MAX => Color::Red,
+                5 => Color::Yellow,
+                4 => Color::Green,
+                3 => Color::Cyan,
+                2 => Color::Blue,
+                1 => Color::Purple,
+                _ => Color::Black,
+            };
+            let style = if priority >= 0 {
+                color.bold()
+            } else {
+                color.bold().dimmed()
+            };
+            start.push_str(&style.paint(format!("P{}", priority)).to_string());
             start.push_str(" ");
         }
         write!(
