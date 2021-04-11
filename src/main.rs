@@ -1,10 +1,8 @@
-extern crate app_dirs;
+extern crate directories;
 extern crate structopt;
 extern crate term_size;
 extern crate todo;
 
-use app_dirs::AppDataType;
-use app_dirs::AppInfo;
 use std::fs::File;
 use std::io::BufWriter;
 use structopt::StructOpt;
@@ -23,7 +21,7 @@ use todo::text_editing::ScrawlTextEditor;
 
 #[derive(Debug)]
 enum TodoError {
-    NoDataDirectoryError(app_dirs::AppDirsError),
+    NoDataDirectoryError,
     IoError(std::io::Error),
     CommandLineParsingError(structopt::clap::Error),
     LoadError(LoadError),
@@ -39,12 +37,6 @@ impl From<std::io::Error> for TodoError {
 impl From<structopt::clap::Error> for TodoError {
     fn from(src: structopt::clap::Error) -> Self {
         Self::CommandLineParsingError(src)
-    }
-}
-
-impl From<app_dirs::AppDirsError> for TodoError {
-    fn from(src: app_dirs::AppDirsError) -> Self {
-        Self::NoDataDirectoryError(src)
     }
 }
 
@@ -76,12 +68,13 @@ fn log10(n: usize) -> usize {
 
 fn main() -> TodoResult {
     let options = Options::from_args();
-    let app_info = AppInfo {
-        name: "todo",
-        author: "Simeon Anfinrud",
+    let project_dirs = match directories::ProjectDirs::from("", "", "todo") {
+        Some(project_dirs) => project_dirs,
+        None => return Err(TodoError::NoDataDirectoryError),
     };
-    let mut path = app_dirs::app_root(AppDataType::UserData, &app_info)?;
+    let mut path = project_dirs.data_dir().to_path_buf();
     path.push("data.json");
+
     let mut model = File::open(&path)
         .map_or_else(|_| Ok(TodoList::new()), |file| load(file))?;
     let (term_width, term_height) =
