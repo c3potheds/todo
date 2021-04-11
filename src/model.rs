@@ -289,7 +289,7 @@ impl TodoList {
                     None => self.calculate_implicit_due_date(adep).into_iter(),
                 }
             }))
-            .max()
+            .min()
     }
 
     fn put_in_incomplete_layer(&mut self, id: TaskId, depth: usize) -> usize {
@@ -445,6 +445,13 @@ impl TodoList {
 
     pub fn implicit_priority(&self, id: TaskId) -> Option<i32> {
         self.implicits.get(&id).map(|implicits| implicits.priority)
+    }
+
+    pub fn implicit_due_date(
+        &self,
+        id: TaskId,
+    ) -> Option<Option<DateTime<Utc>>> {
+        self.implicits.get(&id).map(|implicits| implicits.due_date)
     }
 }
 
@@ -853,6 +860,7 @@ impl TodoList {
                 self.block(adep).on(dep).unwrap();
             });
         self.tasks.remove_node(id.0);
+        self.implicits.remove(&id);
         adeps.iter_sorted(self).for_each(|adep| {
             self.update_depth(adep);
         });

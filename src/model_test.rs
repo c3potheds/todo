@@ -1624,3 +1624,80 @@ fn sort_by_priority_then_due_date() {
     }));
     assert_eq!(list.all_tasks().collect::<Vec<_>>(), vec![c, a, b]);
 }
+
+#[test]
+fn implicit_due_date_of_task_with_no_adeps_or_due_date() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    assert_eq!(list.implicit_due_date(a), Some(None));
+}
+
+#[test]
+fn implicit_due_date_of_nonexistent_task() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    list.remove(a);
+    assert_eq!(list.implicit_due_date(a), None);
+}
+
+#[test]
+fn implicit_due_date_is_earliest_due_date_of_adeps() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new(NewOptions {
+        desc: "b".to_string(),
+        now: chrono::Utc::now(),
+        priority: None,
+        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(19, 00, 00)),
+    }));
+    let c = list.add(Task::new(NewOptions {
+        desc: "c".to_string(),
+        now: chrono::Utc::now(),
+        priority: None,
+        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(20, 00, 00)),
+    }));
+    let d = list.add(Task::new(NewOptions {
+        desc: "d".to_string(),
+        now: chrono::Utc::now(),
+        priority: None,
+        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(18, 00, 00)),
+    }));
+    list.block(b).on(a).unwrap();
+    list.block(c).on(a).unwrap();
+    list.block(d).on(a).unwrap();
+    assert_eq!(
+        list.implicit_due_date(a),
+        Some(Some(chrono::Utc.ymd(2021, 04, 11).and_hms(18, 00, 00)))
+    );
+}
+
+#[test]
+fn implicit_due_date_is_earliest_due_date_of_transitive_adeps() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new("a"));
+    let b = list.add(Task::new(NewOptions {
+        desc: "b".to_string(),
+        now: chrono::Utc::now(),
+        priority: None,
+        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(19, 00, 00)),
+    }));
+    let c = list.add(Task::new(NewOptions {
+        desc: "c".to_string(),
+        now: chrono::Utc::now(),
+        priority: None,
+        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(20, 00, 00)),
+    }));
+    let d = list.add(Task::new(NewOptions {
+        desc: "d".to_string(),
+        now: chrono::Utc::now(),
+        priority: None,
+        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(18, 00, 00)),
+    }));
+    list.block(b).on(a).unwrap();
+    list.block(c).on(a).unwrap();
+    list.block(d).on(b).unwrap();
+    assert_eq!(
+        list.implicit_due_date(a),
+        Some(Some(chrono::Utc.ymd(2021, 04, 11).and_hms(18, 00, 00)))
+    );
+}
