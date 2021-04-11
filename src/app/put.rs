@@ -68,24 +68,22 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Put) {
         )
         .collect();
     let mut blocked_tasks = HashSet::new();
-    let tasks_to_print = pairs_to_block
+    pairs_to_block
         .into_iter()
         .flat_map(|(blocked, blocking)| {
             match model.block(blocked).on(blocking) {
-                Ok(_) => {
+                Ok(affected) => {
                     blocked_tasks.insert(blocked);
-                    vec![blocked, blocking].into_iter()
+                    affected.into_iter_unsorted()
                 }
                 Err(_) => {
                     print_block_error(printer, model, blocked, blocking);
-                    vec![].into_iter()
+                    TaskSet::new().into_iter_unsorted()
                 }
             }
         })
-        .collect::<HashSet<_>>();
-    model
-        .all_tasks()
-        .filter(|id| tasks_to_print.contains(&id))
+        .collect::<TaskSet>()
+        .iter_sorted(model)
         .for_each(|id| {
             printer.print_task(&format_task(model, id).action(
                 if blocked_tasks.contains(&id) {

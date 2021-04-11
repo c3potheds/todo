@@ -137,3 +137,35 @@ fn put_causing_cycle() {
         .printed_task(&PrintableTask::new("b", 2, Blocked))
         .end();
 }
+
+#[test]
+fn put_before_prints_updated_priority() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b d --chain");
+    fix.test("todo new c --priority 1");
+    fix.test("todo put c --before d")
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).priority(1))
+        .printed_task(&PrintableTask::new("b", 2, Blocked).priority(1))
+        .printed_task(
+            &PrintableTask::new("c", 3, Blocked).priority(1).action(Lock),
+        )
+        .printed_task(&PrintableTask::new("d", 4, Blocked).action(Lock))
+        .end();
+}
+
+#[test]
+fn put_after_prints_updated_priority() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b d --chain");
+    fix.test("todo new c --priority 1");
+    fix.test("todo put c --after b")
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).priority(1))
+        .printed_task(&PrintableTask::new("b", 2, Blocked).priority(1))
+        .printed_task(
+            &PrintableTask::new("c", 3, Blocked).priority(1).action(Lock),
+        )
+        .printed_task(&PrintableTask::new("d", 4, Blocked).action(Lock))
+        .end();
+}
