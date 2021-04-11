@@ -14,6 +14,7 @@ use printing::Action;
 use printing::PrintableError;
 use printing::PrintableWarning;
 use printing::TodoPrinter;
+use std::collections::HashMap;
 
 enum Reason {
     BlockedBy(Vec<TaskId>),
@@ -21,8 +22,7 @@ enum Reason {
 }
 
 struct CheckResult {
-    completed: TaskSet,
-    unblocked: TaskSet,
+    to_print: HashMap<TaskId, Action>,
     cannot_complete: Vec<(TaskId, Reason)>,
 }
 
@@ -32,21 +32,16 @@ fn check_with_fn<Check: FnMut(TaskId) -> CheckResult>(
 ) -> CheckResult {
     tasks_to_check.into_iter().fold(
         CheckResult {
-            completed: TaskSet::new(),
-            unblocked: TaskSet::new(),
+            to_print: HashMap::new(),
             cannot_complete: Vec::new(),
         },
-        |so_far, id| {
+        |mut so_far, id| {
             let step = (check_fn)(id);
-            CheckResult {
-                completed: so_far.completed | step.completed,
-                unblocked: so_far.unblocked | step.unblocked,
-                cannot_complete: so_far
-                    .cannot_complete
-                    .into_iter()
-                    .chain(step.cannot_complete.into_iter())
-                    .collect(),
-            }
+            so_far.to_print.extend(step.to_print.into_iter());
+            so_far
+                .cannot_complete
+                .extend(step.cannot_complete.into_iter());
+            so_far
         },
     )
 }
@@ -62,13 +57,19 @@ fn force_check(
                 completed,
                 unblocked,
             }) => CheckResult {
-                completed: completed,
-                unblocked: unblocked,
+                to_print: unblocked
+                    .into_iter_unsorted()
+                    .map(|id| (id, Action::Unlock))
+                    .chain(
+                        completed
+                            .into_iter_unsorted()
+                            .map(|id| (id, Action::Check)),
+                    )
+                    .collect(),
                 cannot_complete: Vec::new(),
             },
             Err(CheckError::TaskIsAlreadyComplete) => CheckResult {
-                completed: TaskSet::new(),
-                unblocked: TaskSet::new(),
+                to_print: HashMap::new(),
                 cannot_complete: vec![(id, Reason::AlreadyComplete)],
             },
             Err(CheckError::TaskIsBlockedBy(_)) => panic!(
@@ -86,22 +87,52 @@ fn check(
     check_with_fn(tasks_to_check, |id| {
         match model.check(CheckOptions { id: id, now: now }) {
             Ok(unblocked) => CheckResult {
-                completed: std::iter::once(id).collect(),
-                unblocked: unblocked,
+                to_print: {
+                    let mut to_print = HashMap::new();
+                    to_print.insert(id, Action::Check);
+                    to_print.extend(
+                        unblocked
+                            .into_iter_unsorted()
+                            .map(|id| (id, Action::Unlock)),
+                    );
+                    to_print
+                },
                 cannot_complete: Vec::new(),
             },
             Err(CheckError::TaskIsAlreadyComplete) => CheckResult {
-                completed: TaskSet::new(),
-                unblocked: TaskSet::new(),
+                to_print: HashMap::new(),
                 cannot_complete: vec![(id, Reason::AlreadyComplete)],
             },
             Err(CheckError::TaskIsBlockedBy(deps)) => CheckResult {
-                completed: TaskSet::new(),
-                unblocked: TaskSet::new(),
+                to_print: HashMap::new(),
                 cannot_complete: vec![(id, Reason::BlockedBy(deps))],
             },
         }
     })
+}
+
+fn print_cannot_complete_error(
+    model: &TodoList,
+    printer: &mut impl TodoPrinter,
+    id: TaskId,
+    reason: Reason,
+) {
+    match reason {
+        Reason::AlreadyComplete => printer.print_warning(
+            &PrintableWarning::CannotCheckBecauseAlreadyComplete {
+                cannot_check: model.position(id).unwrap(),
+            },
+        ),
+        Reason::BlockedBy(deps) => {
+            printer.print_error(&PrintableError::CannotCheckBecauseBlocked {
+                cannot_check: model.position(id).unwrap(),
+                blocked_by: deps
+                    .into_iter()
+                    .flat_map(|dep| model.position(dep).into_iter())
+                    .collect(),
+            })
+        }
+    }
 }
 
 pub fn run(
@@ -112,34 +143,23 @@ pub fn run(
 ) {
     let tasks_to_check = lookup_tasks(model, &cmd.keys);
     let now = clock.now();
-    let result = if cmd.force {
+    let CheckResult {
+        to_print,
+        cannot_complete,
+    } = if cmd.force {
         force_check(model, now, tasks_to_check)
     } else {
         check(model, now, tasks_to_check)
     };
-    result
-        .cannot_complete
-        .into_iter()
-        .for_each(|(id, reason)| match reason {
-            Reason::AlreadyComplete => printer.print_warning(
-                &PrintableWarning::CannotCheckBecauseAlreadyComplete {
-                    cannot_check: model.position(id).unwrap(),
-                },
-            ),
-            Reason::BlockedBy(deps) => printer.print_error(
-                &PrintableError::CannotCheckBecauseBlocked {
-                    cannot_check: model.position(id).unwrap(),
-                    blocked_by: deps
-                        .into_iter()
-                        .flat_map(|dep| model.position(dep).into_iter())
-                        .collect(),
-                },
-            ),
+    cannot_complete.into_iter().for_each(|(id, reason)| {
+        print_cannot_complete_error(model, printer, id, reason)
+    });
+    to_print
+        .keys()
+        .copied()
+        .collect::<TaskSet>()
+        .iter_sorted(model)
+        .for_each(|id| {
+            printer.print_task(&format_task(model, id).action(to_print[&id]));
         });
-    result.completed.iter_sorted(model).for_each(|id| {
-        printer.print_task(&format_task(model, id).action(Action::Check))
-    });
-    result.unblocked.iter_sorted(model).for_each(|id| {
-        printer.print_task(&format_task(model, id).action(Action::Unlock))
-    });
 }

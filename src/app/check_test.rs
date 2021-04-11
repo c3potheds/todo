@@ -203,3 +203,15 @@ fn force_check_complete_task() {
         })
         .end();
 }
+
+#[test]
+fn check_blocking_chain() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c --chain");
+    fix.test("todo check a b c")
+        .validate()
+        .printed_task(&PrintableTask::new("a", -2, Complete).action(Check))
+        .printed_task(&PrintableTask::new("b", -1, Complete).action(Check))
+        .printed_task(&PrintableTask::new("c", 0, Complete).action(Check))
+        .end();
+}
