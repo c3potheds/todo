@@ -12,6 +12,7 @@ mod punt;
 mod put;
 mod restore;
 mod rm;
+mod split;
 mod status;
 pub mod todo;
 mod top;
@@ -61,6 +62,9 @@ mod restore_test;
 
 #[cfg(test)]
 mod rm_test;
+
+#[cfg(test)]
+mod split_test;
 
 #[cfg(test)]
 mod status_test;

@@ -853,3 +853,60 @@ fn priority_assign_to_three_tasks() {
         })
     );
 }
+
+#[test]
+fn split_one_into_one() {
+    let options = parse(&["todo", "split", "1", "--into", "a"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Split(Split {
+            keys: vec![Key::ByNumber(1)],
+            into: vec!["a".to_string()],
+            chain: false,
+        })
+    );
+}
+
+#[test]
+fn split_one_into_three() {
+    let options = parse(&["todo", "split", "1", "--into", "a", "b", "c"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Split(Split {
+            keys: vec![Key::ByNumber(1)],
+            into: vec!["a".to_string(), "b".to_string(), "c".to_string()],
+            chain: false,
+        })
+    );
+}
+
+#[test]
+fn split_three_into_two() {
+    let options = parse(&["todo", "split", "1", "2", "3", "--into", "a", "b"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Split(Split {
+            keys: vec![Key::ByNumber(1), Key::ByNumber(2), Key::ByNumber(3)],
+            into: vec!["a".to_string(), "b".to_string()],
+            chain: false,
+        })
+    );
+}
+
+#[test]
+fn split_into_chain() {
+    let options =
+        parse(&["todo", "split", "1", "--into", "a", "b", "c", "--chain"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Split(Split {
+            keys: vec![Key::ByNumber(1)],
+            into: vec!["a".to_string(), "b".to_string(), "c".to_string()],
+            chain: true,
+        })
+    );
+}
