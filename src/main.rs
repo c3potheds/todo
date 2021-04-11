@@ -97,6 +97,16 @@ fn main() -> TodoResult {
         context: &printing_context,
     };
     let text_editor = ScrawlTextEditor;
+
+    // Hack.
+    model
+        .all_tasks()
+        .collect::<Vec<_>>()
+        .into_iter()
+        .for_each(|id| {
+            model.update_implicits(id);
+        });
+
     app::todo(
         &mut model,
         &mut printer,

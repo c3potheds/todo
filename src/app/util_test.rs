@@ -31,7 +31,6 @@ fn format_task_with_priority() {
     let a = list.add({
         let mut task = Task::new("a");
         task.priority = Some(1);
-        task.implicit_priority = Some(1);
         task
     });
     let actual = format_task(&list, a);

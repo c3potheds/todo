@@ -1152,11 +1152,9 @@ fn sorted_by_priority_two_tasks() {
     let mut list = TodoList::new();
     let mut task = Task::new("a");
     task.priority = Some(1);
-    task.implicit_priority = Some(1);
     let a = list.add(task);
     let mut task = Task::new("b");
     task.priority = Some(2);
-    task.implicit_priority = Some(2);
     let b = list.add(task);
     itertools::assert_equal(list.all_tasks(), vec![b, a]);
 }
@@ -1167,19 +1165,16 @@ fn sorted_by_priority_three_tasks() {
     let a = {
         let mut task = Task::new("a");
         task.priority = Some(1);
-        task.implicit_priority = Some(1);
         list.add(task)
     };
     let b = {
         let mut task = Task::new("b");
         task.priority = Some(2);
-        task.implicit_priority = Some(2);
         list.add(task)
     };
     let c = {
         let mut task = Task::new("c");
         task.priority = Some(3);
-        task.implicit_priority = Some(3);
         list.add(task)
     };
     itertools::assert_equal(list.all_tasks(), vec![c, b, a]);
@@ -1192,7 +1187,6 @@ fn priority_tasks_before_no_priority_tasks() {
     let b = {
         let mut task = Task::new("b");
         task.priority = Some(1);
-        task.implicit_priority = Some(1);
         list.add(task)
     };
     let c = list.add(Task::new("c"));
@@ -1206,7 +1200,6 @@ fn tasks_with_negative_priority_appear_last() {
     let b = {
         let mut task = Task::new("b");
         task.priority = Some(-1);
-        task.implicit_priority = Some(-1);
         list.add(task)
     };
     let c = list.add(Task::new("c"));
@@ -1219,14 +1212,12 @@ fn sort_by_implicit_priority() {
     let a = list.add({
         let mut task = Task::new("a");
         task.priority = Some(1);
-        task.implicit_priority = Some(1);
         task
     });
     let b = list.add(Task::new("b"));
     let c = list.add({
         let mut task = Task::new("c");
         task.priority = Some(2);
-        task.implicit_priority = Some(2);
         task
     });
     list.block(c).on(b).unwrap();
@@ -1244,7 +1235,6 @@ fn transitive_deps_sorted_by_priority() {
     let d = list.add({
         let mut task = Task::new("d");
         task.priority = Some(1);
-        task.implicit_priority = Some(1);
         task
     });
     list.block(c).on(b).unwrap();
@@ -1259,14 +1249,12 @@ fn implicit_priority_resets_if_adep_with_priority_is_unblocked() {
     let a = list.add({
         let mut task = Task::new("a");
         task.priority = Some(1);
-        task.implicit_priority = Some(1);
         task
     });
     let b = list.add(Task::new("b"));
     let c = list.add({
         let mut task = Task::new("c");
         task.priority = Some(2);
-        task.implicit_priority = Some(2);
         task
     });
     list.block(c).on(b).unwrap();
@@ -1319,7 +1307,7 @@ fn set_desc_nonexistent() {
 fn implicit_priority_of_unprioritized_task() {
     let mut list = TodoList::new();
     let a = list.add(Task::new("a"));
-    assert_eq!(list.get(a).unwrap().implicit_priority, Some(0));
+    assert_eq!(list.implicit_priority(a), Some(0));
 }
 
 #[test]
@@ -1331,7 +1319,7 @@ fn implicit_priority_of_task_with_explicit_priority() {
         priority: Some(1),
         due_date: None,
     }));
-    assert_eq!(list.get(a).unwrap().implicit_priority, Some(1));
+    assert_eq!(list.implicit_priority(a), Some(1));
 }
 
 #[test]
@@ -1344,9 +1332,9 @@ fn implicit_priority_of_task_with_prioritized_adep() {
         priority: Some(1),
         due_date: None,
     }));
-    assert_eq!(list.get(a).unwrap().implicit_priority, Some(0));
+    assert_eq!(list.implicit_priority(a), Some(0));
     list.block(b).on(a).unwrap();
-    assert_eq!(list.get(a).unwrap().implicit_priority, Some(1));
+    assert_eq!(list.implicit_priority(a), Some(1));
 }
 
 #[test]
@@ -1368,7 +1356,7 @@ fn set_priority_updates_deps_position() {
     assert_eq!(list.position(b), Some(2));
     list.set_priority(c, 1);
     assert_eq!(list.position(b), Some(1));
-    assert_eq!(list.get(b).unwrap().implicit_priority, Some(1));
+    assert_eq!(list.implicit_priority(b), Some(1));
 }
 
 #[test]
@@ -1382,7 +1370,7 @@ fn set_priority_updates_transitive_deps_position() {
     list.block(d).on(c).unwrap();
     list.set_priority(d, 1);
     assert_eq!(list.position(b), Some(1));
-    assert_eq!(list.get(b).unwrap().implicit_priority, Some(1));
+    assert_eq!(list.implicit_priority(b), Some(1));
 }
 
 #[test]
@@ -1526,4 +1514,113 @@ fn due_date_from_new_options() {
         list.get(a).unwrap().due_date.unwrap(),
         chrono::Utc.ymd(2021, 04, 09).and_hms(12, 00, 00)
     );
+}
+
+#[test]
+fn sort_by_explicit_due_date() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new(NewOptions {
+        desc: "a".to_string(),
+        now: chrono::Utc::now(),
+        priority: None,
+        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 26, 00)),
+    }));
+    let b = list.add(Task::new(NewOptions {
+        desc: "b".to_string(),
+        now: chrono::Utc::now(),
+        priority: None,
+        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 25, 00)),
+    }));
+    assert_eq!(list.all_tasks().collect::<Vec<_>>(), vec![b, a]);
+}
+
+#[test]
+fn sort_keeps_task_with_earlier_due_date_first() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new(NewOptions {
+        desc: "a".to_string(),
+        now: chrono::Utc::now(),
+        priority: None,
+        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 26, 00)),
+    }));
+    let b = list.add(Task::new(NewOptions {
+        desc: "b".to_string(),
+        now: chrono::Utc::now(),
+        priority: None,
+        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 30, 00)),
+    }));
+    assert_eq!(list.all_tasks().collect::<Vec<_>>(), vec![a, b]);
+}
+
+#[test]
+fn sort_puts_task_with_due_date_before_task_without_due_date() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new(NewOptions {
+        desc: "a".to_string(),
+        now: chrono::Utc::now(),
+        priority: None,
+        due_date: None,
+    }));
+    let b = list.add(Task::new(NewOptions {
+        desc: "b".to_string(),
+        now: chrono::Utc::now(),
+        priority: None,
+        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 25, 00)),
+    }));
+    assert_eq!(list.all_tasks().collect::<Vec<_>>(), vec![b, a]);
+}
+
+#[test]
+fn sort_by_implicit_due_date() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new(NewOptions {
+        desc: "a".to_string(),
+        now: chrono::Utc::now(),
+        priority: None,
+        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 30, 00)),
+    }));
+    let b = list.add(Task::new(NewOptions {
+        desc: "b".to_string(),
+        now: chrono::Utc::now(),
+        priority: None,
+        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 00, 00)),
+    }));
+    list.block(b).on(a).unwrap();
+    let c = list.add(Task::new(NewOptions {
+        desc: "c".to_string(),
+        now: chrono::Utc::now(),
+        priority: None,
+        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(11, 00, 00)),
+    }));
+    let d = list.add(Task::new(NewOptions {
+        desc: "d".to_string(),
+        now: chrono::Utc::now(),
+        priority: None,
+        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(13, 00, 00)),
+    }));
+    assert_eq!(list.all_tasks().collect::<Vec<_>>(), vec![c, a, d, b]);
+}
+
+#[test]
+fn sort_by_priority_then_due_date() {
+    let mut list = TodoList::new();
+    let a = list.add(Task::new(NewOptions {
+        desc: "a".to_string(),
+        now: chrono::Utc::now(),
+        priority: Some(2),
+        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(13, 00, 00)),
+    }));
+    let b = list.add(Task::new(NewOptions {
+        desc: "b".to_string(),
+        now: chrono::Utc::now(),
+        priority: Some(1),
+        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(11, 00, 00)),
+    }));
+    let c = list.add(Task::new(NewOptions {
+        desc: "c".to_string(),
+        now: chrono::Utc::now(),
+        priority: Some(2),
+        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 00, 00)),
+    }));
+    assert_eq!(list.all_tasks().collect::<Vec<_>>(), vec![c, a, b]);
 }

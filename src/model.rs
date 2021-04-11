@@ -31,7 +31,6 @@ pub struct Task {
     pub creation_time: Option<DateTime<Utc>>,
     pub completion_time: Option<DateTime<Utc>>,
     pub priority: Option<i32>,
-    pub implicit_priority: Option<i32>,
     pub due_date: Option<DateTime<Utc>>,
 }
 
@@ -61,7 +60,6 @@ impl Task {
             creation_time: Some(options.now),
             completion_time: None,
             priority: options.priority,
-            implicit_priority: options.priority.or_else(|| Some(0)),
             due_date: options.due_date,
         }
     }
@@ -153,10 +151,18 @@ where
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+struct Implicits {
+    priority: i32,
+    due_date: Option<DateTime<Utc>>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 pub struct TodoList {
     tasks: StableDag<Task, ()>,
     complete: Vec<TaskId>,
     incomplete: Layering<TaskId>,
+    #[serde(default)]
+    implicits: HashMap<TaskId, Implicits>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -263,22 +269,44 @@ impl TodoList {
         self.get(id)
             .into_iter()
             .map(|task| task.priority.unwrap_or(0))
-            .chain(self.adeps(id).into_iter_unsorted().flat_map(|adep| {
-                self.get(adep)
-                    .map(|task| task.implicit_priority.unwrap_or(0))
-                    .into_iter()
+            .chain(self.adeps(id).into_iter_unsorted().map(|adep| {
+                match self.implicits.get(&adep) {
+                    Some(implicits) => implicits.priority,
+                    None => self.calculate_implicit_priority(adep),
+                }
             }))
             .max()
             .unwrap_or(0)
     }
 
+    fn calculate_implicit_due_date(&self, id: TaskId) -> Option<DateTime<Utc>> {
+        self.get(id)
+            .into_iter()
+            .flat_map(|task| task.due_date.into_iter())
+            .chain(self.adeps(id).into_iter_unsorted().flat_map(|adep| {
+                match self.implicits.get(&adep) {
+                    Some(implicits) => implicits.due_date.into_iter(),
+                    None => self.calculate_implicit_due_date(adep).into_iter(),
+                }
+            }))
+            .max()
+    }
+
     fn put_in_incomplete_layer(&mut self, id: TaskId, depth: usize) -> usize {
         let pos = self.incomplete.bisect_layer(&id, depth, |&a, &b| {
-            self.get(a)
-                .unwrap()
-                .implicit_priority
-                .unwrap_or(0)
-                .cmp(&self.get(b).unwrap().implicit_priority.unwrap_or(0))
+            use std::cmp::Ordering;
+            let imp_a = &self.implicits[&a];
+            let imp_b = &self.implicits[&b];
+            imp_a.priority.cmp(&imp_b.priority).then_with(|| {
+                match (imp_a.due_date, imp_b.due_date) {
+                    // Put lower due dates first.
+                    (Some(a_date), Some(b_date)) => b_date.cmp(&a_date),
+                    // A task with a due date appears before a task without one.
+                    (Some(_), None) => Ordering::Greater,
+                    (None, Some(_)) => Ordering::Less,
+                    (None, None) => Ordering::Equal,
+                }
+            })
         });
         self.incomplete.put_in_layer(id, depth, pos);
         pos
@@ -341,26 +369,42 @@ impl TodoList {
     }
 
     // Returns a TaskSet of affected tasks.
-    fn update_priority(&mut self, id: TaskId) -> TaskSet {
-        match self.get(id).map(|task| task.implicit_priority.unwrap_or(0)) {
-            Some(old_priority) => {
-                let new_priority = self.calculate_implicit_priority(id);
-                if old_priority == new_priority {
-                    return TaskSet::new();
-                }
-                self.tasks.node_weight_mut(id.0).unwrap().implicit_priority =
-                    Some(new_priority);
-                self.punt(id).unwrap_or_default();
-                self.deps(id)
-                    .iter_sorted(self)
-                    .flat_map(|dep| {
-                        self.update_priority(dep).into_iter_unsorted()
-                    })
-                    .chain(std::iter::once(id))
-                    .collect()
-            }
-            None => TaskSet::new(),
+    pub fn update_implicits(&mut self, id: TaskId) -> TaskSet {
+        if !self.implicits.contains_key(&id) {
+            self.implicits.insert(
+                id,
+                Implicits {
+                    priority: self.tasks[id.0].priority.unwrap_or(0),
+                    due_date: self.tasks[id.0].due_date,
+                },
+            );
         }
+        let mut changed = false;
+        let old_priority = self.implicits[&id].priority;
+        let old_due_date = self.implicits[&id].due_date;
+        let new_priority = self.calculate_implicit_priority(id);
+        let new_due_date = self.calculate_implicit_due_date(id);
+        if old_priority != new_priority {
+            self.implicits
+                .get_mut(&id)
+                .map(|implicits| implicits.priority = new_priority);
+            changed = true;
+        }
+        if old_due_date != new_due_date {
+            self.implicits
+                .get_mut(&id)
+                .map(|implicits| implicits.due_date = new_due_date);
+            changed = true;
+        }
+        if !changed {
+            return TaskSet::new();
+        }
+        self.punt(id).unwrap_or_default();
+        self.deps(id)
+            .iter_sorted(self)
+            .flat_map(|dep| self.update_implicits(dep).into_iter_unsorted())
+            .chain(std::iter::once(id))
+            .collect()
     }
 
     pub fn deps(&self, id: TaskId) -> TaskSet {
@@ -398,6 +442,10 @@ impl TodoList {
                 })
                 .collect()
     }
+
+    pub fn implicit_priority(&self, id: TaskId) -> Option<i32> {
+        self.implicits.get(&id).map(|implicits| implicits.priority)
+    }
 }
 
 impl TodoList {
@@ -406,11 +454,19 @@ impl TodoList {
             tasks: StableDag::new(),
             complete: Vec::new(),
             incomplete: Layering::new(),
+            implicits: HashMap::default(),
         }
     }
 
     pub fn add(&mut self, task: Task) -> TaskId {
         let id = TaskId(self.tasks.add_node(task));
+        self.implicits.insert(
+            id,
+            Implicits {
+                priority: self.tasks[id.0].priority.unwrap_or(0),
+                due_date: self.tasks[id.0].due_date,
+            },
+        );
         self.put_in_incomplete_layer(id, 0);
         id
     }
@@ -638,7 +694,7 @@ impl<'a> Block<'a> {
             .tasks
             .update_edge(blocking.0, self.blocked.0, ())?;
         self.list.update_depth(self.blocked);
-        Ok(self.list.update_priority(blocking)
+        Ok(self.list.update_implicits(blocking)
             | TaskSet::of(self.blocked)
             | TaskSet::of(blocking))
     }
@@ -674,7 +730,7 @@ impl<'a> Unblock<'a> {
             None => return Err(UnblockError::WasNotDirectlyBlocking),
         };
         self.list.update_depth(self.blocked);
-        Ok(self.list.update_priority(blocking)
+        Ok(self.list.update_implicits(blocking)
             | TaskSet::of(self.blocked)
             | TaskSet::of(blocking))
     }
@@ -714,7 +770,7 @@ impl TodoList {
         match self.tasks.node_weight_mut(id.0) {
             Some(task) => {
                 task.priority = Some(priority);
-                self.update_priority(id)
+                self.update_implicits(id)
             }
             None => TaskSet::new(),
         }

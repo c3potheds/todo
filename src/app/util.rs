@@ -5,10 +5,15 @@ use model::TodoList;
 use printing::PrintableTask;
 
 pub fn format_task<'a>(model: &'a TodoList, id: TaskId) -> PrintableTask<'a> {
-    match (model.get(id), model.position(id), model.status(id)) {
-        (Some(task), Some(pos), Some(status)) => {
+    match (
+        model.get(id),
+        model.position(id),
+        model.status(id),
+        model.implicit_priority(id),
+    ) {
+        (Some(task), Some(pos), Some(status), implicit_priority) => {
             let result = PrintableTask::new(&task.desc, pos, status);
-            match task.implicit_priority {
+            match implicit_priority {
                 None | Some(0) => result,
                 Some(p) => result.priority(p),
             }
