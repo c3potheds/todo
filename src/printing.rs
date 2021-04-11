@@ -66,6 +66,19 @@ impl Display for LogDate {
 }
 
 #[derive(Debug, PartialEq)]
+pub enum Urgency {
+    Urgent,
+    Moderate,
+    Meh,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct DueDate<'a> {
+    pub urgency: Urgency,
+    pub desc: &'a str,
+}
+
+#[derive(Debug, PartialEq)]
 pub struct PrintableTask<'a> {
     desc: &'a str,
     number: i32,
@@ -73,6 +86,7 @@ pub struct PrintableTask<'a> {
     action: Action,
     log_date: Option<LogDate>,
     priority: Option<i32>,
+    due_date: Option<DueDate<'a>>,
 }
 
 impl<'a> PrintableTask<'a> {
@@ -84,6 +98,7 @@ impl<'a> PrintableTask<'a> {
             action: Action::None,
             log_date: None,
             priority: None,
+            due_date: None,
         }
     }
 
@@ -99,6 +114,11 @@ impl<'a> PrintableTask<'a> {
 
     pub fn priority(mut self, priority: i32) -> Self {
         self.priority = Some(priority);
+        self
+    }
+
+    pub fn due_date(mut self, due_date: DueDate<'a>) -> Self {
+        self.due_date = Some(due_date);
         self
     }
 }
@@ -249,6 +269,17 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
                 color.bold().dimmed()
             };
             start.push_str(&style.paint(format!("P{}", priority)).to_string());
+            start.push_str(" ");
+        }
+        if let Some(due_date) = &self.task.due_date {
+            let style = match due_date.urgency {
+                Urgency::Urgent => Color::Red.bold(),
+                Urgency::Moderate => Color::Yellow.bold(),
+                Urgency::Meh => Color::White.bold().dimmed(),
+            };
+            start.push_str(
+                &style.paint(format!("Due {}", due_date.desc)).to_string(),
+            );
             start.push_str(" ");
         }
         write!(

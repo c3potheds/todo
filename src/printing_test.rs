@@ -193,6 +193,69 @@ fn show_priority_on_task() {
 }
 
 #[test]
+fn show_meh_due_date_on_task() {
+    let fmt = print_task(
+        &PrintableTask::new("a", 1, TaskStatus::Incomplete).due_date(DueDate {
+            urgency: Urgency::Meh,
+            desc: "in 2 days",
+        }),
+    );
+    assert_eq!(
+        fmt,
+        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;2;37mDue in 2 days\u{1b}[0m a\n"
+    );
+}
+
+#[test]
+fn show_moderate_due_date_on_task() {
+    let fmt = print_task(
+        &PrintableTask::new("a", 1, TaskStatus::Incomplete).due_date(DueDate {
+            urgency: Urgency::Moderate,
+            desc: "in 9 hours",
+        }),
+    );
+    assert_eq!(
+        fmt,
+        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;33mDue in 9 hours\u{1b}[0m a\n"
+    );
+}
+
+#[test]
+fn show_urgent_due_date_on_task() {
+    let fmt = print_task(
+        &PrintableTask::new("a", 1, TaskStatus::Incomplete).due_date(DueDate {
+            urgency: Urgency::Urgent,
+            desc: "1 day ago",
+        }),
+    );
+    assert_eq!(
+        fmt,
+        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;31mDue 1 day ago\u{1b}[0m a\n"
+    );
+}
+
+#[test]
+fn show_priority_and_due_date_together() {
+    let fmt = print_task(
+        &PrintableTask::new("a", 1, TaskStatus::Incomplete)
+            .priority(1)
+            .due_date(DueDate {
+                urgency: Urgency::Urgent,
+                desc: "1 day ago",
+            }),
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "      \u{1b}[33m1)\u{1b}[0m ",
+            "\u{1b}[1;35mP1\u{1b}[0m ",
+            "\u{1b}[1;31mDue 1 day ago\u{1b}[0m ",
+            "a\n"
+        ),
+    );
+}
+
+#[test]
 fn display_no_match_found_warning() {
     let fmt = format!(
         "{}",
