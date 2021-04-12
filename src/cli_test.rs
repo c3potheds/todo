@@ -952,6 +952,7 @@ fn due_no_keys_no_date() {
             keys: vec![],
             due: vec![],
             none: false,
+            include_done: false,
         })
     );
 }
@@ -966,6 +967,7 @@ fn due_with_keys_but_no_date() {
             keys: vec![Key::ByNumber(1)],
             due: vec![],
             none: false,
+            include_done: false,
         })
     );
 }
@@ -980,6 +982,7 @@ fn due_with_date_but_no_keys() {
             keys: vec![],
             due: vec!["2".to_string(), "days".to_string()],
             none: false,
+            include_done: false,
         })
     );
 }
@@ -994,6 +997,7 @@ fn due_with_keys_and_date() {
             keys: vec![Key::ByNumber(10)],
             due: vec!["friday".to_string()],
             none: false,
+            include_done: false,
         })
     );
 }
@@ -1008,6 +1012,7 @@ fn due_set_none() {
             keys: vec![Key::ByNumber(1), Key::ByNumber(2)],
             due: vec![],
             none: true,
+            include_done: false,
         })
     );
 }
@@ -1022,6 +1027,37 @@ fn due_get_none() {
             keys: vec![],
             due: vec![],
             none: true,
+            include_done: false,
+        })
+    );
+}
+
+#[test]
+fn due_include_done_long() {
+    let options = parse(&["todo", "due", "--include-done"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Due(Due {
+            keys: vec![],
+            due: vec![],
+            none: false,
+            include_done: true,
+        })
+    );
+}
+
+#[test]
+fn due_include_done_short() {
+    let options = parse(&["todo", "due", "-d"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Due(Due {
+            keys: vec![],
+            due: vec![],
+            none: false,
+            include_done: true,
         })
     );
 }

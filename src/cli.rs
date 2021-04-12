@@ -84,6 +84,14 @@ pub struct Due {
     /// an antidependency, it is retained.
     #[structopt(long)]
     pub none: bool,
+    /// Show completed tasks in queries.
+    ///
+    /// This is not used when assigning or unassigning due dates. It only
+    /// affects the printed results when querying the source of a task's due
+    /// date, querying all tasks with due dates, or querying all tasks due
+    /// earlier than a given date.
+    #[structopt(long, short = "d")]
+    pub include_done: bool,
 }
 
 #[derive(Debug, PartialEq, StructOpt)]
