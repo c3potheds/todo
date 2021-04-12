@@ -1,6 +1,7 @@
 mod block;
 mod chain;
 mod check;
+mod due;
 mod edit;
 mod find;
 mod get;
@@ -29,6 +30,9 @@ mod chain_test;
 
 #[cfg(test)]
 mod check_test;
+
+#[cfg(test)]
+mod due_test;
 
 #[cfg(test)]
 mod edit_test;
