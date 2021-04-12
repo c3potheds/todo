@@ -910,3 +910,87 @@ fn split_into_chain() {
         })
     );
 }
+
+#[test]
+fn due_no_keys_no_date() {
+    let options = parse(&["todo", "due"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Due(Due {
+            keys: vec![],
+            due: vec![],
+            none: false,
+        })
+    );
+}
+
+#[test]
+fn due_with_keys_but_no_date() {
+    let options = parse(&["todo", "due", "1"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Due(Due {
+            keys: vec![Key::ByNumber(1)],
+            due: vec![],
+            none: false,
+        })
+    );
+}
+
+#[test]
+fn due_with_date_but_no_keys() {
+    let options = parse(&["todo", "due", "--in", "2", "days"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Due(Due {
+            keys: vec![],
+            due: vec!["2".to_string(), "days".to_string()],
+            none: false,
+        })
+    );
+}
+
+#[test]
+fn due_with_keys_and_date() {
+    let options = parse(&["todo", "due", "10", "--on", "friday"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Due(Due {
+            keys: vec![Key::ByNumber(10)],
+            due: vec!["friday".to_string()],
+            none: false,
+        })
+    );
+}
+
+#[test]
+fn due_set_none() {
+    let options = parse(&["todo", "due", "1", "2", "--none"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Due(Due {
+            keys: vec![Key::ByNumber(1), Key::ByNumber(2)],
+            due: vec![],
+            none: true,
+        })
+    );
+}
+
+#[test]
+fn due_get_none() {
+    let options = parse(&["todo", "due", "--none"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Due(Due {
+            keys: vec![],
+            due: vec![],
+            none: true,
+        })
+    );
+}
