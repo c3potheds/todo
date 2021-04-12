@@ -52,6 +52,7 @@ fn new_one() {
             after: Vec::new(),
             chain: false,
             priority: None,
+            due: vec![],
         })
     );
 }
@@ -71,6 +72,7 @@ fn new_three() {
             after: Vec::new(),
             chain: false,
             priority: None,
+            due: vec![],
         })
     );
 }
@@ -90,6 +92,7 @@ fn new_blocked_by_long() {
             after: Vec::new(),
             chain: false,
             priority: None,
+            due: vec![],
         }),
     );
 }
@@ -109,6 +112,7 @@ fn new_blocked_by_short() {
             after: Vec::new(),
             chain: false,
             priority: None,
+            due: vec![],
         }),
     );
 }
@@ -128,6 +132,7 @@ fn new_blocking_long() {
             after: Vec::new(),
             chain: false,
             priority: None,
+            due: vec![],
         }),
     );
 }
@@ -147,6 +152,7 @@ fn new_blocking_short() {
             after: Vec::new(),
             chain: false,
             priority: None,
+            due: vec![],
         }),
     );
 }
@@ -165,6 +171,7 @@ fn new_blocking_by_name() {
             after: Vec::new(),
             chain: false,
             priority: None,
+            due: vec![],
         })
     );
 }
@@ -184,6 +191,7 @@ fn new_chain() {
             after: Vec::new(),
             chain: true,
             priority: None,
+            due: vec![],
         })
     );
 }
@@ -203,6 +211,7 @@ fn new_before_after() {
             after: vec![Key::ByName("b".to_string())],
             chain: false,
             priority: None,
+            due: vec![],
         })
     );
 }
@@ -221,6 +230,7 @@ fn new_one_with_priority() {
             after: Vec::new(),
             chain: false,
             priority: Some(1),
+            due: vec![],
         })
     )
 }
@@ -239,6 +249,7 @@ fn new_three_with_priority() {
             after: Vec::new(),
             chain: false,
             priority: Some(2),
+            due: vec![],
         })
     )
 }
@@ -257,6 +268,26 @@ fn new_with_negative_priority() {
             after: Vec::new(),
             chain: false,
             priority: Some(-3),
+            due: vec![],
+        })
+    )
+}
+
+#[test]
+fn new_with_due_date() {
+    let options = parse(&["todo", "new", "a", "--due", "7", "days"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::New(New {
+            desc: vec!["a".to_string()],
+            blocked_by: Vec::new(),
+            blocking: Vec::new(),
+            before: Vec::new(),
+            after: Vec::new(),
+            chain: false,
+            priority: None,
+            due: vec!["7".to_string(), "days".to_string()],
         })
     )
 }

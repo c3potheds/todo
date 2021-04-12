@@ -158,6 +158,8 @@ pub struct New {
 
     /// Assign a priority to the new tasks.
     ///
+    /// A priority may be any decimal integer that's representable with 32 bits.
+    ///
     /// When a task has a priority, it will show up before all other tasks with
     /// lower priorities. Tasks with no priority have an implicit priority of 0.
     /// Tasks may have negative priorities, in which case they show up after all
@@ -166,9 +168,32 @@ pub struct New {
     /// A task inherits an implicit priority from its antidependencies. The
     /// implicit priority of a task is the maximum implicit or explicit priority
     /// of all its antidependencies. This means tasks in --blocked-by may be
-    /// reordered if you assign a priority!
+    /// reordered if you assign a priority! Dependencies whose implicit
+    /// priority, and therefore ordering, are updated by assigning the new tasks
+    /// this priority will be printed in the console output.
     #[structopt(long)]
     pub priority: Option<i32>,
+
+    /// Assign a due date to the new tasks.
+    ///
+    /// The due date is expressed as a human-readable string, e.g. "2 days",
+    /// "wednesday", "april 1", "10:30 pm", etc. The app will try to interpret
+    /// the string in relation to the current system time in the local timezone.
+    /// If the string cannot be interpreted, an error will be printed.
+    ///
+    /// When a task has a due date, it will show up before all other tasks with
+    /// later due dates or no due dates (unless those tasks have higher
+    /// priorirites). "No due date" is considered "later" than all explicit
+    /// dates for the purposes of comparison.
+    ///
+    /// A task inherits an implicit due date from its antidependencies. The
+    /// implicit due date of a task is the earliest implicit or explicit due
+    /// date of all its antidependencies. This means tasks in --blocked-by may
+    /// be reordered if you assign a due date! Dependencies whose implicit due
+    /// date, and therefore ordering, are updated by assigning the new tasks
+    /// this due date will be printed in the console output.
+    #[structopt(long)]
+    pub due: Vec<String>,
 }
 
 #[derive(Debug, PartialEq, StructOpt)]
@@ -334,7 +359,8 @@ pub enum SubCommand {
     /// This command takes two optional lists: task keys (positional) and a due
     /// date description (after the --due, --in, or --on flag). The latter is a
     /// human-readable description of a date, like "2 days", "1 month", or
-    /// "april 1".
+    /// "april 1". If the description cannot be interpreted, an error will be
+    /// printed.
     ///
     /// If neither task keys nor a due date is provided, this will print all
     /// tasks that have due dates, implicit or explicit. I.e.
