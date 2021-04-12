@@ -1,6 +1,6 @@
 use super::util::*;
 use cli::Key;
-use model::Task;
+use model::NewOptions;
 use model::TaskStatus;
 use model::TodoList;
 use printing::Action;
@@ -9,7 +9,7 @@ use printing::PrintableTask;
 #[test]
 fn format_task_basic() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     let actual = format_task(&list, a);
     let expected = PrintableTask::new("a", 1, TaskStatus::Incomplete);
     assert_eq!(actual, expected);
@@ -18,7 +18,7 @@ fn format_task_basic() {
 #[test]
 fn format_task_with_action() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     let actual = format_task(&list, a).action(Action::Punt);
     let expected =
         PrintableTask::new("a", 1, TaskStatus::Incomplete).action(Action::Punt);
@@ -28,11 +28,7 @@ fn format_task_with_action() {
 #[test]
 fn format_task_with_priority() {
     let mut list = TodoList::new();
-    let a = list.add({
-        let mut task = Task::new("a");
-        task.priority = Some(1);
-        task
-    });
+    let a = list.add(NewOptions::new().desc("a").priority(1));
     let actual = format_task(&list, a);
     let expected =
         PrintableTask::new("a", 1, TaskStatus::Incomplete).priority(1);
@@ -42,11 +38,7 @@ fn format_task_with_priority() {
 #[test]
 fn format_task_with_zero_priority() {
     let mut list = TodoList::new();
-    let a = list.add({
-        let mut task = Task::new("a");
-        task.priority = Some(0);
-        task
-    });
+    let a = list.add(NewOptions::new().desc("a").priority(0));
     let actual = format_task(&list, a);
     let expected = PrintableTask::new("a", 1, TaskStatus::Incomplete);
     assert_eq!(actual, expected);
@@ -55,9 +47,9 @@ fn format_task_with_zero_priority() {
 #[test]
 fn lookup_by_number() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     let lookup1 = lookup_tasks(&list, std::iter::once(&Key::ByNumber(1)));
     itertools::assert_equal(lookup1, vec![a]);
     let lookup2 = lookup_tasks(&list, std::iter::once(&Key::ByNumber(2)));
@@ -69,9 +61,9 @@ fn lookup_by_number() {
 #[test]
 fn lookup_by_name() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     let lookup1 = lookup_tasks(&list, &[Key::ByName("a".to_string())]);
     itertools::assert_equal(lookup1, vec![a]);
     let lookup2 = lookup_tasks(&list, &[Key::ByName("b".to_string())]);
@@ -83,9 +75,9 @@ fn lookup_by_name() {
 #[test]
 fn lookup_multiple_keys() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     let lookup_all = lookup_tasks(
         &list,
         &[Key::ByNumber(1), Key::ByNumber(2), Key::ByNumber(3)],
@@ -96,9 +88,9 @@ fn lookup_multiple_keys() {
 #[test]
 fn lookup_by_range() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     let lookup_1_2 = lookup_tasks(&list, &[Key::ByRange(1, 2)]);
     itertools::assert_equal(lookup_1_2, vec![a, b]);
     let lookup_2_3 = lookup_tasks(&list, &[Key::ByRange(2, 3)]);

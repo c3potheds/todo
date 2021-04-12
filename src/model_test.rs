@@ -9,44 +9,24 @@ fn no_tasks() {
 }
 
 #[test]
-fn new_task_has_creation_time() {
-    let task = Task::new("task");
-    assert!(task.creation_time.is_some());
-}
-
-#[test]
-fn inject_creation_time() {
-    let now = chrono::Utc.ymd(2021, 03, 26).and_hms(04, 32, 00);
-    let task = Task::new(NewOptions {
-        desc: "a".to_string(),
-        now: now,
-        priority: None,
-        due_date: None,
-    });
-    assert_eq!(task.creation_time, Some(now));
-}
-
-#[test]
-fn new_task_has_no_completion_time() {
-    let task = Task::new("task");
-    assert!(task.completion_time.is_none());
-}
-
-#[test]
 fn deserialize_task_with_missing_creation_time() {
     let task = serde_json::from_str::<Task>("{\"desc\":\"hi\"}")
         .ok()
         .unwrap();
     assert_eq!(task.desc, "hi");
-    assert!(task.creation_time.is_none());
-    assert!(task.completion_time.is_none());
+    assert!(task.creation_time.is_some());
+    assert_eq!(task.completion_time, None);
+    assert_eq!(task.priority, 0);
+    assert_eq!(task.implicit_priority, 0);
+    assert_eq!(task.due_date, None);
+    assert_eq!(task.implicit_due_date, None);
 }
 
 #[test]
 fn get_incomplete_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    let a = list.add("a");
+    let b = list.add("b");
     assert_eq!(list.get(a).unwrap().desc, "a");
     assert_eq!(list.get(b).unwrap().desc, "b");
 }
@@ -54,8 +34,8 @@ fn get_incomplete_task() {
 #[test]
 fn get_completed_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    let a = list.add("a");
+    let b = list.add("b");
     list.check(a).expect("Could not check a");
     list.check(b).expect("Could not check b");
     assert_eq!(list.get(a).unwrap().desc, "a");
@@ -65,7 +45,7 @@ fn get_completed_task() {
 #[test]
 fn add_one_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("hello, world"));
+    let a = list.add("hello, world");
     let mut tasks = list.incomplete_tasks();
     assert_eq!(tasks.next(), Some(a));
     assert_eq!(tasks.next(), None);
@@ -74,9 +54,9 @@ fn add_one_task() {
 #[test]
 fn add_multiple_tasks() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("walk the dog"));
-    let b = list.add(Task::new("do the dishes"));
-    let c = list.add(Task::new("take out the trash"));
+    let a = list.add("walk the dog");
+    let b = list.add("do the dishes");
+    let c = list.add("take out the trash");
     let mut tasks = list.incomplete_tasks();
     assert_eq!(tasks.next(), Some(a));
     assert_eq!(tasks.next(), Some(b));
@@ -87,7 +67,7 @@ fn add_multiple_tasks() {
 #[test]
 fn check_complete_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     list.check(a).expect("Could not check a");
     list.check(a)
         .expect_err("Shouldn't have been able to check a");
@@ -96,7 +76,7 @@ fn check_complete_task() {
 #[test]
 fn checked_task_has_completion_time() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     list.check(a).expect("Could not check a");
     assert!(list.get(a).unwrap().completion_time.is_some());
 }
@@ -104,7 +84,7 @@ fn checked_task_has_completion_time() {
 #[test]
 fn completion_time_of_completed_task_does_not_update_if_checked() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     list.check(a).expect("Could not check a");
     let original_completion_time =
         list.get(a).unwrap().completion_time.unwrap();
@@ -117,7 +97,7 @@ fn completion_time_of_completed_task_does_not_update_if_checked() {
 #[test]
 fn check_by_options_uses_injected_completion_time() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     let now = chrono::Utc.ymd(2021, 03, 26).and_hms(04, 27, 00);
     list.check(CheckOptions { id: a, now: now }).unwrap();
     assert_eq!(list.get(a).unwrap().completion_time, Some(now));
@@ -126,9 +106,9 @@ fn check_by_options_uses_injected_completion_time() {
 #[test]
 fn check_first_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("walk the dog"));
-    let b = list.add(Task::new("do the dishes"));
-    let c = list.add(Task::new("take out the trash"));
+    let a = list.add("walk the dog");
+    let b = list.add("do the dishes");
+    let c = list.add("take out the trash");
     list.check(a).expect("Could not check a");
     let mut tasks = list.incomplete_tasks();
     assert_eq!(tasks.next(), Some(b));
@@ -139,9 +119,9 @@ fn check_first_task() {
 #[test]
 fn check_second_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("walk the dog"));
-    let b = list.add(Task::new("do the dishes"));
-    let c = list.add(Task::new("take out the trash"));
+    let a = list.add("walk the dog");
+    let b = list.add("do the dishes");
+    let c = list.add("take out the trash");
     list.check(b).expect("Could not check b");
     let mut tasks = list.incomplete_tasks();
     assert_eq!(tasks.next(), Some(a));
@@ -152,9 +132,9 @@ fn check_second_task() {
 #[test]
 fn check_third_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("walk the dog"));
-    let b = list.add(Task::new("do the dishes"));
-    let c = list.add(Task::new("take out the trash"));
+    let a = list.add("walk the dog");
+    let b = list.add("do the dishes");
+    let c = list.add("take out the trash");
     list.check(c).expect("Could not check c");
     let mut tasks = list.incomplete_tasks();
     assert_eq!(tasks.next(), Some(a));
@@ -165,7 +145,7 @@ fn check_third_task() {
 #[test]
 fn complete_task_shows_up_in_complete_list() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     list.check(a).expect("Could not check a");
     let mut complete_tasks = list.complete_tasks();
     assert_eq!(complete_tasks.next(), Some(a));
@@ -175,9 +155,9 @@ fn complete_task_shows_up_in_complete_list() {
 #[test]
 fn iterate_multiple_complete_tasks() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.check(a).expect("Could not check a");
     list.check(c).expect("Could not check c");
     let mut complete_tasks = list.complete_tasks();
@@ -212,25 +192,25 @@ fn reload_empty() {
 #[test]
 fn reload_single_task() {
     let mut list = TodoList::new();
-    list.add(Task::new("pass this test"));
+    list.add("pass this test");
     reload(&list);
 }
 
 #[test]
 fn reload_three_tasks() {
     let mut list = TodoList::new();
-    list.add(Task::new("first"));
-    list.add(Task::new("second"));
-    list.add(Task::new("third"));
+    list.add("first");
+    list.add("second");
+    list.add("third");
     reload(&list);
 }
 
 #[test]
 fn number_of_incomplete_tasks() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     assert_eq!(list.position(a), Some(1));
     assert_eq!(list.position(b), Some(2));
     assert_eq!(list.position(c), Some(3));
@@ -239,9 +219,9 @@ fn number_of_incomplete_tasks() {
 #[test]
 fn number_of_complete_tasks() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.check(a).expect("Could not check a");
     list.check(b).expect("Could not check b");
     list.check(c).expect("Could not check c");
@@ -253,9 +233,9 @@ fn number_of_complete_tasks() {
 #[test]
 fn number_of_task_updates_when_predecessor_completes() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.check(a).expect("Could not check a");
     assert_eq!(list.position(a), Some(0));
     assert_eq!(list.position(b), Some(1));
@@ -265,9 +245,9 @@ fn number_of_task_updates_when_predecessor_completes() {
 #[test]
 fn existent_incomplete_task_by_number() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     assert_eq!(list.lookup_by_number(1), Some(a));
     assert_eq!(list.lookup_by_number(2), Some(b));
     assert_eq!(list.lookup_by_number(3), Some(c));
@@ -282,9 +262,9 @@ fn nonexistent_incomplete_task_by_number() {
 #[test]
 fn existent_complete_task_by_number() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.check(a).expect("Could not check a");
     list.check(b).expect("Could not check b");
     list.check(c).expect("Could not check c");
@@ -302,11 +282,11 @@ fn nonexistent_complete_task_by_number() {
 #[test]
 fn lookup_by_number_is_inverse_of_position() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
-    list.add(Task::new("d"));
-    let e = list.add(Task::new("e"));
+    let a = list.add("a");
+    list.add("b");
+    let c = list.add("c");
+    list.add("d");
+    let e = list.add("e");
     list.check(a).expect("Could not check a");
     list.check(c).expect("Could not check c");
     list.check(e).expect("could not check e");
@@ -320,7 +300,7 @@ fn lookup_by_number_is_inverse_of_position() {
 #[test]
 fn restore_incomplete_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     assert!(list.restore(a).is_err());
     assert_eq!(list.position(a), Some(1));
 }
@@ -328,7 +308,7 @@ fn restore_incomplete_task() {
 #[test]
 fn restore_complete_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     list.check(a).expect("Could not check a");
     list.restore(a).expect("Could not restore a");
     assert_eq!(list.position(a), Some(1));
@@ -337,9 +317,9 @@ fn restore_complete_task() {
 #[test]
 fn restore_complete_task_to_nonempty_list() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.check(a).expect("Could not check a");
     list.restore(a).expect("Could not restore a");
     assert_eq!(list.position(b), Some(1));
@@ -350,14 +330,14 @@ fn restore_complete_task_to_nonempty_list() {
 #[test]
 fn status_of_incomplete_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     assert_eq!(list.status(a), Some(TaskStatus::Incomplete));
 }
 
 #[test]
 fn status_of_complete_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     list.check(a).expect("Could not check a");
     assert_eq!(list.status(a), Some(TaskStatus::Complete));
 }
@@ -365,8 +345,8 @@ fn status_of_complete_task() {
 #[test]
 fn status_of_blocked_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    let a = list.add("a");
+    let b = list.add("b");
     list.block(b).on(a).expect("Could not block b on a");
     assert_eq!(list.status(b), Some(TaskStatus::Blocked));
 }
@@ -374,8 +354,8 @@ fn status_of_blocked_task() {
 #[test]
 fn ordering_of_blocked_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    let a = list.add("a");
+    let b = list.add("b");
     list.block(b).on(a).expect("Could not block b on a");
     assert_eq!(list.position(a), Some(1));
     assert_eq!(list.position(b), Some(2));
@@ -384,8 +364,8 @@ fn ordering_of_blocked_task() {
 #[test]
 fn blocked_task_appears_after_task_that_blocks_it() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    let a = list.add("a");
+    let b = list.add("b");
     list.block(a).on(b).expect("Could not block a on b");
     assert_eq!(list.position(b), Some(1));
     assert_eq!(list.position(a), Some(2));
@@ -394,8 +374,8 @@ fn blocked_task_appears_after_task_that_blocks_it() {
 #[test]
 fn cannot_block_blocking_task_on_task_it_blocks() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    let a = list.add("a");
+    let b = list.add("b");
     list.block(a).on(b).expect("Could not block a on b");
     assert!(list.block(b).on(a).is_err());
     assert_eq!(list.position(b), Some(1));
@@ -405,7 +385,7 @@ fn cannot_block_blocking_task_on_task_it_blocks() {
 #[test]
 fn cannot_block_on_self() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     list.block(a)
         .on(a)
         .expect_err("Shouldn't be able to block a task on itself.");
@@ -414,8 +394,8 @@ fn cannot_block_on_self() {
 #[test]
 fn incomplete_tasks_includes_blocked_tasks() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    let a = list.add("a");
+    let b = list.add("b");
     list.block(b).on(a).expect("Could not block b on a");
     let mut incomplete_tasks = list.incomplete_tasks();
     assert_eq!(incomplete_tasks.next(), Some(a));
@@ -426,9 +406,9 @@ fn incomplete_tasks_includes_blocked_tasks() {
 #[test]
 fn chained_blocking() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(a).on(b).expect("Could not block a on b");
     list.block(b).on(c).expect("Could not block b on c");
     let mut incomplete_tasks = list.incomplete_tasks();
@@ -446,9 +426,9 @@ fn chained_blocking() {
 #[test]
 fn indirect_blocking_cycle() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(b).on(a).expect("Could not block b on a");
     list.block(c).on(b).expect("Could not block c on b");
     assert!(list.block(a).on(c).is_err());
@@ -463,9 +443,9 @@ fn indirect_blocking_cycle() {
 #[test]
 fn block_returns_affected_tasks() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(b).on(a).unwrap();
     let affected = list
         .block(c)
@@ -479,9 +459,9 @@ fn block_returns_affected_tasks() {
 #[test]
 fn block_returns_affected_task_priority_update() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.set_priority(c, 1);
     list.block(b).on(a).unwrap();
     let affected = list
@@ -496,9 +476,9 @@ fn block_returns_affected_task_priority_update() {
 #[test]
 fn block_does_not_return_unaffected_task_priority_update() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.set_priority(a, 1);
     list.set_priority(c, 1);
     list.block(b).on(a).unwrap();
@@ -514,8 +494,8 @@ fn block_does_not_return_unaffected_task_priority_update() {
 #[test]
 fn cannot_check_blocked_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    let a = list.add("a");
+    let b = list.add("b");
     list.block(b).on(a).expect("Could not block b on a");
     assert_eq!(list.check(b), Err(CheckError::TaskIsBlockedBy(vec![a])));
 }
@@ -523,8 +503,8 @@ fn cannot_check_blocked_task() {
 #[test]
 fn can_check_task_whose_dependency_is_complete() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    let a = list.add("a");
+    let b = list.add("b");
     list.block(b).on(a).expect("Could not block b on a");
     list.check(a).expect("Could not check a");
     list.check(b).expect("Could not check b");
@@ -533,9 +513,9 @@ fn can_check_task_whose_dependency_is_complete() {
 #[test]
 fn can_check_task_whose_dependencies_are_complete() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(c).on(a).expect("Could not block c on a");
     list.block(c).on(b).expect("Could not block c on b");
     list.check(a).expect("Could not check a");
@@ -546,7 +526,7 @@ fn can_check_task_whose_dependencies_are_complete() {
 #[test]
 fn force_check_incomplete_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     let result = list.force_check(a).unwrap();
     itertools::assert_equal(result.completed.iter_sorted(&list), vec![a]);
     itertools::assert_equal(result.unblocked.iter_sorted(&list), vec![]);
@@ -555,9 +535,9 @@ fn force_check_incomplete_task() {
 #[test]
 fn force_check_blocked_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(b).on(a).unwrap();
     list.block(c).on(b).unwrap();
     let result = list.force_check(b).unwrap();
@@ -571,7 +551,7 @@ fn force_check_blocked_task() {
 #[test]
 fn force_check_complete_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     list.check(a).unwrap();
     assert_eq!(list.force_check(a), Err(CheckError::TaskIsAlreadyComplete));
 }
@@ -579,8 +559,8 @@ fn force_check_complete_task() {
 #[test]
 fn task_becomes_blocked_if_dependency_is_restored() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    let a = list.add("a");
+    let b = list.add("b");
     list.block(b).on(a).expect("Could not block b on a");
     list.check(a).expect("Could not check a");
     list.restore(a).expect("Could not restore a");
@@ -590,8 +570,8 @@ fn task_becomes_blocked_if_dependency_is_restored() {
 #[test]
 fn cannot_restore_task_with_complete_adeps() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    let a = list.add("a");
+    let b = list.add("b");
     list.block(b).on(a).unwrap();
     list.check(a).unwrap();
     list.check(b).unwrap();
@@ -601,8 +581,8 @@ fn cannot_restore_task_with_complete_adeps() {
 #[test]
 fn complete_task_becomes_blocked_if_dependency_is_force_restored() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    let a = list.add("a");
+    let b = list.add("b");
     list.block(b).on(a).expect("Could not block b on a");
     list.check(a).expect("Could not check a");
     list.check(b).expect("Could not check b");
@@ -617,9 +597,9 @@ fn complete_task_becomes_blocked_if_dependency_is_force_restored() {
 #[test]
 fn complete_task_becomes_blocked_if_transitive_dependency_is_force_restored() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(b).on(a).expect("Could not block b on a");
     list.block(c).on(b).expect("Could not block c on b");
     list.check(a).expect("Could not check a");
@@ -637,9 +617,9 @@ fn complete_task_becomes_blocked_if_transitive_dependency_is_force_restored() {
 #[test]
 fn force_restore_returns_newly_blocked_tasks_on_success() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(b).on(a).unwrap();
     list.block(c).on(a).unwrap();
     list.check(a).unwrap();
@@ -653,7 +633,7 @@ fn force_restore_returns_newly_blocked_tasks_on_success() {
 #[test]
 fn force_restore_already_incomplete() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     assert_eq!(
         list.force_restore(a),
         Err(RestoreError::TaskIsAlreadyIncomplete)
@@ -663,9 +643,9 @@ fn force_restore_already_incomplete() {
 #[test]
 fn blocked_task_comes_after_all_unblocked_tasks() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(a).on(b).expect("Could not block a on b");
     let mut incomplete_tasks = list.incomplete_tasks();
     assert_eq!(incomplete_tasks.next(), Some(b));
@@ -677,9 +657,9 @@ fn blocked_task_comes_after_all_unblocked_tasks() {
 #[test]
 fn block_blocked_task_on_other_blocked_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(b).on(a).expect("Could not block b on a");
     list.block(c).on(a).expect("Could not block c on a");
     list.block(b).on(c).expect("Could not block b on c");
@@ -693,8 +673,8 @@ fn block_blocked_task_on_other_blocked_task() {
 #[test]
 fn block_complete_task_on_previously_complete_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    let a = list.add("a");
+    let b = list.add("b");
     list.check(a).expect("Could not check a");
     list.check(b).expect("Could not check b");
     list.block(b).on(a).expect("Could not block b on a");
@@ -708,8 +688,8 @@ fn block_complete_task_on_previously_complete_task() {
 #[ignore = "Do we need layers for complete tasks?"]
 fn block_complete_task_on_later_complete_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    let a = list.add("a");
+    let b = list.add("b");
     list.check(a).expect("Could not check a");
     list.check(b).expect("Could not check b");
     list.block(a).on(b).expect("Could not block a on b");
@@ -722,7 +702,7 @@ fn block_complete_task_on_later_complete_task() {
 #[test]
 fn unlbock_task_from_self_is_error() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     list.unblock(a)
         .from(a)
         .expect_err("Unblocking a task from itself is nonsensical");
@@ -731,8 +711,8 @@ fn unlbock_task_from_self_is_error() {
 #[test]
 fn unblock_task_from_task_that_does_not_block_it() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    let a = list.add("a");
+    let b = list.add("b");
     list.unblock(b)
         .from(a)
         .expect_err("Shouldn't be able to unblock b from a");
@@ -741,8 +721,8 @@ fn unblock_task_from_task_that_does_not_block_it() {
 #[test]
 fn unblock_task_from_blocking_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    let a = list.add("a");
+    let b = list.add("b");
     list.block(b).on(a).expect("Could not block b on a");
     list.unblock(b).from(a).expect("Could not unblock b from a");
 }
@@ -750,9 +730,9 @@ fn unblock_task_from_blocking_task() {
 #[test]
 fn unblock_task_from_indirectly_blocking_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(b).on(a).expect("Could not block b on a");
     list.block(c).on(b).expect("Could not block c on b");
     list.unblock(c)
@@ -763,8 +743,8 @@ fn unblock_task_from_indirectly_blocking_task() {
 #[test]
 fn newly_unblocked_task_has_incomplete_status() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    let a = list.add("a");
+    let b = list.add("b");
     list.block(b).on(a).expect("Could not block b on a");
     list.unblock(b).from(a).expect("Could not unblock b from a");
     assert_eq!(list.status(b), Some(TaskStatus::Incomplete));
@@ -773,9 +753,9 @@ fn newly_unblocked_task_has_incomplete_status() {
 #[test]
 fn unblocked_task_is_still_blocked_if_it_has_remaining_dependencies() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(c).on(a).expect("Could not block c on a");
     list.block(c).on(b).expect("Could not block c on b");
     list.unblock(c).from(a).expect("Could not unblock c from a");
@@ -786,10 +766,10 @@ fn unblocked_task_is_still_blocked_if_it_has_remaining_dependencies() {
 #[test]
 fn partially_unblocked_task_moves_to_lowest_possible_layer() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
-    let d = list.add(Task::new("d"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
+    let d = list.add("d");
     list.block(b).on(a).expect("Could not block b on a");
     list.block(c).on(a).expect("Could not block c on a");
     list.block(c).on(b).expect("Could not block c on b");
@@ -806,8 +786,8 @@ fn partially_unblocked_task_moves_to_lowest_possible_layer() {
 #[test]
 fn unblock_returns_affected_tasks() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    let a = list.add("a");
+    let b = list.add("b");
     list.block(b).on(a).unwrap();
     let affected = list
         .unblock(b)
@@ -821,9 +801,9 @@ fn unblock_returns_affected_tasks() {
 #[test]
 fn unblock_returns_affected_tasks_priority_update() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(b).on(a).unwrap();
     list.block(c).on(b).unwrap();
     list.set_priority(c, 1);
@@ -839,9 +819,9 @@ fn unblock_returns_affected_tasks_priority_update() {
 #[test]
 fn unblock_does_not_return_unaffected_tasks_priority_update() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(b).on(a).unwrap();
     list.block(c).on(b).unwrap();
     list.set_priority(a, 1);
@@ -858,18 +838,18 @@ fn unblock_does_not_return_unaffected_tasks_priority_update() {
 #[test]
 fn all_tasks_when_all_are_incomplete() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     itertools::assert_equal(list.all_tasks(), vec![a, b, c]);
 }
 
 #[test]
 fn all_tasks_when_all_are_complete() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.check(a).expect("Could not check a");
     list.check(b).expect("Could not check b");
     list.check(c).expect("Could not check c");
@@ -879,9 +859,9 @@ fn all_tasks_when_all_are_complete() {
 #[test]
 fn all_tasks_when_some_are_complete_and_some_are_blocked() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.check(a).expect("Could not check a");
     list.block(c).on(b).expect("Could not block c on b");
     itertools::assert_equal(list.all_tasks(), vec![a, b, c]);
@@ -890,16 +870,16 @@ fn all_tasks_when_some_are_complete_and_some_are_blocked() {
 #[test]
 fn deps_of_standalone_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     itertools::assert_equal(list.deps(a).iter_sorted(&list), Vec::new());
 }
 
 #[test]
 fn deps_of_blocked_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(c).on(a).expect("Could not block c on a");
     list.block(c).on(b).expect("Could not block c on b");
     itertools::assert_equal(list.deps(c).iter_sorted(&list), vec![a, b]);
@@ -908,8 +888,8 @@ fn deps_of_blocked_task() {
 #[test]
 fn deps_of_task_blocked_by_completed_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    let a = list.add("a");
+    let b = list.add("b");
     list.block(b).on(a).expect("Could not block b on a");
     list.check(a).expect("Could not check a");
     itertools::assert_equal(list.deps(b).iter_sorted(&list), vec![a]);
@@ -918,9 +898,9 @@ fn deps_of_task_blocked_by_completed_task() {
 #[test]
 fn deps_of_task_with_depth_higher_than_one() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(b).on(a).expect("Could not block b on a");
     list.block(c).on(b).expect("Could not block c on b");
     itertools::assert_equal(list.deps(c).iter_sorted(&list), vec![b]);
@@ -929,16 +909,16 @@ fn deps_of_task_with_depth_higher_than_one() {
 #[test]
 fn adeps_of_standalone_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     itertools::assert_equal(list.adeps(a).iter_sorted(&list), vec![]);
 }
 
 #[test]
 fn adeps_of_blocked_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(b).on(a).expect("Could not block b on a");
     list.block(c).on(a).expect("Could not block c on a");
     itertools::assert_equal(list.adeps(a).iter_sorted(&list), vec![b, c]);
@@ -947,8 +927,8 @@ fn adeps_of_blocked_task() {
 #[test]
 fn adeps_of_completed_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    let a = list.add("a");
+    let b = list.add("b");
     list.block(b).on(a).expect("Could not block b on a");
     list.check(a).expect("Could not check a");
     itertools::assert_equal(list.adeps(a).iter_sorted(&list), vec![b]);
@@ -957,9 +937,9 @@ fn adeps_of_completed_task() {
 #[test]
 fn adeps_of_task_with_depth_of_one() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(b).on(a).expect("Could not block b on a");
     list.block(c).on(b).expect("Could not block c on b");
     itertools::assert_equal(list.adeps(b).iter_sorted(&list), vec![c]);
@@ -968,17 +948,17 @@ fn adeps_of_task_with_depth_of_one() {
 #[test]
 fn transitive_deps_of_standalone_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     itertools::assert_equal(list.transitive_deps(a).iter_sorted(&list), vec![]);
 }
 
 #[test]
 fn transitive_deps_of_blocked_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
-    let d = list.add(Task::new("d"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
+    let d = list.add("d");
     list.block(b).on(a).expect("Could not block b on a");
     list.block(c).on(a).expect("Could not block c on a");
     list.block(d).on(b).expect("Could not block d on b");
@@ -992,9 +972,9 @@ fn transitive_deps_of_blocked_task() {
 #[test]
 fn transitive_deps_includes_complete_tasks() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(b).on(a).expect("Could not block b on a");
     list.block(c).on(b).expect("Could not block c on b");
     list.check(a).expect("Could not check a");
@@ -1008,7 +988,7 @@ fn transitive_deps_includes_complete_tasks() {
 #[test]
 fn transitive_adeps_of_standalone_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     itertools::assert_equal(
         list.transitive_adeps(a).iter_sorted(&list),
         vec![],
@@ -1018,10 +998,10 @@ fn transitive_adeps_of_standalone_task() {
 #[test]
 fn transitive_adeps_of_blocking_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
-    let d = list.add(Task::new("d"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
+    let d = list.add("d");
     list.block(b).on(a).expect("Could not block b on a");
     list.block(c).on(a).expect("Could not block c on a");
     list.block(d).on(b).expect("Could not block d on b");
@@ -1035,9 +1015,9 @@ fn transitive_adeps_of_blocking_task() {
 #[test]
 fn transitive_adeps_includes_complete_tasks() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(b).on(a).expect("Could not block b on a");
     list.block(c).on(b).expect("Could not block c on b");
     list.check(a).expect("Could not check a");
@@ -1051,7 +1031,7 @@ fn transitive_adeps_includes_complete_tasks() {
 #[test]
 fn punt_only_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     list.punt(a).expect("Cannot punt a");
     assert_eq!(list.position(a), Some(1));
 }
@@ -1059,9 +1039,9 @@ fn punt_only_task() {
 #[test]
 fn punt_first_of_three_tasks() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.punt(a).expect("Cannot punt a");
     itertools::assert_equal(list.incomplete_tasks(), vec![b, c, a]);
 }
@@ -1069,7 +1049,7 @@ fn punt_first_of_three_tasks() {
 #[test]
 fn cannot_punt_complete_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     list.check(a).expect("Cannot check a");
     list.punt(a)
         .expect_err("Punting a complete task should be an error");
@@ -1078,9 +1058,9 @@ fn cannot_punt_complete_task() {
 #[test]
 fn punt_blocked_task_moves_to_end_of_layer() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(b).on(a).expect("Cannot block b on a");
     list.block(c).on(a).expect("Cannot block c on a");
     list.punt(b).expect("Could not punt b");
@@ -1090,9 +1070,9 @@ fn punt_blocked_task_moves_to_end_of_layer() {
 #[test]
 fn remove_task_does_not_invalidate_task_ids() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     let adeps = list.remove(a);
     assert_eq!(list.get(a), None);
     assert_eq!(list.status(a), None);
@@ -1104,8 +1084,8 @@ fn remove_task_does_not_invalidate_task_ids() {
 #[test]
 fn remove_task_updates_depth_of_adeps() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    let a = list.add("a");
+    let b = list.add("b");
     list.block(b).on(a).unwrap();
     let adeps = list.remove(a);
     assert_eq!(list.status(b), Some(TaskStatus::Incomplete));
@@ -1115,9 +1095,9 @@ fn remove_task_updates_depth_of_adeps() {
 #[test]
 fn remove_task_attaches_deps_to_adeps() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(b).on(a).unwrap();
     list.block(c).on(b).unwrap();
     let adeps = list.remove(b);
@@ -1129,11 +1109,11 @@ fn remove_task_attaches_deps_to_adeps() {
 #[test]
 fn remove_task_attaches_all_deps_to_adeps() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
-    let d = list.add(Task::new("d"));
-    let e = list.add(Task::new("e"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
+    let d = list.add("d");
+    let e = list.add("e");
     list.block(c).on(a).unwrap();
     list.block(c).on(b).unwrap();
     list.block(d).on(c).unwrap();
@@ -1150,76 +1130,44 @@ fn remove_task_attaches_all_deps_to_adeps() {
 #[test]
 fn sorted_by_priority_two_tasks() {
     let mut list = TodoList::new();
-    let mut task = Task::new("a");
-    task.priority = Some(1);
-    let a = list.add(task);
-    let mut task = Task::new("b");
-    task.priority = Some(2);
-    let b = list.add(task);
+    let a = list.add(NewOptions::new().desc("a").priority(1));
+    let b = list.add(NewOptions::new().desc("b").priority(2));
     itertools::assert_equal(list.all_tasks(), vec![b, a]);
 }
 
 #[test]
 fn sorted_by_priority_three_tasks() {
     let mut list = TodoList::new();
-    let a = {
-        let mut task = Task::new("a");
-        task.priority = Some(1);
-        list.add(task)
-    };
-    let b = {
-        let mut task = Task::new("b");
-        task.priority = Some(2);
-        list.add(task)
-    };
-    let c = {
-        let mut task = Task::new("c");
-        task.priority = Some(3);
-        list.add(task)
-    };
+    let a = list.add(NewOptions::new().desc("a").priority(1));
+    let b = list.add(NewOptions::new().desc("b").priority(2));
+    let c = list.add(NewOptions::new().desc("c").priority(3));
     itertools::assert_equal(list.all_tasks(), vec![c, b, a]);
 }
 
 #[test]
 fn priority_tasks_before_no_priority_tasks() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = {
-        let mut task = Task::new("b");
-        task.priority = Some(1);
-        list.add(task)
-    };
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add(NewOptions::new().desc("a").priority(1));
+    let c = list.add("c");
     itertools::assert_equal(list.all_tasks(), vec![b, a, c]);
 }
 
 #[test]
 fn tasks_with_negative_priority_appear_last() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = {
-        let mut task = Task::new("b");
-        task.priority = Some(-1);
-        list.add(task)
-    };
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add(NewOptions::new().desc("b").priority(-1));
+    let c = list.add("c");
     itertools::assert_equal(list.all_tasks(), vec![a, c, b]);
 }
 
 #[test]
 fn sort_by_implicit_priority() {
     let mut list = TodoList::new();
-    let a = list.add({
-        let mut task = Task::new("a");
-        task.priority = Some(1);
-        task
-    });
-    let b = list.add(Task::new("b"));
-    let c = list.add({
-        let mut task = Task::new("c");
-        task.priority = Some(2);
-        task
-    });
+    let a = list.add(NewOptions::new().desc("a").priority(1));
+    let b = list.add("b");
+    let c = list.add(NewOptions::new().desc("c").priority(2));
     list.block(c).on(b).unwrap();
     // b appears first because it has an implicit priority of 2, higher than
     // a's priority of 1.
@@ -1229,14 +1177,10 @@ fn sort_by_implicit_priority() {
 #[test]
 fn transitive_deps_sorted_by_priority() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
-    let d = list.add({
-        let mut task = Task::new("d");
-        task.priority = Some(1);
-        task
-    });
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
+    let d = list.add(NewOptions::new().desc("c").priority(1));
     list.block(c).on(b).unwrap();
     list.block(d).on(c).unwrap();
     assert_eq!(list.position(b), Some(1));
@@ -1246,17 +1190,9 @@ fn transitive_deps_sorted_by_priority() {
 #[test]
 fn implicit_priority_resets_if_adep_with_priority_is_unblocked() {
     let mut list = TodoList::new();
-    let a = list.add({
-        let mut task = Task::new("a");
-        task.priority = Some(1);
-        task
-    });
-    let b = list.add(Task::new("b"));
-    let c = list.add({
-        let mut task = Task::new("c");
-        task.priority = Some(2);
-        task
-    });
+    let a = list.add(NewOptions::new().desc("a").priority(1));
+    let b = list.add("b");
+    let c = list.add(NewOptions::new().desc("c").priority(2));
     list.block(c).on(b).unwrap();
     list.unblock(c).from(b).unwrap();
     // c appears first because it has the highest priority, followed by a, which
@@ -1270,7 +1206,7 @@ fn implicit_priority_resets_if_adep_with_priority_is_unblocked() {
 fn num_incomplete_tasks() {
     let mut list = TodoList::new();
     assert_eq!(list.num_incomplete_tasks(), 0);
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     assert_eq!(list.num_incomplete_tasks(), 1);
     list.check(a).unwrap();
     assert_eq!(list.num_incomplete_tasks(), 0);
@@ -1280,7 +1216,7 @@ fn num_incomplete_tasks() {
 fn num_complete_tasks() {
     let mut list = TodoList::new();
     assert_eq!(list.num_complete_tasks(), 0);
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     assert_eq!(list.num_complete_tasks(), 0);
     list.check(a).unwrap();
     assert_eq!(list.num_complete_tasks(), 1);
@@ -1289,7 +1225,7 @@ fn num_complete_tasks() {
 #[test]
 fn set_desc_existent() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     assert!(list.set_desc(a, "b"));
     assert_eq!(list.get(a).unwrap().desc, "b");
 }
@@ -1297,7 +1233,7 @@ fn set_desc_existent() {
 #[test]
 fn set_desc_nonexistent() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     list.remove(a);
     assert!(!list.set_desc(a, "b"));
     assert_eq!(list.get(a), None);
@@ -1306,32 +1242,22 @@ fn set_desc_nonexistent() {
 #[test]
 fn implicit_priority_of_unprioritized_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     assert_eq!(list.implicit_priority(a), Some(0));
 }
 
 #[test]
 fn implicit_priority_of_task_with_explicit_priority() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new(NewOptions {
-        desc: "a".to_string(),
-        now: chrono::Utc::now(),
-        priority: Some(1),
-        due_date: None,
-    }));
+    let a = list.add(NewOptions::new().desc("a").priority(1));
     assert_eq!(list.implicit_priority(a), Some(1));
 }
 
 #[test]
 fn implicit_priority_of_task_with_prioritized_adep() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new(NewOptions {
-        desc: "b".to_string(),
-        now: chrono::Utc::now(),
-        priority: Some(1),
-        due_date: None,
-    }));
+    let a = list.add("a");
+    let b = list.add(NewOptions::new().desc("b").priority(1));
     assert_eq!(list.implicit_priority(a), Some(0));
     list.block(b).on(a).unwrap();
     assert_eq!(list.implicit_priority(a), Some(1));
@@ -1340,18 +1266,18 @@ fn implicit_priority_of_task_with_prioritized_adep() {
 #[test]
 fn set_priority_simple() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    assert_eq!(list.get(a).and_then(|task| task.priority), None);
+    let a = list.add("a");
+    assert_eq!(list.get(a).map(|task| task.priority), Some(0));
     list.set_priority(a, 1);
-    assert_eq!(list.get(a).and_then(|task| task.priority), Some(1));
+    assert_eq!(list.get(a).map(|task| task.priority), Some(1));
 }
 
 #[test]
 fn set_priority_updates_deps_position() {
     let mut list = TodoList::new();
-    list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(c).on(b).unwrap();
     assert_eq!(list.position(b), Some(2));
     list.set_priority(c, 1);
@@ -1362,10 +1288,10 @@ fn set_priority_updates_deps_position() {
 #[test]
 fn set_priority_updates_transitive_deps_position() {
     let mut list = TodoList::new();
-    list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
-    let d = list.add(Task::new("d"));
+    list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
+    let d = list.add("d");
     list.block(c).on(b).unwrap();
     list.block(d).on(c).unwrap();
     list.set_priority(d, 1);
@@ -1376,8 +1302,8 @@ fn set_priority_updates_transitive_deps_position() {
 #[test]
 fn set_priority_does_not_return_unaffected_tasks() {
     let mut list = TodoList::new();
-    list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    list.add("a");
+    let b = list.add("b");
     let affected = list.set_priority(b, 1);
     itertools::assert_equal(affected.iter_sorted(&list), vec![b]);
 }
@@ -1385,7 +1311,7 @@ fn set_priority_does_not_return_unaffected_tasks() {
 #[test]
 fn set_priority_returns_empty_set_if_priority_is_same() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     let affected = list.set_priority(a, 0);
     itertools::assert_equal(affected.iter_sorted(&list), vec![]);
 }
@@ -1393,9 +1319,9 @@ fn set_priority_returns_empty_set_if_priority_is_same() {
 #[test]
 fn set_priority_returns_affected_tasks() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(c).on(a).unwrap();
     list.block(c).on(b).unwrap();
     let affected = list.set_priority(c, 1);
@@ -1405,9 +1331,9 @@ fn set_priority_returns_affected_tasks() {
 #[test]
 fn set_priority_returns_transitively_affected_tasks() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
     list.block(c).on(b).unwrap();
     list.block(b).on(a).unwrap();
     let affected = list.set_priority(c, 1);
@@ -1417,7 +1343,7 @@ fn set_priority_returns_transitively_affected_tasks() {
 #[test]
 fn set_priority_returns_empty_set_if_task_is_removed() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     list.remove(a);
     let affected = list.set_priority(a, 1);
     itertools::assert_equal(affected.iter_sorted(&list), vec![]);
@@ -1426,8 +1352,8 @@ fn set_priority_returns_empty_set_if_task_is_removed() {
 #[test]
 fn set_priority_includes_complete_deps() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
+    let a = list.add("a");
+    let b = list.add("b");
     list.block(b).on(a).unwrap();
     list.check(a).unwrap();
     let affected = list.set_priority(b, 1);
@@ -1437,11 +1363,11 @@ fn set_priority_includes_complete_deps() {
 #[test]
 fn set_priority_shows_affected_deps_without_b() {
     let mut list = TodoList::new();
-    let b = list.add(Task::new("b"));
-    let e = list.add(Task::new("e"));
-    let a = list.add(Task::new("a"));
-    let c = list.add(Task::new("c"));
-    let d = list.add(Task::new("d"));
+    let b = list.add("b");
+    let e = list.add("e");
+    let a = list.add("a");
+    let c = list.add("c");
+    let d = list.add("d");
     list.block(d).on(a).unwrap();
     list.block(d).on(c).unwrap();
     assert_eq!(list.all_tasks().collect::<Vec<_>>(), vec![b, e, a, c, d]);
@@ -1456,10 +1382,10 @@ fn set_priority_shows_affected_deps_without_b() {
 #[test]
 fn set_priority_shows_affected_deps() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new("b"));
-    let c = list.add(Task::new("c"));
-    let d = list.add(Task::new("d"));
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
+    let d = list.add("d");
     list.block(d).on(a).unwrap();
     list.block(d).on(c).unwrap();
     assert_eq!(list.all_tasks().collect::<Vec<_>>(), vec![a, b, c, d]);
@@ -1475,9 +1401,9 @@ fn set_priority_shows_affected_deps() {
 #[test]
 fn set_priority_with_no_affected_deps() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     list.set_priority(a, 1);
-    let b = list.add(Task::new("b"));
+    let b = list.add("b");
     list.block(b).on(a).unwrap();
     assert_eq!(
         list.set_priority(b, 1)
@@ -1490,26 +1416,25 @@ fn set_priority_with_no_affected_deps() {
 #[test]
 fn get_due_date() {
     let mut list = TodoList::new();
-    let a = list.add({
-        let mut task = Task::new("a");
-        task.due_date = Some(chrono::Utc.ymd(2021, 04, 08).and_hms(23, 59, 59));
-        task
-    });
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .due_date(chrono::Utc.ymd(2021, 04, 08).and_hms(23, 59, 59)),
+    );
     assert_eq!(
         list.get(a).unwrap().due_date.unwrap(),
-        chrono::Utc.ymd(2021, 04, 08).and_hms(23, 59, 59)
+        chrono::Utc.ymd(2021, 04, 08).and_hms(23, 59, 59),
     );
 }
 
 #[test]
 fn due_date_from_new_options() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new(NewOptions {
-        desc: "a".to_string(),
-        now: chrono::Utc::now(),
-        priority: None,
-        due_date: Some(chrono::Utc.ymd(2021, 04, 09).and_hms(12, 00, 00)),
-    }));
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .due_date(chrono::Utc.ymd(2021, 04, 09).and_hms(12, 00, 00)),
+    );
     assert_eq!(
         list.get(a).unwrap().due_date.unwrap(),
         chrono::Utc.ymd(2021, 04, 09).and_hms(12, 00, 00)
@@ -1519,123 +1444,109 @@ fn due_date_from_new_options() {
 #[test]
 fn sort_by_explicit_due_date() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new(NewOptions {
-        desc: "a".to_string(),
-        now: chrono::Utc::now(),
-        priority: None,
-        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 26, 00)),
-    }));
-    let b = list.add(Task::new(NewOptions {
-        desc: "b".to_string(),
-        now: chrono::Utc::now(),
-        priority: None,
-        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 25, 00)),
-    }));
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .due_date(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 26, 00)),
+    );
+    let b = list.add(
+        NewOptions::new()
+            .desc("b")
+            .due_date(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 25, 00)),
+    );
     assert_eq!(list.all_tasks().collect::<Vec<_>>(), vec![b, a]);
 }
 
 #[test]
 fn sort_keeps_task_with_earlier_due_date_first() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new(NewOptions {
-        desc: "a".to_string(),
-        now: chrono::Utc::now(),
-        priority: None,
-        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 26, 00)),
-    }));
-    let b = list.add(Task::new(NewOptions {
-        desc: "b".to_string(),
-        now: chrono::Utc::now(),
-        priority: None,
-        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 30, 00)),
-    }));
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .due_date(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 26, 00)),
+    );
+    let b = list.add(
+        NewOptions::new()
+            .desc("b")
+            .due_date(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 30, 00)),
+    );
     assert_eq!(list.all_tasks().collect::<Vec<_>>(), vec![a, b]);
 }
 
 #[test]
 fn sort_puts_task_with_due_date_before_task_without_due_date() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new(NewOptions {
-        desc: "a".to_string(),
-        now: chrono::Utc::now(),
-        priority: None,
-        due_date: None,
-    }));
-    let b = list.add(Task::new(NewOptions {
-        desc: "b".to_string(),
-        now: chrono::Utc::now(),
-        priority: None,
-        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 25, 00)),
-    }));
+    let a = list.add("a");
+    let b = list.add(
+        NewOptions::new()
+            .desc("b")
+            .due_date(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 25, 00)),
+    );
     assert_eq!(list.all_tasks().collect::<Vec<_>>(), vec![b, a]);
 }
 
 #[test]
 fn sort_by_implicit_due_date() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new(NewOptions {
-        desc: "a".to_string(),
-        now: chrono::Utc::now(),
-        priority: None,
-        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 30, 00)),
-    }));
-    let b = list.add(Task::new(NewOptions {
-        desc: "b".to_string(),
-        now: chrono::Utc::now(),
-        priority: None,
-        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 00, 00)),
-    }));
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .due_date(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 30, 00)),
+    );
+    let b = list.add(
+        NewOptions::new()
+            .desc("b")
+            .due_date(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 00, 00)),
+    );
     list.block(b).on(a).unwrap();
-    let c = list.add(Task::new(NewOptions {
-        desc: "c".to_string(),
-        now: chrono::Utc::now(),
-        priority: None,
-        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(11, 00, 00)),
-    }));
-    let d = list.add(Task::new(NewOptions {
-        desc: "d".to_string(),
-        now: chrono::Utc::now(),
-        priority: None,
-        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(13, 00, 00)),
-    }));
+    let c = list.add(
+        NewOptions::new()
+            .desc("c")
+            .due_date(chrono::Utc.ymd(2021, 04, 11).and_hms(11, 00, 00)),
+    );
+    let d = list.add(
+        NewOptions::new()
+            .desc("d")
+            .due_date(chrono::Utc.ymd(2021, 04, 11).and_hms(13, 00, 00)),
+    );
     assert_eq!(list.all_tasks().collect::<Vec<_>>(), vec![c, a, d, b]);
 }
 
 #[test]
 fn sort_by_priority_then_due_date() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new(NewOptions {
-        desc: "a".to_string(),
-        now: chrono::Utc::now(),
-        priority: Some(2),
-        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(13, 00, 00)),
-    }));
-    let b = list.add(Task::new(NewOptions {
-        desc: "b".to_string(),
-        now: chrono::Utc::now(),
-        priority: Some(1),
-        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(11, 00, 00)),
-    }));
-    let c = list.add(Task::new(NewOptions {
-        desc: "c".to_string(),
-        now: chrono::Utc::now(),
-        priority: Some(2),
-        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 00, 00)),
-    }));
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .priority(2)
+            .due_date(chrono::Utc.ymd(2021, 04, 11).and_hms(13, 00, 00)),
+    );
+    let b = list.add(
+        NewOptions::new()
+            .desc("b")
+            .priority(1)
+            .due_date(chrono::Utc.ymd(2021, 04, 11).and_hms(11, 00, 00)),
+    );
+    let c = list.add(
+        NewOptions::new()
+            .desc("c")
+            .priority(2)
+            .due_date(chrono::Utc.ymd(2021, 04, 11).and_hms(12, 00, 00)),
+    );
     assert_eq!(list.all_tasks().collect::<Vec<_>>(), vec![c, a, b]);
 }
 
 #[test]
 fn implicit_due_date_of_task_with_no_adeps_or_due_date() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     assert_eq!(list.implicit_due_date(a), Some(None));
 }
 
 #[test]
 fn implicit_due_date_of_nonexistent_task() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
+    let a = list.add("a");
     list.remove(a);
     assert_eq!(list.implicit_due_date(a), None);
 }
@@ -1643,25 +1554,22 @@ fn implicit_due_date_of_nonexistent_task() {
 #[test]
 fn implicit_due_date_is_earliest_due_date_of_adeps() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new(NewOptions {
-        desc: "b".to_string(),
-        now: chrono::Utc::now(),
-        priority: None,
-        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(19, 00, 00)),
-    }));
-    let c = list.add(Task::new(NewOptions {
-        desc: "c".to_string(),
-        now: chrono::Utc::now(),
-        priority: None,
-        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(20, 00, 00)),
-    }));
-    let d = list.add(Task::new(NewOptions {
-        desc: "d".to_string(),
-        now: chrono::Utc::now(),
-        priority: None,
-        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(18, 00, 00)),
-    }));
+    let a = list.add("a");
+    let b = list.add(
+        NewOptions::new()
+            .desc("b")
+            .due_date(chrono::Utc.ymd(2021, 04, 11).and_hms(19, 00, 00)),
+    );
+    let c = list.add(
+        NewOptions::new()
+            .desc("c")
+            .due_date(chrono::Utc.ymd(2021, 04, 11).and_hms(20, 00, 00)),
+    );
+    let d = list.add(
+        NewOptions::new()
+            .desc("d")
+            .due_date(chrono::Utc.ymd(2021, 04, 11).and_hms(18, 00, 00)),
+    );
     list.block(b).on(a).unwrap();
     list.block(c).on(a).unwrap();
     list.block(d).on(a).unwrap();
@@ -1674,25 +1582,22 @@ fn implicit_due_date_is_earliest_due_date_of_adeps() {
 #[test]
 fn implicit_due_date_is_earliest_due_date_of_transitive_adeps() {
     let mut list = TodoList::new();
-    let a = list.add(Task::new("a"));
-    let b = list.add(Task::new(NewOptions {
-        desc: "b".to_string(),
-        now: chrono::Utc::now(),
-        priority: None,
-        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(19, 00, 00)),
-    }));
-    let c = list.add(Task::new(NewOptions {
-        desc: "c".to_string(),
-        now: chrono::Utc::now(),
-        priority: None,
-        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(20, 00, 00)),
-    }));
-    let d = list.add(Task::new(NewOptions {
-        desc: "d".to_string(),
-        now: chrono::Utc::now(),
-        priority: None,
-        due_date: Some(chrono::Utc.ymd(2021, 04, 11).and_hms(18, 00, 00)),
-    }));
+    let a = list.add("a");
+    let b = list.add(
+        NewOptions::new()
+            .desc("b")
+            .due_date(chrono::Utc.ymd(2021, 04, 11).and_hms(19, 00, 00)),
+    );
+    let c = list.add(
+        NewOptions::new()
+            .desc("c")
+            .due_date(chrono::Utc.ymd(2021, 04, 11).and_hms(20, 00, 00)),
+    );
+    let d = list.add(
+        NewOptions::new()
+            .desc("d")
+            .due_date(chrono::Utc.ymd(2021, 04, 11).and_hms(18, 00, 00)),
+    );
     list.block(b).on(a).unwrap();
     list.block(c).on(a).unwrap();
     list.block(d).on(b).unwrap();

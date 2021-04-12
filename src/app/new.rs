@@ -5,7 +5,6 @@ use cli::New;
 use clock::Clock;
 use itertools::Itertools;
 use model::NewOptions;
-use model::Task;
 use model::TaskSet;
 use model::TodoList;
 use printing::Action;
@@ -51,12 +50,12 @@ pub fn run(
         .desc
         .into_iter()
         .map(|desc| {
-            model.add(Task::new(NewOptions {
+            model.add(NewOptions {
                 desc: desc,
                 now: now,
-                priority: priority,
+                priority: priority.unwrap_or(0),
                 due_date: None,
-            }))
+            })
         })
         .collect();
     deps.iter()

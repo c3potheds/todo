@@ -4,7 +4,6 @@ use app::util::pairwise;
 use cli::Split;
 use clock::Clock;
 use model::NewOptions;
-use model::Task;
 use model::TaskId;
 use model::TaskSet;
 use model::TodoList;
@@ -37,7 +36,7 @@ fn split(
     let shards = into
         .map(|desc| {
             let task = list.get(id).unwrap();
-            let shard_task = Task::new(NewOptions {
+            let options = NewOptions {
                 desc: desc.clone(),
                 // Inherit the creation time from the source task,
                 // but if there was no creation time for some
@@ -46,8 +45,8 @@ fn split(
                 now: task.creation_time.unwrap_or_else(|| clock.now()),
                 priority: task.priority,
                 due_date: task.due_date,
-            });
-            list.add(shard_task)
+            };
+            list.add(options)
         })
         .collect::<Vec<_>>();
     shards.iter().copied().for_each(|shard| {
