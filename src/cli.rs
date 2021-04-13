@@ -220,7 +220,10 @@ pub struct Priority {
     pub keys: Vec<Key>,
     /// The priority level for the tasks.
     #[structopt(long = "is", short = "P")]
-    pub priority: i32,
+    pub priority: Option<i32>,
+    /// Show complete tasks in the result.
+    #[structopt(long, short = "d")]
+    pub include_done: bool,
 }
 
 #[derive(Debug, PartialEq, StructOpt)]
@@ -474,7 +477,7 @@ pub enum SubCommand {
     #[structopt(verbatim_doc_comment)]
     Path(Path),
 
-    /// Assign priority levels to given tasks.
+    /// Assign or query priority levels.
     ///
     /// The ordering of tasks is determined first by the dependency structure.
     /// The "depth" of a task is how many dependency edges one needs to travel
@@ -492,6 +495,15 @@ pub enum SubCommand {
     /// through the 'unblock' or 'rm' command, then "a"'s canonical priority
     /// will again be its own explicit priority (unless, of course, "a" has any
     /// other transitive antidependencies with a higher priority).
+    ///
+    /// If you provide neither tasks nor a priority, all tasks with a priority
+    /// greater than zero will be printed. If you only supply a priority, all
+    /// tasks with a priority greater than or equal to that level will be
+    /// printed. If you only supply task keys, the matching tasks will be
+    /// printed along with their antidependencies that share their priority.
+    /// And if both task keys and a priority are supplied, matching tasks will
+    /// have their priority set to the given level, and all affected tasks will
+    /// be printed.
     #[structopt(verbatim_doc_comment)]
     Priority(Priority),
 

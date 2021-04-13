@@ -860,6 +860,48 @@ fn top_include_done_short() {
 }
 
 #[test]
+fn priority_query_all() {
+    let options = parse(&["todo", "priority"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Priority(Priority {
+            keys: vec![],
+            priority: None,
+            include_done: false,
+        })
+    );
+}
+
+#[test]
+fn priority_query_task() {
+    let options = parse(&["todo", "priority", "1"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Priority(Priority {
+            keys: vec![Key::ByNumber(1)],
+            priority: None,
+            include_done: false,
+        })
+    );
+}
+
+#[test]
+fn priority_query_priority() {
+    let options = parse(&["todo", "priority", "--is", "1"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Priority(Priority {
+            keys: vec![],
+            priority: Some(1),
+            include_done: false,
+        })
+    );
+}
+
+#[test]
 fn priority_assign_to_one_task() {
     let options = parse(&["todo", "priority", "1", "--is", "2"]);
     let cmd = options.cmd.unwrap();
@@ -867,7 +909,8 @@ fn priority_assign_to_one_task() {
         cmd,
         SubCommand::Priority(Priority {
             keys: vec![Key::ByNumber(1)],
-            priority: 2,
+            priority: Some(2),
+            include_done: false,
         })
     );
 }
@@ -880,7 +923,8 @@ fn priority_assign_to_three_tasks() {
         cmd,
         SubCommand::Priority(Priority {
             keys: vec![Key::ByNumber(1), Key::ByNumber(2), Key::ByNumber(3)],
-            priority: -1,
+            priority: Some(-1),
+            include_done: false,
         })
     );
 }
