@@ -69,12 +69,16 @@ fn set_due_dates(
     now: DateTime<Utc>,
     tasks: Vec<TaskId>,
     due_date: Option<DateTime<Utc>>,
+    include_done: bool,
 ) {
     tasks
         .into_iter()
         .flat_map(|id| list.set_due_date(id, due_date).into_iter_unsorted())
         .collect::<TaskSet>()
         .iter_sorted(list)
+        .filter(|&id| {
+            include_done || list.status(id) != Some(TaskStatus::Complete)
+        })
         .for_each(|id| {
             printer.print_task(&format_task(list, id, now));
         });
@@ -127,11 +131,16 @@ pub fn run(
     };
 
     match (tasks, due_date, cmd.none) {
-        (Some(tasks), Some(due_date), false) => {
-            set_due_dates(list, printer, now, tasks, Some(due_date))
-        }
+        (Some(tasks), Some(due_date), false) => set_due_dates(
+            list,
+            printer,
+            now,
+            tasks,
+            Some(due_date),
+            cmd.include_done,
+        ),
         (Some(tasks), _, true) => {
-            set_due_dates(list, printer, now, tasks, None)
+            set_due_dates(list, printer, now, tasks, None, cmd.include_done)
         }
         (None, due_date, false) => show_all_tasks_with_due_dates(
             list,

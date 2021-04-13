@@ -244,6 +244,50 @@ fn set_due_date() {
 }
 
 #[test]
+fn set_due_date_excludes_complete_tasks() {
+    let mut fix = Fixture::new();
+    fix.clock.now = Local
+        .ymd(2021, 04, 12)
+        .and_hms(14, 00, 00)
+        .with_timezone(&Utc);
+    fix.test("todo new a b --chain");
+    fix.test("todo check a");
+    fix.test("todo due b --on thursday")
+        .validate()
+        .printed_task(&PrintableTask::new("b", 1, Incomplete).due_date(
+            DueDate {
+                urgency: Meh,
+                desc: "in 3days".to_string(),
+            },
+        ))
+        .end();
+}
+
+#[test]
+fn set_due_date_include_done() {
+    let mut fix = Fixture::new();
+    fix.clock.now = Local
+        .ymd(2021, 04, 12)
+        .and_hms(14, 00, 00)
+        .with_timezone(&Utc);
+    fix.test("todo new a b --chain");
+    fix.test("todo check a");
+    fix.test("todo due b --on thursday --include-done")
+        .validate()
+        .printed_task(&PrintableTask::new("a", 0, Complete).due_date(DueDate {
+            urgency: Meh,
+            desc: "in 3days".to_string(),
+        }))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete).due_date(
+            DueDate {
+                urgency: Meh,
+                desc: "in 3days".to_string(),
+            },
+        ))
+        .end();
+}
+
+#[test]
 fn set_due_date_prints_affected_tasks() {
     let mut fix = Fixture::new();
     fix.clock.now = Local
