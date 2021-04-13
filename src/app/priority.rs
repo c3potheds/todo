@@ -1,5 +1,7 @@
 use app::util::format_task;
 use app::util::lookup_tasks;
+use chrono::DateTime;
+use chrono::Utc;
 use cli::Priority;
 use model::TaskSet;
 use model::TodoList;
@@ -8,6 +10,7 @@ use printing::TodoPrinter;
 pub fn run(
     list: &mut TodoList,
     printer: &mut impl TodoPrinter,
+    now: DateTime<Utc>,
     cmd: &Priority,
 ) {
     let tasks = lookup_tasks(list, &cmd.keys);
@@ -16,5 +19,5 @@ pub fn run(
         .flat_map(|id| list.set_priority(id, cmd.priority).into_iter_unsorted())
         .collect::<TaskSet>()
         .iter_sorted(list)
-        .for_each(|id| printer.print_task(&format_task(list, id)));
+        .for_each(|id| printer.print_task(&format_task(list, id, now)));
 }

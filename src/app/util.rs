@@ -1,22 +1,57 @@
+use chrono::DateTime;
+use chrono::Duration;
+use chrono::Utc;
 use cli::Key;
 use itertools::Itertools;
 use model::TaskId;
 use model::TodoList;
+use printing::DueDate;
 use printing::PrintableTask;
+use printing::Urgency;
+use time_format::display_relative_time;
 
-pub fn format_task<'a>(model: &'a TodoList, id: TaskId) -> PrintableTask<'a> {
+fn calculate_urgency(now: DateTime<Utc>, then: DateTime<Utc>) -> Urgency {
+    if then - now < Duration::zero() {
+        Urgency::Urgent
+    } else if then - now < Duration::days(1) {
+        Urgency::Moderate
+    } else {
+        Urgency::Meh
+    }
+}
+
+pub fn format_task<'a>(
+    model: &'a TodoList,
+    id: TaskId,
+    now: DateTime<Utc>,
+) -> PrintableTask<'a> {
     match (
         model.get(id),
         model.position(id),
         model.status(id),
         model.implicit_priority(id),
+        model.implicit_due_date(id),
     ) {
-        (Some(task), Some(pos), Some(status), implicit_priority) => {
-            let result = PrintableTask::new(&task.desc, pos, status);
-            match implicit_priority {
-                None | Some(0) => result,
-                Some(p) => result.priority(p),
+        (
+            Some(task),
+            Some(pos),
+            Some(status),
+            implicit_priority,
+            Some(implicit_due_date),
+        ) => {
+            let mut result = PrintableTask::new(&task.desc, pos, status);
+            if let Some(p) = implicit_priority {
+                if p != 0 {
+                    result = result.priority(p);
+                }
             }
+            if let Some(due_date) = implicit_due_date {
+                result = result.due_date(DueDate {
+                    urgency: calculate_urgency(now, due_date),
+                    desc: display_relative_time(now, due_date),
+                })
+            }
+            result
         }
         _ => panic!("Failed to get task info for id {:?}", id),
     }

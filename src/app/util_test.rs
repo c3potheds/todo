@@ -1,4 +1,5 @@
 use super::util::*;
+use chrono::Utc;
 use cli::Key;
 use model::NewOptions;
 use model::TaskStatus;
@@ -10,7 +11,7 @@ use printing::PrintableTask;
 fn format_task_basic() {
     let mut list = TodoList::new();
     let a = list.add("a");
-    let actual = format_task(&list, a);
+    let actual = format_task(&list, a, Utc::now());
     let expected = PrintableTask::new("a", 1, TaskStatus::Incomplete);
     assert_eq!(actual, expected);
 }
@@ -19,7 +20,7 @@ fn format_task_basic() {
 fn format_task_with_action() {
     let mut list = TodoList::new();
     let a = list.add("a");
-    let actual = format_task(&list, a).action(Action::Punt);
+    let actual = format_task(&list, a, Utc::now()).action(Action::Punt);
     let expected =
         PrintableTask::new("a", 1, TaskStatus::Incomplete).action(Action::Punt);
     assert_eq!(actual, expected);
@@ -29,7 +30,7 @@ fn format_task_with_action() {
 fn format_task_with_priority() {
     let mut list = TodoList::new();
     let a = list.add(NewOptions::new().desc("a").priority(1));
-    let actual = format_task(&list, a);
+    let actual = format_task(&list, a, Utc::now());
     let expected =
         PrintableTask::new("a", 1, TaskStatus::Incomplete).priority(1);
     assert_eq!(actual, expected);
@@ -39,7 +40,7 @@ fn format_task_with_priority() {
 fn format_task_with_zero_priority() {
     let mut list = TodoList::new();
     let a = list.add(NewOptions::new().desc("a").priority(0));
-    let actual = format_task(&list, a);
+    let actual = format_task(&list, a, Utc::now());
     let expected = PrintableTask::new("a", 1, TaskStatus::Incomplete);
     assert_eq!(actual, expected);
 }

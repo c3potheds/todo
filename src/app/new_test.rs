@@ -323,7 +323,7 @@ fn new_with_due_date() {
             &PrintableTask::new("a", 1, Incomplete)
                 .due_date(DueDate {
                     urgency: Moderate,
-                    desc: "in 5h",
+                    desc: "in 5h".to_string(),
                 })
                 .action(New),
         )
@@ -359,22 +359,22 @@ fn new_with_due_date_shows_affected_deps() {
         .printed_task(&PrintableTask::new("a", 1, Incomplete).due_date(
             DueDate {
                 urgency: Meh,
-                desc: "in 2days",
+                desc: "in 2days".to_string(),
             },
         ))
         .printed_task(&PrintableTask::new("b", 2, Blocked).due_date(DueDate {
             urgency: Meh,
-            desc: "in 2days",
+            desc: "in 2days".to_string(),
         }))
         .printed_task(&PrintableTask::new("c", 3, Blocked).due_date(DueDate {
             urgency: Meh,
-            desc: "in 2days",
+            desc: "in 2days".to_string(),
         }))
         .printed_task(
             &PrintableTask::new("d", 4, Blocked)
                 .due_date(DueDate {
                     urgency: Meh,
-                    desc: "in 2days",
+                    desc: "in 2days".to_string(),
                 })
                 .action(New),
         )

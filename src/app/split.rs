@@ -1,8 +1,9 @@
 use app::util::format_task;
 use app::util::lookup_tasks;
 use app::util::pairwise;
+use chrono::DateTime;
+use chrono::Utc;
 use cli::Split;
-use clock::Clock;
 use model::NewOptions;
 use model::TaskId;
 use model::TaskSet;
@@ -26,7 +27,7 @@ impl SplitResult {
 
 fn split(
     list: &mut TodoList,
-    clock: &impl Clock,
+    now: DateTime<Utc>,
     id: TaskId,
     into: impl Iterator<Item = String>,
     chain: bool,
@@ -42,7 +43,7 @@ fn split(
                 // but if there was no creation time for some
                 // reason, take the current moment as the creation
                 // time.
-                now: task.creation_time.unwrap_or_else(|| clock.now()),
+                now: task.creation_time.unwrap_or(now),
                 priority: task.priority,
                 due_date: task.due_date,
             };
@@ -77,7 +78,7 @@ fn split(
 pub fn run(
     list: &mut TodoList,
     printer: &mut impl TodoPrinter,
-    clock: &impl Clock,
+    now: DateTime<Utc>,
     cmd: Split,
 ) {
     let to_split = lookup_tasks(list, &cmd.keys);
@@ -89,7 +90,7 @@ pub fn run(
         |so_far, id| {
             so_far.combine(split(
                 list,
-                clock,
+                now,
                 id,
                 cmd.into.iter().map(|desc| desc.clone()),
                 cmd.chain,
@@ -97,7 +98,7 @@ pub fn run(
         },
     );
     result.to_print.iter_sorted(list).for_each(|id| {
-        printer.print_task(&format_task(list, id).action(
+        printer.print_task(&format_task(list, id, now).action(
             if result.shards.contains(id) {
                 Action::Select
             } else {

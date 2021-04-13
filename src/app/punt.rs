@@ -1,5 +1,7 @@
 use app::util::format_task;
 use app::util::lookup_tasks;
+use chrono::DateTime;
+use chrono::Utc;
 use cli::Punt;
 use model::PuntError;
 use model::TodoList;
@@ -7,7 +9,12 @@ use printing::Action;
 use printing::PrintableWarning;
 use printing::TodoPrinter;
 
-pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Punt) {
+pub fn run(
+    model: &mut TodoList,
+    printer: &mut impl TodoPrinter,
+    now: DateTime<Utc>,
+    cmd: &Punt,
+) {
     lookup_tasks(&model, &cmd.keys)
         .into_iter()
         .filter(|&id| match model.punt(id) {
@@ -26,6 +33,7 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Punt) {
         .collect::<Vec<_>>()
         .into_iter()
         .for_each(|id| {
-            printer.print_task(&format_task(&model, id).action(Action::Punt))
+            printer
+                .print_task(&format_task(&model, id, now).action(Action::Punt))
         });
 }

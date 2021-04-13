@@ -1,5 +1,7 @@
 use app::util::format_task;
 use app::util::lookup_tasks;
+use chrono::DateTime;
+use chrono::Utc;
 use cli::Edit;
 use itertools::Itertools;
 use model::TaskId;
@@ -25,6 +27,7 @@ fn format_tasks_for_text_editor(model: &TodoList, ids: &Vec<TaskId>) -> String {
 fn edit_with_description(
     model: &mut TodoList,
     printer: &mut impl TodoPrinter,
+    now: DateTime<Utc>,
     ids: &Vec<TaskId>,
     desc: &str,
 ) {
@@ -33,7 +36,7 @@ fn edit_with_description(
         .filter(|&id| model.set_desc(id, desc))
         .collect::<TaskSet>()
         .iter_sorted(model)
-        .for_each(|id| printer.print_task(&format_task(model, id)));
+        .for_each(|id| printer.print_task(&format_task(model, id, now)));
 }
 
 enum EditError {
@@ -91,6 +94,7 @@ fn update_desc(
 fn edit_with_text_editor(
     model: &mut TodoList,
     printer: &mut impl TodoPrinter,
+    now: DateTime<Utc>,
     ids: &Vec<TaskId>,
     editor_output: &str,
 ) {
@@ -112,26 +116,31 @@ fn edit_with_text_editor(
         })
         .collect::<TaskSet>()
         .iter_sorted(model)
-        .for_each(|id| printer.print_task(&format_task(model, id)))
+        .for_each(|id| printer.print_task(&format_task(model, id, now)))
 }
 
 pub fn run(
     model: &mut TodoList,
     printer: &mut impl TodoPrinter,
     text_editor: &impl TextEditor,
+    now: DateTime<Utc>,
     cmd: &Edit,
 ) {
     let tasks_to_edit = lookup_tasks(model, &cmd.keys);
     match &cmd.desc {
         Some(ref desc) => {
-            edit_with_description(model, printer, &tasks_to_edit, desc)
+            edit_with_description(model, printer, now, &tasks_to_edit, desc)
         }
         None => match text_editor
             .edit_text(&format_tasks_for_text_editor(&model, &tasks_to_edit))
         {
-            Ok(ref output) => {
-                edit_with_text_editor(model, printer, &tasks_to_edit, output)
-            }
+            Ok(ref output) => edit_with_text_editor(
+                model,
+                printer,
+                now,
+                &tasks_to_edit,
+                output,
+            ),
             Err(_) => {
                 printer.print_error(&PrintableError::FailedToUseTextEditor)
             }

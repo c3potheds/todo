@@ -22,19 +22,19 @@ fn show_tasks_with_due_date() {
         .printed_task(&PrintableTask::new("a", 1, Incomplete).due_date(
             DueDate {
                 urgency: Meh,
-                desc: "in 1day",
+                desc: "in 1day".to_string(),
             },
         ))
         .printed_task(&PrintableTask::new("b", 2, Incomplete).due_date(
             DueDate {
                 urgency: Meh,
-                desc: "in 1day",
+                desc: "in 1day".to_string(),
             },
         ))
         .printed_task(&PrintableTask::new("c", 3, Incomplete).due_date(
             DueDate {
                 urgency: Meh,
-                desc: "in 1day",
+                desc: "in 1day".to_string(),
             },
         ))
         .end();
@@ -56,16 +56,16 @@ fn show_tasks_with_due_date_includes_blocked() {
         .printed_task(&PrintableTask::new("a", 1, Incomplete).due_date(
             DueDate {
                 urgency: Moderate,
-                desc: "in 5h",
+                desc: "in 5h".to_string(),
             },
         ))
         .printed_task(&PrintableTask::new("b", 5, Blocked).due_date(DueDate {
             urgency: Meh,
-            desc: "in 2days",
+            desc: "in 2days".to_string(),
         }))
         .printed_task(&PrintableTask::new("c", 6, Blocked).due_date(DueDate {
             urgency: Meh,
-            desc: "in 2days",
+            desc: "in 2days".to_string(),
         }))
         .end();
 }
@@ -87,12 +87,12 @@ fn show_tasks_with_due_date_excludes_complete() {
         .printed_task(&PrintableTask::new("b", 1, Incomplete).due_date(
             DueDate {
                 urgency: Meh,
-                desc: "in 2days",
+                desc: "in 2days".to_string(),
             },
         ))
         .printed_task(&PrintableTask::new("c", 5, Blocked).due_date(DueDate {
             urgency: Meh,
-            desc: "in 2days",
+            desc: "in 2days".to_string(),
         }))
         .end();
 }
@@ -113,17 +113,17 @@ fn show_tasks_with_due_date_include_done() {
         .validate()
         .printed_task(&PrintableTask::new("a", 0, Complete).due_date(DueDate {
             urgency: Moderate,
-            desc: "in 5h",
+            desc: "in 5h".to_string(),
         }))
         .printed_task(&PrintableTask::new("b", 1, Incomplete).due_date(
             DueDate {
                 urgency: Meh,
-                desc: "in 2days",
+                desc: "in 2days".to_string(),
             },
         ))
         .printed_task(&PrintableTask::new("c", 5, Blocked).due_date(DueDate {
             urgency: Meh,
-            desc: "in 2days",
+            desc: "in 2days".to_string(),
         }))
         .end();
 }
@@ -145,13 +145,13 @@ fn show_tasks_with_due_date_earlier_than_given_date() {
         .printed_task(&PrintableTask::new("a", 1, Incomplete).due_date(
             DueDate {
                 urgency: Moderate,
-                desc: "in 5h",
+                desc: "in 5h".to_string(),
             },
         ))
         .printed_task(&PrintableTask::new("g", 2, Incomplete).due_date(
             DueDate {
                 urgency: Moderate,
-                desc: "in 6h",
+                desc: "in 6h".to_string(),
             },
         ))
         .end();
@@ -174,12 +174,12 @@ fn show_tasks_with_due_date_earlier_than_given_date_include_done() {
         .validate()
         .printed_task(&PrintableTask::new("g", 0, Complete).due_date(DueDate {
             urgency: Moderate,
-            desc: "in 6h",
+            desc: "in 6h".to_string(),
         }))
         .printed_task(&PrintableTask::new("a", 1, Incomplete).due_date(
             DueDate {
                 urgency: Moderate,
-                desc: "in 5h",
+                desc: "in 5h".to_string(),
             },
         ))
         .end();
@@ -201,16 +201,16 @@ fn show_source_of_implicit_due_date() {
         .printed_task(&PrintableTask::new("a", 4, Incomplete).due_date(
             DueDate {
                 urgency: Moderate,
-                desc: "in 2 days",
+                desc: "in 2 days".to_string(),
             },
         ))
         .printed_task(&PrintableTask::new("b", 5, Blocked).due_date(DueDate {
             urgency: Meh,
-            desc: "in 2days",
+            desc: "in 2days".to_string(),
         }))
         .printed_task(&PrintableTask::new("c", 6, Blocked).due_date(DueDate {
             urgency: Meh,
-            desc: "in 2days",
+            desc: "in 2days".to_string(),
         }))
         .end();
 }
@@ -231,13 +231,13 @@ fn set_due_date() {
         .printed_task(&PrintableTask::new("d", 2, Incomplete).due_date(
             DueDate {
                 urgency: Meh,
-                desc: "in 3days",
+                desc: "in 3days".to_string(),
             },
         ))
         .printed_task(&PrintableTask::new("e", 3, Incomplete).due_date(
             DueDate {
                 urgency: Meh,
-                desc: "in 3days",
+                desc: "in 3days".to_string(),
             },
         ))
         .end();
@@ -259,16 +259,16 @@ fn set_due_date_prints_affected_tasks() {
         .printed_task(&PrintableTask::new("a", 1, Incomplete).due_date(
             DueDate {
                 urgency: Moderate,
-                desc: "in 1h",
+                desc: "in 1h".to_string(),
             },
         ))
         .printed_task(&PrintableTask::new("b", 5, Blocked).due_date(DueDate {
             urgency: Moderate,
-            desc: "in 1h",
+            desc: "in 1h".to_string(),
         }))
         .printed_task(&PrintableTask::new("c", 6, Blocked).due_date(DueDate {
             urgency: Moderate,
-            desc: "in 1h",
+            desc: "in 1h".to_string(),
         }))
         .end();
 }

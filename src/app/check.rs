@@ -3,7 +3,6 @@ use app::util::lookup_tasks;
 use chrono::DateTime;
 use chrono::Utc;
 use cli::Check;
-use clock::Clock;
 use model::CheckError;
 use model::CheckOptions;
 use model::ForceChecked;
@@ -138,11 +137,10 @@ fn print_cannot_complete_error(
 pub fn run(
     model: &mut TodoList,
     printer: &mut impl TodoPrinter,
-    clock: &impl Clock,
+    now: DateTime<Utc>,
     cmd: &Check,
 ) {
     let tasks_to_check = lookup_tasks(model, &cmd.keys);
-    let now = clock.now();
     let CheckResult {
         to_print,
         cannot_complete,
@@ -160,6 +158,7 @@ pub fn run(
         .collect::<TaskSet>()
         .iter_sorted(model)
         .for_each(|id| {
-            printer.print_task(&format_task(model, id).action(to_print[&id]));
+            printer
+                .print_task(&format_task(model, id, now).action(to_print[&id]));
         });
 }

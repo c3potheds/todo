@@ -1,5 +1,7 @@
 use app::util::format_task;
 use app::util::lookup_tasks;
+use chrono::DateTime;
+use chrono::Utc;
 use cli::Block;
 use itertools::Itertools;
 use model::TaskId;
@@ -27,7 +29,12 @@ fn print_block_error(
     );
 }
 
-pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Block) {
+pub fn run(
+    model: &mut TodoList,
+    printer: &mut impl TodoPrinter,
+    now: DateTime<Utc>,
+    cmd: &Block,
+) {
     let tasks_to_block = lookup_tasks(&model, &cmd.keys);
     let tasks_to_block_on = lookup_tasks(&model, &cmd.on);
     tasks_to_block
@@ -46,7 +53,7 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Block) {
         .collect::<TaskSet>()
         .iter_sorted(model)
         .for_each(|id| {
-            printer.print_task(&format_task(model, id).action(
+            printer.print_task(&format_task(model, id, now).action(
                 if tasks_to_block.contains(&id) {
                     Action::Lock
                 } else {

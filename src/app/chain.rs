@@ -1,6 +1,8 @@
 use app::util::format_task;
 use app::util::lookup_tasks;
 use app::util::pairwise;
+use chrono::DateTime;
+use chrono::Utc;
 use cli::Chain;
 use itertools::Itertools;
 use model::BlockError;
@@ -12,7 +14,12 @@ use printing::PrintableError;
 use printing::TodoPrinter;
 use std::collections::HashSet;
 
-pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Chain) {
+pub fn run(
+    model: &mut TodoList,
+    printer: &mut impl TodoPrinter,
+    now: DateTime<Utc>,
+    cmd: &Chain,
+) {
     let task_lists: Vec<Vec<TaskId>> = cmd
         .keys
         .iter()
@@ -43,7 +50,7 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Chain) {
         .iter_sorted(model)
         .for_each(|id| {
             printer.print_task(
-                &format_task(model, id).action(
+                &format_task(model, id, now).action(
                     first
                         .filter(|fs| fs.iter().any(|&f| f == id))
                         .map(|_| Action::None)

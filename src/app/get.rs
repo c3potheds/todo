@@ -1,12 +1,19 @@
 use app::util::format_task;
 use app::util::lookup_tasks;
+use chrono::DateTime;
+use chrono::Utc;
 use cli::Get;
 use model::TaskSet;
 use model::TodoList;
 use printing::Action;
 use printing::TodoPrinter;
 
-pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Get) {
+pub fn run(
+    model: &TodoList,
+    printer: &mut impl TodoPrinter,
+    now: DateTime<Utc>,
+    cmd: &Get,
+) {
     let requested_tasks = lookup_tasks(model, &cmd.keys);
     requested_tasks
         .iter()
@@ -19,7 +26,7 @@ pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Get) {
         .collect::<TaskSet>()
         .iter_sorted(&model)
         .for_each(|id| {
-            printer.print_task(&format_task(model, id).action(
+            printer.print_task(&format_task(model, id, now).action(
                 if requested_tasks.contains(&id) {
                     Action::Select
                 } else {

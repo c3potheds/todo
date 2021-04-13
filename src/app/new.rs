@@ -1,9 +1,9 @@
 use app::util::format_task;
 use app::util::lookup_tasks;
 use app::util::pairwise;
+use chrono::DateTime;
 use chrono::Utc;
 use cli::New;
-use clock::Clock;
 use itertools::Itertools;
 use model::NewOptions;
 use model::TaskSet;
@@ -15,10 +15,9 @@ use printing::TodoPrinter;
 pub fn run(
     model: &mut TodoList,
     printer: &mut impl TodoPrinter,
-    clock: &impl Clock,
+    now: DateTime<Utc>,
     cmd: New,
 ) {
-    let now = clock.now();
     let due_date_string = cmd.due.join(" ");
     let due_date = if !due_date_string.is_empty() {
         match ::time_format::parse_time(Utc, now, &due_date_string) {
@@ -99,11 +98,11 @@ pub fn run(
         });
     }
     deps.into_iter()
-        .for_each(|id| printer.print_task(&format_task(model, id)));
+        .for_each(|id| printer.print_task(&format_task(model, id, now)));
     new_tasks.into_iter().for_each(|id| {
-        printer.print_task(&format_task(model, id).action(Action::New))
+        printer.print_task(&format_task(model, id, now).action(Action::New))
     });
     adeps
         .into_iter()
-        .for_each(|id| printer.print_task(&format_task(model, id)));
+        .for_each(|id| printer.print_task(&format_task(model, id, now)));
 }

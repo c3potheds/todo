@@ -73,9 +73,12 @@ pub enum Urgency {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct DueDate<'a> {
+pub struct DueDate {
     pub urgency: Urgency,
-    pub desc: &'a str,
+    // TODO(printing.due-date.timestamp): Make this store the 'now' and 'then'
+    // timestamps instead of a string description, leaving the formatting to the
+    // TodoPrinter implementation.
+    pub desc: String,
 }
 
 #[derive(Debug, PartialEq)]
@@ -86,7 +89,7 @@ pub struct PrintableTask<'a> {
     action: Action,
     log_date: Option<LogDate>,
     priority: Option<i32>,
-    due_date: Option<DueDate<'a>>,
+    due_date: Option<DueDate>,
 }
 
 impl<'a> PrintableTask<'a> {
@@ -117,7 +120,7 @@ impl<'a> PrintableTask<'a> {
         self
     }
 
-    pub fn due_date(mut self, due_date: DueDate<'a>) -> Self {
+    pub fn due_date(mut self, due_date: DueDate) -> Self {
         self.due_date = Some(due_date);
         self
     }

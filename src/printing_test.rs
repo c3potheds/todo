@@ -197,7 +197,7 @@ fn show_meh_due_date_on_task() {
     let fmt = print_task(
         &PrintableTask::new("a", 1, TaskStatus::Incomplete).due_date(DueDate {
             urgency: Urgency::Meh,
-            desc: "in 2 days",
+            desc: "in 2 days".to_string(),
         }),
     );
     assert_eq!(
@@ -211,7 +211,7 @@ fn show_moderate_due_date_on_task() {
     let fmt = print_task(
         &PrintableTask::new("a", 1, TaskStatus::Incomplete).due_date(DueDate {
             urgency: Urgency::Moderate,
-            desc: "in 9 hours",
+            desc: "in 9 hours".to_string(),
         }),
     );
     assert_eq!(
@@ -225,7 +225,7 @@ fn show_urgent_due_date_on_task() {
     let fmt = print_task(
         &PrintableTask::new("a", 1, TaskStatus::Incomplete).due_date(DueDate {
             urgency: Urgency::Urgent,
-            desc: "1 day ago",
+            desc: "1 day ago".to_string(),
         }),
     );
     assert_eq!(
@@ -241,7 +241,7 @@ fn show_priority_and_due_date_together() {
             .priority(1)
             .due_date(DueDate {
                 urgency: Urgency::Urgent,
-                desc: "1 day ago",
+                desc: "1 day ago".to_string(),
             }),
     );
     assert_eq!(

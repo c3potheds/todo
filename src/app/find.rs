@@ -1,9 +1,16 @@
 use app::util::format_task;
+use chrono::DateTime;
+use chrono::Utc;
 use cli::Find;
 use model::TodoList;
 use printing::TodoPrinter;
 
-pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Find) {
+pub fn run(
+    model: &TodoList,
+    printer: &mut impl TodoPrinter,
+    now: DateTime<Utc>,
+    cmd: &Find,
+) {
     model
         .all_tasks()
         .filter(|&id| {
@@ -13,5 +20,5 @@ pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Find) {
                 .map(|term| term.to_lowercase())
                 .any(|term| task.desc.to_lowercase().contains(&term))
         })
-        .for_each(|id| printer.print_task(&format_task(model, id)))
+        .for_each(|id| printer.print_task(&format_task(model, id, now)))
 }

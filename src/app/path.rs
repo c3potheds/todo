@@ -1,5 +1,7 @@
 use app::util::format_task;
 use app::util::lookup_tasks;
+use chrono::DateTime;
+use chrono::Utc;
 use cli::Key;
 use cli::Path;
 use model::TaskId;
@@ -36,7 +38,12 @@ fn verify_unambiguous(
     }
 }
 
-pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Path) {
+pub fn run(
+    model: &TodoList,
+    printer: &mut impl TodoPrinter,
+    now: DateTime<Utc>,
+    cmd: &Path,
+) {
     let from = lookup_tasks(model, vec![&cmd.from]);
     let to = lookup_tasks(model, vec![&cmd.to]);
     let from_is_unambiguous =
@@ -55,7 +62,7 @@ pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Path) {
         return;
     }
     tasks_in_path.into_iter().for_each(|id| {
-        printer.print_task(&format_task(model, id).action(
+        printer.print_task(&format_task(model, id, now).action(
             if id == from[0] || id == to[0] {
                 Action::Select
             } else {
