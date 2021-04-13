@@ -28,7 +28,8 @@ fn default_creation_time() -> Option<DateTime<Utc>> {
     Some(Utc::now())
 }
 
-// NOTE: all new fields need to be Options to allow backwards compatibility.
+// NOTE: all new fields need to be Options or be marked #[serde(default)] to
+// allow backwards compatibility.
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct Task {
     pub desc: String,
@@ -799,6 +800,20 @@ impl TodoList {
         match self.tasks.node_weight_mut(id.0) {
             Some(task) => {
                 task.priority = priority;
+                self.update_implicits(id)
+            }
+            None => TaskSet::new(),
+        }
+    }
+
+    pub fn set_due_date(
+        &mut self,
+        id: TaskId,
+        due_date: Option<DateTime<Utc>>,
+    ) -> TaskSet {
+        match self.tasks.node_weight_mut(id.0) {
+            Some(task) => {
+                task.due_date = due_date;
                 self.update_implicits(id)
             }
             None => TaskSet::new(),
