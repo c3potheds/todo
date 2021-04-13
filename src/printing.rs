@@ -182,6 +182,10 @@ pub enum PrintableError {
     NoMatchForKeys {
         keys: Vec<Key>,
     },
+    CannotParseDueDate {
+        cannot_parse: String,
+    },
+    ConflictingArgs((String, String)),
 }
 
 const ANSI_OFFSET: usize = 10;
@@ -413,6 +417,19 @@ impl Display for PrintableError {
                             .map(|key| format_key(key))
                             .collect::<Vec<_>>()
                             .join(", "),
+                    )
+                }
+                PrintableError::CannotParseDueDate { cannot_parse } => {
+                    format!(
+                        "Cannot parse due date: {}",
+                        Color::White.bold().paint(cannot_parse),
+                    )
+                }
+                PrintableError::ConflictingArgs((a, b)) => {
+                    format!(
+                        "Cannot pass {} and {} at the same time",
+                        Color::White.bold().paint(a),
+                        Color::White.bold().paint(b),
                     )
                 }
             }

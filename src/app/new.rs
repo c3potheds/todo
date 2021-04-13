@@ -1,6 +1,7 @@
 use app::util::format_task;
 use app::util::lookup_tasks;
 use app::util::pairwise;
+use chrono::Utc;
 use cli::New;
 use clock::Clock;
 use itertools::Itertools;
@@ -8,6 +9,7 @@ use model::NewOptions;
 use model::TaskSet;
 use model::TodoList;
 use printing::Action;
+use printing::PrintableError;
 use printing::TodoPrinter;
 
 pub fn run(
@@ -16,6 +18,21 @@ pub fn run(
     clock: &impl Clock,
     cmd: New,
 ) {
+    let now = clock.now();
+    let due_date_string = cmd.due.join(" ");
+    let due_date = if !due_date_string.is_empty() {
+        match ::time_format::parse_time(Utc, now, &due_date_string) {
+            Ok(due_date) => Some(due_date),
+            Err(_) => {
+                printer.print_error(&PrintableError::CannotParseDueDate {
+                    cannot_parse: due_date_string.clone(),
+                });
+                return;
+            }
+        }
+    } else {
+        None
+    };
     let deps = lookup_tasks(model, &cmd.blocked_by);
     let adeps = lookup_tasks(model, &cmd.blocking);
     let before = lookup_tasks(model, &cmd.before);
@@ -44,7 +61,6 @@ pub fn run(
         .collect::<TaskSet>()
         .iter_sorted(model)
         .collect::<Vec<_>>();
-    let now = clock.now();
     let priority = cmd.priority;
     let new_tasks: Vec<_> = cmd
         .desc
@@ -54,7 +70,7 @@ pub fn run(
                 desc: desc,
                 now: now,
                 priority: priority.unwrap_or(0),
-                due_date: None,
+                due_date: due_date,
             })
         })
         .collect();

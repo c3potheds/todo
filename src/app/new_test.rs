@@ -1,8 +1,13 @@
 use app::testing::Fixture;
+use chrono::Local;
+use chrono::TimeZone;
+use chrono::Utc;
 use model::TaskStatus::*;
 use printing::Action::*;
+use printing::DueDate;
 use printing::PrintableError;
 use printing::PrintableTask;
+use printing::Urgency::*;
 
 #[test]
 fn new_one_task() {
@@ -301,6 +306,77 @@ fn new_task_with_priority_inserted_in_sorted_order() {
             &PrintableTask::new("c", 2, Incomplete)
                 .action(New)
                 .priority(2),
+        )
+        .end();
+}
+
+#[test]
+fn new_with_due_date() {
+    let mut fix = Fixture::new();
+    fix.clock.now = Local
+        .ymd(2021, 04, 12)
+        .and_hms(15, 00, 00)
+        .with_timezone(&Utc);
+    fix.test("todo new a --due 5 hours")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("a", 1, Incomplete)
+                .due_date(DueDate {
+                    urgency: Moderate,
+                    desc: "in 5h",
+                })
+                .action(New),
+        )
+        .end();
+}
+
+#[test]
+fn new_with_invalid_due_date() {
+    let mut fix = Fixture::new();
+    fix.clock.now = Local
+        .ymd(2021, 04, 12)
+        .and_hms(15, 00, 00)
+        .with_timezone(&Utc);
+    fix.test("todo new a --due blah blah")
+        .validate()
+        .printed_error(&PrintableError::CannotParseDueDate {
+            cannot_parse: "blah blah".to_string(),
+        })
+        .end();
+}
+
+#[test]
+#[ignore = "app.new.show-affected-deps"]
+fn new_with_due_date_shows_affected_deps() {
+    let mut fix = Fixture::new();
+    fix.clock.now = Local
+        .ymd(2021, 04, 12)
+        .and_hms(15, 00, 00)
+        .with_timezone(&Utc);
+    fix.test("todo new a b c --chain");
+    fix.test("todo new d -p c --due 2 days")
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).due_date(
+            DueDate {
+                urgency: Meh,
+                desc: "in 2days",
+            },
+        ))
+        .printed_task(&PrintableTask::new("b", 2, Blocked).due_date(DueDate {
+            urgency: Meh,
+            desc: "in 2days",
+        }))
+        .printed_task(&PrintableTask::new("c", 3, Blocked).due_date(DueDate {
+            urgency: Meh,
+            desc: "in 2days",
+        }))
+        .printed_task(
+            &PrintableTask::new("d", 4, Blocked)
+                .due_date(DueDate {
+                    urgency: Meh,
+                    desc: "in 2days",
+                })
+                .action(New),
         )
         .end();
 }
