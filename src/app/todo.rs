@@ -1,6 +1,7 @@
 use app::block;
 use app::chain;
 use app::check;
+use app::due;
 use app::edit;
 use app::find;
 use app::get;
@@ -42,7 +43,7 @@ pub fn todo(
         Some(Block(cmd)) => block::run(list, printer, &cmd),
         Some(Chain(cmd)) => chain::run(list, printer, &cmd),
         Some(Check(cmd)) => check::run(list, printer, clock, &cmd),
-        Some(Due(_)) => unimplemented!(),
+        Some(Due(cmd)) => due::run(list, printer, clock, &cmd),
         Some(Edit(cmd)) => edit::run(list, printer, text_editor, &cmd),
         Some(Find(cmd)) => find::run(list, printer, &cmd),
         Some(Get(cmd)) => get::run(list, printer, &cmd),
