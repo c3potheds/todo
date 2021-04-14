@@ -8,11 +8,12 @@ use itertools::Itertools;
 use model::BlockError;
 use model::TaskId;
 use model::TaskSet;
+use model::TaskStatus;
 use model::TodoList;
 use printing::Action;
 use printing::PrintableError;
 use printing::TodoPrinter;
-use std::collections::HashSet;
+use std::collections::HashMap;
 
 pub fn run(
     model: &mut TodoList,
@@ -25,37 +26,36 @@ pub fn run(
         .iter()
         .map(|key| lookup_tasks(model, std::iter::once(key)))
         .collect();
-    let first = task_lists.first();
+    let mut actions = HashMap::new();
     pairwise(task_lists.iter())
-        .fold(HashSet::new(), |mut so_far, (deps, ids)| {
-            deps.iter().cartesian_product(ids.iter()).for_each(
-                |(&dep, &id)| match model.block(id).on(dep) {
-                    Ok(_) => {
-                        so_far.insert(dep);
-                        so_far.insert(id);
+        .fold(TaskSet::new(), |so_far, (deps, ids)| {
+            deps.iter().cartesian_product(ids.iter()).fold(
+                so_far,
+                |so_far, (&dep, &id)| match model.block(id).on(dep) {
+                    Ok(affected) => {
+                        actions.insert(id, Action::Lock);
+                        so_far | affected
                     }
-                    Err(BlockError::WouldCycle(_)) => printer.print_error(
+                    Err(BlockError::WouldCycle(_)) => {
+                        printer.print_error(
                         &PrintableError::CannotBlockBecauseWouldCauseCycle {
                             cannot_block: model.position(id).unwrap(),
                             requested_dependency: model.position(dep).unwrap(),
-                        },
-                    ),
-                    Err(BlockError::WouldBlockOnSelf) => (),
+                        });
+                        so_far
+                    }
+                    Err(BlockError::WouldBlockOnSelf) => so_far,
                 },
-            );
-            so_far
+            )
         })
-        .into_iter()
-        .collect::<TaskSet>()
         .iter_sorted(model)
+        .filter(|&id| {
+            cmd.include_done || model.status(id) != Some(TaskStatus::Complete)
+        })
         .for_each(|id| {
             printer.print_task(
-                &format_task(model, id, now).action(
-                    first
-                        .filter(|fs| fs.iter().any(|&f| f == id))
-                        .map(|_| Action::None)
-                        .unwrap_or(Action::Lock),
-                ),
+                &format_task(model, id, now)
+                    .action(*actions.get(&id).unwrap_or(&Action::None)),
             );
         });
 }

@@ -723,6 +723,7 @@ fn chain_one() {
         cmd,
         SubCommand::Chain(Chain {
             keys: vec![Key::ByNumber(1)],
+            include_done: false,
         })
     );
 }
@@ -735,6 +736,7 @@ fn chain_three() {
         cmd,
         SubCommand::Chain(Chain {
             keys: vec![Key::ByNumber(10), Key::ByNumber(20), Key::ByNumber(30)],
+            include_done: false,
         })
     );
 }
@@ -747,6 +749,7 @@ fn chain_by_range() {
         cmd,
         SubCommand::Chain(Chain {
             keys: vec![Key::ByRange(1, 5)],
+            include_done: false,
         })
     );
 }

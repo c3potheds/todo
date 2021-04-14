@@ -53,6 +53,9 @@ pub struct Block {
 pub struct Chain {
     /// Tasks to arrange in a blocking sequence.
     pub keys: Vec<Key>,
+    /// Show complete affected tasks.
+    #[structopt(long, short = "d")]
+    pub include_done: bool,
 }
 
 #[derive(Debug, PartialEq, StructOpt)]

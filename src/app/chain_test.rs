@@ -35,3 +35,33 @@ fn chain_would_cause_cycle() {
         })
         .end();
 }
+
+#[test]
+fn chain_shows_affected_deps() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain");
+    fix.test("todo new c --priority 1");
+    fix.test("todo chain b c")
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).priority(1))
+        .printed_task(&PrintableTask::new("b", 2, Blocked).priority(1))
+        .printed_task(
+            &PrintableTask::new("c", 3, Blocked).priority(1).action(Lock),
+        )
+        .end();
+}
+
+#[test]
+fn chain_excludes_complete_affected_deps() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain");
+    fix.test("todo new c --priority 1");
+    fix.test("todo check a");
+    fix.test("todo chain b c")
+        .validate()
+        .printed_task(&PrintableTask::new("b", 1, Incomplete).priority(1))
+        .printed_task(
+            &PrintableTask::new("c", 2, Blocked).priority(1).action(Lock),
+        )
+        .end();
+}
