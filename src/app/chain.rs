@@ -1,3 +1,4 @@
+use app::util::any_tasks_are_complete;
 use app::util::format_task;
 use app::util::lookup_tasks;
 use app::util::pairwise;
@@ -8,7 +9,6 @@ use itertools::Itertools;
 use model::BlockError;
 use model::TaskId;
 use model::TaskSet;
-use model::TaskStatus;
 use model::TodoList;
 use printing::Action;
 use printing::PrintableError;
@@ -26,6 +26,11 @@ pub fn run(
         .iter()
         .map(|key| lookup_tasks(model, std::iter::once(key)))
         .collect();
+    let include_done = cmd.include_done
+        || any_tasks_are_complete(
+            model,
+            task_lists.iter().flat_map(|inner| inner.iter()).copied(),
+        );
     let mut actions = HashMap::new();
     pairwise(task_lists.iter())
         .fold(TaskSet::new(), |so_far, (deps, ids)| {
@@ -48,10 +53,8 @@ pub fn run(
                 },
             )
         })
+        .include_done(model, include_done)
         .iter_sorted(model)
-        .filter(|&id| {
-            cmd.include_done || model.status(id) != Some(TaskStatus::Complete)
-        })
         .for_each(|id| {
             printer.print_task(
                 &format_task(model, id, now)

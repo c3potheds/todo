@@ -21,10 +21,8 @@ fn set_priority(
         .into_iter()
         .flat_map(|id| list.set_priority(id, priority).into_iter_unsorted())
         .collect::<TaskSet>()
+        .include_done(list, include_done)
         .iter_sorted(list)
-        .filter(|&id| {
-            include_done || list.status(id) != Some(TaskStatus::Complete)
-        })
         .for_each(|id| printer.print_task(&format_task(list, id, now)));
 }
 
@@ -53,10 +51,8 @@ fn show_source_of_priority_for_tasks(
                 .into_iter_unsorted()
         })
         .collect::<TaskSet>()
+        .include_done(list, include_done)
         .iter_sorted(list)
-        .filter(|&id| {
-            include_done || list.status(id) != Some(TaskStatus::Complete)
-        })
         .for_each(|id| {
             printer.print_task(&format_task(list, id, now));
         })
