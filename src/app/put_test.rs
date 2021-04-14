@@ -169,3 +169,34 @@ fn put_after_prints_updated_priority() {
         .printed_task(&PrintableTask::new("d", 4, Blocked).action(Lock))
         .end();
 }
+
+#[test]
+fn put_excludes_complete_affected_tasks() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain");
+    fix.test("todo check a");
+    fix.test("todo new c --priority 1");
+    fix.test("todo put c --after b")
+        .validate()
+        .printed_task(&PrintableTask::new("b", 1, Incomplete).priority(1))
+        .printed_task(
+            &PrintableTask::new("c", 2, Blocked).priority(1).action(Lock),
+        )
+        .end();
+}
+
+#[test]
+fn put_include_done() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain");
+    fix.test("todo check a");
+    fix.test("todo new c --priority 1");
+    fix.test("todo put c --after b -d")
+        .validate()
+        .printed_task(&PrintableTask::new("a", 0, Complete).priority(1))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete).priority(1))
+        .printed_task(
+            &PrintableTask::new("c", 2, Blocked).priority(1).action(Lock),
+        )
+        .end();
+}

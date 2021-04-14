@@ -1,3 +1,4 @@
+use app::util::any_tasks_are_complete;
 use app::util::format_task;
 use app::util::lookup_tasks;
 use chrono::DateTime;
@@ -39,6 +40,15 @@ pub fn run(
     let tasks_to_put = lookup_tasks(model, &cmd.keys);
     let before = lookup_tasks(model, &cmd.before);
     let after = lookup_tasks(model, &cmd.after);
+    let include_done = cmd.include_done
+        || any_tasks_are_complete(
+            model,
+            tasks_to_put
+                .iter()
+                .chain(before.iter())
+                .chain(after.iter())
+                .copied(),
+        );
     let before_deps: TaskSet = before
         .iter()
         .copied()
@@ -90,6 +100,7 @@ pub fn run(
             }
         })
         .collect::<TaskSet>()
+        .include_done(model, include_done)
         .iter_sorted(model)
         .for_each(|id| {
             printer.print_task(&format_task(model, id, now).action(

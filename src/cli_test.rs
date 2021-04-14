@@ -739,6 +739,7 @@ fn put_one_before() {
             keys: vec![Key::ByName("a".to_string())],
             before: vec![Key::ByName("b".to_string())],
             after: vec![],
+            include_done: false,
         })
     );
 }
@@ -753,6 +754,7 @@ fn put_one_after() {
             keys: vec![Key::ByName("a".to_string())],
             before: vec![],
             after: vec![Key::ByName("b".to_string())],
+            include_done: false,
         })
     );
 }
@@ -782,6 +784,38 @@ fn put_multiple_before_and_after() {
                 Key::ByName("h".to_string()),
                 Key::ByName("i".to_string())
             ],
+            include_done: false,
+        })
+    );
+}
+
+#[test]
+fn put_include_done_long() {
+    let options =
+        parse(&["todo", "put", "a", "--before", "b", "--include-done"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Put(Put {
+            keys: vec![Key::ByName("a".to_string())],
+            before: vec![Key::ByName("b".to_string())],
+            after: vec![],
+            include_done: true,
+        })
+    );
+}
+
+#[test]
+fn put_include_done_short() {
+    let options = parse(&["todo", "put", "a", "--before", "b", "-d"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Put(Put {
+            keys: vec![Key::ByName("a".to_string())],
+            before: vec![Key::ByName("b".to_string())],
+            after: vec![],
+            include_done: true,
         })
     );
 }

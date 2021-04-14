@@ -260,6 +260,9 @@ pub struct Put {
     /// Put the selected tasks after these tasks.
     #[structopt(long, short = "a")]
     pub after: Vec<Key>,
+    /// Include affected complete tasks in the result.
+    #[structopt(long, short = "d")]
+    pub include_done: bool,
 }
 
 #[derive(Debug, PartialEq, StructOpt)]
