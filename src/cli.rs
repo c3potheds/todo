@@ -111,6 +111,9 @@ pub struct Edit {
 pub struct Find {
     /// Search terms, which can be a substring of any task description.
     pub terms: Vec<String>,
+    /// Show completed tasks in search results.
+    #[structopt(long, short = "d")]
+    pub include_done: bool,
 }
 
 #[derive(Debug, PartialEq, StructOpt)]

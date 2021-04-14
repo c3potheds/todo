@@ -35,11 +35,19 @@ fn find_with_multiple_matches() {
 }
 
 #[test]
+fn find_excludes_complete_tasks() {
+    let mut fix = Fixture::new();
+    fix.test("todo new aaa aba aca");
+    fix.test("todo check 2");
+    fix.test("todo find b").validate().end();
+}
+
+#[test]
 fn find_includes_complete_tasks() {
     let mut fix = Fixture::new();
     fix.test("todo new aaa aba aca");
     fix.test("todo check 2");
-    fix.test("todo find b")
+    fix.test("todo find b -d")
         .validate()
         .printed_task(&PrintableTask::new("aba", 0, Complete))
         .end();

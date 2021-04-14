@@ -699,6 +699,33 @@ fn find_with_single_string() {
         cmd,
         SubCommand::Find(Find {
             terms: vec!["hello".to_string()],
+            include_done: false,
+        })
+    );
+}
+
+#[test]
+fn find_include_done_long() {
+    let options = parse(&["todo", "find", "yo", "--include-done"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Find(Find {
+            terms: vec!["yo".to_string()],
+            include_done: true,
+        })
+    );
+}
+
+#[test]
+fn find_include_done_short() {
+    let options = parse(&["todo", "find", "blah", "-d"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Find(Find {
+            terms: vec!["blah".to_string()],
+            include_done: true,
         })
     );
 }
@@ -711,6 +738,7 @@ fn find_with_multiple_strings() {
         cmd,
         SubCommand::Find(Find {
             terms: vec!["hello".to_string(), "goodbye".to_string()],
+            include_done: false,
         })
     );
 }
