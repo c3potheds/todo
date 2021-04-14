@@ -117,3 +117,34 @@ fn block_does_not_print_priority_updates_for_unaffected_deps() {
         )
         .end();
 }
+
+#[test]
+fn block_excludes_complete_affected_tasks() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain");
+    fix.test("todo new c --priority 1");
+    fix.test("todo check a");
+    fix.test("todo block c --on b")
+        .validate()
+        .printed_task(&PrintableTask::new("b", 1, Incomplete).priority(1))
+        .printed_task(
+            &PrintableTask::new("c", 2, Blocked).action(Lock).priority(1),
+        )
+        .end();
+}
+
+#[test]
+fn block_include_done() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain");
+    fix.test("todo new c --priority 1");
+    fix.test("todo check a");
+    fix.test("todo block c --on b -d")
+        .validate()
+        .printed_task(&PrintableTask::new("a", 0, Complete).priority(1))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete).priority(1))
+        .printed_task(
+            &PrintableTask::new("c", 2, Blocked).action(Lock).priority(1),
+        )
+        .end();
+}

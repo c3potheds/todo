@@ -427,6 +427,7 @@ fn block_one_on_one() {
         SubCommand::Block(Block {
             keys: vec![Key::ByNumber(2)],
             on: vec![Key::ByNumber(1)],
+            include_done: false,
         })
     );
 }
@@ -440,6 +441,7 @@ fn block_three_on_one() {
         SubCommand::Block(Block {
             keys: vec![Key::ByNumber(1), Key::ByNumber(2), Key::ByNumber(3)],
             on: vec![Key::ByNumber(4)],
+            include_done: false,
         })
     );
 }
@@ -454,6 +456,7 @@ fn block_three_on_three() {
         SubCommand::Block(Block {
             keys: vec![Key::ByNumber(1), Key::ByNumber(2), Key::ByNumber(3)],
             on: vec![Key::ByNumber(4), Key::ByNumber(5), Key::ByNumber(6)],
+            include_done: false,
         })
     );
 }
@@ -467,6 +470,35 @@ fn block_by_name() {
         SubCommand::Block(Block {
             keys: vec![Key::ByName("a".to_string())],
             on: vec![Key::ByName("b".to_string())],
+            include_done: false,
+        })
+    );
+}
+
+#[test]
+fn block_include_done_long() {
+    let options = parse(&["todo", "block", "1", "--on", "2", "--include-done"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Block(Block {
+            keys: vec![Key::ByNumber(1)],
+            on: vec![Key::ByNumber(2)],
+            include_done: true,
+        })
+    );
+}
+
+#[test]
+fn block_include_done_short() {
+    let options = parse(&["todo", "block", "1", "--on", "2", "-d"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Block(Block {
+            keys: vec![Key::ByNumber(1)],
+            on: vec![Key::ByNumber(2)],
+            include_done: true,
         })
     );
 }

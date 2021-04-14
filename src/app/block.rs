@@ -1,3 +1,4 @@
+use app::util::any_tasks_are_complete;
 use app::util::format_task;
 use app::util::lookup_tasks;
 use chrono::DateTime;
@@ -37,6 +38,14 @@ pub fn run(
 ) {
     let tasks_to_block = lookup_tasks(&model, &cmd.keys);
     let tasks_to_block_on = lookup_tasks(&model, &cmd.on);
+    let include_done = cmd.include_done
+        || any_tasks_are_complete(
+            model,
+            tasks_to_block
+                .iter()
+                .chain(tasks_to_block_on.iter())
+                .copied(),
+        );
     tasks_to_block
         .iter()
         .copied()
@@ -51,6 +60,7 @@ pub fn run(
             }
         })
         .collect::<TaskSet>()
+        .include_done(model, include_done)
         .iter_sorted(model)
         .for_each(|id| {
             printer.print_task(&format_task(model, id, now).action(

@@ -46,6 +46,10 @@ pub struct Block {
     /// Tasks to block on.
     #[structopt(long)]
     pub on: Vec<Key>,
+
+    /// Include complete affected deps in result.
+    #[structopt(long, short = "d")]
+    pub include_done: bool,
 }
 
 #[derive(Debug, PartialEq, StructOpt)]
