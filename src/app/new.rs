@@ -11,6 +11,8 @@ use model::TodoList;
 use printing::Action;
 use printing::PrintableError;
 use printing::TodoPrinter;
+use std::collections::HashSet;
+use std::iter::FromIterator;
 
 pub fn run(
     model: &mut TodoList,
@@ -61,48 +63,61 @@ pub fn run(
         .iter_sorted(model)
         .collect::<Vec<_>>();
     let priority = cmd.priority;
+    let mut to_print = HashSet::new();
     let new_tasks: Vec<_> = cmd
         .desc
         .into_iter()
         .map(|desc| {
-            model.add(NewOptions {
+            let id = model.add(NewOptions {
                 desc: desc,
                 now: now,
                 priority: priority.unwrap_or(0),
                 due_date: due_date,
-            })
+            });
+            to_print.insert(id);
+            id
         })
         .collect();
-    deps.iter()
-        .copied()
+    deps.into_iter()
         .cartesian_product(new_tasks.iter().copied())
         .for_each(|(dep, new)| {
-            // TODO(app.new.print-warning-on-cycle): print a warning, but
-            // continue in the error case.
-            model.block(new).on(dep).expect("Cannot block");
+            match model.block(new).on(dep) {
+                Ok(affected) => to_print.extend(affected.iter_unsorted()),
+                // TODO(app.new.print-warning-on-cycle): print a warning, but
+                // continue in the error case.
+                Err(_) => panic!("Cannot block"),
+            }
         });
     adeps
-        .iter()
-        .copied()
+        .into_iter()
         .cartesian_product(new_tasks.iter().copied())
         .for_each(|(adep, new)| {
-            // TODO(app.new.print-warning-on-cycle): print a warning, but
-            // continue in the error case.
-            model.block(adep).on(new).expect("Cannot block");
+            match model.block(adep).on(new) {
+                Ok(affected) => to_print.extend(affected.iter_unsorted()),
+                // TODO(app.new.print-warning-on-cycle): print a warning, but
+                // continue in the error case.
+                Err(_) => panic!("cannot block"),
+            }
         });
     if cmd.chain {
         pairwise(new_tasks.iter().copied()).for_each(|(a, b)| {
-            model.block(b).on(a).expect(
-                "This should never happen because all blocking tasks are new",
-            );
+            match model.block(b).on(a) {
+                Ok(affected) => to_print.extend(affected.iter_unsorted()),
+                Err(_) => {
+                    panic!("This should never happen because all tasks are new")
+                }
+            }
         });
     }
-    deps.into_iter()
-        .for_each(|id| printer.print_task(&format_task(model, id, now)));
-    new_tasks.into_iter().for_each(|id| {
-        printer.print_task(&format_task(model, id, now).action(Action::New))
-    });
-    adeps
-        .into_iter()
-        .for_each(|id| printer.print_task(&format_task(model, id, now)));
+    TaskSet::from_iter(to_print.into_iter())
+        .iter_sorted(model)
+        .for_each(|id| {
+            printer.print_task(&format_task(model, id, now).action(
+                if new_tasks.contains(&id) {
+                    Action::New
+                } else {
+                    Action::None
+                },
+            ));
+        });
 }

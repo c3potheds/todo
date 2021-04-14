@@ -346,7 +346,6 @@ fn new_with_invalid_due_date() {
 }
 
 #[test]
-#[ignore = "app.new.show-affected-deps"]
 fn new_with_due_date_shows_affected_deps() {
     let mut fix = Fixture::new();
     fix.clock.now = Local
