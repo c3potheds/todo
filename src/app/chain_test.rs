@@ -65,3 +65,27 @@ fn chain_excludes_complete_affected_deps() {
         )
         .end();
 }
+
+#[test]
+fn chain_by_range() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c");
+    fix.test("todo chain 1..3")
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("b", 2, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("c", 3, Blocked).action(Lock))
+        .end();
+}
+
+#[test]
+fn chain_ambiguous_key() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a a a");
+    fix.test("todo chain a")
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("a", 2, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("a", 3, Blocked).action(Lock))
+        .end();
+}

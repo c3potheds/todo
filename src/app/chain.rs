@@ -5,9 +5,7 @@ use app::util::pairwise;
 use chrono::DateTime;
 use chrono::Utc;
 use cli::Chain;
-use itertools::Itertools;
 use model::BlockError;
-use model::TaskId;
 use model::TaskSet;
 use model::TodoList;
 use printing::Action;
@@ -21,37 +19,28 @@ pub fn run(
     now: DateTime<Utc>,
     cmd: &Chain,
 ) {
-    let task_lists: Vec<Vec<TaskId>> = cmd
-        .keys
-        .iter()
-        .map(|key| lookup_tasks(model, std::iter::once(key)))
-        .collect();
+    let tasks = lookup_tasks(model, &cmd.keys);
     let include_done = cmd.include_done
-        || any_tasks_are_complete(
-            model,
-            task_lists.iter().flat_map(|inner| inner.iter()).copied(),
-        );
+        || any_tasks_are_complete(model, tasks.iter().copied());
     let mut actions = HashMap::new();
-    pairwise(task_lists.iter())
-        .fold(TaskSet::new(), |so_far, (deps, ids)| {
-            deps.iter().cartesian_product(ids.iter()).fold(
-                so_far,
-                |so_far, (&dep, &id)| match model.block(id).on(dep) {
-                    Ok(affected) => {
-                        actions.insert(id, Action::Lock);
-                        so_far | affected
-                    }
-                    Err(BlockError::WouldCycle(_)) => {
-                        printer.print_error(
+    pairwise(tasks.iter().copied())
+        .fold(TaskSet::new(), |so_far, (a, b)| {
+            match model.block(b).on(a) {
+                Ok(affected) => {
+                    actions.insert(b, Action::Lock);
+                    so_far | affected
+                }
+                Err(BlockError::WouldCycle(_)) => {
+                    printer.print_error(
                         &PrintableError::CannotBlockBecauseWouldCauseCycle {
-                            cannot_block: model.position(id).unwrap(),
-                            requested_dependency: model.position(dep).unwrap(),
-                        });
-                        so_far
-                    }
-                    Err(BlockError::WouldBlockOnSelf) => so_far,
-                },
-            )
+                            cannot_block: model.position(b).unwrap(),
+                            requested_dependency: model.position(a).unwrap(),
+                        },
+                    );
+                    so_far
+                }
+                Err(BlockError::WouldBlockOnSelf) => so_far,
+            }
         })
         .include_done(model, include_done)
         .iter_sorted(model)
