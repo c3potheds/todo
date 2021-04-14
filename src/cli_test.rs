@@ -512,6 +512,7 @@ fn unblock_one_from_one() {
         SubCommand::Unblock(Unblock {
             keys: vec![Key::ByNumber(2)],
             from: vec![Key::ByNumber(1)],
+            include_done: false,
         })
     );
 }
@@ -525,6 +526,7 @@ fn unblock_three_from_one() {
         SubCommand::Unblock(Unblock {
             keys: vec![Key::ByNumber(2), Key::ByNumber(3), Key::ByNumber(4)],
             from: vec![Key::ByNumber(0)],
+            include_done: false,
         })
     );
 }
@@ -539,6 +541,7 @@ fn unblock_three_from_three() {
         SubCommand::Unblock(Unblock {
             keys: vec![Key::ByNumber(4), Key::ByNumber(5), Key::ByNumber(6)],
             from: vec![Key::ByNumber(1), Key::ByNumber(2), Key::ByNumber(3)],
+            include_done: false,
         })
     );
 }
@@ -552,6 +555,36 @@ fn unblock_by_name() {
         SubCommand::Unblock(Unblock {
             keys: vec![Key::ByName("a".to_string())],
             from: vec![Key::ByName("b".to_string())],
+            include_done: false,
+        })
+    );
+}
+
+#[test]
+fn unblock_include_done_long() {
+    let options =
+        parse(&["todo", "unblock", "2", "--from", "1", "--include-done"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Unblock(Unblock {
+            keys: vec![Key::ByNumber(2)],
+            from: vec![Key::ByNumber(1)],
+            include_done: true,
+        })
+    );
+}
+
+#[test]
+fn unblock_include_done_short() {
+    let options = parse(&["todo", "unblock", "2", "--from", "1", "-d"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Unblock(Unblock {
+            keys: vec![Key::ByNumber(2)],
+            from: vec![Key::ByNumber(1)],
+            include_done: true,
         })
     );
 }

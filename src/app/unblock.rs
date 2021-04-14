@@ -1,3 +1,4 @@
+use app::util::any_tasks_are_complete;
 use app::util::format_task;
 use app::util::lookup_tasks;
 use chrono::DateTime;
@@ -76,6 +77,14 @@ pub fn run(
 ) {
     let tasks_to_unblock = lookup_tasks(&model, &cmd.keys);
     let tasks_to_unblock_from = lookup_tasks(&model, &cmd.from);
+    let include_done = cmd.include_done
+        || any_tasks_are_complete(
+            model,
+            tasks_to_unblock
+                .iter()
+                .chain(tasks_to_unblock_from.iter())
+                .copied(),
+        );
     if !cmd.from.is_empty() && tasks_to_unblock_from.is_empty() {
         printer.print_error(&PrintableError::NoMatchForKeys {
             keys: cmd.from.clone(),
@@ -92,13 +101,16 @@ pub fn run(
             &tasks_to_unblock_from,
         )
     };
-    tasks_to_print.iter_sorted(model).for_each(|id| {
-        printer.print_task(&format_task(model, id, now).action(
-            if tasks_to_unblock.contains(&id) {
-                Action::Unlock
-            } else {
-                Action::None
-            },
-        ));
-    });
+    tasks_to_print
+        .include_done(model, include_done)
+        .iter_sorted(model)
+        .for_each(|id| {
+            printer.print_task(&format_task(model, id, now).action(
+                if tasks_to_unblock.contains(&id) {
+                    Action::Unlock
+                } else {
+                    Action::None
+                },
+            ));
+        });
 }

@@ -321,6 +321,10 @@ pub struct Unblock {
     /// Tasks to unblock from.
     #[structopt(long)]
     pub from: Vec<Key>,
+
+    /// Show affected complete tasks in the result.
+    #[structopt(long, short = "d")]
+    pub include_done: bool,
 }
 
 #[derive(Debug, PartialEq, StructOpt)]

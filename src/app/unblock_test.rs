@@ -128,3 +128,38 @@ fn unblock_does_not_show_unaffected_priority() {
         .printed_task(&PrintableTask::new("b", 3, Blocked).priority(1))
         .end();
 }
+
+#[test]
+fn unblock_excludes_affected_complete_tasks() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c --chain");
+    fix.test("todo priority c --is 1");
+    fix.test("todo check a");
+    fix.test("todo unblock c --from b")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("c", 1, Incomplete)
+                .priority(1)
+                .action(Unlock),
+        )
+        .printed_task(&PrintableTask::new("b", 2, Incomplete))
+        .end();
+}
+
+#[test]
+fn unblock_include_done() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c --chain");
+    fix.test("todo priority c --is 1");
+    fix.test("todo check a");
+    fix.test("todo unblock c --from b -d")
+        .validate()
+        .printed_task(&PrintableTask::new("a", 0, Complete))
+        .printed_task(
+            &PrintableTask::new("c", 1, Incomplete)
+                .priority(1)
+                .action(Unlock),
+        )
+        .printed_task(&PrintableTask::new("b", 2, Incomplete))
+        .end();
+}
