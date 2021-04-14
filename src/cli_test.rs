@@ -532,6 +532,7 @@ fn get_one() {
         cmd,
         SubCommand::Get(Get {
             keys: vec![Key::ByNumber(1)],
+            include_done: false,
         })
     );
 }
@@ -544,6 +545,7 @@ fn get_three() {
         cmd,
         SubCommand::Get(Get {
             keys: vec![Key::ByNumber(1), Key::ByNumber(2), Key::ByNumber(3)],
+            include_done: false,
         })
     );
 }
@@ -556,6 +558,7 @@ fn get_by_name() {
         cmd,
         SubCommand::Get(Get {
             keys: vec![Key::ByName("a".to_string())],
+            include_done: false,
         })
     );
 }
@@ -568,6 +571,33 @@ fn get_negative() {
         cmd,
         SubCommand::Get(Get {
             keys: vec![Key::ByNumber(-1)],
+            include_done: false,
+        })
+    );
+}
+
+#[test]
+fn get_include_done_long() {
+    let options = parse(&["todo", "get", "1", "--include-done"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Get(Get {
+            keys: vec![Key::ByNumber(1)],
+            include_done: true,
+        })
+    );
+}
+
+#[test]
+fn get_include_done_short() {
+    let options = parse(&["todo", "get", "1", "-d"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Get(Get {
+            keys: vec![Key::ByNumber(1)],
+            include_done: true,
         })
     );
 }

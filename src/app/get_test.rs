@@ -37,6 +37,29 @@ fn get_multiple_tasks() {
 }
 
 #[test]
+fn get_excludes_completed_deps() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain");
+    fix.test("todo check a");
+    fix.test("todo get b")
+        .validate()
+        .printed_task(&PrintableTask::new("b", 1, Incomplete).action(Select))
+        .end();
+}
+
+#[test]
+fn get_include_done() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain");
+    fix.test("todo check a");
+    fix.test("todo get b -d")
+        .validate()
+        .printed_task(&PrintableTask::new("a", 0, Complete))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete).action(Select))
+        .end();
+}
+
+#[test]
 fn get_shows_blocking_tasks() {
     let mut fix = Fixture::new();
     fix.test("todo new a b");

@@ -1,3 +1,4 @@
+use app::util::any_tasks_are_complete;
 use app::util::format_task;
 use app::util::lookup_tasks;
 use chrono::DateTime;
@@ -15,6 +16,8 @@ pub fn run(
     cmd: &Get,
 ) {
     let requested_tasks = lookup_tasks(model, &cmd.keys);
+    let include_done = cmd.include_done
+        || any_tasks_are_complete(model, requested_tasks.iter().copied());
     requested_tasks
         .iter()
         .copied()
@@ -24,7 +27,8 @@ pub fn run(
                 .chain(std::iter::once(id))
         })
         .collect::<TaskSet>()
-        .iter_sorted(&model)
+        .include_done(model, include_done)
+        .iter_sorted(model)
         .for_each(|id| {
             printer.print_task(&format_task(model, id, now).action(
                 if requested_tasks.contains(&id) {

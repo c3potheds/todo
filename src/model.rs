@@ -274,6 +274,18 @@ impl TaskSet {
             .into_iter()
             .map(|task_id_with_pos| task_id_with_pos.id)
     }
+
+    pub fn include_done(self, list: &TodoList, include_done: bool) -> Self {
+        if include_done {
+            self
+        } else {
+            TaskSet {
+                ids: HashSet::from_iter(self.ids.into_iter().filter(|&id| {
+                    list.status(id) != Some(TaskStatus::Complete)
+                })),
+            }
+        }
+    }
 }
 
 impl FromIterator<TaskId> for TaskSet {

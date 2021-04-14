@@ -4,6 +4,7 @@ use chrono::Utc;
 use cli::Key;
 use itertools::Itertools;
 use model::TaskId;
+use model::TaskStatus;
 use model::TodoList;
 use printing::DueDate;
 use printing::PrintableTask;
@@ -88,6 +89,13 @@ pub fn lookup_tasks<'a>(
         })
         .unique()
         .collect()
+}
+
+pub fn any_tasks_are_complete(
+    list: &TodoList,
+    mut tasks: impl Iterator<Item = TaskId>,
+) -> bool {
+    tasks.any(|id| list.status(id) == Some(TaskStatus::Complete))
 }
 
 struct Pairwise<T, I>
