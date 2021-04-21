@@ -16,7 +16,12 @@ pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Top) {
                 return false;
             }
             if underneath.len() > 0 {
-                underneath.iter().all(|&top| model.deps(top).contains(id))
+                underneath.iter().all(|&top| {
+                    model.deps(top).contains(id)
+                        && !model.adeps(id).iter_unsorted().any(|adep| {
+                            model.transitive_adeps(adep).contains(top)
+                        })
+                })
             } else {
                 model.adeps(id).iter_unsorted().collect::<Vec<_>>().len() == 0
             }

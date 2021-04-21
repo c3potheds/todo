@@ -119,3 +119,17 @@ fn top_intersection_of_categories() {
         .printed_task(&PrintableTask::new("d", 4, Incomplete))
         .end();
 }
+
+#[test]
+fn top_exclude_deps_with_indirect_connection_to_category() {
+    let mut fix = Fixture::new();
+    fix.test("todo new x");
+    fix.test("todo new a b --chain -b x");
+    fix.test("todo top x")
+        .validate()
+        // a should be excluded because there's also an indirect connection to
+        // the top, through b. On the other hand, b is included because the only
+        // path to the top is direct.
+        .printed_task(&PrintableTask::new("b", 2, Blocked))
+        .end();
+}
