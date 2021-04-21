@@ -231,7 +231,7 @@ fn show_meh_due_date_on_task() {
     let fmt = print_task_with_context(&now_context(now), &task);
     assert_eq!(
         fmt,
-        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;2;37mDue in 2days\u{1b}[0m a\n"
+        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;2;37mDue in 2 days\u{1b}[0m a\n"
     );
 }
 
@@ -243,7 +243,7 @@ fn show_moderate_due_date_on_task() {
     let fmt = print_task_with_context(&now_context(now), &task);
     assert_eq!(
         fmt,
-        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;33mDue in 9h\u{1b}[0m a\n"
+        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;33mDue in 9 hours\u{1b}[0m a\n"
     );
 }
 
@@ -255,7 +255,7 @@ fn show_urgent_due_date_on_task() {
     let fmt = print_task_with_context(&now_context(now), &task);
     assert_eq!(
         fmt,
-        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;31mDue 1day ago\u{1b}[0m a\n"
+        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;31mDue 1 day ago\u{1b}[0m a\n"
     );
 }
 
@@ -271,7 +271,7 @@ fn show_priority_and_due_date_together() {
         concat!(
             "      \u{1b}[33m1)\u{1b}[0m ",
             "\u{1b}[1;35mP1\u{1b}[0m ",
-            "\u{1b}[1;31mDue 1day ago\u{1b}[0m ",
+            "\u{1b}[1;31mDue 1 day ago\u{1b}[0m ",
             "a\n"
         ),
     );

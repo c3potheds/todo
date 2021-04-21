@@ -187,10 +187,37 @@ fn month_without_day_this_month() {
 }
 
 #[test]
+fn relative_time_in_one_second() {
+    let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
+    let then = Local.ymd(2021, 03, 19).and_hms(10, 00, 01);
+    let expected = "in 1 second";
+    let actual = display_relative_time(now, then);
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn relative_time_in_one_minute() {
+    let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
+    let then = Local.ymd(2021, 03, 19).and_hms(10, 01, 00);
+    let expected = "in 1 minute";
+    let actual = display_relative_time(now, then);
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn relative_time_in_one_hour() {
+    let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
+    let then = Local.ymd(2021, 03, 19).and_hms(11, 00, 00);
+    let expected = "in 1 hour";
+    let actual = display_relative_time(now, then);
+    assert_eq!(actual, expected);
+}
+
+#[test]
 fn relative_time_in_five_minutes() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let then = Local.ymd(2021, 03, 19).and_hms(10, 05, 00);
-    let expected = "in 5m";
+    let expected = "in 5 minutes";
     let actual = display_relative_time(now, then);
     assert_eq!(actual, expected);
 }
@@ -199,7 +226,7 @@ fn relative_time_in_five_minutes() {
 fn relative_time_minute_level_precision() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let then = Local.ymd(2021, 03, 19).and_hms(10, 05, 30);
-    let expected = "in 5m";
+    let expected = "in 5 minutes";
     let actual = display_relative_time(now, then);
     assert_eq!(actual, expected);
 }
@@ -208,7 +235,7 @@ fn relative_time_minute_level_precision() {
 fn relative_time_minute_level_precision_limit() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let then = Local.ymd(2021, 03, 19).and_hms(10, 06, 59);
-    let expected = "in 6m";
+    let expected = "in 6 minutes";
     let actual = display_relative_time(now, then);
     assert_eq!(actual, expected);
 }
@@ -217,7 +244,7 @@ fn relative_time_minute_level_precision_limit() {
 fn relative_time_five_minutes_ago() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let then = Local.ymd(2021, 03, 19).and_hms(09, 55, 00);
-    let expected = "5m ago";
+    let expected = "5 minutes ago";
     let actual = display_relative_time(now, then);
     assert_eq!(actual, expected);
 }
@@ -226,7 +253,7 @@ fn relative_time_five_minutes_ago() {
 fn relative_time_in_five_days() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let then = Local.ymd(2021, 03, 24).and_hms(23, 59, 59);
-    let expected = "in 5days";
+    let expected = "in 5 days";
     let actual = display_relative_time(now, then);
     assert_eq!(actual, expected);
 }
@@ -235,7 +262,7 @@ fn relative_time_in_five_days() {
 fn relative_time_in_eight_days() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let then = Local.ymd(2021, 03, 27).and_hms(23, 59, 59);
-    let expected = "in 8days";
+    let expected = "in 8 days";
     let actual = display_relative_time(now, then);
     assert_eq!(actual, expected);
 }
@@ -244,7 +271,7 @@ fn relative_time_in_eight_days() {
 fn relative_time_in_a_month() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let then = Local.ymd(2021, 04, 27).and_hms(23, 59, 59);
-    let expected = "in 1month";
+    let expected = "in 1 month";
     let actual = display_relative_time(now, then);
     assert_eq!(actual, expected);
 }
@@ -253,7 +280,7 @@ fn relative_time_in_a_month() {
 fn relative_time_in_11_months() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let then = Local.ymd(2022, 03, 18).and_hms(23, 59, 59);
-    let expected = "in 11months";
+    let expected = "in 11 months";
     let actual = display_relative_time(now, then);
     assert_eq!(actual, expected);
 }

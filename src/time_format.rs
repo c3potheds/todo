@@ -275,7 +275,20 @@ fn format_duration_laconic(duration: chrono::Duration) -> String {
     let formatted =
         humantime::format_duration(duration.to_std().unwrap().into());
     match format!("{}", formatted).split(" ").next() {
-        Some(chunk) => chunk.to_string(),
+        Some(chunk) => {
+            let len = chunk.chars().take_while(|c| c.is_digit(10)).count();
+            let n = &chunk[0..len];
+            let unit = match (n.parse::<i32>().unwrap(), &chunk[len..]) {
+                (1, "s") => "second",
+                (_, "s") => "seconds",
+                (1, "m") => "minute",
+                (_, "m") => "minutes",
+                (1, "h") => "hour",
+                (_, "h") => "hours",
+                _ => &chunk[len..],
+            };
+            vec![n, unit].join(" ")
+        }
         None => panic!("Formatted duration is empty string: {}", formatted),
     }
 }
