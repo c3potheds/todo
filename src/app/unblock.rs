@@ -1,8 +1,6 @@
 use app::util::any_tasks_are_complete;
 use app::util::format_task;
 use app::util::lookup_tasks;
-use chrono::DateTime;
-use chrono::Utc;
 use cli::Unblock;
 use itertools::Itertools;
 use model::TaskId;
@@ -72,7 +70,6 @@ fn unblock_from_all(
 pub fn run(
     model: &mut TodoList,
     printer: &mut impl TodoPrinter,
-    now: DateTime<Utc>,
     cmd: &Unblock,
 ) {
     let tasks_to_unblock = lookup_tasks(&model, &cmd.keys);
@@ -105,7 +102,7 @@ pub fn run(
         .include_done(model, include_done)
         .iter_sorted(model)
         .for_each(|id| {
-            printer.print_task(&format_task(model, id, now).action(
+            printer.print_task(&format_task(model, id).action(
                 if tasks_to_unblock.contains(&id) {
                     Action::Unlock
                 } else {

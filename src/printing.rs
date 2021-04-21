@@ -1,4 +1,8 @@
 use ansi_term::Color;
+use chrono::DateTime;
+use chrono::Duration;
+use chrono::Local;
+use chrono::Utc;
 use cli::Key;
 use model::TaskStatus;
 use std::fmt;
@@ -11,6 +15,8 @@ pub struct PrintingContext {
     pub max_index_digits: usize,
     /// The number of columns to render task descriptions in.
     pub width: usize,
+    /// The current time.
+    pub now: DateTime<Utc>,
 }
 
 #[derive(Debug, PartialEq, Copy, Clone)]
@@ -66,22 +72,6 @@ impl Display for LogDate {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum Urgency {
-    Urgent,
-    Moderate,
-    Meh,
-}
-
-#[derive(Debug, PartialEq)]
-pub struct DueDate {
-    pub urgency: Urgency,
-    // TODO(printing.due-date.timestamp): Make this store the 'now' and 'then'
-    // timestamps instead of a string description, leaving the formatting to the
-    // TodoPrinter implementation.
-    pub desc: String,
-}
-
-#[derive(Debug, PartialEq)]
 pub struct PrintableTask<'a> {
     desc: &'a str,
     number: i32,
@@ -89,7 +79,7 @@ pub struct PrintableTask<'a> {
     action: Action,
     log_date: Option<LogDate>,
     priority: Option<i32>,
-    due_date: Option<DueDate>,
+    due_date: Option<DateTime<Utc>>,
 }
 
 impl<'a> PrintableTask<'a> {
@@ -120,7 +110,7 @@ impl<'a> PrintableTask<'a> {
         self
     }
 
-    pub fn due_date(mut self, due_date: DueDate) -> Self {
+    pub fn due_date(mut self, due_date: DateTime<Utc>) -> Self {
         self.due_date = Some(due_date);
         self
     }
@@ -242,6 +232,22 @@ fn format_numbers<I: IntoIterator<Item = i32>>(
         .join(", ")
 }
 
+enum Urgency {
+    Meh,
+    Moderate,
+    Urgent,
+}
+
+fn calculate_urgency(now: DateTime<Utc>, then: DateTime<Utc>) -> Urgency {
+    if then - now < Duration::zero() {
+        Urgency::Urgent
+    } else if then - now < Duration::days(1) {
+        Urgency::Moderate
+    } else {
+        Urgency::Meh
+    }
+}
+
 impl<'a> Display for PrintableTaskWithContext<'a> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let mut start = if let Some(log_date) = &self.task.log_date {
@@ -278,15 +284,17 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
             start.push_str(&style.paint(format!("P{}", priority)).to_string());
             start.push_str(" ");
         }
-        if let Some(due_date) = &self.task.due_date {
-            let style = match due_date.urgency {
+        if let Some(due_date) = self.task.due_date {
+            let style = match calculate_urgency(self.context.now, due_date) {
                 Urgency::Urgent => Color::Red.bold(),
                 Urgency::Moderate => Color::Yellow.bold(),
                 Urgency::Meh => Color::White.bold().dimmed(),
             };
-            start.push_str(
-                &style.paint(format!("Due {}", due_date.desc)).to_string(),
+            let desc = ::time_format::display_relative_time(
+                self.context.now.with_timezone(&Local),
+                due_date.with_timezone(&Local),
             );
+            start.push_str(&style.paint(format!("Due {}", desc)).to_string());
             start.push_str(" ");
         }
         write!(
@@ -480,6 +488,7 @@ struct PrintedTaskInfo {
     action: Action,
     log_date: Option<LogDate>,
     priority: Option<i32>,
+    due_date: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug)]
@@ -504,6 +513,7 @@ enum Expect<'a> {
     Action(Action),
     LogDate(LogDate),
     Priority(i32),
+    DueDate(DateTime<Utc>),
 }
 
 #[cfg(test)]
@@ -559,13 +569,26 @@ impl<'a> Expect<'a> {
                 Some(actual) => {
                     if *actual != *expected {
                         panic!(
-                            "Unexpected priority: {:?} (Expected {:?}",
+                            "Unexpected priority: {:?} (Expected {:?})",
                             actual, expected
                         );
                     }
                 }
                 None => {
                     panic!("Missing required priority: {:?}", expected);
+                }
+            },
+            Expect::DueDate(expected) => match &info.due_date {
+                Some(actual) => {
+                    if *actual != *expected {
+                        panic!(
+                            "Unexpected due date: {:?} (Expected {:?})",
+                            actual, expected
+                        );
+                    }
+                }
+                None => {
+                    panic!("Missing required due date: {:?}", expected);
                 }
             },
         }
@@ -598,6 +621,9 @@ impl<'a> Validation<'a> {
         }
         if let Some(priority) = task.priority {
             expectations.push(Expect::Priority(priority));
+        }
+        if let Some(due_date) = task.due_date {
+            expectations.push(Expect::DueDate(due_date));
         }
         self.printed_task_impl(&expectations)
     }
@@ -673,6 +699,7 @@ impl TodoPrinter for FakePrinter {
             action: task.action,
             log_date: task.log_date.clone(),
             priority: task.priority,
+            due_date: task.due_date,
         }));
     }
 

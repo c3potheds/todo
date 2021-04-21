@@ -1,20 +1,13 @@
 use app::util::any_tasks_are_complete;
 use app::util::format_task;
 use app::util::lookup_tasks;
-use chrono::DateTime;
-use chrono::Utc;
 use cli::Get;
 use model::TaskSet;
 use model::TodoList;
 use printing::Action;
 use printing::TodoPrinter;
 
-pub fn run(
-    model: &TodoList,
-    printer: &mut impl TodoPrinter,
-    now: DateTime<Utc>,
-    cmd: &Get,
-) {
+pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Get) {
     let requested_tasks = lookup_tasks(model, &cmd.keys);
     let include_done = cmd.include_done
         || any_tasks_are_complete(model, requested_tasks.iter().copied());
@@ -30,7 +23,7 @@ pub fn run(
         .include_done(model, include_done)
         .iter_sorted(model)
         .for_each(|id| {
-            printer.print_task(&format_task(model, id, now).action(
+            printer.print_task(&format_task(model, id).action(
                 if requested_tasks.contains(&id) {
                     Action::Select
                 } else {

@@ -158,7 +158,6 @@ pub fn run(
         .collect::<TaskSet>()
         .iter_sorted(model)
         .for_each(|id| {
-            printer
-                .print_task(&format_task(model, id, now).action(to_print[&id]));
+            printer.print_task(&format_task(model, id).action(to_print[&id]));
         });
 }

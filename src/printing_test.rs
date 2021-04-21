@@ -1,11 +1,38 @@
+use chrono::DateTime;
+use chrono::Local;
+use chrono::TimeZone;
+use chrono::Utc;
 use cli::Key;
 use model::TaskStatus;
 use printing::*;
+
+fn ymdhms(
+    yr: i32,
+    mon: u32,
+    day: u32,
+    hr: u32,
+    min: u32,
+    sec: u32,
+) -> DateTime<Utc> {
+    Local
+        .ymd(yr, mon, day)
+        .and_hms(hr, min, sec)
+        .with_timezone(&Utc)
+}
 
 fn make_printing_context() -> PrintingContext {
     PrintingContext {
         max_index_digits: 3,
         width: 80,
+        now: Utc::now(),
+    }
+}
+
+fn now_context(now: DateTime<Utc>) -> PrintingContext {
+    PrintingContext {
+        max_index_digits: 3,
+        width: 80,
+        now: now,
     }
 }
 
@@ -54,6 +81,7 @@ fn fmt_double_digit_number_in_max_four_digit_environment() {
         &PrintingContext {
             max_index_digits: 4,
             width: 80,
+            now: Utc::now(),
         },
         &PrintableTask::new("hello", 99, TaskStatus::Blocked),
     );
@@ -66,6 +94,7 @@ fn fmt_triple_digit_number_in_max_four_digit_environment() {
         &PrintingContext {
             max_index_digits: 4,
             width: 80,
+            now: Utc::now(),
         },
         &PrintableTask::new("hello", 100, TaskStatus::Blocked),
     );
@@ -98,6 +127,7 @@ fn text_wrapping() {
     let context = PrintingContext {
         max_index_digits: 3,
         width: 24,
+        now: Utc::now(),
     };
     let fmt = print_task_with_context(
         &context,
@@ -122,6 +152,7 @@ fn text_wrapping_with_log_date() {
     let context = PrintingContext {
         max_index_digits: 3,
         width: 34,
+        now: Utc::now(),
     };
     let fmt = print_task_with_context(
         &context,
@@ -194,62 +225,53 @@ fn show_priority_on_task() {
 
 #[test]
 fn show_meh_due_date_on_task() {
-    let fmt = print_task(
-        &PrintableTask::new("a", 1, TaskStatus::Incomplete).due_date(DueDate {
-            urgency: Urgency::Meh,
-            desc: "in 2 days".to_string(),
-        }),
-    );
+    let now = ymdhms(2021, 04, 15, 10, 00, 00);
+    let task = PrintableTask::new("a", 1, TaskStatus::Incomplete)
+        .due_date(now + chrono::Duration::days(2));
+    let fmt = print_task_with_context(&now_context(now), &task);
     assert_eq!(
         fmt,
-        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;2;37mDue in 2 days\u{1b}[0m a\n"
+        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;2;37mDue in 2days\u{1b}[0m a\n"
     );
 }
 
 #[test]
 fn show_moderate_due_date_on_task() {
-    let fmt = print_task(
-        &PrintableTask::new("a", 1, TaskStatus::Incomplete).due_date(DueDate {
-            urgency: Urgency::Moderate,
-            desc: "in 9 hours".to_string(),
-        }),
-    );
+    let now = ymdhms(2021, 04, 15, 10, 00, 00);
+    let task = PrintableTask::new("a", 1, TaskStatus::Incomplete)
+        .due_date(now + chrono::Duration::hours(9));
+    let fmt = print_task_with_context(&now_context(now), &task);
     assert_eq!(
         fmt,
-        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;33mDue in 9 hours\u{1b}[0m a\n"
+        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;33mDue in 9h\u{1b}[0m a\n"
     );
 }
 
 #[test]
 fn show_urgent_due_date_on_task() {
-    let fmt = print_task(
-        &PrintableTask::new("a", 1, TaskStatus::Incomplete).due_date(DueDate {
-            urgency: Urgency::Urgent,
-            desc: "1 day ago".to_string(),
-        }),
-    );
+    let now = ymdhms(2021, 04, 15, 10, 00, 00);
+    let task = PrintableTask::new("a", 1, TaskStatus::Incomplete)
+        .due_date(now - chrono::Duration::days(1));
+    let fmt = print_task_with_context(&now_context(now), &task);
     assert_eq!(
         fmt,
-        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;31mDue 1 day ago\u{1b}[0m a\n"
+        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;31mDue 1day ago\u{1b}[0m a\n"
     );
 }
 
 #[test]
 fn show_priority_and_due_date_together() {
-    let fmt = print_task(
-        &PrintableTask::new("a", 1, TaskStatus::Incomplete)
-            .priority(1)
-            .due_date(DueDate {
-                urgency: Urgency::Urgent,
-                desc: "1 day ago".to_string(),
-            }),
-    );
+    let now = ymdhms(2021, 04, 15, 10, 00, 00);
+    let task = PrintableTask::new("a", 1, TaskStatus::Incomplete)
+        .priority(1)
+        .due_date(now - chrono::Duration::days(1));
+    let fmt = print_task_with_context(&now_context(now), &task);
     assert_eq!(
         fmt,
         concat!(
             "      \u{1b}[33m1)\u{1b}[0m ",
             "\u{1b}[1;35mP1\u{1b}[0m ",
-            "\u{1b}[1;31mDue 1 day ago\u{1b}[0m ",
+            "\u{1b}[1;31mDue 1day ago\u{1b}[0m ",
             "a\n"
         ),
     );

@@ -1,6 +1,4 @@
 use app::util::format_task;
-use chrono::DateTime;
-use chrono::Utc;
 use model::TaskStatus;
 use model::TodoList;
 use printing::TodoPrinter;
@@ -10,12 +8,7 @@ pub struct Status {
     pub include_done: bool,
 }
 
-pub fn run(
-    model: &TodoList,
-    printer: &mut impl TodoPrinter,
-    now: DateTime<Utc>,
-    cmd: &Status,
-) {
+pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Status) {
     model
         .all_tasks()
         .filter(|&id| match model.status(id) {
@@ -31,5 +24,5 @@ pub fn run(
             }
             None => false,
         })
-        .for_each(|id| printer.print_task(&format_task(model, id, now)))
+        .for_each(|id| printer.print_task(&format_task(model, id)))
 }

@@ -2,8 +2,6 @@ use app::util::any_tasks_are_complete;
 use app::util::format_task;
 use app::util::lookup_tasks;
 use app::util::pairwise;
-use chrono::DateTime;
-use chrono::Utc;
 use cli::Chain;
 use model::BlockError;
 use model::TaskSet;
@@ -13,12 +11,7 @@ use printing::PrintableError;
 use printing::TodoPrinter;
 use std::collections::HashMap;
 
-pub fn run(
-    model: &mut TodoList,
-    printer: &mut impl TodoPrinter,
-    now: DateTime<Utc>,
-    cmd: &Chain,
-) {
+pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Chain) {
     let tasks = lookup_tasks(model, &cmd.keys);
     let include_done = cmd.include_done
         || any_tasks_are_complete(model, tasks.iter().copied());
@@ -46,7 +39,7 @@ pub fn run(
         .iter_sorted(model)
         .for_each(|id| {
             printer.print_task(
-                &format_task(model, id, now)
+                &format_task(model, id)
                     .action(*actions.get(&id).unwrap_or(&Action::None)),
             );
         });

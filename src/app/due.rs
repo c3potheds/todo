@@ -14,7 +14,6 @@ use printing::TodoPrinter;
 fn show_all_tasks_with_due_dates(
     list: &TodoList,
     printer: &mut impl TodoPrinter,
-    now: DateTime<Utc>,
     earlier_than: Option<DateTime<Utc>>,
     include_done: bool,
 ) {
@@ -29,13 +28,12 @@ fn show_all_tasks_with_due_dates(
             },
             _ => false,
         })
-        .for_each(|id| printer.print_task(&format_task(list, id, now)));
+        .for_each(|id| printer.print_task(&format_task(list, id)));
 }
 
 fn show_source_of_due_dates_for_tasks(
     list: &TodoList,
     printer: &mut impl TodoPrinter,
-    now: DateTime<Utc>,
     tasks: Vec<TaskId>,
 ) {
     tasks
@@ -60,13 +58,12 @@ fn show_source_of_due_dates_for_tasks(
         })
         .collect::<TaskSet>()
         .iter_sorted(list)
-        .for_each(|id| printer.print_task(&format_task(list, id, now)));
+        .for_each(|id| printer.print_task(&format_task(list, id)));
 }
 
 fn set_due_dates(
     list: &mut TodoList,
     printer: &mut impl TodoPrinter,
-    now: DateTime<Utc>,
     tasks: Vec<TaskId>,
     due_date: Option<DateTime<Utc>>,
     include_done: bool,
@@ -80,14 +77,13 @@ fn set_due_dates(
             include_done || list.status(id) != Some(TaskStatus::Complete)
         })
         .for_each(|id| {
-            printer.print_task(&format_task(list, id, now));
+            printer.print_task(&format_task(list, id));
         });
 }
 
 fn show_tasks_without_due_date(
     list: &TodoList,
     printer: &mut impl TodoPrinter,
-    now: DateTime<Utc>,
     include_done: bool,
 ) {
     list.all_tasks()
@@ -96,7 +92,7 @@ fn show_tasks_without_due_date(
         })
         .filter(|&id| list.implicit_due_date(id) == Some(None))
         .for_each(|id| {
-            printer.print_task(&format_task(list, id, now));
+            printer.print_task(&format_task(list, id));
         });
 }
 
@@ -134,23 +130,21 @@ pub fn run(
         (Some(tasks), Some(due_date), false) => set_due_dates(
             list,
             printer,
-            now,
             tasks,
             Some(due_date),
             cmd.include_done,
         ),
         (Some(tasks), _, true) => {
-            set_due_dates(list, printer, now, tasks, None, cmd.include_done)
+            set_due_dates(list, printer, tasks, None, cmd.include_done)
         }
         (None, due_date, false) => show_all_tasks_with_due_dates(
             list,
             printer,
-            now,
             due_date,
             cmd.include_done,
         ),
         (Some(tasks), None, false) => {
-            show_source_of_due_dates_for_tasks(list, printer, now, tasks)
+            show_source_of_due_dates_for_tasks(list, printer, tasks)
         }
         (None, Some(_), true) => {
             printer.print_error(&PrintableError::ConflictingArgs((
@@ -159,7 +153,7 @@ pub fn run(
             )));
         }
         (None, None, true) => {
-            show_tasks_without_due_date(list, printer, now, cmd.include_done)
+            show_tasks_without_due_date(list, printer, cmd.include_done)
         }
     }
 }

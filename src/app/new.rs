@@ -2,6 +2,7 @@ use app::util::format_task;
 use app::util::lookup_tasks;
 use app::util::pairwise;
 use chrono::DateTime;
+use chrono::Local;
 use chrono::Utc;
 use cli::New;
 use itertools::Itertools;
@@ -22,8 +23,12 @@ pub fn run(
 ) {
     let due_date_string = cmd.due.join(" ");
     let due_date = if !due_date_string.is_empty() {
-        match ::time_format::parse_time(Utc, now, &due_date_string) {
-            Ok(due_date) => Some(due_date),
+        match ::time_format::parse_time(
+            Local,
+            now.with_timezone(&Local),
+            &due_date_string,
+        ) {
+            Ok(due_date) => Some(due_date.with_timezone(&Utc)),
             Err(_) => {
                 printer.print_error(&PrintableError::CannotParseDueDate {
                     cannot_parse: due_date_string.clone(),
@@ -112,7 +117,7 @@ pub fn run(
     TaskSet::from_iter(to_print.into_iter())
         .iter_sorted(model)
         .for_each(|id| {
-            printer.print_task(&format_task(model, id, now).action(
+            printer.print_task(&format_task(model, id).action(
                 if new_tasks.contains(&id) {
                     Action::New
                 } else {

@@ -1,13 +1,26 @@
 use app::testing::Fixture;
+use chrono::DateTime;
 use chrono::Local;
 use chrono::TimeZone;
 use chrono::Utc;
 use model::TaskStatus::*;
 use printing::Action::*;
-use printing::DueDate;
 use printing::PrintableError;
 use printing::PrintableTask;
-use printing::Urgency::*;
+
+fn ymdhms(
+    yr: i32,
+    mon: u32,
+    day: u32,
+    hr: u32,
+    min: u32,
+    sec: u32,
+) -> DateTime<Utc> {
+    Local
+        .ymd(yr, mon, day)
+        .and_hms(hr, min, sec)
+        .with_timezone(&Utc)
+}
 
 #[test]
 fn new_one_task() {
@@ -313,18 +326,13 @@ fn new_task_with_priority_inserted_in_sorted_order() {
 #[test]
 fn new_with_due_date() {
     let mut fix = Fixture::new();
-    fix.clock.now = Local
-        .ymd(2021, 04, 12)
-        .and_hms(15, 00, 00)
-        .with_timezone(&Utc);
+    fix.clock.now = ymdhms(2021, 04, 12, 15, 00, 00);
+    let in_5_hours = ymdhms(2021, 04, 12, 20, 00, 00);
     fix.test("todo new a --due 5 hours")
         .validate()
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
-                .due_date(DueDate {
-                    urgency: Moderate,
-                    desc: "in 5h".to_string(),
-                })
+                .due_date(in_5_hours)
                 .action(New),
         )
         .end();
@@ -333,10 +341,7 @@ fn new_with_due_date() {
 #[test]
 fn new_with_invalid_due_date() {
     let mut fix = Fixture::new();
-    fix.clock.now = Local
-        .ymd(2021, 04, 12)
-        .and_hms(15, 00, 00)
-        .with_timezone(&Utc);
+    fix.clock.now = ymdhms(2021, 04, 12, 15, 00, 00);
     fix.test("todo new a --due blah blah")
         .validate()
         .printed_error(&PrintableError::CannotParseDueDate {
@@ -348,33 +353,19 @@ fn new_with_invalid_due_date() {
 #[test]
 fn new_with_due_date_shows_affected_deps() {
     let mut fix = Fixture::new();
-    fix.clock.now = Local
-        .ymd(2021, 04, 12)
-        .and_hms(15, 00, 00)
-        .with_timezone(&Utc);
+    fix.clock.now = ymdhms(2021, 04, 12, 15, 00, 00);
+    let in_2_days = ymdhms(2021, 04, 14, 23, 59, 59);
     fix.test("todo new a b c --chain");
     fix.test("todo new d -p c --due 2 days")
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).due_date(
-            DueDate {
-                urgency: Meh,
-                desc: "in 2days".to_string(),
-            },
-        ))
-        .printed_task(&PrintableTask::new("b", 2, Blocked).due_date(DueDate {
-            urgency: Meh,
-            desc: "in 2days".to_string(),
-        }))
-        .printed_task(&PrintableTask::new("c", 3, Blocked).due_date(DueDate {
-            urgency: Meh,
-            desc: "in 2days".to_string(),
-        }))
+        .printed_task(
+            &PrintableTask::new("a", 1, Incomplete).due_date(in_2_days),
+        )
+        .printed_task(&PrintableTask::new("b", 2, Blocked).due_date(in_2_days))
+        .printed_task(&PrintableTask::new("c", 3, Blocked).due_date(in_2_days))
         .printed_task(
             &PrintableTask::new("d", 4, Blocked)
-                .due_date(DueDate {
-                    urgency: Meh,
-                    desc: "in 2days".to_string(),
-                })
+                .due_date(in_2_days)
                 .action(New),
         )
         .end();

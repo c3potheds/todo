@@ -98,7 +98,7 @@ pub fn run(
         },
     );
     result.to_print.iter_sorted(list).for_each(|id| {
-        printer.print_task(&format_task(list, id, now).action(
+        printer.print_task(&format_task(list, id).action(
             if result.shards.contains(id) {
                 Action::Select
             } else {

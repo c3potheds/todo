@@ -1,31 +1,11 @@
-use chrono::DateTime;
-use chrono::Duration;
-use chrono::Utc;
 use cli::Key;
 use itertools::Itertools;
 use model::TaskId;
 use model::TaskStatus;
 use model::TodoList;
-use printing::DueDate;
 use printing::PrintableTask;
-use printing::Urgency;
-use time_format::display_relative_time;
 
-fn calculate_urgency(now: DateTime<Utc>, then: DateTime<Utc>) -> Urgency {
-    if then - now < Duration::zero() {
-        Urgency::Urgent
-    } else if then - now < Duration::days(1) {
-        Urgency::Moderate
-    } else {
-        Urgency::Meh
-    }
-}
-
-pub fn format_task<'a>(
-    model: &'a TodoList,
-    id: TaskId,
-    now: DateTime<Utc>,
-) -> PrintableTask<'a> {
+pub fn format_task<'a>(model: &'a TodoList, id: TaskId) -> PrintableTask<'a> {
     match (
         model.get(id),
         model.position(id),
@@ -47,10 +27,7 @@ pub fn format_task<'a>(
                 }
             }
             if let Some(due_date) = implicit_due_date {
-                result = result.due_date(DueDate {
-                    urgency: calculate_urgency(now, due_date),
-                    desc: display_relative_time(now, due_date),
-                })
+                result = result.due_date(due_date);
             }
             result
         }

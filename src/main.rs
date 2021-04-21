@@ -8,6 +8,7 @@ use std::io::BufWriter;
 use structopt::StructOpt;
 use todo::app;
 use todo::cli::Options;
+use todo::clock::Clock;
 use todo::clock::SystemClock;
 use todo::long_output;
 use todo::model::load;
@@ -86,6 +87,7 @@ fn main() -> TodoResult {
             log10(model.num_incomplete_tasks()),
         ),
         width: term_width,
+        now: SystemClock.now(),
     };
     // Subtract 1 from the term height to leave room for the input prompt after
     // the program finishes.

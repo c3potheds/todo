@@ -1,7 +1,5 @@
 use app::util::format_task;
 use app::util::lookup_tasks;
-use chrono::DateTime;
-use chrono::Utc;
 use cli::Restore;
 use model::ForceRestored;
 use model::RestoreError;
@@ -97,7 +95,6 @@ fn restore(
 pub fn run(
     model: &mut TodoList,
     printer: &mut impl TodoPrinter,
-    now: DateTime<Utc>,
     cmd: &Restore,
 ) {
     let tasks_to_check = lookup_tasks(model, &cmd.keys);
@@ -132,12 +129,11 @@ pub fn run(
     let mut do_not_print_again = HashSet::new();
     result.restored.iter_sorted(model).for_each(|id| {
         do_not_print_again.insert(id);
-        printer.print_task(&format_task(model, id, now).action(Action::Uncheck))
+        printer.print_task(&format_task(model, id).action(Action::Uncheck))
     });
     result.blocked.iter_sorted(model).for_each(|id| {
         if !do_not_print_again.contains(&id) {
-            printer
-                .print_task(&format_task(model, id, now).action(Action::Lock));
+            printer.print_task(&format_task(model, id).action(Action::Lock));
         }
     });
 }
