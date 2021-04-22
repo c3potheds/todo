@@ -1,11 +1,11 @@
 use app::testing::Fixture;
 use cli::Key;
-use model::TaskStatus::*;
 use printing::Action::*;
 use printing::BriefPrintableTask;
 use printing::PrintableError;
 use printing::PrintableTask;
 use printing::PrintableWarning;
+use printing::Status::*;
 
 #[test]
 fn path_between_tasks_with_no_path() {

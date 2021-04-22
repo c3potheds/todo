@@ -2,9 +2,9 @@ use app::testing::Fixture;
 use chrono::Local;
 use chrono::TimeZone;
 use chrono::Utc;
-use model::TaskStatus::*;
 use printing::LogDate::*;
 use printing::PrintableTask;
+use printing::Status::*;
 
 #[test]
 fn log_with_no_tasks_completed() {

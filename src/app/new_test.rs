@@ -3,11 +3,11 @@ use chrono::DateTime;
 use chrono::Local;
 use chrono::TimeZone;
 use chrono::Utc;
-use model::TaskStatus::*;
 use printing::Action::*;
 use printing::BriefPrintableTask;
 use printing::PrintableError;
 use printing::PrintableTask;
+use printing::Status::*;
 
 fn ymdhms(
     yr: i32,

@@ -4,7 +4,6 @@ use chrono::Duration;
 use chrono::Local;
 use chrono::Utc;
 use cli::Key;
-use model::TaskStatus;
 use std::fmt;
 use std::fmt::Display;
 use std::fmt::Formatter;
@@ -17,6 +16,14 @@ pub struct PrintingContext {
     pub width: usize,
     /// The current time.
     pub now: DateTime<Utc>,
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum Status {
+    Complete,
+    Incomplete,
+    Blocked,
+    Removed,
 }
 
 #[derive(Debug, PartialEq, Copy, Clone)]
@@ -75,7 +82,7 @@ impl Display for LogDate {
 pub struct PrintableTask<'a> {
     desc: &'a str,
     number: i32,
-    status: TaskStatus,
+    status: Status,
     action: Action,
     log_date: Option<LogDate>,
     priority: Option<i32>,
@@ -83,7 +90,7 @@ pub struct PrintableTask<'a> {
 }
 
 impl<'a> PrintableTask<'a> {
-    pub fn new(desc: &'a str, number: i32, status: TaskStatus) -> Self {
+    pub fn new(desc: &'a str, number: i32, status: Status) -> Self {
         Self {
             desc: desc,
             number: number,
@@ -124,11 +131,11 @@ struct PrintableTaskWithContext<'a> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct BriefPrintableTask {
     number: i32,
-    status: TaskStatus,
+    status: Status,
 }
 
 impl BriefPrintableTask {
-    pub fn new(number: i32, status: TaskStatus) -> Self {
+    pub fn new(number: i32, status: Status) -> Self {
         BriefPrintableTask {
             number: number,
             status: status,
@@ -221,12 +228,12 @@ fn format_key(key: &Key) -> String {
     }
 }
 
-fn format_number(number: i32, status: TaskStatus) -> String {
+fn format_number(number: i32, status: Status) -> String {
     let style = match &status {
-        TaskStatus::Complete => Color::Green,
-        TaskStatus::Incomplete => Color::Yellow,
-        TaskStatus::Blocked => Color::Red,
-        TaskStatus::Removed => Color::Black,
+        Status::Complete => Color::Green.normal(),
+        Status::Incomplete => Color::Yellow.normal(),
+        Status::Blocked => Color::Red.normal(),
+        Status::Removed => Color::White.normal(),
     };
     let mut indexing = number.to_string();
     indexing.push_str(")");
@@ -480,7 +487,7 @@ impl<Out: Write> TodoPrinter for SimpleTodoPrinter<'_, Out> {
 struct PrintedTaskInfo {
     desc: String,
     number: i32,
-    status: TaskStatus,
+    status: Status,
     action: Action,
     log_date: Option<LogDate>,
     priority: Option<i32>,
@@ -505,7 +512,7 @@ pub struct FakePrinter {
 enum Expect<'a> {
     Desc(&'a str),
     Number(i32),
-    Status(TaskStatus),
+    Status(Status),
     Action(Action),
     LogDate(LogDate),
     Priority(i32),

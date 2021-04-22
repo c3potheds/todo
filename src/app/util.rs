@@ -5,6 +5,15 @@ use model::TaskStatus;
 use model::TodoList;
 use printing::BriefPrintableTask;
 use printing::PrintableTask;
+use printing::Status;
+
+fn to_printing_status(status: TaskStatus) -> Status {
+    match status {
+        TaskStatus::Incomplete => Status::Incomplete,
+        TaskStatus::Blocked => Status::Blocked,
+        TaskStatus::Complete => Status::Complete,
+    }
+}
 
 pub fn format_task<'a>(model: &'a TodoList, id: TaskId) -> PrintableTask<'a> {
     match (
@@ -21,7 +30,8 @@ pub fn format_task<'a>(model: &'a TodoList, id: TaskId) -> PrintableTask<'a> {
             implicit_priority,
             Some(implicit_due_date),
         ) => {
-            let mut result = PrintableTask::new(&task.desc, pos, status);
+            let mut result =
+                PrintableTask::new(&task.desc, pos, to_printing_status(status));
             if let Some(p) = implicit_priority {
                 if p != 0 {
                     result = result.priority(p);
@@ -39,7 +49,7 @@ pub fn format_task<'a>(model: &'a TodoList, id: TaskId) -> PrintableTask<'a> {
 pub fn format_task_brief(model: &TodoList, id: TaskId) -> BriefPrintableTask {
     BriefPrintableTask::new(
         model.position(id).unwrap(),
-        model.status(id).unwrap(),
+        to_printing_status(model.status(id).unwrap()),
     )
 }
 

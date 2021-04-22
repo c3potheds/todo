@@ -1,6 +1,6 @@
 use app::testing::Fixture;
-use model::TaskStatus::*;
 use printing::PrintableTask;
+use printing::Status::*;
 
 #[test]
 fn priority_set_for_one_task() {

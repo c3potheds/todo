@@ -1,7 +1,7 @@
 use app::testing::Fixture;
-use model::TaskStatus::*;
 use printing::Action::*;
 use printing::PrintableTask;
+use printing::Status::*;
 
 #[test]
 fn punt_first_task() {

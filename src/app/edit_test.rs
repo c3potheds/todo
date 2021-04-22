@@ -1,7 +1,7 @@
 use app::testing::Fixture;
-use model::TaskStatus::*;
 use printing::PrintableError;
 use printing::PrintableTask;
+use printing::Status::*;
 use text_editing::FakeTextEditor;
 
 #[test]

@@ -1,9 +1,9 @@
 use app::testing::Fixture;
-use model::TaskStatus::*;
 use printing::Action::*;
 use printing::BriefPrintableTask;
 use printing::PrintableError;
 use printing::PrintableTask;
+use printing::Status::*;
 
 #[test]
 fn block_one_on_one() {

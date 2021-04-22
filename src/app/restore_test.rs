@@ -1,10 +1,10 @@
 use app::testing::Fixture;
-use model::TaskStatus::*;
 use printing::Action::*;
 use printing::BriefPrintableTask;
 use printing::PrintableError;
 use printing::PrintableTask;
 use printing::PrintableWarning;
+use printing::Status::*;
 
 #[test]
 fn restore_incomplete_task() {

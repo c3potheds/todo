@@ -3,7 +3,7 @@ use chrono::Local;
 use chrono::TimeZone;
 use chrono::Utc;
 use cli::Key;
-use model::TaskStatus::*;
+use printing::Status::*;
 use printing::*;
 
 fn ymdhms(

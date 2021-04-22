@@ -1,7 +1,7 @@
 use app::testing::*;
-use model::TaskStatus::*;
 use printing::Action::*;
 use printing::PrintableTask;
+use printing::Status::*;
 
 #[test]
 fn rm_nonexistent_task() {

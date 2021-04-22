@@ -1,9 +1,9 @@
 use app::testing::Fixture;
-use model::TaskStatus::*;
 use printing::Action::*;
 use printing::BriefPrintableTask;
 use printing::PrintableError;
 use printing::PrintableTask;
+use printing::Status::*;
 
 #[test]
 fn put_one_after_one() {

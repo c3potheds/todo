@@ -21,7 +21,6 @@ pub enum TaskStatus {
     Complete,
     Incomplete,
     Blocked,
-    Removed,
 }
 
 fn default_creation_time() -> Option<DateTime<Utc>> {
