@@ -1,5 +1,6 @@
 use app::util::any_tasks_are_complete;
 use app::util::format_task;
+use app::util::format_task_brief;
 use app::util::lookup_tasks;
 use cli::Put;
 use itertools::Itertools;
@@ -17,16 +18,10 @@ fn print_block_error(
     blocked: TaskId,
     blocking: TaskId,
 ) {
-    model.position(blocked).zip(model.position(blocking)).map(
-        |(cannot_block, requested_dependency)| {
-            printer.print_error(
-                &PrintableError::CannotBlockBecauseWouldCauseCycle {
-                    cannot_block: cannot_block,
-                    requested_dependency: requested_dependency,
-                },
-            )
-        },
-    );
+    printer.print_error(&PrintableError::CannotBlockBecauseWouldCauseCycle {
+        cannot_block: format_task_brief(model, blocked),
+        requested_dependency: format_task_brief(model, blocking),
+    });
 }
 
 pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Put) {

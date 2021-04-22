@@ -1,4 +1,5 @@
 use app::util::format_task;
+use app::util::format_task_brief;
 use app::util::lookup_tasks;
 use cli::Restore;
 use model::ForceRestored;
@@ -109,15 +110,15 @@ pub fn run(
         .for_each(|(id, reason)| match reason {
             Reason::AlreadyIncomplete => printer.print_warning(
                 &PrintableWarning::CannotRestoreBecauseAlreadyIncomplete {
-                    cannot_restore: model.position(id).unwrap(),
+                    cannot_restore: format_task_brief(model, id),
                 },
             ),
             Reason::BlockingComplete(adeps) => printer.print_error(
                 &PrintableError::CannotRestoreBecauseAntidependencyIsComplete {
-                    cannot_restore: model.position(id).unwrap(),
+                    cannot_restore: format_task_brief(model, id),
                     complete_antidependencies: adeps
                         .into_iter()
-                        .flat_map(|dep| model.position(dep).into_iter())
+                        .map(|dep| format_task_brief(model, dep))
                         .collect(),
                 },
             ),

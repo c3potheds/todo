@@ -1,6 +1,7 @@
 use app::testing::Fixture;
 use model::TaskStatus::*;
 use printing::Action::*;
+use printing::BriefPrintableTask;
 use printing::PrintableError;
 use printing::PrintableTask;
 use printing::PrintableWarning;
@@ -13,7 +14,7 @@ fn restore_incomplete_task() {
         .validate()
         .printed_warning(
             &PrintableWarning::CannotRestoreBecauseAlreadyIncomplete {
-                cannot_restore: 1,
+                cannot_restore: BriefPrintableTask::new(1, Incomplete),
             },
         )
         .end();
@@ -77,8 +78,10 @@ fn restore_task_with_complete_antidependency() {
         .validate()
         .printed_error(
             &PrintableError::CannotRestoreBecauseAntidependencyIsComplete {
-                cannot_restore: -1,
-                complete_antidependencies: vec![0],
+                cannot_restore: BriefPrintableTask::new(-1, Complete),
+                complete_antidependencies: vec![BriefPrintableTask::new(
+                    0, Complete,
+                )],
             },
         )
         .end();
@@ -114,7 +117,7 @@ fn force_restore_incomplete_task() {
         .validate()
         .printed_warning(
             &PrintableWarning::CannotRestoreBecauseAlreadyIncomplete {
-                cannot_restore: 1,
+                cannot_restore: BriefPrintableTask::new(1, Incomplete),
             },
         )
         .end();

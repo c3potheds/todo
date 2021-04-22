@@ -2,6 +2,7 @@ use app::testing::Fixture;
 use cli::Key;
 use model::TaskStatus::*;
 use printing::Action::*;
+use printing::BriefPrintableTask;
 use printing::PrintableError;
 use printing::PrintableTask;
 use printing::PrintableWarning;
@@ -28,8 +29,8 @@ fn unblock_task_from_indirect_dependency() {
         .validate()
         .printed_warning(
             &PrintableWarning::CannotUnblockBecauseTaskIsNotBlocked {
-                cannot_unblock: 3,
-                requested_unblock_from: 1,
+                cannot_unblock: BriefPrintableTask::new(3, Blocked),
+                requested_unblock_from: BriefPrintableTask::new(1, Incomplete),
             },
         )
         .end();

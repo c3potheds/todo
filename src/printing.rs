@@ -122,38 +122,53 @@ struct PrintableTaskWithContext<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct BriefPrintableTask {
+    number: i32,
+    status: TaskStatus,
+}
+
+impl BriefPrintableTask {
+    pub fn new(number: i32, status: TaskStatus) -> Self {
+        BriefPrintableTask {
+            number: number,
+            status: status,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum PrintableWarning {
     NoMatchFoundForKey {
         requested_key: Key,
     },
     CannotCheckBecauseAlreadyComplete {
-        cannot_check: i32,
+        cannot_check: BriefPrintableTask,
     },
     CannotRestoreBecauseAlreadyIncomplete {
-        cannot_restore: i32,
+        cannot_restore: BriefPrintableTask,
     },
     CannotUnblockBecauseTaskIsNotBlocked {
-        cannot_unblock: i32,
-        requested_unblock_from: i32,
+        cannot_unblock: BriefPrintableTask,
+        requested_unblock_from: BriefPrintableTask,
     },
     CannotPuntBecauseComplete {
-        cannot_punt: i32,
+        cannot_punt: BriefPrintableTask,
     },
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum PrintableError {
     CannotCheckBecauseBlocked {
-        cannot_check: i32,
-        blocked_by: Vec<i32>,
+        cannot_check: BriefPrintableTask,
+        blocked_by: Vec<BriefPrintableTask>,
     },
     CannotRestoreBecauseAntidependencyIsComplete {
-        cannot_restore: i32,
-        complete_antidependencies: Vec<i32>,
+        cannot_restore: BriefPrintableTask,
+        complete_antidependencies: Vec<BriefPrintableTask>,
     },
     CannotBlockBecauseWouldCauseCycle {
-        cannot_block: i32,
-        requested_dependency: i32,
+        cannot_block: BriefPrintableTask,
+        requested_dependency: BriefPrintableTask,
         // TODO(printing.show-cycle): print the path between
         // requested_dependency and cannot_block.
         // cycles: Vec<Vec<i32>>,
@@ -170,7 +185,7 @@ pub enum PrintableError {
     FailedToUseTextEditor,
     AmbiguousKey {
         key: Key,
-        matches: Vec<i32>,
+        matches: Vec<BriefPrintableTask>,
     },
     NoMatchForKeys {
         keys: Vec<Key>,
@@ -214,20 +229,19 @@ fn format_number(number: i32, status: TaskStatus) -> String {
         TaskStatus::Complete => Color::Green,
         TaskStatus::Incomplete => Color::Yellow,
         TaskStatus::Blocked => Color::Red,
-        TaskStatus::Removed => Color::Red,
+        TaskStatus::Removed => Color::Black,
     };
     let mut indexing = number.to_string();
     indexing.push_str(")");
     format!("{}", style.paint(&indexing))
 }
 
-fn format_numbers<I: IntoIterator<Item = i32>>(
+fn format_numbers<'a, I: IntoIterator<Item = &'a BriefPrintableTask>>(
     numbers: I,
-    status: TaskStatus,
 ) -> String {
     numbers
         .into_iter()
-        .map(|n| format_number(n, status))
+        .map(|t| format_number(t.number, t.status))
         .collect::<Vec<_>>()
         .join(", ")
 }
@@ -319,6 +333,12 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
     }
 }
 
+impl Display for BriefPrintableTask {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{}", format_number(self.number, self.status))
+    }
+}
+
 impl Display for PrintableWarning {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(
@@ -330,32 +350,19 @@ impl Display for PrintableWarning {
                     format!("No match found for {}", format_key(requested_key)),
                 PrintableWarning::CannotCheckBecauseAlreadyComplete {
                     cannot_check,
-                } => format!(
-                    "Task {} is already complete",
-                    format_number(*cannot_check, TaskStatus::Complete)
-                ),
+                } => format!("Task {} is already complete", cannot_check),
                 PrintableWarning::CannotRestoreBecauseAlreadyIncomplete {
                     cannot_restore,
-                } => format!(
-                    "Task {} is already incomplete",
-                    format_number(*cannot_restore, TaskStatus::Incomplete)
-                ),
+                } => format!("Task {} is already incomplete", cannot_restore),
                 PrintableWarning::CannotUnblockBecauseTaskIsNotBlocked {
                     cannot_unblock,
                     requested_unblock_from,
                 } => format!(
                     "Task {} is not blocked by {}",
-                    format_number(*cannot_unblock, TaskStatus::Incomplete),
-                    format_number(
-                        *requested_unblock_from,
-                        TaskStatus::Incomplete
-                    )
+                    cannot_unblock, requested_unblock_from
                 ),
                 PrintableWarning::CannotPuntBecauseComplete { cannot_punt } =>
-                    format!(
-                        "Cannot punt complete task {}",
-                        format_number(*cannot_punt, TaskStatus::Complete)
-                    ),
+                    format!("Cannot punt complete task {}", cannot_punt),
             }
         )
     }
@@ -373,29 +380,24 @@ impl Display for PrintableError {
                     blocked_by,
                 } => format!(
                     "Cannot complete {} because it is blocked by {}",
-                    format_number(*cannot_check, TaskStatus::Blocked),
-                    format_numbers(
-                        blocked_by.into_iter().copied(),
-                        TaskStatus::Incomplete
-                    ),
+                    cannot_check,
+                    format_numbers(blocked_by.into_iter()),
                 ),
                 PrintableError::CannotRestoreBecauseAntidependencyIsComplete{
                     cannot_restore,
                     complete_antidependencies,
                 } => format!(
                     "Cannot restore {} because it blocks complete tasks {}",
-                    format_number(*cannot_restore, TaskStatus::Complete),
-                    format_numbers(
-                        complete_antidependencies.into_iter().copied(),
-                        TaskStatus::Complete)
+                    cannot_restore,
+                    format_numbers(complete_antidependencies.into_iter())
                 ),
                 PrintableError::CannotBlockBecauseWouldCauseCycle {
                     cannot_block,
                     requested_dependency,
                 } => format!(
                     "Cannot block {} on {} because it would create a cycle",
-                    format_number(*cannot_block, TaskStatus::Incomplete),
-                    format_number(*requested_dependency, TaskStatus::Blocked),
+                    cannot_block,
+                    requested_dependency,
                 ),
                 PrintableError::CannotEditBecauseUnexpectedNumber {
                     requested,
@@ -415,10 +417,7 @@ impl Display for PrintableError {
                 PrintableError::AmbiguousKey{ key, matches } => {
                     format!("Ambiguous key {} matches multiple tasks: {}",
                         format_key(key),
-                        format_numbers(
-                            matches.iter().copied(),
-                            TaskStatus::Incomplete
-                        )
+                        format_numbers(matches.iter())
                     )
                 }
                 PrintableError::NoMatchForKeys{ keys } => {

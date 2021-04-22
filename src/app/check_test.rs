@@ -1,6 +1,7 @@
 use app::testing::Fixture;
 use model::TaskStatus::*;
 use printing::Action::*;
+use printing::BriefPrintableTask;
 use printing::PrintableError;
 use printing::PrintableTask;
 use printing::PrintableWarning;
@@ -33,8 +34,8 @@ fn check_task_with_incomplete_dependencies() {
     fix.test("todo check 2")
         .validate()
         .printed_error(&PrintableError::CannotCheckBecauseBlocked {
-            cannot_check: 2,
-            blocked_by: vec![1],
+            cannot_check: BriefPrintableTask::new(2, Blocked),
+            blocked_by: vec![BriefPrintableTask::new(1, Incomplete)],
         })
         .end();
 }
@@ -47,8 +48,8 @@ fn cannot_check_blocked_task() {
     fix.test("todo check 2")
         .validate()
         .printed_error(&PrintableError::CannotCheckBecauseBlocked {
-            cannot_check: 2,
-            blocked_by: vec![1],
+            cannot_check: BriefPrintableTask::new(2, Blocked),
+            blocked_by: vec![BriefPrintableTask::new(1, Incomplete)],
         })
         .end();
 }
@@ -140,7 +141,7 @@ fn check_complete_task() {
     fix.test("todo check a")
         .validate()
         .printed_warning(&PrintableWarning::CannotCheckBecauseAlreadyComplete {
-            cannot_check: 0,
+            cannot_check: BriefPrintableTask::new(0, Complete),
         })
         .end();
 }
@@ -199,7 +200,7 @@ fn force_check_complete_task() {
     fix.test("todo check a --force")
         .validate()
         .printed_warning(&PrintableWarning::CannotCheckBecauseAlreadyComplete {
-            cannot_check: 0,
+            cannot_check: BriefPrintableTask::new(0, Complete),
         })
         .end();
 }

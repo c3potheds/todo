@@ -3,6 +3,7 @@ use itertools::Itertools;
 use model::TaskId;
 use model::TaskStatus;
 use model::TodoList;
+use printing::BriefPrintableTask;
 use printing::PrintableTask;
 
 pub fn format_task<'a>(model: &'a TodoList, id: TaskId) -> PrintableTask<'a> {
@@ -33,6 +34,13 @@ pub fn format_task<'a>(model: &'a TodoList, id: TaskId) -> PrintableTask<'a> {
         }
         _ => panic!("Failed to get task info for id {:?}", id),
     }
+}
+
+pub fn format_task_brief(model: &TodoList, id: TaskId) -> BriefPrintableTask {
+    BriefPrintableTask::new(
+        model.position(id).unwrap(),
+        model.status(id).unwrap(),
+    )
 }
 
 pub fn lookup_tasks<'a>(

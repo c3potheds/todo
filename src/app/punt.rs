@@ -1,4 +1,5 @@
 use app::util::format_task;
+use app::util::format_task_brief;
 use app::util::lookup_tasks;
 use cli::Punt;
 use model::PuntError;
@@ -12,13 +13,11 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Punt) {
         .into_iter()
         .filter(|&id| match model.punt(id) {
             Err(PuntError::TaskIsComplete) => {
-                model.position(id).map(|n| {
-                    printer.print_warning(
-                        &PrintableWarning::CannotPuntBecauseComplete {
-                            cannot_punt: n,
-                        },
-                    )
-                });
+                printer.print_warning(
+                    &PrintableWarning::CannotPuntBecauseComplete {
+                        cannot_punt: format_task_brief(model, id),
+                    },
+                );
                 false
             }
             _ => true,

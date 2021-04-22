@@ -1,4 +1,5 @@
 use app::util::format_task;
+use app::util::format_task_brief;
 use app::util::lookup_tasks;
 use cli::Key;
 use cli::Path;
@@ -27,7 +28,7 @@ fn verify_unambiguous(
             matches: ids
                 .iter()
                 .copied()
-                .flat_map(|id| model.position(id).into_iter())
+                .map(|id| format_task_brief(model, id))
                 .collect(),
         });
         false

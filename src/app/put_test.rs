@@ -1,6 +1,7 @@
 use app::testing::Fixture;
 use model::TaskStatus::*;
 use printing::Action::*;
+use printing::BriefPrintableTask;
 use printing::PrintableError;
 use printing::PrintableTask;
 
@@ -127,8 +128,8 @@ fn put_causing_cycle() {
     fix.test("todo put a --after b")
         .validate()
         .printed_error(&PrintableError::CannotBlockBecauseWouldCauseCycle {
-            cannot_block: 1,
-            requested_dependency: 2,
+            cannot_block: BriefPrintableTask::new(1, Incomplete),
+            requested_dependency: BriefPrintableTask::new(2, Blocked),
         })
         .end();
     fix.test("todo -a")

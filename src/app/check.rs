@@ -1,4 +1,5 @@
 use app::util::format_task;
+use app::util::format_task_brief;
 use app::util::lookup_tasks;
 use chrono::DateTime;
 use chrono::Utc;
@@ -119,15 +120,15 @@ fn print_cannot_complete_error(
     match reason {
         Reason::AlreadyComplete => printer.print_warning(
             &PrintableWarning::CannotCheckBecauseAlreadyComplete {
-                cannot_check: model.position(id).unwrap(),
+                cannot_check: format_task_brief(model, id),
             },
         ),
         Reason::BlockedBy(deps) => {
             printer.print_error(&PrintableError::CannotCheckBecauseBlocked {
-                cannot_check: model.position(id).unwrap(),
+                cannot_check: format_task_brief(model, id),
                 blocked_by: deps
                     .into_iter()
-                    .flat_map(|dep| model.position(dep).into_iter())
+                    .map(|dep| format_task_brief(model, dep))
                     .collect(),
             })
         }

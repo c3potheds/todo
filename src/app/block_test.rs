@@ -1,6 +1,7 @@
 use app::testing::Fixture;
 use model::TaskStatus::*;
 use printing::Action::*;
+use printing::BriefPrintableTask;
 use printing::PrintableError;
 use printing::PrintableTask;
 
@@ -83,8 +84,8 @@ fn cannot_block_on_self() {
     fix.test("todo block 1 --on 1")
         .validate()
         .printed_error(&PrintableError::CannotBlockBecauseWouldCauseCycle {
-            cannot_block: 1,
-            requested_dependency: 1,
+            cannot_block: BriefPrintableTask::new(1, Incomplete),
+            requested_dependency: BriefPrintableTask::new(1, Incomplete),
         })
         .end();
 }

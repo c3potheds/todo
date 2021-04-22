@@ -2,6 +2,7 @@ use app::testing::Fixture;
 use cli::Key;
 use model::TaskStatus::*;
 use printing::Action::*;
+use printing::BriefPrintableTask;
 use printing::PrintableError;
 use printing::PrintableTask;
 use printing::PrintableWarning;
@@ -44,11 +45,17 @@ fn key_must_not_be_ambiguous() {
         .validate()
         .printed_error(&PrintableError::AmbiguousKey {
             key: Key::ByName("a".to_string()),
-            matches: vec![1, 2],
+            matches: vec![
+                BriefPrintableTask::new(1, Incomplete),
+                BriefPrintableTask::new(2, Incomplete),
+            ],
         })
         .printed_error(&PrintableError::AmbiguousKey {
             key: Key::ByName("b".to_string()),
-            matches: vec![3, 4],
+            matches: vec![
+                BriefPrintableTask::new(3, Incomplete),
+                BriefPrintableTask::new(4, Incomplete),
+            ],
         })
         .end();
 }

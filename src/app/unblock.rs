@@ -1,5 +1,6 @@
 use app::util::any_tasks_are_complete;
 use app::util::format_task;
+use app::util::format_task_brief;
 use app::util::lookup_tasks;
 use cli::Unblock;
 use itertools::Itertools;
@@ -17,14 +18,10 @@ fn print_unblock_warning(
     blocking: TaskId,
     blocked: TaskId,
 ) {
-    model.position(blocked).zip(model.position(blocking)).map(
-        |(cannot_unblock, requested_unblock_from)| {
-            printer.print_warning(
-                &PrintableWarning::CannotUnblockBecauseTaskIsNotBlocked {
-                    cannot_unblock: cannot_unblock,
-                    requested_unblock_from: requested_unblock_from,
-                },
-            )
+    printer.print_warning(
+        &PrintableWarning::CannotUnblockBecauseTaskIsNotBlocked {
+            cannot_unblock: format_task_brief(model, blocked),
+            requested_unblock_from: format_task_brief(model, blocking),
         },
     );
 }
