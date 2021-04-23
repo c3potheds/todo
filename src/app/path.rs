@@ -1,63 +1,69 @@
 use app::util::format_task;
 use app::util::format_task_brief;
-use app::util::lookup_tasks;
-use cli::Key;
+use app::util::lookup_task;
+use app::util::pairwise;
 use cli::Path;
 use model::TaskId;
 use model::TaskSet;
 use model::TodoList;
 use printing::Action;
-use printing::PrintableError;
 use printing::PrintableWarning;
 use printing::TodoPrinter;
 
-fn verify_unambiguous(
-    key: &Key,
-    model: &TodoList,
-    printer: &mut impl TodoPrinter,
-    ids: &Vec<TaskId>,
-) -> bool {
-    if ids.len() == 0 {
-        printer.print_warning(&PrintableWarning::NoMatchFoundForKey {
-            requested_key: key.clone(),
-        });
-        false
-    } else if ids.len() > 1 {
-        printer.print_error(&PrintableError::AmbiguousKey {
-            key: key.clone(),
-            matches: ids
-                .iter()
-                .copied()
-                .map(|id| format_task_brief(model, id))
-                .collect(),
-        });
-        false
-    } else {
-        true
-    }
-}
+struct NoPathFound(TaskId, TaskId);
 
 pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Path) {
-    let from = lookup_tasks(model, vec![&cmd.from]);
-    let to = lookup_tasks(model, vec![&cmd.to]);
-    let from_is_unambiguous =
-        verify_unambiguous(&cmd.from, model, printer, &from);
-    let to_is_unambiguous = verify_unambiguous(&cmd.to, model, printer, &to);
-    if !from_is_unambiguous || !to_is_unambiguous {
-        return;
+    let tasks = cmd
+        .keys
+        .iter()
+        .flat_map(|key| {
+            let matches = lookup_task(model, key);
+            if matches.is_empty() {
+                printer.print_warning(&PrintableWarning::NoMatchFoundForKey {
+                    requested_key: key.clone(),
+                });
+            } else if matches.len() > 1 {
+                printer.print_warning(&PrintableWarning::AmbiguousKey {
+                    key: key.clone(),
+                    matches: matches
+                        .iter_sorted(model)
+                        .map(|id| format_task_brief(model, id))
+                        .collect(),
+                });
+            }
+            matches
+                .iter_sorted(model)
+                // Hack to handle the one-key case. Since each item appears
+                // twice, a path will be found between a task and itself if no
+                // other tasks were matched.
+                .flat_map(|id| std::iter::once(id).chain(std::iter::once(id)))
+        })
+        .collect::<Vec<_>>();
+    match pairwise(tasks.iter().copied()).try_fold(
+        TaskSet::new(),
+        |so_far, (a, b)| {
+            let a_and_adeps = TaskSet::of(a) | model.transitive_adeps(a);
+            let b_and_deps = TaskSet::of(b) | model.transitive_deps(b);
+            let path = a_and_adeps & b_and_deps;
+            if path.is_empty() {
+                return Err(NoPathFound(a, b));
+            }
+            Ok(so_far | path)
+        },
+    ) {
+        Ok(path) => path,
+        Err(NoPathFound(a, b)) => {
+            printer.print_warning(&PrintableWarning::NoPathFoundBetween(
+                format_task_brief(model, a),
+                format_task_brief(model, b),
+            ));
+            return;
+        }
     }
-    let from_and_adeps = from.iter().copied().collect::<TaskSet>()
-        | model.transitive_adeps(from[0]);
-    let to_and_deps =
-        to.iter().copied().collect::<TaskSet>() | model.transitive_deps(to[0]);
-    let tasks_in_path: Vec<_> =
-        (from_and_adeps & to_and_deps).iter_sorted(model).collect();
-    if tasks_in_path.len() == 0 {
-        return;
-    }
-    tasks_in_path.into_iter().for_each(|id| {
+    .iter_sorted(model)
+    .for_each(|id| {
         printer.print_task(&format_task(model, id).action(
-            if id == from[0] || id == to[0] {
+            if tasks.contains(&id) {
                 Action::Select
             } else {
                 Action::None

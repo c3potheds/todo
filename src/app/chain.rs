@@ -1,7 +1,7 @@
 use app::util::any_tasks_are_complete;
 use app::util::format_task;
 use app::util::format_task_brief;
-use app::util::lookup_tasks;
+use app::util::lookup_task;
 use app::util::pairwise;
 use cli::Chain;
 use model::BlockError;
@@ -13,7 +13,11 @@ use printing::TodoPrinter;
 use std::collections::HashMap;
 
 pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Chain) {
-    let tasks = lookup_tasks(model, &cmd.keys);
+    let tasks = cmd
+        .keys
+        .iter()
+        .flat_map(|key| lookup_task(model, key).iter_sorted(model))
+        .collect::<Vec<_>>();
     let include_done = cmd.include_done
         || any_tasks_are_complete(model, tasks.iter().copied());
     let mut actions = HashMap::new();

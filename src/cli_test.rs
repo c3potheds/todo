@@ -797,8 +797,7 @@ fn path_by_number() {
     expect_parses_into(
         "todo path 10 20",
         SubCommand::Path(Path {
-            from: Key::ByNumber(10),
-            to: Key::ByNumber(20),
+            keys: vec![Key::ByNumber(10), Key::ByNumber(20)],
         }),
     );
 }
@@ -808,25 +807,17 @@ fn path_by_name() {
     expect_parses_into(
         "todo path a b",
         SubCommand::Path(Path {
-            from: Key::ByName("a".to_string()),
-            to: Key::ByName("b".to_string()),
+            keys: vec![
+                Key::ByName("a".to_string()),
+                Key::ByName("b".to_string()),
+            ],
         }),
     );
 }
 
 #[test]
-fn path_missing_to() {
-    expect_error("todo path a");
-}
-
-#[test]
-fn path_missing_from() {
+fn path_missing_keys() {
     expect_error("todo path");
-}
-
-#[test]
-fn path_too_many_args() {
-    expect_error("todo path 1 2 3");
 }
 
 #[test]

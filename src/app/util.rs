@@ -1,6 +1,6 @@
 use cli::Key;
-use itertools::Itertools;
 use model::TaskId;
+use model::TaskSet;
 use model::TaskStatus;
 use model::TodoList;
 use printing::BriefPrintableTask;
@@ -53,36 +53,36 @@ pub fn format_task_brief(model: &TodoList, id: TaskId) -> BriefPrintableTask {
     )
 }
 
+pub fn lookup_task(model: &TodoList, key: &Key) -> TaskSet {
+    match key {
+        &Key::ByNumber(n) => model.lookup_by_number(n).into_iter().collect(),
+        &Key::ByName(ref name) => model
+            .all_tasks()
+            .filter(|&id| {
+                model.get(id).filter(|task| &task.desc == name).is_some()
+            })
+            .collect(),
+        &Key::ByRange(start, end) => model
+            .all_tasks()
+            .filter(|&id| {
+                model
+                    .position(id)
+                    .filter(|&pos| start <= pos && pos <= end)
+                    .is_some()
+            })
+            .collect(),
+    }
+}
+
 pub fn lookup_tasks<'a>(
     model: &'a TodoList,
     keys: impl IntoIterator<Item = &'a Key>,
 ) -> Vec<TaskId> {
     keys.into_iter()
-        .flat_map(|key| match key {
-            &Key::ByNumber(n) => model
-                .lookup_by_number(n)
-                .into_iter()
-                .collect::<Vec<_>>()
-                .into_iter(),
-            &Key::ByName(ref name) => model
-                .all_tasks()
-                .filter(|&id| {
-                    model.get(id).filter(|task| &task.desc == name).is_some()
-                })
-                .collect::<Vec<_>>()
-                .into_iter(),
-            &Key::ByRange(start, end) => model
-                .all_tasks()
-                .filter(|&id| {
-                    model
-                        .position(id)
-                        .filter(|&pos| start <= pos && pos <= end)
-                        .is_some()
-                })
-                .collect::<Vec<_>>()
-                .into_iter(),
+        .fold(TaskSet::new(), |so_far, key| {
+            so_far | lookup_task(model, key)
         })
-        .unique()
+        .iter_sorted(model)
         .collect()
 }
 

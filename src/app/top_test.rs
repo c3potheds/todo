@@ -89,7 +89,7 @@ fn top_show_only_top_level_complete_tasks() {
     fix.test("todo check a b c d e f");
     fix.test("todo top -d")
         .validate()
-        .printed_task(&PrintableTask::new("c", -3, Complete))
+        .printed_task(&PrintableTask::new("c", -1, Complete))
         .printed_task(&PrintableTask::new("f", 0, Complete))
         .end();
 }

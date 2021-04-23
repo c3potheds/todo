@@ -253,12 +253,17 @@ impl TaskSet {
         self.ids.contains(&id)
     }
 
+    pub fn len(&self) -> usize {
+        self.ids.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.ids.is_empty()
+    }
+
     /// Iterates the set in sorted order, where the ordering is defined by the
     /// position in the list.
-    pub fn iter_sorted(
-        &self,
-        list: &TodoList,
-    ) -> impl Iterator<Item = TaskId> + '_ {
+    pub fn iter_sorted(&self, list: &TodoList) -> impl Iterator<Item = TaskId> {
         self.ids
             .iter()
             .flat_map(|&id| {

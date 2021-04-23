@@ -161,6 +161,11 @@ pub enum PrintableWarning {
     CannotPuntBecauseComplete {
         cannot_punt: BriefPrintableTask,
     },
+    AmbiguousKey {
+        key: Key,
+        matches: Vec<BriefPrintableTask>,
+    },
+    NoPathFoundBetween(BriefPrintableTask, BriefPrintableTask),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -187,10 +192,6 @@ pub enum PrintableError {
         malformed_line: String,
     },
     FailedToUseTextEditor,
-    AmbiguousKey {
-        key: Key,
-        matches: Vec<BriefPrintableTask>,
-    },
     NoMatchForKeys {
         keys: Vec<Key>,
     },
@@ -367,6 +368,16 @@ impl Display for PrintableWarning {
                 ),
                 PrintableWarning::CannotPuntBecauseComplete { cannot_punt } =>
                     format!("Cannot punt complete task {}", cannot_punt),
+                PrintableWarning::AmbiguousKey { key, matches } => {
+                    format!(
+                        "Ambiguous key {} matches multiple tasks: {}",
+                        format_key(key),
+                        format_numbers(matches.iter())
+                    )
+                }
+                PrintableWarning::NoPathFoundBetween(a, b) => {
+                    format!("No path found between {} and {}", a, b)
+                }
             }
         )
     }
@@ -417,12 +428,6 @@ impl Display for PrintableError {
                 } => format!("Could not parse line: \"{}\"", malformed_line),
                 PrintableError::FailedToUseTextEditor => {
                     format!("Failed to open text editor")
-                }
-                PrintableError::AmbiguousKey{ key, matches } => {
-                    format!("Ambiguous key {} matches multiple tasks: {}",
-                        format_key(key),
-                        format_numbers(matches.iter())
-                    )
                 }
                 PrintableError::NoMatchForKeys{ keys } => {
                     format!(
