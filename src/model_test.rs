@@ -1712,3 +1712,54 @@ fn chain_of_tasks_with_budgets() {
         Some(Some(Utc.ymd(2021, 04, 20).and_hms(23, 59, 59)))
     );
 }
+
+#[test]
+fn set_budget_for_nonexistent_task() {
+    let mut list = TodoList::new();
+    let a = list.add("a");
+    list.remove(a);
+    assert_eq!(
+        list.set_budget(a, Duration::days(1))
+            .iter_sorted(&list)
+            .collect::<Vec<_>>(),
+        vec![]
+    );
+}
+
+#[test]
+fn set_budget_for_task_with_no_deps() {
+    let mut list = TodoList::new();
+    let a = list.add("a");
+    assert_eq!(
+        list.set_budget(a, Duration::days(1))
+            .iter_sorted(&list)
+            .collect::<Vec<_>>(),
+        vec![a]
+    );
+    assert_eq!(
+        list.get(a).unwrap().budget,
+        DurationInSeconds(Duration::days(1).num_seconds() as u32)
+    );
+}
+
+#[test]
+fn set_budget_updates_deps() {
+    let mut list = TodoList::new();
+    let a = list.add("a");
+    let b = list.add(
+        NewOptions::new()
+            .desc("b")
+            .due_date(Utc.ymd(2021, 04, 22).and_hms(23, 59, 59)),
+    );
+    list.block(b).on(a).unwrap();
+    assert_eq!(
+        list.set_budget(b, Duration::days(1))
+            .iter_sorted(&list)
+            .collect::<Vec<_>>(),
+        vec![a, b]
+    );
+    assert_eq!(
+        list.implicit_due_date(a),
+        Some(Some(Utc.ymd(2021, 04, 21).and_hms(23, 59, 59)))
+    );
+}

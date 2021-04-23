@@ -860,6 +860,25 @@ impl TodoList {
         }
     }
 
+    pub fn set_budget<D>(&mut self, id: TaskId, budget: D) -> TaskSet
+    where
+        D: Into<DurationInSeconds>,
+    {
+        match self.tasks.node_weight_mut(id.0) {
+            Some(task) => {
+                task.budget = budget.into();
+                self.deps(id)
+                    .iter_sorted(&self)
+                    .flat_map(|dep| {
+                        self.update_implicits(dep).into_iter_unsorted()
+                    })
+                    .chain(std::iter::once(id))
+                    .collect()
+            }
+            None => TaskSet::new(),
+        }
+    }
+
     pub fn position(&self, id: TaskId) -> Option<i32> {
         self.incomplete
             .position(&id)
