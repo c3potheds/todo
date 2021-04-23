@@ -9,6 +9,12 @@ where
     Options::from_iter_safe(args).expect("Could not parse args")
 }
 
+fn expect_error<'a, S: Into<&'a str>>(args: S) {
+    let s = args.into();
+    Options::from_iter_safe(s.split(" "))
+        .expect_err(&format!("Was not a parse error: '{}'", s));
+}
+
 #[test]
 fn empty_defaults_to_status() {
     let options = parse(&["todo"]);
@@ -1262,6 +1268,41 @@ fn due_include_done_short() {
             due: vec![],
             none: false,
             include_done: true,
+        })
+    );
+}
+
+#[test]
+fn merge_requires_at_least_two_and_into() {
+    expect_error("todo merge");
+    expect_error("todo merge 1");
+    expect_error("todo merge 1 2");
+    expect_error("todo merge --into aa");
+    expect_error("todo merge 1 --into aa");
+}
+
+#[test]
+fn merge_two() {
+    let options = parse(&["todo", "merge", "1", "2", "--into", "ab"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Merge(Merge {
+            keys: vec![Key::ByNumber(1), Key::ByNumber(2)],
+            into: "ab".to_string(),
+        })
+    );
+}
+
+#[test]
+fn merge_three() {
+    let options = parse(&["todo", "merge", "-1", "-2", "-3", "--into", "abc"]);
+    let cmd = options.cmd.unwrap();
+    assert_eq!(
+        cmd,
+        SubCommand::Merge(Merge {
+            keys: vec![Key::ByNumber(-1), Key::ByNumber(-2), Key::ByNumber(-3)],
+            into: "abc".to_string(),
         })
     );
 }

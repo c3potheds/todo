@@ -135,6 +135,17 @@ pub struct Get {
 
 #[derive(Debug, PartialEq, StructOpt)]
 #[structopt(setting = structopt::clap::AppSettings::AllowNegativeNumbers)]
+pub struct Merge {
+    /// Tasks to merge.
+    #[structopt(required = true, min_values = 2)]
+    pub keys: Vec<Key>,
+    /// Description of new task to merge into.
+    #[structopt(long)]
+    pub into: String,
+}
+
+#[derive(Debug, PartialEq, StructOpt)]
+#[structopt(setting = structopt::clap::AppSettings::AllowNegativeNumbers)]
 pub struct New {
     /// Descriptions for the new tasks, as raw strings.
     ///
@@ -473,6 +484,17 @@ pub enum SubCommand {
     /// can be used as task key arguments in commands.
     #[structopt(verbatim_doc_comment)]
     Log,
+
+    /// Merges two or more tasks into one.
+    ///
+    /// The merged task will retain the dependency structure of the tasks it was
+    /// merged from. Its due date will be the earliest explicit due date of the
+    /// constituents and its priority will be the lowest explicit priority of
+    /// the constituents.
+    ///
+    /// This is the opposite of 'split'.
+    #[structopt(verbatim_doc_comment)]
+    Merge(Merge),
 
     /// Creates new tasks in the to-do list.
     ///
