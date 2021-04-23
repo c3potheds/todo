@@ -1,6 +1,7 @@
 extern crate bisection;
 
 use chrono::DateTime;
+use chrono::Duration;
 use chrono::Utc;
 use daggy::stable_dag::StableDag;
 use daggy::NodeIndex;
@@ -28,7 +29,13 @@ fn default_creation_time() -> Option<DateTime<Utc>> {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize, Default)]
-pub struct DurationInSeconds(pub u64);
+pub struct DurationInSeconds(pub u32);
+
+impl From<Duration> for DurationInSeconds {
+    fn from(duration: Duration) -> Self {
+        DurationInSeconds(duration.num_seconds() as u32)
+    }
+}
 
 // NOTE: all new fields need to be Options or be marked #[serde(default)] to
 // allow backwards compatibility.
@@ -350,11 +357,14 @@ impl TodoList {
         self.get(id)
             .into_iter()
             .flat_map(|task| task.due_date.into_iter())
-            .chain(
-                self.adeps(id)
-                    .into_iter_unsorted()
-                    .flat_map(|adep| self.calculate_implicit_due_date(adep)),
-            )
+            .chain(self.adeps(id).into_iter_unsorted().flat_map(|adep| {
+                self.calculate_implicit_due_date(adep).map(|due_date| {
+                    due_date
+                        - Duration::seconds(
+                            self.get(adep).unwrap().budget.0 as i64,
+                        )
+                })
+            }))
             .min()
     }
 
