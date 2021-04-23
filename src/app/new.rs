@@ -6,6 +6,7 @@ use chrono::Local;
 use chrono::Utc;
 use cli::New;
 use itertools::Itertools;
+use model::DurationInSeconds;
 use model::NewOptions;
 use model::TaskSet;
 use model::TodoList;
@@ -78,6 +79,7 @@ pub fn run(
                 now: now,
                 priority: priority.unwrap_or(0),
                 due_date: due_date,
+                budget: DurationInSeconds::default(),
             });
             to_print.insert(id);
             id

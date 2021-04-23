@@ -46,6 +46,7 @@ fn split(
                 now: task.creation_time.unwrap_or(now),
                 priority: task.priority,
                 due_date: task.due_date,
+                budget: task.budget,
             };
             list.add(options)
         })

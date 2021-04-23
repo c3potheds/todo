@@ -27,6 +27,9 @@ fn default_creation_time() -> Option<DateTime<Utc>> {
     Some(Utc::now())
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize, Default)]
+pub struct DurationInSeconds(pub u64);
+
 // NOTE: all new fields need to be Options or be marked #[serde(default)] to
 // allow backwards compatibility.
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
@@ -44,6 +47,8 @@ pub struct Task {
     pub due_date: Option<DateTime<Utc>>,
     #[serde(default)]
     pub implicit_due_date: Option<DateTime<Utc>>,
+    #[serde(default)]
+    pub budget: DurationInSeconds,
 }
 
 pub struct NewOptions {
@@ -51,6 +56,7 @@ pub struct NewOptions {
     pub now: DateTime<Utc>,
     pub priority: i32,
     pub due_date: Option<DateTime<Utc>>,
+    pub budget: DurationInSeconds,
 }
 
 impl NewOptions {
@@ -60,6 +66,7 @@ impl NewOptions {
             now: Utc::now(),
             priority: 0,
             due_date: None,
+            budget: DurationInSeconds::default(),
         }
     }
 
@@ -82,6 +89,11 @@ impl NewOptions {
         self.due_date = Some(due_date);
         self
     }
+
+    pub fn budget<D: Into<DurationInSeconds>>(mut self, budget: D) -> Self {
+        self.budget = budget.into();
+        self
+    }
 }
 
 impl<S: Into<String>> From<S> for NewOptions {
@@ -91,6 +103,7 @@ impl<S: Into<String>> From<S> for NewOptions {
             now: Utc::now(),
             priority: 0,
             due_date: None,
+            budget: DurationInSeconds::default(),
         }
     }
 }
@@ -106,6 +119,7 @@ impl Task {
             implicit_priority: options.priority,
             due_date: options.due_date,
             implicit_due_date: options.due_date,
+            budget: options.budget,
         }
     }
 }

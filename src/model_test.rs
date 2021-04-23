@@ -1,3 +1,4 @@
+use chrono::Duration;
 use chrono::TimeZone;
 use chrono::Utc;
 use model::*;
@@ -1656,4 +1657,20 @@ fn implicit_due_date_is_earliest_due_date_of_transitive_adeps() {
         list.implicit_due_date(a),
         Some(Some(Utc.ymd(2021, 04, 11).and_hms(18, 00, 00)))
     );
+}
+
+#[test]
+fn default_budget_is_zero() {
+    let mut list = TodoList::new();
+    let budget = DurationInSeconds(0);
+    let a = list.add(NewOptions::new().desc("a"));
+    assert_eq!(list.get(a).unwrap().budget, budget);
+}
+
+#[test]
+fn new_task_with_budget() {
+    let mut list = TodoList::new();
+    let budget = DurationInSeconds(Duration::days(1).num_seconds() as u64);
+    let a = list.add(NewOptions::new().desc("a").budget(budget));
+    assert_eq!(list.get(a).unwrap().budget, budget);
 }
