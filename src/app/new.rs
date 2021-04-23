@@ -1,4 +1,5 @@
 use app::util::format_task;
+use app::util::format_task_brief;
 use app::util::lookup_tasks;
 use app::util::pairwise;
 use chrono::DateTime;
@@ -87,24 +88,26 @@ pub fn run(
         .collect();
     deps.into_iter()
         .cartesian_product(new_tasks.iter().copied())
-        .for_each(|(dep, new)| {
-            match model.block(new).on(dep) {
-                Ok(affected) => to_print.extend(affected.iter_unsorted()),
-                // TODO(app.new.print-warning-on-cycle): print a warning, but
-                // continue in the error case.
-                Err(_) => panic!("Cannot block"),
-            }
+        .for_each(|(dep, new)| match model.block(new).on(dep) {
+            Ok(affected) => to_print.extend(affected.iter_unsorted()),
+            Err(_) => printer.print_error(
+                &PrintableError::CannotBlockBecauseWouldCauseCycle {
+                    cannot_block: format_task_brief(model, new),
+                    requested_dependency: format_task_brief(model, dep),
+                },
+            ),
         });
     adeps
         .into_iter()
         .cartesian_product(new_tasks.iter().copied())
-        .for_each(|(adep, new)| {
-            match model.block(adep).on(new) {
-                Ok(affected) => to_print.extend(affected.iter_unsorted()),
-                // TODO(app.new.print-warning-on-cycle): print a warning, but
-                // continue in the error case.
-                Err(_) => panic!("cannot block"),
-            }
+        .for_each(|(adep, new)| match model.block(adep).on(new) {
+            Ok(affected) => to_print.extend(affected.iter_unsorted()),
+            Err(_) => printer.print_error(
+                &PrintableError::CannotBlockBecauseWouldCauseCycle {
+                    cannot_block: format_task_brief(model, adep),
+                    requested_dependency: format_task_brief(model, new),
+                },
+            ),
         });
     if cmd.chain {
         pairwise(new_tasks.iter().copied()).for_each(|(a, b)| {

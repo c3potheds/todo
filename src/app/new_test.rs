@@ -254,16 +254,16 @@ fn new_one_after_three() {
 }
 
 #[test]
-#[ignore = "app.new.print-warning-on-cycle"]
 fn print_warning_on_cycle() {
     let mut fix = Fixture::new();
     fix.test("todo new a b --chain");
     fix.test("todo new c -p b -b a")
         .validate()
         .printed_error(&PrintableError::CannotBlockBecauseWouldCauseCycle {
-            cannot_block: BriefPrintableTask::new(3, Blocked),
-            requested_dependency: BriefPrintableTask::new(1, Incomplete),
+            cannot_block: BriefPrintableTask::new(1, Incomplete),
+            requested_dependency: BriefPrintableTask::new(3, Blocked),
         })
+        .printed_task(&PrintableTask::new("b", 2, Blocked))
         .printed_task(&PrintableTask::new("c", 3, Blocked).action(New))
         .end();
 }
