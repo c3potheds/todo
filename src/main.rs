@@ -1,3 +1,4 @@
+extern crate atty;
 extern crate directories;
 extern crate structopt;
 extern crate term_size;
@@ -17,6 +18,7 @@ use todo::model::LoadError;
 use todo::model::SaveError;
 use todo::model::TodoList;
 use todo::printing::PrintingContext;
+use todo::printing::ScriptingTodoPrinter;
 use todo::printing::SimpleTodoPrinter;
 use todo::text_editing::ScrawlTextEditor;
 
@@ -78,44 +80,45 @@ fn main() -> TodoResult {
 
     let mut model = File::open(&path)
         .map_or_else(|_| Ok(TodoList::new()), |file| load(file))?;
-    let (term_width, term_height) =
-        term_size::dimensions_stdout().unwrap_or((80, 20));
-    let printing_context = PrintingContext {
-        max_index_digits: std::cmp::max(
-            // Add one for the minus sign for complete tasks.
-            log10(model.num_complete_tasks()) + 1,
-            log10(model.num_incomplete_tasks()),
-        ),
-        width: term_width,
-        now: SystemClock.now(),
-    };
-    // Subtract 1 from the term height to leave room for the input prompt after
-    // the program finishes.
-    let mut out = long_output::max_lines(term_height - 1)
-        .primary(std::io::stdout())
-        .alternate(|| long_output::Less::new().unwrap());
-    let mut printer = SimpleTodoPrinter {
-        out: &mut out,
-        context: &printing_context,
-    };
     let text_editor = ScrawlTextEditor;
 
-    // Hack.
-    model
-        .all_tasks()
-        .collect::<Vec<_>>()
-        .into_iter()
-        .for_each(|id| {
-            model.update_implicits(id);
-        });
+    if atty::is(atty::Stream::Stdout) {
+        let (term_width, term_height) =
+            term_size::dimensions_stdout().unwrap_or((80, 20));
 
-    app::todo(
-        &mut model,
-        &mut printer,
-        &text_editor,
-        &SystemClock,
-        options,
-    );
+        let mut printer = SimpleTodoPrinter {
+            // Subtract 1 from the term height to leave room for the input prompt
+            // after the program finishes.
+            out: long_output::max_lines(term_height - 1)
+                .primary(std::io::stdout())
+                .alternate(|| long_output::Less::new().unwrap()),
+            context: PrintingContext {
+                max_index_digits: std::cmp::max(
+                    // Add one for the minus sign for complete tasks.
+                    log10(model.num_complete_tasks()) + 1,
+                    log10(model.num_incomplete_tasks()),
+                ),
+                width: term_width,
+                now: SystemClock.now(),
+            },
+        };
+        app::todo(
+            &mut model,
+            &mut printer,
+            &text_editor,
+            &SystemClock,
+            options,
+        );
+    } else {
+        let mut printer = ScriptingTodoPrinter;
+        app::todo(
+            &mut model,
+            &mut printer,
+            &text_editor,
+            &SystemClock,
+            options,
+        );
+    }
     let file = File::create(&path)?;
     let writer = BufWriter::new(file);
     save(writer, &model)?;

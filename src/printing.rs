@@ -462,28 +462,44 @@ pub trait TodoPrinter {
     fn print_error(&mut self, error: &PrintableError);
 }
 
-pub struct SimpleTodoPrinter<'a, Out: Write> {
+pub struct SimpleTodoPrinter<Out: Write> {
     pub out: Out,
-    pub context: &'a PrintingContext,
+    pub context: PrintingContext,
 }
 
-impl<Out: Write> TodoPrinter for SimpleTodoPrinter<'_, Out> {
+impl<Out: Write> TodoPrinter for SimpleTodoPrinter<Out> {
     fn print_task(&mut self, task: &PrintableTask) {
         writeln!(
             self.out,
             "{}",
             PrintableTaskWithContext {
-                context: self.context,
+                context: &self.context,
                 task: task,
             }
         )
         .unwrap();
     }
     fn print_warning(&mut self, warning: &PrintableWarning) {
-        println!("{}", warning);
+        writeln!(self.out, "{}", warning).unwrap();
     }
     fn print_error(&mut self, error: &PrintableError) {
-        println!("{}", error);
+        writeln!(self.out, "{}", error).unwrap();
+    }
+}
+
+pub struct ScriptingTodoPrinter;
+
+impl TodoPrinter for ScriptingTodoPrinter {
+    fn print_task(&mut self, task: &PrintableTask) {
+        println!("{}", task.number);
+    }
+
+    fn print_warning(&mut self, warning: &PrintableWarning) {
+        eprintln!("{}", warning);
+    }
+
+    fn print_error(&mut self, error: &PrintableError) {
+        eprintln!("{}", error);
     }
 }
 
