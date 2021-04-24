@@ -161,3 +161,15 @@ fn force_restore_task_with_complete_and_incomplete_adeps() {
         .printed_task(&PrintableTask::new("d", 4, Blocked).action(Lock))
         .end();
 }
+
+#[test]
+fn restore_chain() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b --chain");
+    fix.test("todo check a b");
+    fix.test("todo restore a b")
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Uncheck))
+        .printed_task(&PrintableTask::new("b", 2, Blocked).action(Uncheck))
+        .end();
+}

@@ -25,10 +25,10 @@ struct RestoreResult {
 }
 
 fn restore_with_fn<Restore: FnMut(TaskId) -> RestoreResult>(
-    tasks_to_check: Vec<TaskId>,
+    tasks_to_restore: Vec<TaskId>,
     mut restore_fn: Restore,
 ) -> RestoreResult {
-    tasks_to_check.into_iter().fold(
+    tasks_to_restore.into_iter().rev().fold(
         RestoreResult {
             restored: TaskSet::new(),
             blocked: TaskSet::new(),
@@ -98,11 +98,11 @@ pub fn run(
     printer: &mut impl TodoPrinter,
     cmd: &Restore,
 ) {
-    let tasks_to_check = lookup_tasks(model, &cmd.keys);
+    let tasks_to_restore = lookup_tasks(model, &cmd.keys);
     let result = if cmd.force {
-        force_restore(model, tasks_to_check)
+        force_restore(model, tasks_to_restore)
     } else {
-        restore(model, tasks_to_check)
+        restore(model, tasks_to_restore)
     };
     result
         .cannot_restore
@@ -125,8 +125,6 @@ pub fn run(
         });
     // A task that was restored may become blocked by another task's restoration
     // and thus may show up in more than one of the TaskSets.
-    // TODO(app.restore.partition-affected-tasks): Make sure task ids don't show
-    // up in more than one list in the RestoreResult.
     let mut do_not_print_again = HashSet::new();
     result.restored.iter_sorted(model).for_each(|id| {
         do_not_print_again.insert(id);
