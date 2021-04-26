@@ -6,6 +6,7 @@ mod edit;
 mod find;
 mod get;
 mod log;
+mod merge;
 mod new;
 mod path;
 mod priority;
@@ -45,6 +46,9 @@ mod get_test;
 
 #[cfg(test)]
 mod log_test;
+
+#[cfg(test)]
+mod merge_test;
 
 #[cfg(test)]
 mod new_test;

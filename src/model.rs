@@ -339,6 +339,15 @@ impl std::ops::BitAnd for TaskSet {
     }
 }
 
+impl std::ops::Sub<&TaskSet> for &TaskSet {
+    type Output = TaskSet;
+    fn sub(self, other: &TaskSet) -> Self::Output {
+        TaskSet {
+            ids: &self.ids - &other.ids,
+        }
+    }
+}
+
 impl TodoList {
     fn calculate_implicit_priority(&self, id: TaskId) -> i32 {
         self.get(id)

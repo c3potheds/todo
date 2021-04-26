@@ -6,6 +6,7 @@ use app::edit;
 use app::find;
 use app::get;
 use app::log;
+use app::merge;
 use app::new;
 use app::path;
 use app::priority;
@@ -49,7 +50,7 @@ pub fn todo(
         Some(Find(cmd)) => find::run(list, printer, &cmd),
         Some(Get(cmd)) => get::run(list, printer, &cmd),
         Some(Log) => log::run(list, printer),
-        Some(Merge(_)) => unimplemented!(),
+        Some(Merge(cmd)) => merge::run(list, printer, now, &cmd),
         Some(Path(cmd)) => path::run(list, printer, &cmd),
         Some(New(cmd)) => new::run(list, printer, now, cmd),
         Some(Priority(cmd)) => priority::run(list, printer, &cmd),
