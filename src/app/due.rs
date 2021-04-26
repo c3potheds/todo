@@ -23,7 +23,7 @@ fn show_all_tasks_with_due_dates(
         })
         .filter(|&id| match list.implicit_due_date(id) {
             Some(Some(date)) => match earlier_than {
-                Some(threshold) => date < threshold,
+                Some(threshold) => date <= threshold,
                 None => true,
             },
             _ => false,
