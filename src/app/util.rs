@@ -27,16 +27,12 @@ pub fn format_task<'a>(model: &'a TodoList, id: TaskId) -> PrintableTask<'a> {
             Some(task),
             Some(pos),
             Some(status),
-            implicit_priority,
+            Some(implicit_priority),
             Some(implicit_due_date),
         ) => {
             let mut result =
-                PrintableTask::new(&task.desc, pos, to_printing_status(status));
-            if let Some(p) = implicit_priority {
-                if p != 0 {
-                    result = result.priority(p);
-                }
-            }
+                PrintableTask::new(&task.desc, pos, to_printing_status(status))
+                    .priority(implicit_priority);
             if let Some(due_date) = implicit_due_date {
                 result = result.due_date(due_date);
             }

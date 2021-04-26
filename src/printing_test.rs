@@ -686,7 +686,7 @@ fn fail_validation_on_incorrect_log_date_exact() {
 }
 
 #[test]
-#[should_panic(expected = "Missing required priority")]
+#[should_panic(expected = "Unexpected priority")]
 fn fail_validation_on_missing_priority_exact() {
     let mut printer = FakePrinter::new();
     printer.print_task(&PrintableTask::new("a", 1, Incomplete));
@@ -697,8 +697,7 @@ fn fail_validation_on_missing_priority_exact() {
 }
 
 #[test]
-#[should_panic(expected = "Extraneous priority")]
-#[ignore = "printing.extraneous-priority"]
+#[should_panic(expected = "Unexpected priority")]
 fn fail_validation_on_extraneous_priority() {
     let mut printer = FakePrinter::new();
     printer.print_task(&PrintableTask::new("a", 1, Incomplete).priority(1));

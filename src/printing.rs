@@ -85,7 +85,7 @@ pub struct PrintableTask<'a> {
     status: Status,
     action: Action,
     log_date: Option<LogDate>,
-    priority: Option<i32>,
+    priority: i32,
     due_date: Option<DateTime<Utc>>,
 }
 
@@ -97,7 +97,7 @@ impl<'a> PrintableTask<'a> {
             status: status,
             action: Action::None,
             log_date: None,
-            priority: None,
+            priority: 0,
             due_date: None,
         }
     }
@@ -113,7 +113,7 @@ impl<'a> PrintableTask<'a> {
     }
 
     pub fn priority(mut self, priority: i32) -> Self {
-        self.priority = Some(priority);
+        self.priority = priority;
         self
     }
 
@@ -290,8 +290,8 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
                 width = self.context.max_index_digits + ANSI_OFFSET
             )
         };
-        if let Some(priority) = self.task.priority {
-            let color = match priority.abs() {
+        if self.task.priority != 0 {
+            let color = match self.task.priority.abs() {
                 6..=i32::MAX => Color::Red,
                 5 => Color::Yellow,
                 4 => Color::Green,
@@ -300,12 +300,14 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
                 1 => Color::Purple,
                 _ => Color::Black,
             };
-            let style = if priority >= 0 {
+            let style = if self.task.priority >= 0 {
                 color.bold()
             } else {
                 color.bold().dimmed()
             };
-            start.push_str(&style.paint(format!("P{}", priority)).to_string());
+            start.push_str(
+                &style.paint(format!("P{}", self.task.priority)).to_string(),
+            );
             start.push_str(" ");
         }
         if let Some(due_date) = self.task.due_date {
@@ -528,7 +530,7 @@ struct PrintedTaskInfo {
     status: Status,
     action: Action,
     log_date: Option<LogDate>,
-    priority: Option<i32>,
+    priority: i32,
     due_date: Option<DateTime<Utc>>,
 }
 
@@ -606,19 +608,15 @@ impl<'a> Expect<'a> {
                     panic!("Missing required log date: {:?}", log_date);
                 }
             },
-            Expect::Priority(expected) => match &info.priority {
-                Some(actual) => {
-                    if *actual != *expected {
-                        panic!(
-                            "Unexpected priority: {:?} (Expected {:?})",
-                            actual, expected
-                        );
-                    }
+            Expect::Priority(expected) => {
+                let actual = info.priority;
+                if actual != *expected {
+                    panic!(
+                        "Unexpected priority: {:?} (Expected {:?})",
+                        actual, expected
+                    );
                 }
-                None => {
-                    panic!("Missing required priority: {:?}", expected);
-                }
-            },
+            }
             Expect::DueDate(expected) => match &info.due_date {
                 Some(actual) => {
                     if *actual != *expected {
@@ -660,9 +658,7 @@ impl<'a> Validation<'a> {
         if let Some(log_date) = &task.log_date {
             expectations.push(Expect::LogDate(log_date.clone()));
         }
-        if let Some(priority) = task.priority {
-            expectations.push(Expect::Priority(priority));
-        }
+        expectations.push(Expect::Priority(task.priority));
         if let Some(due_date) = task.due_date {
             expectations.push(Expect::DueDate(due_date));
         }
