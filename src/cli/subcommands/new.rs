@@ -1,8 +1,16 @@
 pub use super::Key;
 use structopt::StructOpt;
 
+/// Creates new tasks in the to-do list.
+///
+/// Each positional string will become the description of a new task in the
+/// to-do list. By default, all new tasks are in the incomplete state, showing
+/// up in the default list that you see when you invoke a raw 'todo' command.
 #[derive(Debug, PartialEq, StructOpt)]
-#[structopt(setting = structopt::clap::AppSettings::AllowNegativeNumbers)]
+#[structopt(
+    setting = structopt::clap::AppSettings::AllowNegativeNumbers,
+    verbatim_doc_comment,
+)]
 pub struct New {
     /// Descriptions for the new tasks, as raw strings.
     ///

@@ -1,8 +1,20 @@
 pub use super::Key;
 use structopt::StructOpt;
 
+/// Restore completed tasks.
+///
+/// This resets the completion status of the given tasks and puts them back
+/// in the list of incomplete tasks, as if they had never been completed.
+///
+/// A task cannot be restored if there are complete tasks that are blocked
+/// on it. The complete blocked tasks must be restored first, just as
+/// incomplete blocking tasks must be completed before the task they block
+/// is completed.
 #[derive(Debug, PartialEq, StructOpt)]
-#[structopt(setting = structopt::clap::AppSettings::AllowNegativeNumbers)]
+#[structopt(
+    setting = structopt::clap::AppSettings::AllowNegativeNumbers,
+    verbatim_doc_comment,
+)]
 pub struct Restore {
     /// Tasks to restore, marking as incomplete.
     pub keys: Vec<Key>,

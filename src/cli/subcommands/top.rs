@@ -1,8 +1,16 @@
 pub use super::Key;
 use structopt::StructOpt;
 
+/// Shows top-level tasks, i.e. tasks with no antidependencies.
+///
+/// One can represent "categories" for tasks by blocking a task representing
+/// a category on the tasks that should be in that category. When running
+/// this command, you can see all "uncategorized" tasks.
 #[derive(Debug, PartialEq, StructOpt)]
-#[structopt(setting = structopt::clap::AppSettings::AllowNegativeNumbers)]
+#[structopt(
+    setting = structopt::clap::AppSettings::AllowNegativeNumbers,
+    verbatim_doc_comment,
+)]
 pub struct Top {
     /// Tasks to find the top level underneath. If none are specified, shows the
     /// top-level tasks, i.e. tasks with no antidependencies. These may function
