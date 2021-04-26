@@ -4,6 +4,8 @@ use chrono::Local;
 use chrono::TimeZone;
 use chrono::Utc;
 use printing::Action::*;
+use printing::BriefPrintableTask;
+use printing::PrintableError;
 use printing::PrintableTask;
 use printing::Status::*;
 
@@ -107,5 +109,49 @@ fn merged_task_has_max_priority_of_sources() {
                 .action(Select)
                 .priority(2),
         )
+        .end();
+}
+
+#[test]
+fn merge_causes_cycle() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c --chain");
+    fix.test("todo merge a c --into ac")
+        .validate()
+        .printed_error(&PrintableError::CannotMerge {
+            cycle_through: vec![BriefPrintableTask::new(2, Blocked)],
+            adeps_of: vec![BriefPrintableTask::new(1, Incomplete)],
+            deps_of: vec![BriefPrintableTask::new(3, Blocked)],
+        })
+        .end();
+}
+
+#[test]
+fn merge_causes_cycle_indirect() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c d e --chain");
+    fix.test("todo merge a e --into ae")
+        .validate()
+        .printed_error(&PrintableError::CannotMerge {
+            cycle_through: vec![
+                BriefPrintableTask::new(2, Blocked),
+                BriefPrintableTask::new(3, Blocked),
+                BriefPrintableTask::new(4, Blocked),
+            ],
+            adeps_of: vec![BriefPrintableTask::new(1, Incomplete)],
+            deps_of: vec![BriefPrintableTask::new(5, Blocked)],
+        })
+        .end();
+}
+
+#[test]
+fn merge_inside_chain() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a b c d e f --chain");
+    fix.test("todo merge c d --into cd")
+        .validate()
+        .printed_task(&PrintableTask::new("b", 2, Blocked))
+        .printed_task(&PrintableTask::new("cd", 3, Blocked).action(Select))
+        .printed_task(&PrintableTask::new("e", 4, Blocked))
         .end();
 }

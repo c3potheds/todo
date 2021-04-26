@@ -223,7 +223,7 @@ pub struct TodoList {
     incomplete: Layering<TaskId>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct TaskSet {
     ids: HashSet<TaskId>,
 }

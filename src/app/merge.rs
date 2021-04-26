@@ -1,4 +1,5 @@
 use app::util::format_task;
+use app::util::format_task_brief;
 use app::util::lookup_tasks;
 use chrono::DateTime;
 use chrono::Utc;
@@ -8,6 +9,7 @@ use model::NewOptions;
 use model::TaskSet;
 use model::TodoList;
 use printing::Action;
+use printing::PrintableError;
 use printing::TodoPrinter;
 
 pub fn run(
@@ -29,6 +31,44 @@ pub fn run(
         .flat_map(|id| list.adeps(id).into_iter_unsorted())
         .collect::<TaskSet>()
         - &tasks_to_merge;
+    let transitive_deps = &tasks_to_merge
+        .iter_unsorted()
+        .flat_map(|id| list.transitive_deps(id).into_iter_unsorted())
+        .collect::<TaskSet>()
+        - &tasks_to_merge;
+    let transitive_adeps = &tasks_to_merge
+        .iter_unsorted()
+        .flat_map(|id| list.transitive_adeps(id).into_iter_unsorted())
+        .collect::<TaskSet>()
+        - &tasks_to_merge;
+    let cycle_through = transitive_deps & transitive_adeps;
+    if !cycle_through.is_empty() {
+        let adeps_of = cycle_through
+            .iter_unsorted()
+            .flat_map(|id| list.deps(id).into_iter_unsorted())
+            .collect::<TaskSet>()
+            & tasks_to_merge.clone();
+        let deps_of = cycle_through
+            .iter_unsorted()
+            .flat_map(|id| list.adeps(id).into_iter_unsorted())
+            .collect::<TaskSet>()
+            & tasks_to_merge.clone();
+        printer.print_error(&PrintableError::CannotMerge {
+            cycle_through: cycle_through
+                .iter_sorted(list)
+                .map(|id| format_task_brief(list, id))
+                .collect(),
+            adeps_of: adeps_of
+                .iter_sorted(list)
+                .map(|id| format_task_brief(list, id))
+                .collect(),
+            deps_of: deps_of
+                .iter_sorted(list)
+                .map(|id| format_task_brief(list, id))
+                .collect(),
+        });
+        return;
+    }
     let priority = tasks_to_merge
         .iter_unsorted()
         .map(|id| list.get(id).unwrap().priority)
@@ -52,11 +92,11 @@ pub fn run(
         budget: budget,
     });
     deps.iter_sorted(list).for_each(|dep| {
-        // TODO: handle cycles.
+        // This shouldn't happen if we correctly detected cycles above.
         list.block(merged).on(dep).unwrap();
     });
     adeps.iter_sorted(list).for_each(|adep| {
-        // TODO: handle cycles.
+        // This shouldn't happen if we correctly detected cycles above.
         list.block(adep).on(merged).unwrap();
     });
     tasks_to_merge.iter_sorted(list).for_each(|id| {

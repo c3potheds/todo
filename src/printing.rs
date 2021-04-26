@@ -199,6 +199,11 @@ pub enum PrintableError {
         cannot_parse: String,
     },
     ConflictingArgs((String, String)),
+    CannotMerge {
+        cycle_through: Vec<BriefPrintableTask>,
+        adeps_of: Vec<BriefPrintableTask>,
+        deps_of: Vec<BriefPrintableTask>,
+    },
 }
 
 const ANSI_OFFSET: usize = 10;
@@ -449,6 +454,18 @@ impl Display for PrintableError {
                         "Cannot pass {} and {} at the same time",
                         Color::White.bold().paint(a),
                         Color::White.bold().paint(b),
+                    )
+                }
+                PrintableError::CannotMerge {
+                    cycle_through,
+                    adeps_of,
+                    deps_of
+                } => {
+                    format!(
+                        "Cannot merge: tasks {} are adeps of {} but deps of {}",
+                        format_numbers(cycle_through.iter()),
+                        format_numbers(adeps_of.iter()),
+                        format_numbers(deps_of.iter())
                     )
                 }
             }
