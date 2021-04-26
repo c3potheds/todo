@@ -3,6 +3,9 @@ name = "todo"
 version = "0.1.0"
 authors = ["Simeon <simeon.anfinrud@mac.com>"]
 
+[profile.dev]
+split-debuginfo = "unpacked"
+
 [dependencies]
 ansi_term = "0.12"
 atty = "0.2"
