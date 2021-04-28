@@ -36,3 +36,57 @@ pub use self::split::Split;
 pub use self::top::Top;
 pub use self::unblock::Unblock;
 pub use super::Key;
+
+#[cfg(test)]
+mod block_test;
+
+#[cfg(test)]
+mod chain_test;
+
+#[cfg(test)]
+mod check_test;
+
+#[cfg(test)]
+mod due_test;
+
+#[cfg(test)]
+mod edit_test;
+
+#[cfg(test)]
+mod find_test;
+
+#[cfg(test)]
+mod get_test;
+
+#[cfg(test)]
+mod merge_test;
+
+#[cfg(test)]
+mod new_test;
+
+#[cfg(test)]
+mod path_test;
+
+#[cfg(test)]
+mod priority_test;
+
+#[cfg(test)]
+mod punt_test;
+
+#[cfg(test)]
+mod put_test;
+
+#[cfg(test)]
+mod restore_test;
+
+#[cfg(test)]
+mod rm_test;
+
+#[cfg(test)]
+mod split_test;
+
+#[cfg(test)]
+mod top_test;
+
+#[cfg(test)]
+mod unblock_test;

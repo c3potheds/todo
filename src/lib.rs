@@ -19,9 +19,6 @@ pub mod text_editing;
 pub mod time_format;
 
 #[cfg(test)]
-mod cli_test;
-
-#[cfg(test)]
 mod long_output_test;
 
 #[cfg(test)]
