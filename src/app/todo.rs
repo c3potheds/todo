@@ -43,6 +43,7 @@ pub fn todo(
     let now = clock.now();
     match options.cmd {
         Some(Block(cmd)) => block::run(list, printer, &cmd),
+        Some(Budget(_)) => unimplemented!(),
         Some(Chain(cmd)) => chain::run(list, printer, &cmd),
         Some(Check(cmd)) => check::run(list, printer, now, &cmd),
         Some(Due(cmd)) => due::run(list, printer, now, &cmd),

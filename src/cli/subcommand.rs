@@ -4,6 +4,7 @@ use structopt::StructOpt;
 #[derive(Debug, PartialEq, StructOpt)]
 pub enum SubCommand {
     Block(Block),
+    Budget(Budget),
     Chain(Chain),
     Check(Check),
     Due(Due),

@@ -1,4 +1,5 @@
 mod block;
+mod budget;
 mod chain;
 mod check;
 mod due;
@@ -18,6 +19,7 @@ mod top;
 mod unblock;
 
 pub use self::block::Block;
+pub use self::budget::Budget;
 pub use self::chain::Chain;
 pub use self::check::Check;
 pub use self::due::Due;
@@ -39,6 +41,9 @@ pub use super::Key;
 
 #[cfg(test)]
 mod block_test;
+
+#[cfg(test)]
+mod budget_test;
 
 #[cfg(test)]
 mod chain_test;
