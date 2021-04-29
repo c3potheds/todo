@@ -16,6 +16,7 @@ fn new_one() {
             chain: false,
             priority: None,
             due: vec![],
+            budget: vec![],
         }),
     );
 }
@@ -33,6 +34,7 @@ fn new_three() {
             chain: false,
             priority: None,
             due: vec![],
+            budget: vec![],
         }),
     );
 }
@@ -50,6 +52,7 @@ fn new_blocked_by_long() {
             chain: false,
             priority: None,
             due: vec![],
+            budget: vec![],
         }),
     );
 }
@@ -67,6 +70,7 @@ fn new_blocked_by_short() {
             chain: false,
             priority: None,
             due: vec![],
+            budget: vec![],
         }),
     );
 }
@@ -84,6 +88,7 @@ fn new_blocking_long() {
             chain: false,
             priority: None,
             due: vec![],
+            budget: vec![],
         }),
     );
 }
@@ -101,6 +106,7 @@ fn new_blocking_short() {
             chain: false,
             priority: None,
             due: vec![],
+            budget: vec![],
         }),
     );
 }
@@ -118,6 +124,7 @@ fn new_blocking_by_name() {
             chain: false,
             priority: None,
             due: vec![],
+            budget: vec![],
         }),
     );
 }
@@ -135,6 +142,7 @@ fn new_chain() {
             chain: true,
             priority: None,
             due: vec![],
+            budget: vec![],
         }),
     );
 }
@@ -152,6 +160,7 @@ fn new_before_after() {
             chain: false,
             priority: None,
             due: vec![],
+            budget: vec![],
         }),
     );
 }
@@ -169,6 +178,7 @@ fn new_one_with_priority() {
             chain: false,
             priority: Some(1),
             due: vec![],
+            budget: vec![],
         }),
     )
 }
@@ -186,6 +196,7 @@ fn new_three_with_priority() {
             chain: false,
             priority: Some(2),
             due: vec![],
+            budget: vec![],
         }),
     )
 }
@@ -203,6 +214,7 @@ fn new_with_negative_priority() {
             chain: false,
             priority: Some(-3),
             due: vec![],
+            budget: vec![],
         }),
     )
 }
@@ -220,6 +232,25 @@ fn new_with_due_date() {
             chain: false,
             priority: None,
             due: vec!["7".to_string(), "days".to_string()],
+            budget: vec![],
         }),
     )
+}
+
+#[test]
+fn new_with_budget() {
+    expect_parses_into(
+        "todo new a --budget 2 days",
+        SubCommand::New(New {
+            desc: vec!["a".to_string()],
+            blocked_by: vec![],
+            blocking: vec![],
+            before: vec![],
+            after: vec![],
+            chain: false,
+            priority: None,
+            due: vec![],
+            budget: vec!["2".to_string(), "days".to_string()],
+        }),
+    );
 }

@@ -94,4 +94,18 @@ pub struct New {
     /// this due date will be printed in the console output.
     #[structopt(long)]
     pub due: Vec<String>,
+
+    /// Allocate a time budget for the new tasks.
+    ///
+    /// The due dates of any dependencies of the new tasks will be bounded by
+    /// the due date of the new tasks minus the budget.
+    ///
+    /// The budget is a human-readable description of a duration, like "2 days"
+    /// or "12 hours". A time budget must be a duration, not an absolute time,
+    /// like "12 pm" or "tomorrow", like the --due argument accepts.
+    ///
+    /// A budget has no effect unless the task also has an implicit or explicit
+    /// due date.
+    #[structopt(long)]
+    pub budget: Vec<String>,
 }
