@@ -622,7 +622,10 @@ impl<'a> Expect<'a> {
                     if *actual != *expected {
                         panic!(
                             "Unexpected due date: {:?} (Expected {:?})",
-                            actual, expected
+                            // Display timestamps in local timezone to avoid
+                            // confusion in tests, which use local time.
+                            actual.with_timezone(&Local),
+                            expected.with_timezone(&Local)
                         );
                     }
                 }
