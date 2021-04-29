@@ -1,24 +1,9 @@
+use app::testing::ymdhms;
 use chrono::DateTime;
-use chrono::Local;
-use chrono::TimeZone;
 use chrono::Utc;
 use cli::Key;
 use printing::Status::*;
 use printing::*;
-
-fn ymdhms(
-    yr: i32,
-    mon: u32,
-    day: u32,
-    hr: u32,
-    min: u32,
-    sec: u32,
-) -> DateTime<Utc> {
-    Local
-        .ymd(yr, mon, day)
-        .and_hms(hr, min, sec)
-        .with_timezone(&Utc)
-}
 
 fn make_printing_context() -> PrintingContext {
     PrintingContext {

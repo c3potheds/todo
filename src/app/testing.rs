@@ -1,3 +1,5 @@
+use chrono::DateTime;
+use chrono::Local;
 use chrono::TimeZone;
 use chrono::Utc;
 use cli::Options;
@@ -6,6 +8,20 @@ use model::TodoList;
 use printing::FakePrinter;
 use structopt::StructOpt;
 use text_editing::FakeTextEditor;
+
+pub fn ymdhms(
+    yr: i32,
+    mon: u32,
+    day: u32,
+    hr: u32,
+    min: u32,
+    sec: u32,
+) -> DateTime<Utc> {
+    Local
+        .ymd(yr, mon, day)
+        .and_hms(hr, min, sec)
+        .with_timezone(&Utc)
+}
 
 pub struct Fixture<'a> {
     pub list: TodoList,
