@@ -198,6 +198,13 @@ pub enum PrintableError {
     CannotParseDueDate {
         cannot_parse: String,
     },
+    CannotParseDuration {
+        cannot_parse: String,
+    },
+    DurationIsTooLong {
+        duration: u64,
+        string_repr: String,
+    },
     ConflictingArgs((String, String)),
     CannotMerge {
         cycle_through: Vec<BriefPrintableTask>,
@@ -356,7 +363,7 @@ impl Display for PrintableWarning {
         write!(
             f,
             "{}: {}",
-            format!("{}", Color::Yellow.paint("warning")),
+            format!("{}", Color::Yellow.bold().paint("warning")),
             match self {
                 PrintableWarning::NoMatchFoundForKey { requested_key } =>
                     format!("No match found for {}", format_key(requested_key)),
@@ -395,7 +402,7 @@ impl Display for PrintableError {
         write!(
             f,
             "{}: {}",
-            format!("{}", Color::Red.paint("error")),
+            format!("{}", Color::Red.bold().paint("error")),
             match self {
                 PrintableError::CannotCheckBecauseBlocked {
                     cannot_check,
@@ -449,6 +456,21 @@ impl Display for PrintableError {
                     format!(
                         "Cannot parse due date: {}",
                         Color::White.bold().paint(cannot_parse),
+                    )
+                }
+                PrintableError::CannotParseDuration { cannot_parse } => {
+                    format!(
+                        "Cannot parse duration: {}",
+                        Color::White.bold().paint(cannot_parse),
+                    )
+                }
+                PrintableError::DurationIsTooLong { duration, string_repr } => {
+                    format!(
+                        "Time budget is too long: {} (from {}).\n{}: {}",
+                        Color::White.bold().paint(format!("{} secs", duration)),
+                        Color::White.bold().paint(string_repr),
+                        Color::White.bold().dimmed().paint("note"),
+                        "Must be less than ~136 years, or 2^32 seconds."
                     )
                 }
                 PrintableError::ConflictingArgs((a, b)) => {

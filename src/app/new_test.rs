@@ -371,3 +371,46 @@ fn new_with_due_date_shows_affected_deps() {
         )
         .end();
 }
+
+#[test]
+fn new_with_budget_shows_affected_deps() {
+    let mut fix = Fixture::new();
+    fix.clock.now = ymdhms(2021, 04, 29, 09, 30, 00);
+    let before_7 = ymdhms(2021, 04, 29, 18, 59, 59);
+    let end_of_day = ymdhms(2021, 04, 29, 23, 59, 59);
+    fix.test("todo new a");
+    fix.test("todo new b -p a --due today --budget 5 hours")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("a", 1, Incomplete).due_date(before_7),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 2, Blocked)
+                .due_date(end_of_day)
+                .action(New),
+        )
+        .end();
+}
+
+#[test]
+fn new_with_too_long_time_budget() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a --budget 137 years")
+        .validate()
+        .printed_error(&PrintableError::DurationIsTooLong {
+            duration: 4323391200,
+            string_repr: "137 years".to_string(),
+        })
+        .end();
+}
+
+#[test]
+fn new_with_unintelligible_time_budget() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a --budget blah")
+        .validate()
+        .printed_error(&PrintableError::CannotParseDuration {
+            cannot_parse: "blah".to_string(),
+        })
+        .end();
+}

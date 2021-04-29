@@ -281,7 +281,10 @@ fn display_no_match_found_warning() {
             requested_key: Key::ByNumber(10),
         },
     );
-    assert_eq!(fmt, "\u{1b}[33mwarning\u{1b}[0m: No match found for \"10\"");
+    assert_eq!(
+        fmt,
+        "\u{1b}[1;33mwarning\u{1b}[0m: No match found for \"10\""
+    );
 }
 
 #[test]
@@ -294,7 +297,7 @@ fn display_no_match_found_for_name_warning() {
     );
     assert_eq!(
         fmt,
-        "\u{1b}[33mwarning\u{1b}[0m: No match found for \"blah\""
+        "\u{1b}[1;33mwarning\u{1b}[0m: No match found for \"blah\""
     );
 }
 
@@ -308,7 +311,7 @@ fn display_no_match_found_for_range_warning() {
     );
     assert_eq!(
         fmt,
-        "\u{1b}[33mwarning\u{1b}[0m: No match found for range(10..20)"
+        "\u{1b}[1;33mwarning\u{1b}[0m: No match found for range(10..20)"
     );
 }
 
@@ -323,7 +326,7 @@ fn display_cannot_check_because_already_complete_warning() {
     assert_eq!(
         fmt,
         concat!(
-            "\u{1b}[33mwarning\u{1b}[0m: ",
+            "\u{1b}[1;33mwarning\u{1b}[0m: ",
             "Task \u{1b}[32m-2)\u{1b}[0m is already complete"
         )
     );
@@ -340,7 +343,7 @@ fn display_cannot_restore_because_already_incomplete_warning() {
     assert_eq!(
         fmt,
         concat!(
-            "\u{1b}[33mwarning\u{1b}[0m: ",
+            "\u{1b}[1;33mwarning\u{1b}[0m: ",
             "Task \u{1b}[33m3)\u{1b}[0m is already incomplete"
         )
     );
@@ -358,7 +361,7 @@ fn display_cannot_unblock_because_task_is_not_blocked_warning() {
     assert_eq!(
         fmt,
         concat!(
-            "\u{1b}[33mwarning\u{1b}[0m: ",
+            "\u{1b}[1;33mwarning\u{1b}[0m: ",
             "Task \u{1b}[33m2)\u{1b}[0m is not blocked by ",
             "\u{1b}[33m1)\u{1b}[0m"
         )
@@ -380,7 +383,7 @@ fn display_cannot_check_because_blocked_error() {
     assert_eq!(
         fmt,
         concat!(
-            "\u{1b}[31merror\u{1b}[0m: ",
+            "\u{1b}[1;31merror\u{1b}[0m: ",
             "Cannot complete \u{1b}[31m3)\u{1b}[0m ",
             "because it is blocked by ",
             "\u{1b}[33m1)\u{1b}[0m, \u{1b}[33m2)\u{1b}[0m"
@@ -403,7 +406,7 @@ fn display_cannot_restore_because_antidependency_is_complete_error() {
     assert_eq!(
         fmt,
         concat!(
-            "\u{1b}[31merror\u{1b}[0m: ",
+            "\u{1b}[1;31merror\u{1b}[0m: ",
             "Cannot restore \u{1b}[32m-3)\u{1b}[0m ",
             "because it blocks complete tasks ",
             "\u{1b}[32m-1)\u{1b}[0m, \u{1b}[32m0)\u{1b}[0m"
@@ -423,7 +426,7 @@ fn display_cannot_block_because_would_cause_cycle_error() {
     assert_eq!(
         fmt,
         concat!(
-            "\u{1b}[31merror\u{1b}[0m: ",
+            "\u{1b}[1;31merror\u{1b}[0m: ",
             "Cannot block \u{1b}[33m5)\u{1b}[0m ",
             "on \u{1b}[31m6)\u{1b}[0m ",
             "because it would create a cycle"
@@ -440,7 +443,7 @@ fn display_cannot_edit_because_unexpected_number_error() {
     assert_eq!(
         fmt,
         concat!(
-            "\u{1b}[31merror\u{1b}[0m: ",
+            "\u{1b}[1;31merror\u{1b}[0m: ",
             "Number 0) doesn't correspond to any of requested tasks"
         )
     );
@@ -452,13 +455,16 @@ fn display_cannot_edit_because_no_task_with_number_error() {
         "{}",
         PrintableError::CannotEditBecauseNoTaskWithNumber { requested: 100 }
     );
-    assert_eq!(fmt, "\u{1b}[31merror\u{1b}[0m: No task with number 100)");
+    assert_eq!(fmt, "\u{1b}[1;31merror\u{1b}[0m: No task with number 100)");
 }
 
 #[test]
 fn display_failed_to_use_text_editor_error() {
     let fmt = format!("{}", PrintableError::FailedToUseTextEditor);
-    assert_eq!(fmt, "\u{1b}[31merror\u{1b}[0m: Failed to open text editor");
+    assert_eq!(
+        fmt,
+        "\u{1b}[1;31merror\u{1b}[0m: Failed to open text editor"
+    );
 }
 
 #[test]

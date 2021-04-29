@@ -1,3 +1,5 @@
+extern crate humantime;
+
 use app::util::format_task;
 use app::util::format_task_brief;
 use app::util::lookup_tasks;
@@ -15,6 +17,7 @@ use printing::Action;
 use printing::PrintableError;
 use printing::TodoPrinter;
 use std::collections::HashSet;
+use std::convert::TryFrom;
 use std::iter::FromIterator;
 
 pub fn run(
@@ -40,6 +43,33 @@ pub fn run(
         }
     } else {
         None
+    };
+    let budget_string = cmd.budget.join(" ");
+    let budget = if !budget_string.is_empty() {
+        match humantime::parse_duration(&budget_string) {
+            Ok(duration) => {
+                DurationInSeconds(match u32::try_from(duration.as_secs()) {
+                    Ok(secs) => secs,
+                    Err(_) => {
+                        printer.print_error(
+                            &PrintableError::DurationIsTooLong {
+                                duration: duration.as_secs(),
+                                string_repr: budget_string.clone(),
+                            },
+                        );
+                        return;
+                    }
+                })
+            }
+            Err(_) => {
+                printer.print_error(&PrintableError::CannotParseDuration {
+                    cannot_parse: budget_string.clone(),
+                });
+                return;
+            }
+        }
+    } else {
+        DurationInSeconds::default()
     };
     let deps = lookup_tasks(model, &cmd.blocked_by);
     let adeps = lookup_tasks(model, &cmd.blocking);
@@ -80,7 +110,7 @@ pub fn run(
                 now: now,
                 priority: priority.unwrap_or(0),
                 due_date: due_date,
-                budget: DurationInSeconds::default(),
+                budget: budget,
             });
             to_print.insert(id);
             id
