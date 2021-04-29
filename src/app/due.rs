@@ -1,7 +1,7 @@
 use app::util::format_task;
 use app::util::lookup_tasks;
+use app::util::parse_due_date_or_print_error;
 use chrono::DateTime;
-use chrono::Local;
 use chrono::Utc;
 use cli::Due;
 use model::TaskId;
@@ -107,25 +107,12 @@ pub fn run(
     } else {
         Some(lookup_tasks(list, &cmd.keys))
     };
-    let due_date = if cmd.due.is_empty() {
-        None
-    } else {
-        let date_string = cmd.due.join(" ");
-        match ::time_format::parse_time(
-            Local,
-            now.with_timezone(&Local),
-            &date_string,
-        ) {
-            Ok(threshold) => Some(threshold.with_timezone(&Utc)),
-            Err(_) => {
-                printer.print_error(&PrintableError::CannotParseDueDate {
-                    cannot_parse: date_string.clone(),
-                });
-                return;
-            }
+    let due_date = match parse_due_date_or_print_error(now, &cmd.due, printer) {
+        Ok(due_date) => due_date,
+        Err(_) => {
+            return;
         }
     };
-
     match (tasks, due_date, cmd.none) {
         (Some(tasks), Some(due_date), false) => set_due_dates(
             list,

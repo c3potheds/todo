@@ -1,11 +1,18 @@
+use chrono::DateTime;
+use chrono::Local;
+use chrono::Utc;
 use cli::Key;
+use model::DurationInSeconds;
 use model::TaskId;
 use model::TaskSet;
 use model::TaskStatus;
 use model::TodoList;
 use printing::BriefPrintableTask;
+use printing::PrintableError;
 use printing::PrintableTask;
 use printing::Status;
+use printing::TodoPrinter;
+use std::convert::TryFrom;
 
 fn to_printing_status(status: TaskStatus) -> Status {
     match status {
@@ -87,6 +94,60 @@ pub fn any_tasks_are_complete(
     mut tasks: impl Iterator<Item = TaskId>,
 ) -> bool {
     tasks.any(|id| list.status(id) == Some(TaskStatus::Complete))
+}
+
+pub fn parse_due_date_or_print_error(
+    now: DateTime<Utc>,
+    due_date_vec: &Vec<String>,
+    printer: &mut impl TodoPrinter,
+) -> Result<Option<DateTime<Utc>>, ()> {
+    if due_date_vec.is_empty() {
+        return Ok(None);
+    }
+    let due_date_string = due_date_vec.join(" ");
+    match ::time_format::parse_time(
+        Local,
+        now.with_timezone(&Local),
+        &due_date_string,
+    ) {
+        Ok(due_date) => Ok(Some(due_date.with_timezone(&Utc))),
+        Err(_) => {
+            printer.print_error(&PrintableError::CannotParseDueDate {
+                cannot_parse: due_date_string.to_string(),
+            });
+            Err(())
+        }
+    }
+}
+
+pub fn parse_budget_or_print_error(
+    budget_vec: &Vec<String>,
+    printer: &mut impl TodoPrinter,
+) -> Result<DurationInSeconds, ()> {
+    if budget_vec.is_empty() {
+        return Ok(DurationInSeconds::default());
+    }
+    let budget_string = budget_vec.join(" ");
+    match humantime::parse_duration(&budget_string) {
+        Ok(duration) => {
+            Ok(DurationInSeconds(match u32::try_from(duration.as_secs()) {
+                Ok(secs) => secs,
+                Err(_) => {
+                    printer.print_error(&PrintableError::DurationIsTooLong {
+                        duration: duration.as_secs(),
+                        string_repr: budget_string.clone(),
+                    });
+                    return Err(());
+                }
+            }))
+        }
+        Err(_) => {
+            printer.print_error(&PrintableError::CannotParseDuration {
+                cannot_parse: budget_string.clone(),
+            });
+            return Err(());
+        }
+    }
 }
 
 struct Pairwise<T, I>

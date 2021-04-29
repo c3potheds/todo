@@ -4,12 +4,12 @@ use app::util::format_task;
 use app::util::format_task_brief;
 use app::util::lookup_tasks;
 use app::util::pairwise;
+use app::util::parse_budget_or_print_error;
+use app::util::parse_due_date_or_print_error;
 use chrono::DateTime;
-use chrono::Local;
 use chrono::Utc;
 use cli::New;
 use itertools::Itertools;
-use model::DurationInSeconds;
 use model::NewOptions;
 use model::TaskSet;
 use model::TodoList;
@@ -17,7 +17,6 @@ use printing::Action;
 use printing::PrintableError;
 use printing::TodoPrinter;
 use std::collections::HashSet;
-use std::convert::TryFrom;
 use std::iter::FromIterator;
 
 pub fn run(
@@ -26,50 +25,17 @@ pub fn run(
     now: DateTime<Utc>,
     cmd: New,
 ) {
-    let due_date_string = cmd.due.join(" ");
-    let due_date = if !due_date_string.is_empty() {
-        match ::time_format::parse_time(
-            Local,
-            now.with_timezone(&Local),
-            &due_date_string,
-        ) {
-            Ok(due_date) => Some(due_date.with_timezone(&Utc)),
-            Err(_) => {
-                printer.print_error(&PrintableError::CannotParseDueDate {
-                    cannot_parse: due_date_string.clone(),
-                });
-                return;
-            }
+    let due_date = match parse_due_date_or_print_error(now, &cmd.due, printer) {
+        Ok(due_date) => due_date,
+        Err(_) => {
+            return;
         }
-    } else {
-        None
     };
-    let budget_string = cmd.budget.join(" ");
-    let budget = if !budget_string.is_empty() {
-        match humantime::parse_duration(&budget_string) {
-            Ok(duration) => {
-                DurationInSeconds(match u32::try_from(duration.as_secs()) {
-                    Ok(secs) => secs,
-                    Err(_) => {
-                        printer.print_error(
-                            &PrintableError::DurationIsTooLong {
-                                duration: duration.as_secs(),
-                                string_repr: budget_string.clone(),
-                            },
-                        );
-                        return;
-                    }
-                })
-            }
-            Err(_) => {
-                printer.print_error(&PrintableError::CannotParseDuration {
-                    cannot_parse: budget_string.clone(),
-                });
-                return;
-            }
+    let budget = match parse_budget_or_print_error(&cmd.budget, printer) {
+        Ok(budget) => budget,
+        Err(_) => {
+            return;
         }
-    } else {
-        DurationInSeconds::default()
     };
     let deps = lookup_tasks(model, &cmd.blocked_by);
     let adeps = lookup_tasks(model, &cmd.blocking);
