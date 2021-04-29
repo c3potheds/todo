@@ -1,4 +1,5 @@
 mod block;
+mod budget;
 mod chain;
 mod check;
 mod due;
@@ -25,6 +26,9 @@ pub use self::todo::todo;
 
 #[cfg(test)]
 mod block_test;
+
+#[cfg(test)]
+mod budget_test;
 
 #[cfg(test)]
 mod chain_test;
