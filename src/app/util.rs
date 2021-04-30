@@ -128,10 +128,10 @@ pub fn parse_budget_or_print_error(
     budget_vec: &Vec<String>,
     printer: &mut impl TodoPrinter,
 ) -> Result<DurationInSeconds, ()> {
-    if budget_vec.is_empty() {
+    let budget_string = budget_vec.join(" ");
+    if budget_string == "0" || budget_string == "" {
         return Ok(DurationInSeconds::default());
     }
-    let budget_string = budget_vec.join(" ");
     match humantime::parse_duration(&budget_string) {
         Ok(duration) => {
             Ok(DurationInSeconds(match u32::try_from(duration.as_secs()) {
