@@ -398,21 +398,28 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
             if let Some(budget) = self.task.budget {
                 let target_progress =
                     calculate_progress(self.context.now, due_date, budget);
-                start.push_str(
-                    &Color::White.bold().paint("Target progress").to_string(),
-                );
-                start.push_str(" ");
-                let style = if target_progress < 50 {
-                    Color::White.bold().dimmed()
-                } else if target_progress < 80 {
-                    Color::Yellow.bold()
-                } else {
-                    Color::Red.bold()
-                };
-                start.push_str(
-                    &style.paint(format!("{}%", target_progress)).to_string(),
-                );
-                start.push_str(" ");
+                if target_progress >= 0 && target_progress <= 100 {
+                    start.push_str(
+                        &Color::White
+                            .bold()
+                            .paint("Target progress")
+                            .to_string(),
+                    );
+                    start.push_str(" ");
+                    let style = if target_progress < 50 {
+                        Color::White.bold().dimmed()
+                    } else if target_progress < 80 {
+                        Color::Yellow.bold()
+                    } else {
+                        Color::Red.bold()
+                    };
+                    start.push_str(
+                        &style
+                            .paint(format!("{}%", target_progress))
+                            .to_string(),
+                    );
+                    start.push_str(" ");
+                }
             }
         }
         write!(
