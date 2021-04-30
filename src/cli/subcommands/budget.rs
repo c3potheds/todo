@@ -27,4 +27,7 @@ pub struct Budget {
     /// The description of the budgeted duration.
     #[structopt(long, alias = "is", required = true)]
     pub budget: Vec<String>,
+    /// Show completed affected tasks.
+    #[structopt(long, short = "d")]
+    pub include_done: bool,
 }

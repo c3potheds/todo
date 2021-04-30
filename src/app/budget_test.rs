@@ -135,3 +135,47 @@ fn too_long_budget() {
         })
         .end();
 }
+
+#[test]
+fn budget_does_not_include_complete_affected_deps() {
+    let mut fix = Fixture::new();
+    fix.clock.now = ymdhms(2021, 04, 30, 11, 00, 00);
+    fix.test("todo new a b c --chain --due today");
+    fix.test("todo check a");
+    fix.test("todo budget c --is 1 hour")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("b", 1, Incomplete)
+                .due_date(ymdhms(2021, 04, 30, 22, 59, 59)),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 2, Blocked)
+                .due_date(ymdhms(2021, 04, 30, 23, 59, 59))
+                .action(Select),
+        )
+        .end();
+}
+
+#[test]
+fn budget_include_complete_affected_deps() {
+    let mut fix = Fixture::new();
+    fix.clock.now = ymdhms(2021, 04, 30, 11, 00, 00);
+    fix.test("todo new a b c --chain --due today");
+    fix.test("todo check a");
+    fix.test("todo budget c --is 1 hour -d")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("a", 0, Complete)
+                .due_date(ymdhms(2021, 04, 30, 22, 59, 59)),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 1, Incomplete)
+                .due_date(ymdhms(2021, 04, 30, 22, 59, 59)),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 2, Blocked)
+                .due_date(ymdhms(2021, 04, 30, 23, 59, 59))
+                .action(Select),
+        )
+        .end();
+}
