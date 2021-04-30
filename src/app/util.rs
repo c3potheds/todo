@@ -1,4 +1,5 @@
 use chrono::DateTime;
+use chrono::Duration;
 use chrono::Local;
 use chrono::Utc;
 use cli::Key;
@@ -42,6 +43,9 @@ pub fn format_task<'a>(model: &'a TodoList, id: TaskId) -> PrintableTask<'a> {
                     .priority(implicit_priority);
             if let Some(due_date) = implicit_due_date {
                 result = result.due_date(due_date);
+            }
+            if task.budget.0 > 0 {
+                result = result.budget(Duration::seconds(task.budget.0.into()));
             }
             result
         }

@@ -1,4 +1,5 @@
 use super::util::*;
+use chrono::Duration;
 use cli::Key;
 use model::NewOptions;
 use model::TodoList;
@@ -39,6 +40,24 @@ fn format_task_with_zero_priority() {
     let a = list.add(NewOptions::new().desc("a").priority(0));
     let actual = format_task(&list, a);
     let expected = PrintableTask::new("a", 1, Incomplete);
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn format_task_with_budget() {
+    let mut list = TodoList::new();
+    let now = ::app::testing::ymdhms(2021, 04, 30, 09, 00, 00);
+    let due = now + Duration::hours(5);
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .budget(Duration::hours(10))
+            .due_date(due),
+    );
+    let actual = format_task(&list, a);
+    let expected = PrintableTask::new("a", 1, Incomplete)
+        .due_date(due)
+        .budget(Duration::hours(10));
     assert_eq!(actual, expected);
 }
 

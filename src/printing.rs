@@ -87,6 +87,7 @@ pub struct PrintableTask<'a> {
     log_date: Option<LogDate>,
     priority: i32,
     due_date: Option<DateTime<Utc>>,
+    budget: Option<Duration>,
 }
 
 impl<'a> PrintableTask<'a> {
@@ -99,6 +100,7 @@ impl<'a> PrintableTask<'a> {
             log_date: None,
             priority: 0,
             due_date: None,
+            budget: None,
         }
     }
 
@@ -119,6 +121,11 @@ impl<'a> PrintableTask<'a> {
 
     pub fn due_date(mut self, due_date: DateTime<Utc>) -> Self {
         self.due_date = Some(due_date);
+        self
+    }
+
+    pub fn budget(mut self, budget: Duration) -> Self {
+        self.budget = Some(budget);
         self
     }
 }
@@ -279,6 +286,65 @@ fn calculate_urgency(now: DateTime<Utc>, then: DateTime<Utc>) -> Urgency {
     }
 }
 
+fn calculate_progress(
+    now: DateTime<Utc>,
+    due: DateTime<Utc>,
+    budget: Duration,
+) -> i32 {
+    let start = due - budget;
+    let elapsed = now - start;
+    let budget_spent: f64 =
+        elapsed.num_seconds() as f64 / budget.num_seconds() as f64;
+    let percentage = (budget_spent * 100.0) as i32;
+    percentage
+}
+
+#[cfg(test)]
+#[test]
+fn calculate_progress_test() {
+    use app::testing::ymdhms;
+    assert_eq!(
+        0,
+        calculate_progress(
+            ymdhms(2021, 04, 30, 10, 00, 00),
+            ymdhms(2021, 04, 30, 12, 00, 00),
+            Duration::hours(2)
+        )
+    );
+    assert_eq!(
+        50,
+        calculate_progress(
+            ymdhms(2021, 04, 30, 11, 00, 00),
+            ymdhms(2021, 04, 30, 12, 00, 00),
+            Duration::hours(2)
+        )
+    );
+    assert_eq!(
+        100,
+        calculate_progress(
+            ymdhms(2021, 04, 30, 12, 00, 00),
+            ymdhms(2021, 04, 30, 12, 00, 00),
+            Duration::hours(2)
+        )
+    );
+    assert_eq!(
+        -100,
+        calculate_progress(
+            ymdhms(2021, 04, 30, 08, 00, 00),
+            ymdhms(2021, 04, 30, 12, 00, 00),
+            Duration::hours(2)
+        )
+    );
+    assert_eq!(
+        200,
+        calculate_progress(
+            ymdhms(2021, 04, 30, 14, 00, 00),
+            ymdhms(2021, 04, 30, 12, 00, 00),
+            Duration::hours(2)
+        )
+    );
+}
+
 impl<'a> Display for PrintableTaskWithContext<'a> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let mut start = if let Some(log_date) = &self.task.log_date {
@@ -329,6 +395,25 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
             );
             start.push_str(&style.paint(format!("Due {}", desc)).to_string());
             start.push_str(" ");
+            if let Some(budget) = self.task.budget {
+                let target_progress =
+                    calculate_progress(self.context.now, due_date, budget);
+                start.push_str(
+                    &Color::White.bold().paint("Target progress").to_string(),
+                );
+                start.push_str(" ");
+                let style = if target_progress < 50 {
+                    Color::White.bold().dimmed()
+                } else if target_progress < 80 {
+                    Color::Yellow.bold()
+                } else {
+                    Color::Red.bold()
+                };
+                start.push_str(
+                    &style.paint(format!("{}%", target_progress)).to_string(),
+                );
+                start.push_str(" ");
+            }
         }
         write!(
             f,
