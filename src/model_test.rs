@@ -577,7 +577,10 @@ fn cannot_restore_task_with_complete_adeps() {
     list.block(b).on(a).unwrap();
     list.check(a).unwrap();
     list.check(b).unwrap();
-    assert_eq!(list.restore(a), Err(RestoreError::WouldRestore(vec![b])));
+    assert_eq!(
+        list.restore(a),
+        Err(RestoreError::WouldRestore(TaskSet::of(b)))
+    );
 }
 
 #[test]

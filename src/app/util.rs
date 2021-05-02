@@ -60,6 +60,16 @@ pub fn format_task_brief(model: &TodoList, id: TaskId) -> BriefPrintableTask {
     )
 }
 
+pub fn format_tasks_brief(
+    model: &TodoList,
+    tasks: &TaskSet,
+) -> Vec<BriefPrintableTask> {
+    tasks
+        .iter_sorted(model)
+        .map(|id| format_task_brief(model, id))
+        .collect()
+}
+
 pub fn lookup_task(model: &TodoList, key: &Key) -> TaskSet {
     match key {
         &Key::ByNumber(n) => model.lookup_by_number(n).into_iter().collect(),

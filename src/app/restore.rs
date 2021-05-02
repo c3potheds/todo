@@ -1,5 +1,6 @@
 use app::util::format_task;
 use app::util::format_task_brief;
+use app::util::format_tasks_brief;
 use app::util::lookup_tasks;
 use cli::Restore;
 use model::ForceRestored;
@@ -14,7 +15,7 @@ use printing::TodoPrinter;
 use std::collections::HashSet;
 
 enum Reason {
-    BlockingComplete(Vec<TaskId>),
+    BlockingComplete(TaskSet),
     AlreadyIncomplete,
 }
 
@@ -116,10 +117,9 @@ pub fn run(
             Reason::BlockingComplete(adeps) => printer.print_error(
                 &PrintableError::CannotRestoreBecauseAntidependencyIsComplete {
                     cannot_restore: format_task_brief(model, id),
-                    complete_antidependencies: adeps
-                        .into_iter()
-                        .map(|dep| format_task_brief(model, dep))
-                        .collect(),
+                    complete_antidependencies: format_tasks_brief(
+                        model, &adeps,
+                    ),
                 },
             ),
         });

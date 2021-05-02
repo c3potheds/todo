@@ -1,5 +1,5 @@
 use app::util::format_task;
-use app::util::format_task_brief;
+use app::util::format_tasks_brief;
 use app::util::lookup_tasks;
 use chrono::DateTime;
 use chrono::Utc;
@@ -54,18 +54,9 @@ pub fn run(
             .collect::<TaskSet>()
             & tasks_to_merge.clone();
         printer.print_error(&PrintableError::CannotMerge {
-            cycle_through: cycle_through
-                .iter_sorted(list)
-                .map(|id| format_task_brief(list, id))
-                .collect(),
-            adeps_of: adeps_of
-                .iter_sorted(list)
-                .map(|id| format_task_brief(list, id))
-                .collect(),
-            deps_of: deps_of
-                .iter_sorted(list)
-                .map(|id| format_task_brief(list, id))
-                .collect(),
+            cycle_through: format_tasks_brief(list, &cycle_through),
+            adeps_of: format_tasks_brief(list, &adeps_of),
+            deps_of: format_tasks_brief(list, &deps_of),
         });
         return;
     }

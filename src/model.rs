@@ -663,7 +663,7 @@ pub struct ForceRestored {
 #[derive(Debug, PartialEq)]
 pub enum RestoreError {
     TaskIsAlreadyIncomplete,
-    WouldRestore(Vec<TaskId>),
+    WouldRestore(TaskSet),
 }
 
 impl TodoList {
@@ -673,12 +673,12 @@ impl TodoList {
         if !self.complete.contains(&id) {
             return Err(RestoreError::TaskIsAlreadyIncomplete);
         }
-        let complete_adeps: Vec<_> = self
+        let complete_adeps: TaskSet = self
             .adeps(id)
-            .iter_sorted(&self)
+            .into_iter_unsorted()
             .filter(|adep| self.complete.contains(adep))
             .collect();
-        if complete_adeps.len() > 0 {
+        if !complete_adeps.is_empty() {
             return Err(RestoreError::WouldRestore(complete_adeps));
         }
         self.tasks[id.0].completion_time = None;
@@ -703,7 +703,7 @@ impl TodoList {
         let restore_result = self.restore(id);
         if let Err(RestoreError::WouldRestore(would_restore)) = &restore_result
         {
-            let result = would_restore.iter().copied().fold(
+            let result = would_restore.iter_sorted(self).fold(
                 ForceRestored {
                     restored: TaskSet::new(),
                     blocked: TaskSet::new(),

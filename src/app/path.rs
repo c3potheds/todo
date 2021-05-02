@@ -1,5 +1,6 @@
 use app::util::format_task;
 use app::util::format_task_brief;
+use app::util::format_tasks_brief;
 use app::util::lookup_task;
 use app::util::pairwise;
 use cli::Path;
@@ -25,10 +26,7 @@ pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Path) {
             } else if matches.len() > 1 {
                 printer.print_warning(&PrintableWarning::AmbiguousKey {
                     key: key.clone(),
-                    matches: matches
-                        .iter_sorted(model)
-                        .map(|id| format_task_brief(model, id))
-                        .collect(),
+                    matches: format_tasks_brief(model, &matches),
                 });
             }
             matches
