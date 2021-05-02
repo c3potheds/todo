@@ -13,10 +13,11 @@ use structopt::StructOpt;
 )]
 pub struct Unblock {
     /// Tasks to unblock.
+    #[structopt(required = true, min_values = 1)]
     pub keys: Vec<Key>,
 
     /// Tasks to unblock from.
-    #[structopt(long)]
+    #[structopt(long, min_values = 1)]
     pub from: Vec<Key>,
 
     /// Show affected complete tasks in the result.

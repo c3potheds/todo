@@ -17,7 +17,7 @@ use structopt::StructOpt;
 #[derive(Debug, PartialEq, StructOpt)]
 pub struct Check {
     /// Tasks to mark as complete.
-    #[structopt(verbatim_doc_comment)]
+    #[structopt(required = true, min_values = 1)]
     pub keys: Vec<Key>,
     /// If passed, all incomplete dependencies will also be completed.
     ///

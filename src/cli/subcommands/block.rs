@@ -29,10 +29,11 @@ use structopt::StructOpt;
 )]
 pub struct Block {
     /// Tasks to block.
+    #[structopt(required = true, min_values = 1)]
     pub keys: Vec<Key>,
 
     /// Tasks to block on.
-    #[structopt(long)]
+    #[structopt(long, required = true, min_values = 1)]
     pub on: Vec<Key>,
 
     /// Include complete affected deps in result.

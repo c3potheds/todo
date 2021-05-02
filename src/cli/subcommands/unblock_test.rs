@@ -1,7 +1,14 @@
+use cli::testing::expect_error;
 use cli::testing::expect_parses_into;
 use cli::Key::*;
 use cli::SubCommand;
 use cli::Unblock;
+
+#[test]
+fn unblock_no_keys() {
+    expect_error("todo unblock");
+    expect_error("todo unblock a --from");
+}
 
 #[test]
 fn unblock_one_from_one() {

@@ -1,7 +1,19 @@
+use cli::testing::expect_error;
 use cli::testing::expect_parses_into;
 use cli::Key::*;
 use cli::New;
 use cli::SubCommand;
+
+#[test]
+fn new_missing_keys() {
+    expect_error("todo new");
+    expect_error("todo new a -b");
+    expect_error("todo new a -p");
+    expect_error("todo new a --before");
+    expect_error("todo new a --after");
+    expect_error("todo new a --due");
+    expect_error("todo new a --budget");
+}
 
 #[test]
 fn new_one() {

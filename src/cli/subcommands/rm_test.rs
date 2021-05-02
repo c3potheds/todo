@@ -1,7 +1,13 @@
+use cli::testing::expect_error;
 use cli::testing::expect_parses_into;
 use cli::Key::*;
 use cli::Rm;
 use cli::SubCommand;
+
+#[test]
+fn rm_no_keys() {
+    expect_error("todo rm");
+}
 
 #[test]
 fn rm_by_number() {

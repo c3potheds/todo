@@ -1,7 +1,13 @@
+use cli::testing::expect_error;
 use cli::testing::expect_parses_into;
 use cli::Edit;
 use cli::Key::*;
 use cli::SubCommand;
+
+#[test]
+fn edit_missing_keys() {
+    expect_error("todo edit");
+}
 
 #[test]
 fn edit_with_description() {

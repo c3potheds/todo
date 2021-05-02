@@ -1,6 +1,16 @@
 pub use super::Key;
 use structopt::StructOpt;
 
+#[derive(Debug, PartialEq, StructOpt)]
+pub struct Prepositions {
+    /// Put the selected tasks before these tasks.
+    #[structopt(long, short = "b", min_values = 1)]
+    pub before: Vec<Key>,
+    /// Put the selected tasks after these tasks.
+    #[structopt(long, short = "a", min_values = 1)]
+    pub after: Vec<Key>,
+}
+
 /// Puts tasks before or after other tasks.
 ///
 /// Putting a task before another task is like blocking the latter on the
@@ -27,13 +37,10 @@ use structopt::StructOpt;
 )]
 pub struct Put {
     /// Selected task keys.
+    #[structopt(required = true, min_values = 1)]
     pub keys: Vec<Key>,
-    /// Put the selected tasks before these tasks.
-    #[structopt(long, short = "b")]
-    pub before: Vec<Key>,
-    /// Put the selected tasks after these tasks.
-    #[structopt(long, short = "a")]
-    pub after: Vec<Key>,
+    #[structopt(flatten)]
+    pub preposition: Prepositions,
     /// Include affected complete tasks in the result.
     #[structopt(long, short = "d")]
     pub include_done: bool,

@@ -16,6 +16,7 @@ use structopt::StructOpt;
 )]
 pub struct Chain {
     /// Tasks to arrange in a blocking sequence.
+    #[structopt(required = true, min_values = 1)]
     pub keys: Vec<Key>,
     /// Show complete affected tasks.
     #[structopt(long, short = "d")]

@@ -29,5 +29,6 @@ use structopt::StructOpt;
 )]
 pub struct Rm {
     /// Tasks to remove.
+    #[structopt(required = true, min_values = 1)]
     pub keys: Vec<Key>,
 }

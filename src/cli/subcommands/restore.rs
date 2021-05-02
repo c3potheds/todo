@@ -17,6 +17,7 @@ use structopt::StructOpt;
 )]
 pub struct Restore {
     /// Tasks to restore, marking as incomplete.
+    #[structopt(required = true, min_values = 1)]
     pub keys: Vec<Key>,
     /// If passed, all complete antidependencies will also be restored.
     ///

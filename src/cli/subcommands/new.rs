@@ -17,29 +17,29 @@ pub struct New {
     /// The description will be printed next to the task number when showing
     /// the task. You can use the description as a 'key' argument in commands
     /// that select existing tasks.
-    #[structopt(verbatim_doc_comment)]
+    #[structopt(verbatim_doc_comment, required = true, min_values = 1)]
     pub desc: Vec<String>,
 
     /// Block new tasks on these tasks.
-    #[structopt(long, short = "p", value_name = "keys")]
+    #[structopt(long, short = "p", value_name = "keys", min_values = 1)]
     pub blocked_by: Vec<Key>,
 
     /// Block these tasks on new tasks.
-    #[structopt(long, short = "b", value_name = "keys")]
+    #[structopt(long, short = "b", value_name = "keys", min_values = 1)]
     pub blocking: Vec<Key>,
 
     /// Put the new tasks before these tasks.
     ///
     /// This blocks the given "before" tasks on the new tasks, and block the new
     /// tasks on the deps of the "before" tasks.
-    #[structopt(long, value_name = "keys")]
+    #[structopt(long, value_name = "keys", min_values = 1)]
     pub before: Vec<Key>,
 
     /// Put the new tasks after these tasks.
     ///
     /// This blocks the new tasks on the given "after" tasks, and block the
     /// adeps of the "after" tasks on the new tasks.
-    #[structopt(long, value_name = "keys")]
+    #[structopt(long, value_name = "keys", min_values = 1)]
     pub after: Vec<Key>,
 
     /// Put the new tasks in a blocking sequence.
@@ -92,7 +92,7 @@ pub struct New {
     /// be reordered if you assign a due date! Dependencies whose implicit due
     /// date, and therefore ordering, are updated by assigning the new tasks
     /// this due date will be printed in the console output.
-    #[structopt(long)]
+    #[structopt(long, min_values = 1)]
     pub due: Vec<String>,
 
     /// Allocate a time budget for the new tasks.
@@ -106,6 +106,6 @@ pub struct New {
     ///
     /// A budget has no effect unless the task also has an implicit or explicit
     /// due date.
-    #[structopt(long)]
+    #[structopt(long, min_values = 1)]
     pub budget: Vec<String>,
 }

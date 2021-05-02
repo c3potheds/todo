@@ -1,7 +1,13 @@
+use cli::testing::expect_error;
 use cli::testing::expect_parses_into;
 use cli::Get;
 use cli::Key::*;
 use cli::SubCommand;
+
+#[test]
+fn get_missing_keys() {
+    expect_error("todo get");
+}
 
 #[test]
 fn get_one() {

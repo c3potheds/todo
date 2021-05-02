@@ -1,7 +1,13 @@
+use cli::testing::expect_error;
 use cli::testing::expect_parses_into;
 use cli::Key::*;
 use cli::Punt;
 use cli::SubCommand;
+
+#[test]
+fn punt_no_keys() {
+    expect_error("todo punt");
+}
 
 #[test]
 fn punt_one() {

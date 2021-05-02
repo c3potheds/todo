@@ -46,10 +46,11 @@ use structopt::StructOpt;
 )]
 pub struct Split {
     /// Tasks to split.
+    #[structopt(required = true, min_values = 1)]
     pub keys: Vec<Key>,
 
     /// Descriptions for new tasks.
-    #[structopt(long)]
+    #[structopt(long, required = true, min_values = 1)]
     pub into: Vec<String>,
 
     /// If passed, the results of the split will be put in a dependency chain.

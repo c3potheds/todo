@@ -13,6 +13,7 @@ use structopt::StructOpt;
 )]
 pub struct Edit {
     /// Tasks to edit.
+    #[structopt(required = true, min_values = 1)]
     pub keys: Vec<Key>,
     /// The new description. If not set, a text editor is used.
     #[structopt(long)]

@@ -1,6 +1,12 @@
+use cli::testing::expect_error;
 use cli::testing::expect_parses_into;
 use cli::Find;
 use cli::SubCommand;
+
+#[test]
+fn find_missing_terms() {
+    expect_error("todo find");
+}
 
 #[test]
 fn find_with_single_string() {

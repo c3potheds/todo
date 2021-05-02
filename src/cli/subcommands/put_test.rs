@@ -1,7 +1,21 @@
+use cli::subcommands::put::Prepositions;
+use cli::testing::expect_error;
 use cli::testing::expect_parses_into;
 use cli::Key::*;
 use cli::Put;
 use cli::SubCommand;
+
+#[test]
+fn punt_missing_keys_or_prepositions() {
+    expect_error("todo put");
+    // TODO(cli.put.preposition-arggroup): Require either --before or --after.
+    // Blocked on representing a clap::ArgGroup in structopt.
+    // expect_error("todo put a");
+    expect_error("todo put a --after");
+    expect_error("todo put a --before");
+    expect_error("todo put --after a");
+    expect_error("todo put --before a");
+}
 
 #[test]
 fn put_one_before() {
@@ -9,8 +23,10 @@ fn put_one_before() {
         "todo put a --before b",
         SubCommand::Put(Put {
             keys: vec![ByName("a".to_string())],
-            before: vec![ByName("b".to_string())],
-            after: vec![],
+            preposition: Prepositions {
+                before: vec![ByName("b".to_string())],
+                after: vec![],
+            },
             include_done: false,
         }),
     );
@@ -22,8 +38,10 @@ fn put_one_after() {
         "todo put a --after b",
         SubCommand::Put(Put {
             keys: vec![ByName("a".to_string())],
-            before: vec![],
-            after: vec![ByName("b".to_string())],
+            preposition: Prepositions {
+                before: vec![],
+                after: vec![ByName("b".to_string())],
+            },
             include_done: false,
         }),
     );
@@ -39,16 +57,18 @@ fn put_multiple_before_and_after() {
                 ByName("b".to_string()),
                 ByName("c".to_string()),
             ],
-            before: vec![
-                ByName("d".to_string()),
-                ByName("e".to_string()),
-                ByName("f".to_string()),
-            ],
-            after: vec![
-                ByName("g".to_string()),
-                ByName("h".to_string()),
-                ByName("i".to_string()),
-            ],
+            preposition: Prepositions {
+                before: vec![
+                    ByName("d".to_string()),
+                    ByName("e".to_string()),
+                    ByName("f".to_string()),
+                ],
+                after: vec![
+                    ByName("g".to_string()),
+                    ByName("h".to_string()),
+                    ByName("i".to_string()),
+                ],
+            },
             include_done: false,
         }),
     );
@@ -60,8 +80,10 @@ fn put_include_done_long() {
         "todo put a --before b --include-done",
         SubCommand::Put(Put {
             keys: vec![ByName("a".to_string())],
-            before: vec![ByName("b".to_string())],
-            after: vec![],
+            preposition: Prepositions {
+                before: vec![ByName("b".to_string())],
+                after: vec![],
+            },
             include_done: true,
         }),
     );
@@ -73,8 +95,10 @@ fn put_include_done_short() {
         "todo put a --before b -d",
         SubCommand::Put(Put {
             keys: vec![ByName("a".to_string())],
-            before: vec![ByName("b".to_string())],
-            after: vec![],
+            preposition: Prepositions {
+                before: vec![ByName("b".to_string())],
+                after: vec![],
+            },
             include_done: true,
         }),
     );

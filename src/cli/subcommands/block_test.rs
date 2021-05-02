@@ -1,7 +1,15 @@
+use cli::testing::expect_error;
 use cli::testing::expect_parses_into;
 use cli::Block;
 use cli::Key::*;
 use cli::SubCommand;
+
+#[test]
+fn block_missing_keys_or_values() {
+    expect_error("todo block");
+    expect_error("todo block --on 1");
+    expect_error("todo block 1");
+}
 
 #[test]
 fn block_one_on_one() {

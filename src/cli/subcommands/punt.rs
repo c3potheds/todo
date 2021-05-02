@@ -18,5 +18,6 @@ use structopt::StructOpt;
 )]
 pub struct Punt {
     /// Tasks to punt.
+    #[structopt(required = true, min_values = 1)]
     pub keys: Vec<Key>,
 }

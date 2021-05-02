@@ -1,7 +1,13 @@
+use cli::testing::expect_error;
 use cli::testing::expect_parses_into;
 use cli::Check;
 use cli::Key::*;
 use cli::SubCommand;
+
+#[test]
+fn check_missing_keys() {
+    expect_error("todo check");
+}
 
 #[test]
 fn check_one() {

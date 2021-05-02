@@ -35,6 +35,7 @@ use structopt::StructOpt;
 )]
 pub struct Get {
     /// Tasks to explore.
+    #[structopt(required = true, min_values = 1)]
     pub keys: Vec<Key>,
     /// Show completed deps if no given task is complete.
     ///

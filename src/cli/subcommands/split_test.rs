@@ -1,7 +1,15 @@
+use cli::testing::expect_error;
 use cli::testing::expect_parses_into;
 use cli::Key::*;
 use cli::Split;
 use cli::SubCommand;
+
+#[test]
+fn split_no_keys_or_prepositions() {
+    expect_error("todo split");
+    expect_error("todo split 1");
+    expect_error("todo split 1 --into");
+}
 
 #[test]
 fn split_one_into_one() {

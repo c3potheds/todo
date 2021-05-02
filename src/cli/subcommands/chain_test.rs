@@ -1,7 +1,13 @@
+use cli::testing::expect_error;
 use cli::testing::expect_parses_into;
 use cli::Chain;
 use cli::Key::*;
 use cli::SubCommand;
+
+#[test]
+fn chain_missing_keys() {
+    expect_error("todo chain");
+}
 
 #[test]
 fn chain_one() {
