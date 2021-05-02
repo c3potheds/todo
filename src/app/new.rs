@@ -41,30 +41,16 @@ pub fn run(
     let adeps = lookup_tasks(model, &cmd.blocking);
     let before = lookup_tasks(model, &cmd.before);
     let before_deps = before
-        .iter()
-        .copied()
+        .iter_unsorted()
         .flat_map(|id| model.deps(id).into_iter_unsorted())
         .collect::<TaskSet>();
     let after = lookup_tasks(model, &cmd.after);
     let after_adeps = after
-        .iter()
-        .copied()
+        .iter_unsorted()
         .flat_map(|id| model.adeps(id).into_iter_unsorted())
         .collect::<TaskSet>();
-    let deps = deps
-        .into_iter()
-        .chain(before_deps.into_iter_unsorted())
-        .chain(after.into_iter())
-        .collect::<TaskSet>()
-        .iter_sorted(model)
-        .collect::<Vec<_>>();
-    let adeps = adeps
-        .into_iter()
-        .chain(before.into_iter())
-        .chain(after_adeps.into_iter_unsorted())
-        .collect::<TaskSet>()
-        .iter_sorted(model)
-        .collect::<Vec<_>>();
+    let deps = deps | before_deps | after;
+    let adeps = adeps | before | after_adeps;
     let priority = cmd.priority;
     let mut to_print = HashSet::new();
     let new_tasks: Vec<_> = cmd
@@ -82,7 +68,7 @@ pub fn run(
             id
         })
         .collect();
-    deps.into_iter()
+    deps.iter_sorted(model)
         .cartesian_product(new_tasks.iter().copied())
         .for_each(|(dep, new)| match model.block(new).on(dep) {
             Ok(affected) => to_print.extend(affected.iter_unsorted()),
@@ -94,7 +80,7 @@ pub fn run(
             ),
         });
     adeps
-        .into_iter()
+        .iter_sorted(model)
         .cartesian_product(new_tasks.iter().copied())
         .for_each(|(adep, new)| match model.block(adep).on(new) {
             Ok(affected) => to_print.extend(affected.iter_unsorted()),

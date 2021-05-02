@@ -9,9 +9,8 @@ use printing::PrintableError;
 use printing::TodoPrinter;
 use text_editing::TextEditor;
 
-fn format_tasks_for_text_editor(model: &TodoList, ids: &Vec<TaskId>) -> String {
-    ids.iter()
-        .copied()
+fn format_tasks_for_text_editor(model: &TodoList, ids: &TaskSet) -> String {
+    ids.iter_sorted(model)
         .flat_map(|id| {
             model
                 .position(id)
@@ -25,11 +24,10 @@ fn format_tasks_for_text_editor(model: &TodoList, ids: &Vec<TaskId>) -> String {
 fn edit_with_description(
     model: &mut TodoList,
     printer: &mut impl TodoPrinter,
-    ids: &Vec<TaskId>,
+    ids: &TaskSet,
     desc: &str,
 ) {
-    ids.iter()
-        .copied()
+    ids.iter_sorted(model)
         .filter(|&id| model.set_desc(id, desc))
         .collect::<TaskSet>()
         .iter_sorted(model)
@@ -59,13 +57,13 @@ fn parse_line_from_text_editor(line: &str) -> Result<(i32, String), EditError> {
 fn update_desc(
     model: &mut TodoList,
     printer: &mut impl TodoPrinter,
-    ids: &Vec<TaskId>,
+    ids: &TaskSet,
     pos: i32,
     desc: &str,
 ) -> Option<TaskId> {
     match model.lookup_by_number(pos) {
         Some(id) => {
-            if !ids.contains(&id) {
+            if !ids.contains(id) {
                 printer.print_error(
                     &PrintableError::CannotEditBecauseUnexpectedNumber {
                         requested: pos,
@@ -91,7 +89,7 @@ fn update_desc(
 fn edit_with_text_editor(
     model: &mut TodoList,
     printer: &mut impl TodoPrinter,
-    ids: &Vec<TaskId>,
+    ids: &TaskSet,
     editor_output: &str,
 ) {
     editor_output

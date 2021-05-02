@@ -82,8 +82,7 @@ pub fn run(
     now: DateTime<Utc>,
     cmd: Split,
 ) {
-    let to_split = lookup_tasks(list, &cmd.keys);
-    let result = to_split.iter().copied().fold(
+    let result = lookup_tasks(list, &cmd.keys).iter_sorted(list).fold(
         SplitResult {
             shards: TaskSet::new(),
             to_print: TaskSet::new(),

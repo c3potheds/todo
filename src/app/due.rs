@@ -4,7 +4,6 @@ use app::util::parse_due_date_or_print_error;
 use chrono::DateTime;
 use chrono::Utc;
 use cli::Due;
-use model::TaskId;
 use model::TaskSet;
 use model::TaskStatus;
 use model::TodoList;
@@ -34,10 +33,10 @@ fn show_all_tasks_with_due_dates(
 fn show_source_of_due_dates_for_tasks(
     list: &TodoList,
     printer: &mut impl TodoPrinter,
-    tasks: Vec<TaskId>,
+    tasks: TaskSet,
 ) {
     tasks
-        .into_iter()
+        .iter_sorted(list)
         .flat_map(|id| {
             let due_date = match list.get(id) {
                 Some(task) => match task.implicit_due_date {
@@ -64,12 +63,12 @@ fn show_source_of_due_dates_for_tasks(
 fn set_due_dates(
     list: &mut TodoList,
     printer: &mut impl TodoPrinter,
-    tasks: Vec<TaskId>,
+    tasks: TaskSet,
     due_date: Option<DateTime<Utc>>,
     include_done: bool,
 ) {
     tasks
-        .into_iter()
+        .iter_sorted(list)
         .flat_map(|id| list.set_due_date(id, due_date).into_iter_unsorted())
         .collect::<TaskSet>()
         .iter_sorted(list)

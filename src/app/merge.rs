@@ -18,9 +18,7 @@ pub fn run(
     now: DateTime<Utc>,
     cmd: &Merge,
 ) {
-    let tasks_to_merge = lookup_tasks(list, &cmd.keys)
-        .into_iter()
-        .collect::<TaskSet>();
+    let tasks_to_merge = lookup_tasks(list, &cmd.keys);
     let deps = &tasks_to_merge
         .iter_unsorted()
         .flat_map(|id| list.deps(id).into_iter_unsorted())

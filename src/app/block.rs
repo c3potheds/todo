@@ -29,15 +29,16 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Block) {
     let include_done = should_include_done(
         cmd.include_done,
         model,
-        tasks_to_block
-            .iter()
-            .chain(tasks_to_block_on.iter())
-            .copied(),
+        (tasks_to_block.clone() | tasks_to_block_on.clone()).iter_sorted(model),
     );
     tasks_to_block
-        .iter()
-        .copied()
-        .cartesian_product(tasks_to_block_on.iter().copied())
+        .iter_sorted(model)
+        .cartesian_product(
+            tasks_to_block_on
+                .iter_sorted(model)
+                .collect::<Vec<_>>()
+                .into_iter(),
+        )
         .flat_map(|(blocked, blocking)| {
             match model.block(blocked).on(blocking) {
                 Ok(affected) => affected.into_iter_unsorted(),
@@ -52,7 +53,7 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Block) {
         .iter_sorted(model)
         .for_each(|id| {
             printer.print_task(&format_task(model, id).action(
-                if tasks_to_block.contains(&id) {
+                if tasks_to_block.contains(id) {
                     Action::Lock
                 } else {
                     Action::None

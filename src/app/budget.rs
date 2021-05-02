@@ -17,10 +17,9 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Budget) {
     };
     let tasks = lookup_tasks(list, &cmd.keys);
     let include_done =
-        should_include_done(cmd.include_done, list, tasks.iter().copied());
+        should_include_done(cmd.include_done, list, tasks.iter_unsorted());
     tasks
-        .iter()
-        .copied()
+        .iter_sorted(list)
         .fold(TaskSet::new(), |so_far, id| {
             so_far | list.set_budget(id, budget)
         })
@@ -28,7 +27,7 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Budget) {
         .iter_sorted(list)
         .for_each(|id| {
             printer.print_task(&format_task(list, id).action(
-                if tasks.contains(&id) {
+                if tasks.contains(id) {
                     Action::Select
                 } else {
                     Action::None

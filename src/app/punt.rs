@@ -9,8 +9,8 @@ use printing::PrintableWarning;
 use printing::TodoPrinter;
 
 pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Punt) {
-    lookup_tasks(&model, &cmd.keys)
-        .into_iter()
+    lookup_tasks(model, &cmd.keys)
+        .iter_sorted(model)
         .filter(|&id| match model.punt(id) {
             Err(PuntError::TaskIsComplete) => {
                 printer.print_warning(

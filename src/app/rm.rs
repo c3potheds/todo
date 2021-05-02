@@ -10,7 +10,7 @@ use printing::TodoPrinter;
 
 pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: Rm) {
     lookup_tasks(model, &cmd.keys)
-        .into_iter()
+        .iter_sorted(model)
         .map(|id| {
             let task = model.get(id).unwrap();
             let pos = model.position(id).unwrap();

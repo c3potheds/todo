@@ -94,13 +94,10 @@ pub fn lookup_task(model: &TodoList, key: &Key) -> TaskSet {
 pub fn lookup_tasks<'a>(
     model: &'a TodoList,
     keys: impl IntoIterator<Item = &'a Key>,
-) -> Vec<TaskId> {
-    keys.into_iter()
-        .fold(TaskSet::new(), |so_far, key| {
-            so_far | lookup_task(model, key)
-        })
-        .iter_sorted(model)
-        .collect()
+) -> TaskSet {
+    keys.into_iter().fold(TaskSet::new(), |so_far, key| {
+        so_far | lookup_task(model, key)
+    })
 }
 
 fn any_tasks_are_complete(

@@ -49,10 +49,11 @@ fn check_with_fn<Check: FnMut(TaskId) -> CheckResult>(
 fn force_check(
     model: &mut TodoList,
     now: DateTime<Utc>,
-    tasks_to_check: Vec<TaskId>,
+    tasks_to_check: TaskSet,
 ) -> CheckResult {
-    check_with_fn(tasks_to_check, |id| {
-        match model.force_check(CheckOptions { id: id, now: now }) {
+    check_with_fn(
+        tasks_to_check.iter_sorted(model).collect(),
+        |id| match model.force_check(CheckOptions { id: id, now: now }) {
             Ok(ForceChecked {
                 completed,
                 unblocked,
@@ -75,17 +76,18 @@ fn force_check(
             Err(CheckError::TaskIsBlockedBy(_)) => panic!(
                 "Somehow got a TaskIsBlockedBy error from force_check()."
             ),
-        }
-    })
+        },
+    )
 }
 
 fn check(
     model: &mut TodoList,
     now: DateTime<Utc>,
-    tasks_to_check: Vec<TaskId>,
+    tasks_to_check: TaskSet,
 ) -> CheckResult {
-    check_with_fn(tasks_to_check, |id| {
-        match model.check(CheckOptions { id: id, now: now }) {
+    check_with_fn(
+        tasks_to_check.iter_sorted(model).collect(),
+        |id| match model.check(CheckOptions { id: id, now: now }) {
             Ok(unblocked) => CheckResult {
                 to_print: {
                     let mut to_print = HashMap::new();
@@ -107,8 +109,8 @@ fn check(
                 to_print: HashMap::new(),
                 cannot_complete: vec![(id, Reason::BlockedBy(deps))],
             },
-        }
-    })
+        },
+    )
 }
 
 fn print_cannot_complete_error(

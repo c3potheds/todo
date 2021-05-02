@@ -15,15 +15,15 @@ pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Top) {
             {
                 return false;
             }
-            if underneath.len() > 0 {
-                underneath.iter().all(|&top| {
+            if !underneath.is_empty() {
+                underneath.iter_unsorted().all(|top| {
                     model.deps(top).contains(id)
                         && !model.adeps(id).iter_unsorted().any(|adep| {
                             model.transitive_adeps(adep).contains(top)
                         })
                 })
             } else {
-                model.adeps(id).iter_unsorted().collect::<Vec<_>>().len() == 0
+                model.adeps(id).is_empty()
             }
         })
         .for_each(|id| printer.print_task(&format_task(model, id)))

@@ -12,11 +12,10 @@ pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Get) {
     let include_done = should_include_done(
         cmd.include_done,
         model,
-        requested_tasks.iter().copied(),
+        requested_tasks.iter_unsorted(),
     );
     requested_tasks
-        .iter()
-        .copied()
+        .iter_sorted(model)
         .flat_map(|id| {
             (model.transitive_deps(id) | model.transitive_adeps(id))
                 .into_iter_unsorted()
@@ -27,7 +26,7 @@ pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Get) {
         .iter_sorted(model)
         .for_each(|id| {
             printer.print_task(&format_task(model, id).action(
-                if requested_tasks.contains(&id) {
+                if requested_tasks.contains(id) {
                     Action::Select
                 } else {
                     Action::None

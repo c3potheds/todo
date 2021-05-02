@@ -99,7 +99,8 @@ pub fn run(
     printer: &mut impl TodoPrinter,
     cmd: &Restore,
 ) {
-    let tasks_to_restore = lookup_tasks(model, &cmd.keys);
+    let tasks_to_restore =
+        lookup_tasks(model, &cmd.keys).iter_sorted(model).collect();
     let result = if cmd.force {
         force_restore(model, tasks_to_restore)
     } else {

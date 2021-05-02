@@ -1,7 +1,6 @@
 use app::util::format_task;
 use app::util::lookup_tasks;
 use cli::Priority;
-use model::TaskId;
 use model::TaskSet;
 use model::TaskStatus;
 use model::TodoList;
@@ -10,12 +9,12 @@ use printing::TodoPrinter;
 fn set_priority(
     list: &mut TodoList,
     printer: &mut impl TodoPrinter,
-    tasks: Vec<TaskId>,
+    tasks: TaskSet,
     priority: i32,
     include_done: bool,
 ) {
     tasks
-        .into_iter()
+        .iter_sorted(&list)
         .flat_map(|id| list.set_priority(id, priority).into_iter_unsorted())
         .collect::<TaskSet>()
         .include_done(list, include_done)
@@ -26,11 +25,11 @@ fn set_priority(
 fn show_source_of_priority_for_tasks(
     list: &TodoList,
     printer: &mut impl TodoPrinter,
-    tasks: Vec<TaskId>,
+    tasks: TaskSet,
     include_done: bool,
 ) {
     tasks
-        .into_iter()
+        .iter_unsorted()
         .flat_map(|id| {
             let priority = match list.implicit_priority(id) {
                 Some(p) => p,

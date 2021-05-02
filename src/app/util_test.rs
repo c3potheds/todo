@@ -68,11 +68,11 @@ fn lookup_by_number() {
     let b = list.add("b");
     let c = list.add("c");
     let lookup1 = lookup_tasks(&list, std::iter::once(&Key::ByNumber(1)));
-    itertools::assert_equal(lookup1, vec![a]);
+    itertools::assert_equal(lookup1.iter_sorted(&list), vec![a]);
     let lookup2 = lookup_tasks(&list, std::iter::once(&Key::ByNumber(2)));
-    itertools::assert_equal(lookup2, vec![b]);
+    itertools::assert_equal(lookup2.iter_sorted(&list), vec![b]);
     let lookup3 = lookup_tasks(&list, std::iter::once(&Key::ByNumber(3)));
-    itertools::assert_equal(lookup3, vec![c]);
+    itertools::assert_equal(lookup3.iter_sorted(&list), vec![c]);
 }
 
 #[test]
@@ -82,11 +82,11 @@ fn lookup_by_name() {
     let b = list.add("b");
     let c = list.add("c");
     let lookup1 = lookup_tasks(&list, &[Key::ByName("a".to_string())]);
-    itertools::assert_equal(lookup1, vec![a]);
+    itertools::assert_equal(lookup1.iter_sorted(&list), vec![a]);
     let lookup2 = lookup_tasks(&list, &[Key::ByName("b".to_string())]);
-    itertools::assert_equal(lookup2, vec![b]);
+    itertools::assert_equal(lookup2.iter_sorted(&list), vec![b]);
     let lookup3 = lookup_tasks(&list, &[Key::ByName("c".to_string())]);
-    itertools::assert_equal(lookup3, vec![c]);
+    itertools::assert_equal(lookup3.iter_sorted(&list), vec![c]);
 }
 
 #[test]
@@ -99,7 +99,7 @@ fn lookup_multiple_keys() {
         &list,
         &[Key::ByNumber(1), Key::ByNumber(2), Key::ByNumber(3)],
     );
-    itertools::assert_equal(lookup_all, vec![a, b, c]);
+    itertools::assert_equal(lookup_all.iter_sorted(&list), vec![a, b, c]);
 }
 
 #[test]
@@ -109,11 +109,11 @@ fn lookup_by_range() {
     let b = list.add("b");
     let c = list.add("c");
     let lookup_1_2 = lookup_tasks(&list, &[Key::ByRange(1, 2)]);
-    itertools::assert_equal(lookup_1_2, vec![a, b]);
+    itertools::assert_equal(lookup_1_2.iter_sorted(&list), vec![a, b]);
     let lookup_2_3 = lookup_tasks(&list, &[Key::ByRange(2, 3)]);
-    itertools::assert_equal(lookup_2_3, vec![b, c]);
+    itertools::assert_equal(lookup_2_3.iter_sorted(&list), vec![b, c]);
     let lookup_1_3 = lookup_tasks(&list, &[Key::ByRange(1, 3)]);
-    itertools::assert_equal(lookup_1_3, vec![a, b, c]);
+    itertools::assert_equal(lookup_1_3.iter_sorted(&list), vec![a, b, c]);
 }
 
 #[test]

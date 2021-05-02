@@ -29,13 +29,14 @@ fn print_unblock_warning(
 fn unblock_from_given(
     model: &mut TodoList,
     printer: &mut impl TodoPrinter,
-    tasks_to_unblock: &Vec<TaskId>,
-    tasks_to_unblock_from: &Vec<TaskId>,
+    tasks_to_unblock: &TaskSet,
+    tasks_to_unblock_from: &TaskSet,
 ) -> TaskSet {
     tasks_to_unblock
-        .iter()
-        .copied()
-        .cartesian_product(tasks_to_unblock_from.iter().copied())
+        .iter_sorted(model)
+        .cartesian_product(
+            tasks_to_unblock_from.iter_sorted(model).collect::<Vec<_>>(),
+        )
         .flat_map(|(blocked, blocking)| {
             match model.unblock(blocked).from(blocking) {
                 Ok(affected) => affected.into_iter_unsorted(),
@@ -50,11 +51,10 @@ fn unblock_from_given(
 
 fn unblock_from_all(
     model: &mut TodoList,
-    tasks_to_unblock: &Vec<TaskId>,
+    tasks_to_unblock: &TaskSet,
 ) -> TaskSet {
     tasks_to_unblock
-        .iter()
-        .copied()
+        .iter_unsorted()
         .map(|id| {
             model.deps(id).iter_unsorted().for_each(|dep| {
                 model.unblock(id).from(dep).unwrap();
@@ -74,10 +74,8 @@ pub fn run(
     let include_done = should_include_done(
         cmd.include_done,
         model,
-        tasks_to_unblock
-            .iter()
-            .chain(tasks_to_unblock_from.iter())
-            .copied(),
+        (tasks_to_unblock.clone() | tasks_to_unblock_from.clone())
+            .iter_unsorted(),
     );
     if !cmd.from.is_empty() && tasks_to_unblock_from.is_empty() {
         printer.print_error(&PrintableError::NoMatchForKeys {
@@ -100,7 +98,7 @@ pub fn run(
         .iter_sorted(model)
         .for_each(|id| {
             printer.print_task(&format_task(model, id).action(
-                if tasks_to_unblock.contains(&id) {
+                if tasks_to_unblock.contains(id) {
                     Action::Unlock
                 } else {
                     Action::None
