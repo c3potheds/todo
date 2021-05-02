@@ -1,7 +1,7 @@
-use app::util::any_tasks_are_complete;
 use app::util::format_task;
 use app::util::format_task_brief;
 use app::util::lookup_tasks;
+use app::util::should_include_done;
 use cli::Unblock;
 use itertools::Itertools;
 use model::TaskId;
@@ -71,14 +71,14 @@ pub fn run(
 ) {
     let tasks_to_unblock = lookup_tasks(&model, &cmd.keys);
     let tasks_to_unblock_from = lookup_tasks(&model, &cmd.from);
-    let include_done = cmd.include_done
-        || any_tasks_are_complete(
-            model,
-            tasks_to_unblock
-                .iter()
-                .chain(tasks_to_unblock_from.iter())
-                .copied(),
-        );
+    let include_done = should_include_done(
+        cmd.include_done,
+        model,
+        tasks_to_unblock
+            .iter()
+            .chain(tasks_to_unblock_from.iter())
+            .copied(),
+    );
     if !cmd.from.is_empty() && tasks_to_unblock_from.is_empty() {
         printer.print_error(&PrintableError::NoMatchForKeys {
             keys: cmd.from.clone(),

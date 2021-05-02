@@ -1,7 +1,7 @@
-use app::util::any_tasks_are_complete;
 use app::util::format_task;
 use app::util::format_task_brief;
 use app::util::lookup_tasks;
+use app::util::should_include_done;
 use cli::Put;
 use itertools::Itertools;
 use model::TaskId;
@@ -28,15 +28,15 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Put) {
     let tasks_to_put = lookup_tasks(model, &cmd.keys);
     let before = lookup_tasks(model, &cmd.preposition.before);
     let after = lookup_tasks(model, &cmd.preposition.after);
-    let include_done = cmd.include_done
-        || any_tasks_are_complete(
-            model,
-            tasks_to_put
-                .iter()
-                .chain(before.iter())
-                .chain(after.iter())
-                .copied(),
-        );
+    let include_done = should_include_done(
+        cmd.include_done,
+        model,
+        tasks_to_put
+            .iter()
+            .chain(before.iter())
+            .chain(after.iter())
+            .copied(),
+    );
     let before_deps: TaskSet = before
         .iter()
         .copied()

@@ -1,8 +1,8 @@
-use app::util::any_tasks_are_complete;
 use app::util::format_task;
 use app::util::format_task_brief;
 use app::util::lookup_task;
 use app::util::pairwise;
+use app::util::should_include_done;
 use cli::Chain;
 use model::BlockError;
 use model::TaskSet;
@@ -18,8 +18,8 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Chain) {
         .iter()
         .flat_map(|key| lookup_task(model, key).iter_sorted(model))
         .collect::<Vec<_>>();
-    let include_done = cmd.include_done
-        || any_tasks_are_complete(model, tasks.iter().copied());
+    let include_done =
+        should_include_done(cmd.include_done, model, tasks.iter().copied());
     let mut actions = HashMap::new();
     pairwise(tasks.iter().copied())
         .fold(TaskSet::new(), |so_far, (a, b)| {

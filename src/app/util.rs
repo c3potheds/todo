@@ -103,11 +103,19 @@ pub fn lookup_tasks<'a>(
         .collect()
 }
 
-pub fn any_tasks_are_complete(
+fn any_tasks_are_complete(
     list: &TodoList,
     mut tasks: impl Iterator<Item = TaskId>,
 ) -> bool {
     tasks.any(|id| list.status(id) == Some(TaskStatus::Complete))
+}
+
+pub fn should_include_done(
+    from_cmdline: bool,
+    list: &TodoList,
+    tasks: impl IntoIterator<Item = TaskId>,
+) -> bool {
+    from_cmdline || any_tasks_are_complete(list, tasks.into_iter())
 }
 
 pub fn parse_due_date_or_print_error(

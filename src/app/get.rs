@@ -1,6 +1,6 @@
-use app::util::any_tasks_are_complete;
 use app::util::format_task;
 use app::util::lookup_tasks;
+use app::util::should_include_done;
 use cli::Get;
 use model::TaskSet;
 use model::TodoList;
@@ -9,8 +9,11 @@ use printing::TodoPrinter;
 
 pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Get) {
     let requested_tasks = lookup_tasks(model, &cmd.keys);
-    let include_done = cmd.include_done
-        || any_tasks_are_complete(model, requested_tasks.iter().copied());
+    let include_done = should_include_done(
+        cmd.include_done,
+        model,
+        requested_tasks.iter().copied(),
+    );
     requested_tasks
         .iter()
         .copied()

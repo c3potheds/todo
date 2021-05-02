@@ -1,7 +1,7 @@
-use app::util::any_tasks_are_complete;
 use app::util::format_task;
 use app::util::lookup_tasks;
 use app::util::parse_budget_or_print_error;
+use app::util::should_include_done;
 use cli::Budget;
 use model::TaskSet;
 use model::TodoList;
@@ -17,7 +17,7 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Budget) {
     };
     let tasks = lookup_tasks(list, &cmd.keys);
     let include_done =
-        cmd.include_done || any_tasks_are_complete(list, tasks.iter().copied());
+        should_include_done(cmd.include_done, list, tasks.iter().copied());
     tasks
         .iter()
         .copied()
