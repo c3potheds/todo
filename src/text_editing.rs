@@ -17,11 +17,7 @@ pub struct ScrawlTextEditor;
 
 impl TextEditor for ScrawlTextEditor {
     fn edit_text(&self, display: &str) -> Result<String, Error> {
-        scrawl::editor::new()
-            .editor("vim")
-            .contents(display)
-            .open()
-            .map_err(|_| Error())
+        scrawl::with(display).map_err(|_| Error())
     }
 }
 
