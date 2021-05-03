@@ -11,9 +11,11 @@ use todo::app;
 use todo::cli::Options;
 use todo::clock::Clock;
 use todo::clock::SystemClock;
-use todo::config;
 use todo::long_output;
-use todo::model;
+use todo::model::load;
+use todo::model::save;
+use todo::model::LoadError;
+use todo::model::SaveError;
 use todo::model::TodoList;
 use todo::printing::PrintingContext;
 use todo::printing::ScriptingTodoPrinter;
@@ -25,9 +27,8 @@ enum TodoError {
     NoDataDirectoryError,
     IoError(std::io::Error),
     CommandLineParsingError(structopt::clap::Error),
-    LoadError(model::LoadError),
-    SaveError(model::SaveError),
-    LoadConfigError(config::LoadError),
+    LoadError(LoadError),
+    SaveError(SaveError),
 }
 
 impl From<std::io::Error> for TodoError {
@@ -42,21 +43,15 @@ impl From<structopt::clap::Error> for TodoError {
     }
 }
 
-impl From<model::LoadError> for TodoError {
-    fn from(src: model::LoadError) -> Self {
+impl From<LoadError> for TodoError {
+    fn from(src: LoadError) -> Self {
         Self::LoadError(src)
     }
 }
 
-impl From<model::SaveError> for TodoError {
-    fn from(src: model::SaveError) -> Self {
+impl From<SaveError> for TodoError {
+    fn from(src: SaveError) -> Self {
         Self::SaveError(src)
-    }
-}
-
-impl From<config::LoadError> for TodoError {
-    fn from(src: config::LoadError) -> Self {
-        Self::LoadConfigError(src)
     }
 }
 
@@ -80,20 +75,12 @@ fn main() -> TodoResult {
         Some(project_dirs) => project_dirs,
         None => return Err(TodoError::NoDataDirectoryError),
     };
+    let mut path = project_dirs.data_dir().to_path_buf();
+    path.push("data.json");
 
-    let mut config_path = project_dirs.config_dir().to_path_buf();
-    config_path.push("config.json");
-    let config = File::open(&config_path).map_or_else(
-        |_| Ok(config::Config::default()),
-        |file| config::load(file),
-    )?;
-
-    let mut data_path = project_dirs.data_dir().to_path_buf();
-    data_path.push("data.json");
-    let mut model = File::open(&data_path)
-        .map_or_else(|_| Ok(TodoList::new()), |file| model::load(file))?;
-
-    let text_editor = ScrawlTextEditor(&config.text_editor_cmd);
+    let mut model = File::open(&path)
+        .map_or_else(|_| Ok(TodoList::new()), |file| load(file))?;
+    let text_editor = ScrawlTextEditor;
 
     if atty::is(atty::Stream::Stdout) {
         let (term_width, term_height) =
@@ -132,9 +119,9 @@ fn main() -> TodoResult {
             options,
         );
     }
-    let file = File::create(&data_path)?;
+    let file = File::create(&path)?;
     let writer = BufWriter::new(file);
-    model::save(writer, &model)?;
+    save(writer, &model)?;
     Ok(())
 }
 
