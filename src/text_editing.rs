@@ -13,12 +13,12 @@ pub trait TextEditor {
     fn edit_text(&self, display: &str) -> Result<String, Error>;
 }
 
-pub struct ScrawlTextEditor;
+pub struct ScrawlTextEditor<'a>(pub &'a str);
 
-impl TextEditor for ScrawlTextEditor {
+impl<'a> TextEditor for ScrawlTextEditor<'a> {
     fn edit_text(&self, display: &str) -> Result<String, Error> {
         scrawl::editor::new()
-            .editor("vim")
+            .editor(self.0)
             .contents(display)
             .open()
             .map_err(|_| Error())
