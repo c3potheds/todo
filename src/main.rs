@@ -80,8 +80,6 @@ fn main() -> TodoResult {
 
     let mut model = File::open(&path)
         .map_or_else(|_| Ok(TodoList::new()), |file| load(file))?;
-    let text_editor = ScrawlTextEditor;
-
     if atty::is(atty::Stream::Stdout) {
         let (term_width, term_height) =
             term_size::dimensions_stdout().unwrap_or((80, 20));
@@ -105,7 +103,7 @@ fn main() -> TodoResult {
         app::todo(
             &mut model,
             &mut printer,
-            &text_editor,
+            &ScrawlTextEditor,
             &SystemClock,
             options,
         );
@@ -114,7 +112,7 @@ fn main() -> TodoResult {
         app::todo(
             &mut model,
             &mut printer,
-            &text_editor,
+            &todo::text_editing::FakeTextEditor::no_user_output(),
             &SystemClock,
             options,
         );

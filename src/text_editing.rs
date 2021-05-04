@@ -21,13 +21,11 @@ impl TextEditor for ScrawlTextEditor {
     }
 }
 
-#[cfg(test)]
 pub struct FakeTextEditor<'a> {
     user_output: Option<&'a str>,
     recorded_input: std::cell::RefCell<String>,
 }
 
-#[cfg(test)]
 impl<'a> FakeTextEditor<'a> {
     pub fn user_will_enter(s: &'a str) -> Self {
         FakeTextEditor {
@@ -48,7 +46,6 @@ impl<'a> FakeTextEditor<'a> {
     }
 }
 
-#[cfg(test)]
 impl TextEditor for FakeTextEditor<'_> {
     fn edit_text(&self, display: &str) -> Result<String, Error> {
         self.recorded_input.replace(display.to_string());
