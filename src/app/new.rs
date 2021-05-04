@@ -19,11 +19,19 @@ use printing::TodoPrinter;
 use std::collections::HashSet;
 use std::iter::FromIterator;
 
+fn format_prefix(prefix: &str, desc: &str) -> String {
+    if prefix.is_empty() {
+        desc.to_string()
+    } else {
+        format!("{} {}", prefix, desc)
+    }
+}
+
 pub fn run(
     model: &mut TodoList,
     printer: &mut impl TodoPrinter,
     now: DateTime<Utc>,
-    cmd: New,
+    cmd: &New,
 ) {
     let due_date = match parse_due_date_or_print_error(now, &cmd.due, printer) {
         Ok(due_date) => due_date,
@@ -53,12 +61,13 @@ pub fn run(
     let adeps = adeps | before | after_adeps;
     let priority = cmd.priority;
     let mut to_print = HashSet::new();
+    let prefix = cmd.prefix.join(" ");
     let new_tasks: Vec<_> = cmd
         .desc
-        .into_iter()
+        .iter()
         .map(|desc| {
             let id = model.add(NewOptions {
-                desc: desc,
+                desc: format_prefix(&prefix, desc),
                 now: now,
                 priority: priority.unwrap_or(0),
                 due_date: due_date,
