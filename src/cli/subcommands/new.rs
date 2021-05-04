@@ -108,4 +108,14 @@ pub struct New {
     /// due date.
     #[structopt(long, min_values = 1)]
     pub budget: Vec<String>,
+
+    /// Attach a prefix to each of the new task's descriptions.
+    ///
+    /// This can be used to label with "hashtags" to avoid repeated typing when
+    /// creating a long list of tasks.
+    ///
+    /// Multiple prefixes can be specified; they will be added in sequence (each
+    /// separated by a space).
+    #[structopt(long, short = "P", min_values = 1)]
+    pub prefix: Vec<String>,
 }
