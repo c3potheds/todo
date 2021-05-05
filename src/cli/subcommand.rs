@@ -25,6 +25,7 @@ pub enum SubCommand {
     Merge(Merge),
     New(New),
     Path(Path),
+    Prefix(Prefix),
     Priority(Priority),
     Punt(Punt),
     Put(Put),

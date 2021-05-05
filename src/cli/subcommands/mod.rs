@@ -9,6 +9,7 @@ mod get;
 mod merge;
 mod new;
 mod path;
+mod prefix;
 mod priority;
 mod punt;
 mod put;
@@ -29,6 +30,7 @@ pub use self::get::Get;
 pub use self::merge::Merge;
 pub use self::new::New;
 pub use self::path::Path;
+pub use self::prefix::Prefix;
 pub use self::priority::Priority;
 pub use self::punt::Punt;
 pub use self::put::Put;
@@ -71,6 +73,9 @@ mod new_test;
 
 #[cfg(test)]
 mod path_test;
+
+#[cfg(test)]
+mod prefix_test;
 
 #[cfg(test)]
 mod priority_test;
