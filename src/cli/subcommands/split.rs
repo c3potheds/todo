@@ -56,4 +56,8 @@ pub struct Split {
     /// If passed, the results of the split will be put in a dependency chain.
     #[structopt(long)]
     pub chain: bool,
+
+    /// Add a prefix to the descriptions.
+    #[structopt(long, short = "P", min_values = 1)]
+    pub prefix: Vec<String>,
 }
