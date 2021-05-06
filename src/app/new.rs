@@ -1,5 +1,6 @@
 extern crate humantime;
 
+use app::util::format_prefix;
 use app::util::format_task;
 use app::util::format_task_brief;
 use app::util::lookup_tasks;
@@ -18,14 +19,6 @@ use printing::PrintableError;
 use printing::TodoPrinter;
 use std::collections::HashSet;
 use std::iter::FromIterator;
-
-fn format_prefix(prefix: &str, desc: &str) -> String {
-    if prefix.is_empty() {
-        desc.to_string()
-    } else {
-        format!("{} {}", prefix, desc)
-    }
-}
 
 pub fn run(
     model: &mut TodoList,

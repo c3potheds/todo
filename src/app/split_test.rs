@@ -40,3 +40,29 @@ fn split_preserves_dependency_structure() {
         .printed_task(&PrintableTask::new("c", 5, Blocked))
         .end();
 }
+
+#[test]
+fn split_with_prefix() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a");
+    fix.test("todo split a --into x y -P a")
+        .validate()
+        .printed_task(&PrintableTask::new("a x", 1, Incomplete).action(Select))
+        .printed_task(&PrintableTask::new("a y", 2, Incomplete).action(Select))
+        .end();
+}
+
+#[test]
+fn split_with_multiple_prefixes() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a");
+    fix.test("todo split a --into x y -P a -P b")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("a b x", 1, Incomplete).action(Select),
+        )
+        .printed_task(
+            &PrintableTask::new("a b y", 2, Incomplete).action(Select),
+        )
+        .end();
+}

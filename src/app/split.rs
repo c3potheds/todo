@@ -1,3 +1,4 @@
+use app::util::format_prefix;
 use app::util::format_task;
 use app::util::lookup_tasks;
 use app::util::pairwise;
@@ -82,6 +83,7 @@ pub fn run(
     now: DateTime<Utc>,
     cmd: Split,
 ) {
+    let prefix = cmd.prefix.join(" ");
     let result = lookup_tasks(list, &cmd.keys).iter_sorted(list).fold(
         SplitResult {
             shards: TaskSet::new(),
@@ -92,7 +94,7 @@ pub fn run(
                 list,
                 now,
                 id,
-                cmd.into.iter().map(|desc| desc.clone()),
+                cmd.into.iter().map(|desc| format_prefix(&prefix, desc)),
                 cmd.chain,
             ))
         },

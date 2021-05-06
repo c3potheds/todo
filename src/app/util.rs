@@ -23,6 +23,14 @@ fn to_printing_status(status: TaskStatus) -> Status {
     }
 }
 
+pub fn format_prefix(prefix: &str, desc: &str) -> String {
+    if prefix.is_empty() {
+        desc.to_string()
+    } else {
+        format!("{} {}", prefix, desc)
+    }
+}
+
 pub fn format_task<'a>(model: &'a TodoList, id: TaskId) -> PrintableTask<'a> {
     match (
         model.get(id),
