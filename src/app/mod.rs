@@ -10,6 +10,7 @@ mod log;
 mod merge;
 mod new;
 mod path;
+mod prefix;
 mod priority;
 mod punt;
 mod put;
@@ -59,6 +60,9 @@ mod new_test;
 
 #[cfg(test)]
 mod path_test;
+
+#[cfg(test)]
+mod prefix_test;
 
 #[cfg(test)]
 mod priority_test;
