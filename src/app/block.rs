@@ -3,7 +3,6 @@ use app::util::format_task_brief;
 use app::util::lookup_tasks;
 use app::util::should_include_done;
 use cli::Block;
-use itertools::Itertools;
 use model::TaskId;
 use model::TaskSet;
 use model::TodoList;
@@ -32,13 +31,7 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Block) {
         (tasks_to_block.clone() | tasks_to_block_on.clone()).iter_sorted(model),
     );
     tasks_to_block
-        .iter_sorted(model)
-        .cartesian_product(
-            tasks_to_block_on
-                .iter_sorted(model)
-                .collect::<Vec<_>>()
-                .into_iter(),
-        )
+        .product(&tasks_to_block_on, model)
         .flat_map(|(blocked, blocking)| {
             match model.block(blocked).on(blocking) {
                 Ok(affected) => affected.into_iter_unsorted(),

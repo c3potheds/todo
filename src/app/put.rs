@@ -3,7 +3,6 @@ use app::util::format_task_brief;
 use app::util::lookup_tasks;
 use app::util::should_include_done;
 use cli::Put;
-use itertools::Itertools;
 use model::TaskId;
 use model::TaskSet;
 use model::TodoList;
@@ -41,18 +40,13 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Put) {
         .iter_unsorted()
         .flat_map(|id| model.adeps(id).into_iter_unsorted())
         .collect();
-    let tasks_to_block_on =
-        (after | before_deps).iter_sorted(model).collect::<Vec<_>>();
-    let tasks_to_block = (before | after_adeps)
-        .iter_sorted(model)
-        .collect::<Vec<_>>();
+    let tasks_to_block_on = after | before_deps;
+    let tasks_to_block = before | after_adeps;
     let pairs_to_block: Vec<(TaskId, TaskId)> = tasks_to_put
-        .iter_sorted(model)
-        .cartesian_product(tasks_to_block_on.iter().copied())
+        .product(&tasks_to_block_on, model)
         .chain(
             tasks_to_put
-                .iter_sorted(model)
-                .cartesian_product(tasks_to_block.iter().copied())
+                .product(&tasks_to_block, model)
                 .map(|(a, b)| (b, a)),
         )
         .collect();

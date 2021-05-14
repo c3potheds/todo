@@ -3,7 +3,6 @@ use app::util::format_task_brief;
 use app::util::lookup_tasks;
 use app::util::should_include_done;
 use cli::Unblock;
-use itertools::Itertools;
 use model::TaskId;
 use model::TaskSet;
 use model::TodoList;
@@ -33,10 +32,7 @@ fn unblock_from_given(
     tasks_to_unblock_from: &TaskSet,
 ) -> TaskSet {
     tasks_to_unblock
-        .iter_sorted(model)
-        .cartesian_product(
-            tasks_to_unblock_from.iter_sorted(model).collect::<Vec<_>>(),
-        )
+        .product(tasks_to_unblock_from, model)
         .flat_map(|(blocked, blocking)| {
             match model.unblock(blocked).from(blocking) {
                 Ok(affected) => affected.into_iter_unsorted(),

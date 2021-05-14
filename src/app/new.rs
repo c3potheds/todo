@@ -10,7 +10,6 @@ use app::util::parse_due_date_or_print_error;
 use chrono::DateTime;
 use chrono::Utc;
 use cli::New;
-use itertools::Itertools;
 use model::NewOptions;
 use model::TaskSet;
 use model::TodoList;
@@ -55,7 +54,7 @@ pub fn run(
     let priority = cmd.priority;
     let mut to_print = HashSet::new();
     let prefix = cmd.prefix.join(" ");
-    let new_tasks: Vec<_> = cmd
+    let new_tasks: TaskSet = cmd
         .desc
         .iter()
         .map(|desc| {
@@ -70,9 +69,8 @@ pub fn run(
             id
         })
         .collect();
-    deps.iter_sorted(model)
-        .cartesian_product(new_tasks.iter().copied())
-        .for_each(|(dep, new)| match model.block(new).on(dep) {
+    deps.product(&new_tasks, model).for_each(|(dep, new)| {
+        match model.block(new).on(dep) {
             Ok(affected) => to_print.extend(affected.iter_unsorted()),
             Err(_) => printer.print_error(
                 &PrintableError::CannotBlockBecauseWouldCauseCycle {
@@ -80,11 +78,10 @@ pub fn run(
                     requested_dependency: format_task_brief(model, dep),
                 },
             ),
-        });
-    adeps
-        .iter_sorted(model)
-        .cartesian_product(new_tasks.iter().copied())
-        .for_each(|(adep, new)| match model.block(adep).on(new) {
+        }
+    });
+    adeps.product(&new_tasks, model).for_each(|(adep, new)| {
+        match model.block(adep).on(new) {
             Ok(affected) => to_print.extend(affected.iter_unsorted()),
             Err(_) => printer.print_error(
                 &PrintableError::CannotBlockBecauseWouldCauseCycle {
@@ -92,9 +89,10 @@ pub fn run(
                     requested_dependency: format_task_brief(model, new),
                 },
             ),
-        });
+        }
+    });
     if cmd.chain {
-        pairwise(new_tasks.iter().copied()).for_each(|(a, b)| {
+        pairwise(new_tasks.iter_sorted(model)).for_each(|(a, b)| {
             match model.block(b).on(a) {
                 Ok(affected) => to_print.extend(affected.iter_unsorted()),
                 Err(_) => {
@@ -107,7 +105,7 @@ pub fn run(
         .iter_sorted(model)
         .for_each(|id| {
             printer.print_task(&format_task(model, id).action(
-                if new_tasks.contains(&id) {
+                if new_tasks.contains(id) {
                     Action::New
                 } else {
                     Action::None

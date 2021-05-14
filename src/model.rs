@@ -313,6 +313,19 @@ impl TaskSet {
     }
 }
 
+impl TaskSet {
+    pub fn product(
+        &self,
+        other: &Self,
+        list: &TodoList,
+    ) -> impl Iterator<Item = (TaskId, TaskId)> {
+        use itertools::Itertools;
+        self.iter_sorted(list).cartesian_product(
+            other.iter_sorted(list).collect::<Vec<_>>().into_iter(),
+        )
+    }
+}
+
 impl FromIterator<TaskId> for TaskSet {
     fn from_iter<I: IntoIterator<Item = TaskId>>(iter: I) -> Self {
         Self {
@@ -954,16 +967,11 @@ impl TodoList {
         // E.g. if we remove b from (a <- b <- c), then we get (a <- c).
         let deps = self.deps(id);
         let adeps = self.adeps(id);
-        use itertools::Itertools;
-        deps.iter_sorted(self)
-            .cartesian_product(
-                adeps.iter_sorted(self).collect::<Vec<_>>().into_iter(),
-            )
-            .for_each(|(dep, adep)| {
-                // It should not be possible to cause a cycle when blocking an
-                // adep on a dep because there would already be a cycle if so.
-                self.block(adep).on(dep).unwrap();
-            });
+        deps.product(&adeps, self).for_each(|(dep, adep)| {
+            // It should not be possible to cause a cycle when blocking an
+            // adep on a dep because there would already be a cycle if so.
+            self.block(adep).on(dep).unwrap();
+        });
         self.tasks.remove_node(id.0);
         adeps.iter_sorted(self).for_each(|adep| {
             self.update_depth(adep);
