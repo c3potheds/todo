@@ -187,6 +187,69 @@ fn month_without_day_this_month() {
 }
 
 #[test]
+#[ignore = "time-format.snap-to-beginning"]
+fn start_in_1_day() {
+    let now = Local.ymd(2021, 05, 21).and_hms(11, 00, 00);
+    let expected = Local.ymd(2021, 05, 22).and_hms(00, 00, 00);
+    let actual = parse_time(Local, now, "1 day", Snap::ToStart).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+#[ignore = "time-format.snap-to-beginning"]
+fn start_in_2_days() {
+    let now = Local.ymd(2021, 05, 21).and_hms(11, 00, 00);
+    let expected = Local.ymd(2021, 05, 23).and_hms(00, 00, 00);
+    let actual = parse_time(Local, now, "2 days", Snap::ToStart).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+#[ignore = "time-format.snap-to-beginning"]
+fn start_in_1_week() {
+    let now = Local.ymd(2021, 05, 21).and_hms(11, 00, 00);
+    let expected = Local.ymd(2021, 05, 28).and_hms(00, 00, 00);
+    let actual = parse_time(Local, now, "1 week", Snap::ToStart).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+#[ignore = "time-format.snap-to-beginning"]
+fn start_in_1_month() {
+    let now = Local.ymd(2021, 05, 21).and_hms(11, 00, 00);
+    let expected = Local.ymd(2021, 06, 21).and_hms(00, 00, 00);
+    let actual = parse_time(Local, now, "1 month", Snap::ToStart).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+#[ignore = "time-format.snap-to-beginning"]
+fn start_in_named_month() {
+    let now = Local.ymd(2021, 05, 21).and_hms(11, 00, 00);
+    let expected = Local.ymd(2021, 06, 01).and_hms(00, 00, 00);
+    let actual = parse_time(Local, now, "june", Snap::ToStart).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+#[ignore = "time-format.snap-to-beginning"]
+fn start_named_month_next_year() {
+    let now = Local.ymd(2021, 05, 21).and_hms(11, 00, 00);
+    let expected = Local.ymd(2022, 02, 00).and_hms(00, 00, 00);
+    let actual = parse_time(Local, now, "february", Snap::ToStart).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+#[ignore = "time-format.snap-to-beginning"]
+fn start_named_day() {
+    let now = Local.ymd(2021, 05, 21).and_hms(11, 00, 00);
+    let expected = Local.ymd(2021, 05, 24).and_hms(00, 00, 00);
+    let actual = parse_time(Local, now, "monday", Snap::ToStart).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
 fn relative_time_in_one_second() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let then = Local.ymd(2021, 03, 19).and_hms(10, 00, 01);
