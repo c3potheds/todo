@@ -136,6 +136,7 @@ pub fn parse_due_date_or_print_error(
         Local,
         now.with_timezone(&Local),
         &due_date_string,
+        ::time_format::Snap::ToEnd,
     ) {
         Ok(due_date) => Ok(Some(due_date.with_timezone(&Utc))),
         Err(_) => {

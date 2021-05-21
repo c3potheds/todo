@@ -205,10 +205,16 @@ fn parse_day_of_week<Tz: TimeZone>(
         .map_err(|_| ParseTimeError)
 }
 
+pub enum Snap {
+    ToStart,
+    ToEnd,
+}
+
 pub fn parse_time<Tz: TimeZone>(
     tz: Tz,
     now: DateTime<Tz>,
     s: &str,
+    _snap: Snap,
 ) -> Result<DateTime<Tz>, ParseTimeError> {
     humantime::parse_duration(s)
         .map(|duration: std::time::Duration| {
