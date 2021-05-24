@@ -154,6 +154,17 @@ fn parse_time_of_day<Tz: TimeZone>(
         })
 }
 
+fn start_of_day<Tz: TimeZone>(datetime: DateTime<Tz>) -> DateTime<Tz> {
+    use chrono::Timelike;
+    datetime
+        .with_hour(0)
+        .unwrap()
+        .with_minute(0)
+        .unwrap()
+        .with_second(0)
+        .unwrap()
+}
+
 fn end_of_day<Tz: TimeZone>(datetime: DateTime<Tz>) -> DateTime<Tz> {
     use chrono::Timelike;
     datetime
@@ -163,6 +174,10 @@ fn end_of_day<Tz: TimeZone>(datetime: DateTime<Tz>) -> DateTime<Tz> {
         .unwrap()
         .with_second(59)
         .unwrap()
+}
+
+fn start_of_month<Tz: TimeZone>(datetime: DateTime<Tz>) -> DateTime<Tz> {
+    start_of_day(datetime.with_day(1).unwrap())
 }
 
 fn end_of_month<Tz: TimeZone>(datetime: DateTime<Tz>) -> DateTime<Tz> {
@@ -175,6 +190,17 @@ fn end_of_month<Tz: TimeZone>(datetime: DateTime<Tz>) -> DateTime<Tz> {
             return end_of_day(forward);
         }
         forward = next;
+    }
+}
+
+fn start_of_month_after<Tz: TimeZone>(
+    datetime: DateTime<Tz>,
+    month: chrono::Month,
+) -> DateTime<Tz> {
+    if datetime.month() == month.number_from_month() {
+        start_of_month(datetime)
+    } else {
+        start_of_month_after(datetime + chrono::Duration::days(28), month)
     }
 }
 
@@ -192,6 +218,7 @@ fn end_of_month_after<Tz: TimeZone>(
 fn parse_day_of_week<Tz: TimeZone>(
     now: DateTime<Tz>,
     s: &str,
+    snap: Snap,
 ) -> Result<DateTime<Tz>, ParseTimeError> {
     use std::str::FromStr;
     chrono::Weekday::from_str(s)
@@ -200,11 +227,15 @@ fn parse_day_of_week<Tz: TimeZone>(
             while fast_forwarded.weekday() != weekday {
                 fast_forwarded = fast_forwarded + chrono::Duration::days(1);
             }
-            end_of_day(fast_forwarded)
+            match snap {
+                Snap::ToStart => start_of_day(fast_forwarded),
+                Snap::ToEnd => end_of_day(fast_forwarded),
+            }
         })
         .map_err(|_| ParseTimeError)
 }
 
+#[derive(Clone, Copy)]
 pub enum Snap {
     ToStart,
     ToEnd,
@@ -214,18 +245,21 @@ pub fn parse_time<Tz: TimeZone>(
     tz: Tz,
     now: DateTime<Tz>,
     s: &str,
-    _snap: Snap,
+    snap: Snap,
 ) -> Result<DateTime<Tz>, ParseTimeError> {
     humantime::parse_duration(s)
         .map(|duration: std::time::Duration| {
             let mut datetime = now.clone()
                 + chrono::Duration::milliseconds(duration.as_millis() as i64);
             if chrono::Duration::days(1).to_std().unwrap() <= duration {
-                datetime = end_of_day(datetime);
-            }
+                datetime = match snap {
+                    Snap::ToStart => start_of_day(datetime),
+                    Snap::ToEnd => end_of_day(datetime),
+                }
+            };
             datetime
         })
-        .or_else(|_| parse_day_of_week(now.clone(), s))
+        .or_else(|_| parse_day_of_week(now.clone(), s, snap))
         .or_else(|_| {
             if s == "today" {
                 Ok(end_of_day(now.clone()))
@@ -247,6 +281,7 @@ pub fn parse_time<Tz: TimeZone>(
                     Some(dow) => parse_day_of_week(
                         now.clone() - chrono::Duration::days(1),
                         dow,
+                        snap,
                     )
                     .map(|datetime| datetime - chrono::Duration::days(7)),
                     _ => Err(ParseTimeError),
@@ -259,11 +294,23 @@ pub fn parse_time<Tz: TimeZone>(
                             .parse::<u32>()
                             .map_err(|_| ParseTimeError)
                             .map(|day| {
-                                end_of_month_after(now.clone(), month)
-                                    .with_day(day)
-                                    .unwrap()
+                                let datetime =
+                                    end_of_month_after(now.clone(), month)
+                                        .with_day(day)
+                                        .unwrap();
+                                match snap {
+                                    Snap::ToStart => start_of_day(datetime),
+                                    Snap::ToEnd => datetime,
+                                }
                             }),
-                        None => Ok(end_of_month_after(now.clone(), month)),
+                        None => Ok(match snap {
+                            Snap::ToStart => {
+                                start_of_month_after(now.clone(), month)
+                            }
+                            Snap::ToEnd => {
+                                end_of_month_after(now.clone(), month)
+                            }
+                        }),
                     }),
                 _ => Err(ParseTimeError),
             }
