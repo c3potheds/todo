@@ -79,6 +79,7 @@ pub fn run(
         priority: priority,
         due_date: due_date,
         budget: budget,
+        start_date: None,
     });
     deps.iter_sorted(list).for_each(|dep| {
         // This shouldn't happen if we correctly detected cycles above.

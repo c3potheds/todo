@@ -48,6 +48,7 @@ fn split(
                 priority: task.priority,
                 due_date: task.due_date,
                 budget: task.budget,
+                start_date: None,
             };
             list.add(options)
         })

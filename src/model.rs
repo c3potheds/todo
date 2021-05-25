@@ -56,6 +56,8 @@ pub struct Task {
     pub implicit_due_date: Option<DateTime<Utc>>,
     #[serde(default)]
     pub budget: DurationInSeconds,
+    #[serde(default)]
+    pub start_date: Option<DateTime<Utc>>,
 }
 
 pub struct NewOptions {
@@ -64,6 +66,7 @@ pub struct NewOptions {
     pub priority: i32,
     pub due_date: Option<DateTime<Utc>>,
     pub budget: DurationInSeconds,
+    pub start_date: Option<DateTime<Utc>>,
 }
 
 impl NewOptions {
@@ -74,6 +77,7 @@ impl NewOptions {
             priority: 0,
             due_date: None,
             budget: DurationInSeconds::default(),
+            start_date: None,
         }
     }
 
@@ -101,6 +105,11 @@ impl NewOptions {
         self.budget = budget.into();
         self
     }
+
+    pub fn start_date(mut self, start_date: DateTime<Utc>) -> Self {
+        self.start_date = Some(start_date);
+        self
+    }
 }
 
 impl<S: Into<String>> From<S> for NewOptions {
@@ -111,6 +120,7 @@ impl<S: Into<String>> From<S> for NewOptions {
             priority: 0,
             due_date: None,
             budget: DurationInSeconds::default(),
+            start_date: None,
         }
     }
 }
@@ -127,6 +137,7 @@ impl Task {
             due_date: options.due_date,
             implicit_due_date: options.due_date,
             budget: options.budget,
+            start_date: options.start_date,
         }
     }
 }
