@@ -15,6 +15,7 @@ mod punt;
 mod put;
 mod restore;
 mod rm;
+mod snooze;
 mod split;
 mod top;
 mod unblock;
@@ -36,6 +37,7 @@ pub use self::punt::Punt;
 pub use self::put::Put;
 pub use self::restore::Restore;
 pub use self::rm::Rm;
+pub use self::snooze::Snooze;
 pub use self::split::Split;
 pub use self::top::Top;
 pub use self::unblock::Unblock;
@@ -91,6 +93,9 @@ mod restore_test;
 
 #[cfg(test)]
 mod rm_test;
+
+#[cfg(test)]
+mod snooze_test;
 
 #[cfg(test)]
 mod split_test;

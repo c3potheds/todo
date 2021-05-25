@@ -31,6 +31,7 @@ pub enum SubCommand {
     Put(Put),
     Restore(Restore),
     Rm(Rm),
+    Snooze(Snooze),
     Split(Split),
     Top(Top),
     Unblock(Unblock),
