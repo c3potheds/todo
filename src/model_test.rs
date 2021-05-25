@@ -1766,3 +1766,18 @@ fn set_budget_updates_deps() {
         Some(Some(Utc.ymd(2021, 04, 21).and_hms(23, 59, 59)))
     );
 }
+
+#[test]
+fn start_date_defaults_to_none() {
+    let mut list = TodoList::new();
+    let a = list.add(NewOptions::new().desc("a"));
+    assert_eq!(list.get(a).unwrap().start_date, None);
+}
+
+#[test]
+fn set_start_date_in_new_options() {
+    let mut list = TodoList::new();
+    let start_date = Utc.ymd(2021, 06, 01).and_hms(00, 00, 00);
+    let a = list.add(NewOptions::new().desc("a").start_date(start_date));
+    assert_eq!(list.get(a).unwrap().start_date, Some(start_date));
+}
