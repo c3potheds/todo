@@ -1781,3 +1781,156 @@ fn set_start_date_in_new_options() {
     let a = list.add(NewOptions::new().desc("a").start_date(start_date));
     assert_eq!(list.get(a).unwrap().start_date, Some(start_date));
 }
+
+#[test]
+fn new_task_with_start_time_later_than_now_starts_out_snoozed() {
+    let mut list = TodoList::new();
+    let now = Utc.ymd(2021, 05, 25).and_hms(09, 00, 00);
+    let start_date = Utc.ymd(2021, 06, 01).and_hms(00, 00, 00);
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .creation_time(now)
+            .start_date(start_date),
+    );
+    assert_eq!(list.status(a).unwrap(), TaskStatus::Blocked);
+}
+
+#[test]
+fn update_for_time_before_snooze_date() {
+    let mut list = TodoList::new();
+    let now = Utc.ymd(2021, 05, 25).and_hms(09, 00, 00);
+    let start_date = Utc.ymd(2021, 06, 01).and_hms(00, 00, 00);
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .creation_time(now)
+            .start_date(start_date),
+    );
+    let now = Utc.ymd(2021, 05, 30).and_hms(09, 00, 00);
+    let unsnoozed = list.update_for_time(now);
+    assert_eq!(unsnoozed.len(), 0);
+    assert_eq!(list.status(a).unwrap(), TaskStatus::Blocked);
+}
+
+#[test]
+fn update_for_time_after_snooze_date() {
+    let mut list = TodoList::new();
+    let now = Utc.ymd(2021, 05, 25).and_hms(09, 00, 00);
+    let start_date = Utc.ymd(2021, 06, 01).and_hms(00, 00, 00);
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .creation_time(now)
+            .start_date(start_date),
+    );
+    let now = Utc.ymd(2021, 06, 01).and_hms(09, 00, 00);
+    let unsnoozed = list.update_for_time(now);
+    itertools::assert_equal(unsnoozed.iter_sorted(&list), vec![a]);
+    assert_eq!(list.status(a).unwrap(), TaskStatus::Incomplete);
+}
+
+#[test]
+fn update_for_time_unsnoozes_multiple_tasks() {
+    let mut list = TodoList::new();
+    let now = Utc.ymd(2021, 06, 01).and_hms(00, 00, 00);
+    let snooze_a = Utc.ymd(2021, 06, 02).and_hms(00, 00, 00);
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .creation_time(now)
+            .start_date(snooze_a),
+    );
+    let snooze_b = Utc.ymd(2021, 06, 03).and_hms(00, 00, 00);
+    let b = list.add(
+        NewOptions::new()
+            .desc("b")
+            .creation_time(now)
+            .start_date(snooze_b),
+    );
+    let snooze_c = Utc.ymd(2021, 06, 04).and_hms(00, 00, 00);
+    let c = list.add(
+        NewOptions::new()
+            .desc("c")
+            .creation_time(now)
+            .start_date(snooze_c),
+    );
+    let now = snooze_b;
+    let unsnoozed = list.update_for_time(now);
+    itertools::assert_equal(unsnoozed.iter_sorted(&list), vec![a, b]);
+    let now = snooze_c;
+    let unsnoozed = list.update_for_time(now);
+    itertools::assert_equal(unsnoozed.iter_sorted(&list), vec![c]);
+}
+
+#[test]
+fn unsnooze_updates_depth_of_adeps() {
+    let mut list = TodoList::new();
+    let now = Utc.ymd(2021, 05, 25).and_hms(10, 00, 00);
+    let snooze_a = Utc.ymd(2021, 05, 25).and_hms(11, 00, 00);
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .creation_time(now)
+            .start_date(snooze_a),
+    );
+    let b = list.add(NewOptions::new().desc("b").due_date(snooze_a));
+    let c = list.add("c");
+    let d = list.add("d");
+    list.block(b).on(a).unwrap();
+    list.block(d).on(c).unwrap();
+    // c is first because it is unblocked an unsnoozed.
+    // a is next because it's snoozed, but was added before d, which is blocked
+    // by c.
+    // b is blocked by a, and so appears in a deeper layer than a.
+    itertools::assert_equal(list.incomplete_tasks(), vec![c, a, d, b]);
+    let now = Utc.ymd(2021, 05, 25).and_hms(12, 00, 00);
+    list.update_for_time(now);
+    // a and b now appear before c and d, respectively, because they are in
+    // the same layer, and have a due date which sorts them earlier the other
+    // tasks with no due date.
+    itertools::assert_equal(list.incomplete_tasks(), vec![a, c, b, d]);
+}
+
+#[test]
+fn check_snoozed_task() {
+    let mut list = TodoList::new();
+    let now = Utc.ymd(2021, 05, 25).and_hms(13, 00, 00);
+    let snooze_a = Utc.ymd(2021, 05, 25).and_hms(14, 00, 00);
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .creation_time(now)
+            .start_date(snooze_a),
+    );
+    itertools::assert_equal(
+        list.check(CheckOptions { id: a, now: now })
+            .unwrap()
+            .iter_sorted(&list),
+        vec![],
+    );
+    itertools::assert_equal(list.incomplete_tasks(), vec![]);
+    itertools::assert_equal(list.complete_tasks(), vec![a]);
+}
+
+#[test]
+fn force_check_snoozed_task() {
+    let mut list = TodoList::new();
+    let now = Utc.ymd(2021, 05, 25).and_hms(13, 00, 00);
+    let snooze_a = Utc.ymd(2021, 05, 25).and_hms(14, 00, 00);
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .creation_time(now)
+            .start_date(snooze_a),
+    );
+    itertools::assert_equal(
+        list.force_check(CheckOptions { id: a, now: now })
+            .unwrap()
+            .completed
+            .iter_sorted(&list),
+        vec![a],
+    );
+    itertools::assert_equal(list.incomplete_tasks(), vec![]);
+    itertools::assert_equal(list.complete_tasks(), vec![a]);
+}

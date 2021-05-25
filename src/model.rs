@@ -197,6 +197,9 @@ where
     }
 
     pub fn remove_from_layer(&mut self, data: &T, layer: usize) -> bool {
+        if layer >= self.layers.len() {
+            return false;
+        }
         remove_first_occurrence_from_vec(&mut self.layers[layer], data)
             .map(|_| self.depth.remove(data))
             .is_some()
@@ -569,8 +572,14 @@ impl TodoList {
     }
 
     pub fn add<T: Into<NewOptions>>(&mut self, task: T) -> TaskId {
-        let id = TaskId(self.tasks.add_node(Task::new(task.into())));
-        self.put_in_incomplete_layer(id, 0);
+        let task = Task::new(task.into());
+        let snooze = task
+            .start_date
+            .zip(task.creation_time)
+            .map(|(start_date, creation_time)| start_date > creation_time)
+            .unwrap_or(false);
+        let id = TaskId(self.tasks.add_node(task));
+        self.put_in_incomplete_layer(id, if snooze { 1 } else { 0 });
         id
     }
 }
@@ -622,7 +631,12 @@ impl TodoList {
             return Err(CheckError::TaskIsBlockedBy(incomplete_deps));
         }
         self.tasks[options.id.0].completion_time = Some(options.now);
+        // Remove from layer 0 in case it's an unblocked task.
+        // Remove from layer 1 in case it's a snoozed task.
+        // If this is an unsnoozed task that is blocked, the condition above
+        // will have already dealt with that case.
         self.incomplete.remove_from_layer(&options.id, 0);
+        self.incomplete.remove_from_layer(&options.id, 1);
         self.complete.push(options.id);
         // Update adeps.
         Ok(self
@@ -962,6 +976,31 @@ impl TodoList {
 
     pub fn num_complete_tasks(&self) -> usize {
         self.complete.len()
+    }
+
+    pub fn update_for_time(&mut self, now: DateTime<Utc>) -> TaskSet {
+        self.incomplete_tasks()
+            .filter(|&id| {
+                self.get(id)
+                    .unwrap()
+                    .start_date
+                    .map(|start_date| start_date <= now)
+                    .unwrap_or(false)
+                    && self.status(id).unwrap() == TaskStatus::Blocked
+                    && self.max_depth_of_deps(id).is_none()
+            })
+            .collect::<Vec<_>>()
+            .into_iter()
+            .map(|id| {
+                let old_depth = *self.incomplete.depth.get(&id).unwrap();
+                self.incomplete.remove_from_layer(&id, old_depth);
+                self.put_in_incomplete_layer(id, 0);
+                self.adeps(id).iter_sorted(self).for_each(|adep| {
+                    self.update_depth(adep);
+                });
+                id
+            })
+            .collect()
     }
 
     /// Returns the antidependencies of the removed task. These antidependencies
