@@ -24,8 +24,8 @@ pub enum TaskStatus {
     Blocked,
 }
 
-fn default_creation_time() -> Option<DateTime<Utc>> {
-    Some(Utc::now())
+fn default_creation_time() -> DateTime<Utc> {
+    Utc::now()
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize, Default)]
@@ -43,7 +43,7 @@ impl From<Duration> for DurationInSeconds {
 pub struct Task {
     pub desc: String,
     #[serde(default = "default_creation_time")]
-    pub creation_time: Option<DateTime<Utc>>,
+    pub creation_time: DateTime<Utc>,
     #[serde(default)]
     pub completion_time: Option<DateTime<Utc>>,
     #[serde(default)]
@@ -56,8 +56,8 @@ pub struct Task {
     pub implicit_due_date: Option<DateTime<Utc>>,
     #[serde(default)]
     pub budget: DurationInSeconds,
-    #[serde(default)]
-    pub start_date: Option<DateTime<Utc>>,
+    #[serde(default = "default_creation_time")]
+    pub start_date: DateTime<Utc>,
 }
 
 pub struct NewOptions {
@@ -66,18 +66,19 @@ pub struct NewOptions {
     pub priority: i32,
     pub due_date: Option<DateTime<Utc>>,
     pub budget: DurationInSeconds,
-    pub start_date: Option<DateTime<Utc>>,
+    pub start_date: DateTime<Utc>,
 }
 
 impl NewOptions {
     pub fn new() -> Self {
+        let now = Utc::now();
         Self {
             desc: "".to_string(),
-            now: Utc::now(),
+            now: now,
             priority: 0,
             due_date: None,
             budget: DurationInSeconds::default(),
-            start_date: None,
+            start_date: now,
         }
     }
 
@@ -107,20 +108,21 @@ impl NewOptions {
     }
 
     pub fn start_date(mut self, start_date: DateTime<Utc>) -> Self {
-        self.start_date = Some(start_date);
+        self.start_date = start_date;
         self
     }
 }
 
 impl<S: Into<String>> From<S> for NewOptions {
     fn from(desc: S) -> Self {
+        let now = Utc::now();
         Self {
             desc: desc.into(),
-            now: Utc::now(),
+            now: now,
             priority: 0,
             due_date: None,
             budget: DurationInSeconds::default(),
-            start_date: None,
+            start_date: now,
         }
     }
 }
@@ -130,7 +132,7 @@ impl Task {
         let options = options.into();
         Task {
             desc: options.desc,
-            creation_time: Some(options.now),
+            creation_time: options.now,
             completion_time: None,
             priority: options.priority,
             implicit_priority: options.priority,
@@ -573,11 +575,7 @@ impl TodoList {
 
     pub fn add<T: Into<NewOptions>>(&mut self, task: T) -> TaskId {
         let task = Task::new(task.into());
-        let snooze = task
-            .start_date
-            .zip(task.creation_time)
-            .map(|(start_date, creation_time)| start_date > creation_time)
-            .unwrap_or(false);
+        let snooze = task.start_date > task.creation_time;
         let id = TaskId(self.tasks.add_node(task));
         self.put_in_incomplete_layer(id, if snooze { 1 } else { 0 });
         id
@@ -631,19 +629,29 @@ impl TodoList {
             return Err(CheckError::TaskIsBlockedBy(incomplete_deps));
         }
         self.tasks[options.id.0].completion_time = Some(options.now);
-        // Remove from layer 0 in case it's an unblocked task.
-        // Remove from layer 1 in case it's a snoozed task.
-        // If this is an unsnoozed task that is blocked, the condition above
-        // will have already dealt with that case.
-        self.incomplete.remove_from_layer(&options.id, 0);
-        self.incomplete.remove_from_layer(&options.id, 1);
-        self.complete.push(options.id);
-        // Update adeps.
-        Ok(self
-            .adeps(options.id)
-            .iter_sorted(&self)
-            .filter(|&adep| self.update_depth(adep) == Some(0))
-            .collect())
+        if let Some(&depth) = self.incomplete.depth.get(&options.id) {
+            assert!(depth == 0 || depth == 1);
+            self.incomplete.remove_from_layer(&options.id, depth);
+            self.complete.push(options.id);
+            // Update adeps.
+            return Ok(self
+                .adeps(options.id)
+                .iter_sorted(&self)
+                // Do not update the depth of snoozed adeps if they should still
+                // be snoozed and if the checked task was in layer 0 (i.e.
+                // was itself unsnoozed).
+                .filter(|&adep| {
+                    let task = self.get(adep).unwrap();
+                    depth != 0
+                        || !(task.start_date > options.now
+                            && task.start_date != task.creation_time)
+                })
+                .collect::<Vec<_>>()
+                .into_iter()
+                .filter(|&adep| self.update_depth(adep) == Some(0))
+                .collect());
+        }
+        panic!("Checked task didn't have a depth.");
     }
 
     pub fn force_check<Options: Into<CheckOptions>>(
@@ -978,14 +986,10 @@ impl TodoList {
         self.complete.len()
     }
 
-    pub fn update_for_time(&mut self, now: DateTime<Utc>) -> TaskSet {
+    pub fn unsnooze_up_to(&mut self, now: DateTime<Utc>) -> TaskSet {
         self.incomplete_tasks()
             .filter(|&id| {
-                self.get(id)
-                    .unwrap()
-                    .start_date
-                    .map(|start_date| start_date <= now)
-                    .unwrap_or(false)
+                self.get(id).unwrap().start_date <= now
                     && self.status(id).unwrap() == TaskStatus::Blocked
                     && self.max_depth_of_deps(id).is_none()
             })
@@ -1027,6 +1031,47 @@ impl TodoList {
             self.update_depth(adep);
         });
         adeps
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub enum SnoozeWarning {
+    TaskIsComplete,
+    SnoozedUntilAfterDueDate {
+        snoozed_until: DateTime<Utc>,
+        due_date: DateTime<Utc>,
+    },
+}
+
+impl TodoList {
+    pub fn snooze(
+        &mut self,
+        id: TaskId,
+        start_date: DateTime<Utc>,
+    ) -> Result<(), Vec<SnoozeWarning>> {
+        match self.incomplete.depth.get(&id) {
+            Some(&depth) => {
+                if depth == 0 {
+                    self.incomplete.remove_from_layer(&id, 0);
+                    self.put_in_incomplete_layer(id, 1);
+                }
+                self.tasks.node_weight_mut(id.0).unwrap().start_date =
+                    start_date;
+                if let Some(due_date) = self.get(id).unwrap().implicit_due_date
+                {
+                    if start_date > due_date {
+                        return Err(vec![
+                            SnoozeWarning::SnoozedUntilAfterDueDate {
+                                snoozed_until: start_date,
+                                due_date: due_date,
+                            },
+                        ]);
+                    }
+                }
+                Ok(())
+            }
+            None => Err(vec![SnoozeWarning::TaskIsComplete]),
+        }
     }
 }
 

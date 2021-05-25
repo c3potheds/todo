@@ -64,7 +64,7 @@ pub fn run(
                 priority: priority.unwrap_or(0),
                 due_date: due_date,
                 budget: budget,
-                start_date: None,
+                start_date: now,
             });
             to_print.insert(id);
             id

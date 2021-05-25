@@ -2,8 +2,6 @@ use app::util::format_prefix;
 use app::util::format_task;
 use app::util::lookup_tasks;
 use app::util::pairwise;
-use chrono::DateTime;
-use chrono::Utc;
 use cli::Split;
 use model::NewOptions;
 use model::TaskId;
@@ -28,7 +26,6 @@ impl SplitResult {
 
 fn split(
     list: &mut TodoList,
-    now: DateTime<Utc>,
     id: TaskId,
     into: impl Iterator<Item = String>,
     chain: bool,
@@ -40,15 +37,11 @@ fn split(
             let task = list.get(id).unwrap();
             let options = NewOptions {
                 desc: desc.clone(),
-                // Inherit the creation time from the source task,
-                // but if there was no creation time for some
-                // reason, take the current moment as the creation
-                // time.
-                now: task.creation_time.unwrap_or(now),
+                now: task.creation_time,
                 priority: task.priority,
                 due_date: task.due_date,
                 budget: task.budget,
-                start_date: None,
+                start_date: task.start_date,
             };
             list.add(options)
         })
@@ -78,12 +71,7 @@ fn split(
     }
 }
 
-pub fn run(
-    list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
-    now: DateTime<Utc>,
-    cmd: Split,
-) {
+pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: Split) {
     let prefix = cmd.prefix.join(" ");
     let result = lookup_tasks(list, &cmd.keys).iter_sorted(list).fold(
         SplitResult {
@@ -93,7 +81,6 @@ pub fn run(
         |so_far, id| {
             so_far.combine(split(
                 list,
-                now,
                 id,
                 cmd.into.iter().map(|desc| format_prefix(&prefix, desc)),
                 cmd.chain,
