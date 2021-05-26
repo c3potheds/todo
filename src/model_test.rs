@@ -2048,3 +2048,48 @@ fn snoozed_blocked_task_unsnoozes_when_deps_completed_after_snooze_date() {
     );
     assert_eq!(list.status(b), Some(TaskStatus::Incomplete));
 }
+
+#[test]
+fn unblock_does_not_unsnooze() {
+    let mut list = TodoList::new();
+    let a = list.add("a");
+    let b = list.add(
+        NewOptions::new()
+            .desc("b")
+            .creation_time(Utc.ymd(2021, 05, 25).and_hms(00, 00, 00))
+            .start_date(Utc.ymd(2021, 05, 26).and_hms(00, 00, 00)),
+    );
+    list.block(b).on(a).unwrap();
+    list.unblock(b).from(a).unwrap();
+    assert_eq!(list.status(b), Some(TaskStatus::Blocked));
+}
+
+#[test]
+fn remove_does_not_unsnooze() {
+    let mut list = TodoList::new();
+    let a = list.add("a");
+    let b = list.add(
+        NewOptions::new()
+            .desc("b")
+            .creation_time(Utc.ymd(2021, 05, 25).and_hms(00, 00, 00))
+            .start_date(Utc.ymd(2021, 05, 26).and_hms(00, 00, 00)),
+    );
+    list.block(b).on(a).unwrap();
+    list.remove(a);
+    assert_eq!(list.status(b), Some(TaskStatus::Blocked));
+}
+
+#[test]
+fn block_does_not_unsnooze() {
+    let mut list = TodoList::new();
+    let a = list.add("a");
+    let b = list.add(
+        NewOptions::new()
+            .desc("b")
+            .creation_time(Utc.ymd(2021, 05, 25).and_hms(00, 00, 00))
+            .start_date(Utc.ymd(2021, 05, 26).and_hms(00, 00, 00)),
+    );
+    list.check(a).unwrap();
+    list.block(b).on(a).unwrap();
+    assert_eq!(list.status(b), Some(TaskStatus::Blocked));
+}

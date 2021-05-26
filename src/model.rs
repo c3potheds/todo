@@ -484,6 +484,26 @@ impl TodoList {
         })
     }
 
+    fn should_keep_snoozed(
+        &self,
+        id: TaskId,
+        now: Option<DateTime<Utc>>,
+    ) -> bool {
+        let task = self.get(id).unwrap();
+        let start_date = task.start_date;
+        let creation_time = task.creation_time;
+        match self.incomplete.depth.get(&id) {
+            Some(&depth) => {
+                depth == 1
+                    && match now {
+                        Some(now) => start_date > now,
+                        None => start_date > creation_time,
+                    }
+            }
+            None => true,
+        }
+    }
+
     // Returns a TaskSet of affected tasks.
     pub fn update_implicits(&mut self, id: TaskId) -> TaskSet {
         let mut changed = false;
@@ -641,10 +661,7 @@ impl TodoList {
                 // be snoozed and if the checked task was in layer 0 (i.e.
                 // was itself unsnoozed).
                 .filter(|&adep| {
-                    let task = self.get(adep).unwrap();
-                    depth != 0
-                        || !(task.start_date > options.now
-                            && task.start_date != task.creation_time)
+                    !self.should_keep_snoozed(adep, Some(options.now))
                 })
                 .collect::<Vec<_>>()
                 .into_iter()
@@ -818,7 +835,11 @@ impl<'a> Block<'a> {
         self.list
             .tasks
             .update_edge(blocking.0, self.blocked.0, ())?;
-        self.list.update_depth(self.blocked);
+        if !self.list.should_keep_snoozed(self.blocked, None)
+            || self.list.status(self.blocked) == Some(TaskStatus::Complete)
+        {
+            self.list.update_depth(self.blocked);
+        }
         Ok(self.list.update_implicits(blocking)
             | TaskSet::of(self.blocked)
             | TaskSet::of(blocking))
@@ -854,7 +875,9 @@ impl<'a> Unblock<'a> {
             Some(e) => self.list.tasks.remove_edge(e),
             None => return Err(UnblockError::WasNotDirectlyBlocking),
         };
-        self.list.update_depth(self.blocked);
+        if !self.list.should_keep_snoozed(self.blocked, None) {
+            self.list.update_depth(self.blocked);
+        }
         Ok(self.list.update_implicits(blocking)
             | TaskSet::of(self.blocked)
             | TaskSet::of(blocking))
@@ -1027,9 +1050,14 @@ impl TodoList {
             self.block(adep).on(dep).unwrap();
         });
         self.tasks.remove_node(id.0);
-        adeps.iter_sorted(self).for_each(|adep| {
-            self.update_depth(adep);
-        });
+        adeps
+            .iter_sorted(self)
+            .filter(|&adep| !self.should_keep_snoozed(adep, None))
+            .collect::<Vec<_>>()
+            .into_iter()
+            .for_each(|adep| {
+                self.update_depth(adep);
+            });
         adeps
     }
 }
