@@ -37,6 +37,8 @@ pub enum Action {
     Unlock,
     Select,
     Punt,
+    Snooze,
+    Unsnooze,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -175,6 +177,9 @@ pub enum PrintableWarning {
     CannotPuntBecauseComplete {
         cannot_punt: BriefPrintableTask,
     },
+    CannotSnoozeBecauseComplete {
+        cannot_snooze: BriefPrintableTask,
+    },
     AmbiguousKey {
         key: Key,
         matches: Vec<BriefPrintableTask>,
@@ -243,6 +248,8 @@ impl Display for Action {
             Action::Unlock => write!(f, " {}", Color::Green.paint("🔓")),
             Action::Select => write!(f, " * "),
             Action::Punt => write!(f, " ⏎ "),
+            Action::Snooze => write!(f, "{}", Color::Blue.paint("ZZZ")),
+            Action::Unsnooze => write!(f, " {}", Color::Purple.paint("⏰")),
         }
     }
 }
@@ -498,6 +505,9 @@ impl Display for PrintableWarning {
                 ),
                 PrintableWarning::CannotPuntBecauseComplete { cannot_punt } =>
                     format!("Cannot punt complete task {}", cannot_punt),
+                PrintableWarning::CannotSnoozeBecauseComplete {
+                    cannot_snooze,
+                } => format!("Cannot snooze complete task {}", cannot_snooze),
                 PrintableWarning::AmbiguousKey { key, matches } => {
                     format!(
                         "Ambiguous key {} matches multiple tasks: {}",
