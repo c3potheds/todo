@@ -118,4 +118,18 @@ pub struct New {
     /// separated by a space).
     #[structopt(long, short = "P", min_values = 1)]
     pub prefix: Vec<String>,
+
+    /// Snooze the new tasks for a given amount of time.
+    ///
+    /// A snoozed task is "blocked" for purposes of positioning and appearance
+    /// in the incomplete task list, but "incomplete" for purposes of being able
+    /// to check it off with the 'check' command.
+    ///
+    /// The --snooze argument is a human-readable string description of the
+    /// amount of time to snooze for, or a date or time to snooze until. As in
+    /// the 'snooze' subcommand, if you give a description of a day or month,
+    /// the task will be unsnoozed at the start of that time interval, unlike
+    /// due dates, which snap to the end of the time interval.
+    #[structopt(long, short = "s", min_values = 1)]
+    pub snooze: Vec<String>,
 }
