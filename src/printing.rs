@@ -88,6 +88,7 @@ pub struct PrintableTask<'a> {
     priority: i32,
     due_date: Option<DateTime<Utc>>,
     budget: Option<Duration>,
+    start_date: Option<DateTime<Utc>>,
 }
 
 impl<'a> PrintableTask<'a> {
@@ -101,6 +102,7 @@ impl<'a> PrintableTask<'a> {
             priority: 0,
             due_date: None,
             budget: None,
+            start_date: None,
         }
     }
 
@@ -126,6 +128,11 @@ impl<'a> PrintableTask<'a> {
 
     pub fn budget(mut self, budget: Duration) -> Self {
         self.budget = Some(budget);
+        self
+    }
+
+    pub fn start_date(mut self, start_date: DateTime<Utc>) -> Self {
+        self.start_date = Some(start_date);
         self
     }
 }
@@ -363,6 +370,23 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
                 width = self.context.max_index_digits + ANSI_OFFSET
             )
         };
+        if let Some(start_date) = self.task.start_date {
+            let snooze_duration = start_date - self.context.now;
+            if snooze_duration > chrono::Duration::zero() {
+                start.push_str(
+                    &Color::Purple
+                        .bold()
+                        .paint(format!(
+                            "Snoozed for {}",
+                            ::time_format::format_duration_laconic(
+                                snooze_duration
+                            )
+                        ))
+                        .to_string(),
+                );
+                start.push_str(" ");
+            }
+        }
         if self.task.priority != 0 {
             let color = match self.task.priority.abs() {
                 6..=i32::MAX => Color::Red,
@@ -646,6 +670,7 @@ struct PrintedTaskInfo {
     log_date: Option<LogDate>,
     priority: i32,
     due_date: Option<DateTime<Utc>>,
+    start_date: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug)]
@@ -671,6 +696,7 @@ enum Expect<'a> {
     LogDate(LogDate),
     Priority(i32),
     DueDate(DateTime<Utc>),
+    StartDate(DateTime<Utc>),
 }
 
 #[cfg(test)]
@@ -747,6 +773,20 @@ impl<'a> Expect<'a> {
                     panic!("Missing required due date: {:?}", expected);
                 }
             },
+            Expect::StartDate(expected) => match &info.start_date {
+                Some(actual) => {
+                    if *actual != *expected {
+                        panic!(
+                            "Unexpected start date: {:?} (Expected {:?})",
+                            actual.with_timezone(&Local),
+                            expected.with_timezone(&Local)
+                        );
+                    }
+                }
+                None => {
+                    panic!("Missing required start date: {:?}", expected);
+                }
+            },
         }
     }
 }
@@ -778,6 +818,9 @@ impl<'a> Validation<'a> {
         expectations.push(Expect::Priority(task.priority));
         if let Some(due_date) = task.due_date {
             expectations.push(Expect::DueDate(due_date));
+        }
+        if let Some(start_date) = task.start_date {
+            expectations.push(Expect::StartDate(start_date));
         }
         self.printed_task_impl(&expectations)
     }
@@ -854,6 +897,7 @@ impl TodoPrinter for FakePrinter {
             log_date: task.log_date.clone(),
             priority: task.priority,
             due_date: task.due_date,
+            start_date: task.start_date,
         }));
     }
 

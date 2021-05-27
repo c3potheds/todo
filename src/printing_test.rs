@@ -259,6 +259,30 @@ fn show_priority_and_due_date_together() {
 }
 
 #[test]
+fn show_snooze_date_on_task() {
+    let now = ymdhms(2021, 05, 27, 12, 00, 00);
+    let snooze_date = ymdhms(2021, 05, 27, 14, 00, 00);
+    let task = PrintableTask::new("a", 1, Incomplete).start_date(snooze_date);
+    let fmt = print_task_with_context(now_context(now), &task);
+    assert_eq!(
+        fmt,
+        concat!(
+            "      \u{1b}[33m1)\u{1b}[0m ",
+            "\u{1b}[1;35mSnoozed for 2 hours\u{1b}[0m a\n"
+        )
+    );
+}
+
+#[test]
+fn do_not_show_snooze_time_if_time_elapsed() {
+    let now = ymdhms(2021, 05, 27, 15, 00, 00);
+    let snooze_date = ymdhms(2021, 05, 27, 14, 00, 00);
+    let task = PrintableTask::new("a", 1, Incomplete).start_date(snooze_date);
+    let fmt = print_task_with_context(now_context(now), &task);
+    assert_eq!(fmt, "      \u{1b}[33m1)\u{1b}[0m a\n");
+}
+
+#[test]
 fn display_no_match_found_warning() {
     let fmt = format!(
         "{}",
@@ -696,4 +720,35 @@ fn fail_validation_on_extraneous_priority() {
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete))
         .end();
+}
+
+#[test]
+#[should_panic(expected = "Missing required start date")]
+fn fail_validation_on_missing_start_date() {
+    let mut printer = FakePrinter::new();
+    printer.print_task(&PrintableTask::new("a", 1, Incomplete));
+    printer
+        .validate()
+        .printed_task(
+            &PrintableTask::new("a", 1, Incomplete)
+                .start_date(ymdhms(2021, 05, 27, 00, 00, 00)),
+        )
+        .end()
+}
+
+#[test]
+#[should_panic(expected = "Unexpected start date")]
+fn fail_validation_on_incorrect_start_date() {
+    let mut printer = FakePrinter::new();
+    printer.print_task(
+        &PrintableTask::new("a", 1, Incomplete)
+            .start_date(ymdhms(2021, 05, 28, 00, 00, 00)),
+    );
+    printer
+        .validate()
+        .printed_task(
+            &PrintableTask::new("a", 1, Incomplete)
+                .start_date(ymdhms(2021, 05, 27, 00, 00, 00)),
+        )
+        .end()
 }
