@@ -324,7 +324,7 @@ pub fn parse_time<Tz: TimeZone>(
 // durations in the order of minutes, or minute-level precision for durations
 // in the order of hourse, etc, so we strip off all but the first "word" in the
 // formatted time.
-fn format_duration_laconic(duration: chrono::Duration) -> String {
+pub fn format_duration_laconic(duration: chrono::Duration) -> String {
     let formatted =
         humantime::format_duration(duration.to_std().unwrap().into());
     match format!("{}", formatted).split(" ").next() {
