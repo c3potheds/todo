@@ -80,6 +80,9 @@ mod restore_test;
 mod rm_test;
 
 #[cfg(test)]
+mod snooze_test;
+
+#[cfg(test)]
 mod split_test;
 
 #[cfg(test)]
