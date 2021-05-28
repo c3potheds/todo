@@ -16,6 +16,7 @@ use app::punt;
 use app::put;
 use app::restore;
 use app::rm;
+use app::snooze;
 use app::split;
 use app::status;
 use app::top;
@@ -62,7 +63,7 @@ pub fn todo(
         Some(Put(cmd)) => put::run(list, printer, &cmd),
         Some(Restore(cmd)) => restore::run(list, printer, &cmd),
         Some(Rm(cmd)) => rm::run(list, printer, cmd),
-        Some(Snooze(_)) => unimplemented!(),
+        Some(Snooze(cmd)) => snooze::run(list, printer, now, &cmd),
         Some(Split(cmd)) => split::run(list, printer, cmd),
         Some(Top(cmd)) => top::run(list, printer, &cmd),
         Some(Unblock(cmd)) => unblock::run(list, printer, &cmd),

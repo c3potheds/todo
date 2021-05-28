@@ -16,6 +16,7 @@ mod punt;
 mod put;
 mod restore;
 mod rm;
+mod snooze;
 mod split;
 mod status;
 pub mod todo;

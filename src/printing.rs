@@ -180,6 +180,11 @@ pub enum PrintableWarning {
     CannotSnoozeBecauseComplete {
         cannot_snooze: BriefPrintableTask,
     },
+    SnoozedAfterDueDate {
+        snoozed_task: BriefPrintableTask,
+        due_date: DateTime<Utc>,
+        snooze_date: DateTime<Utc>,
+    },
     AmbiguousKey {
         key: Key,
         matches: Vec<BriefPrintableTask>,
@@ -508,6 +513,13 @@ impl Display for PrintableWarning {
                 PrintableWarning::CannotSnoozeBecauseComplete {
                     cannot_snooze,
                 } => format!("Cannot snooze complete task {}", cannot_snooze),
+                PrintableWarning::SnoozedAfterDueDate {
+                    snoozed_task,
+                    due_date: _due_date,
+                    snooze_date: _snooze_date,
+                } => {
+                    format!("Snoozed {} until after its due date", snoozed_task)
+                }
                 PrintableWarning::AmbiguousKey { key, matches } => {
                     format!(
                         "Ambiguous key {} matches multiple tasks: {}",

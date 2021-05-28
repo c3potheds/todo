@@ -178,6 +178,28 @@ pub fn parse_budget_or_print_error(
     }
 }
 
+pub fn parse_snooze_date_or_print_error(
+    now: DateTime<Utc>,
+    snooze_date_vec: &Vec<String>,
+    printer: &mut impl TodoPrinter,
+) -> Result<DateTime<Utc>, ()> {
+    let date_string = snooze_date_vec.join(" ");
+    match ::time_format::parse_time(
+        Local,
+        now.with_timezone(&Local),
+        &date_string,
+        ::time_format::Snap::ToStart,
+    ) {
+        Ok(snooze_date) => Ok(snooze_date.with_timezone(&Utc)),
+        Err(_) => {
+            printer.print_error(&PrintableError::CannotParseDueDate {
+                cannot_parse: date_string.to_string(),
+            });
+            Err(())
+        }
+    }
+}
+
 struct Pairwise<T, I>
 where
     I: Iterator<Item = T>,
