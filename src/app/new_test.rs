@@ -421,7 +421,17 @@ fn new_with_multiple_prefixes() {
 }
 
 #[test]
-#[ignore = "app.new.snooze"]
+fn new_invalid_snooze_date() {
+    let mut fix = Fixture::new();
+    fix.test("todo new a --snooze blah")
+        .validate()
+        .printed_error(&PrintableError::CannotParseDueDate {
+            cannot_parse: "blah".to_string(),
+        })
+        .end();
+}
+
+#[test]
 fn new_snooze_one_task() {
     let mut fix = Fixture::new();
     fix.clock.now = ymdhms(2021, 05, 28, 16, 00, 00);
@@ -436,7 +446,6 @@ fn new_snooze_one_task() {
 }
 
 #[test]
-#[ignore = "app.new.snooze"]
 fn new_snooze_multiple_tasks() {
     let mut fix = Fixture::new();
     fix.clock.now = ymdhms(2021, 05, 28, 16, 00, 00);
@@ -448,12 +457,12 @@ fn new_snooze_multiple_tasks() {
                 .start_date(ymdhms(2021, 05, 30, 00, 00, 00)),
         )
         .printed_task(
-            &PrintableTask::new("b", 1, Blocked)
+            &PrintableTask::new("b", 2, Blocked)
                 .action(New)
                 .start_date(ymdhms(2021, 05, 30, 00, 00, 00)),
         )
         .printed_task(
-            &PrintableTask::new("c", 1, Blocked)
+            &PrintableTask::new("c", 3, Blocked)
                 .action(New)
                 .start_date(ymdhms(2021, 05, 30, 00, 00, 00)),
         )

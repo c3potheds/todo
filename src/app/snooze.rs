@@ -20,7 +20,8 @@ pub fn run(
 ) {
     let snooze_date =
         match parse_snooze_date_or_print_error(now, &cmd.until, printer) {
-            Ok(snooze_date) => snooze_date,
+            Ok(Some(snooze_date)) => snooze_date,
+            Ok(None) => panic!("Need a nonempty snooze date"),
             Err(()) => {
                 return;
             }

@@ -7,6 +7,7 @@ use app::util::lookup_tasks;
 use app::util::pairwise;
 use app::util::parse_budget_or_print_error;
 use app::util::parse_due_date_or_print_error;
+use app::util::parse_snooze_date_or_print_error;
 use chrono::DateTime;
 use chrono::Utc;
 use cli::New;
@@ -37,6 +38,14 @@ pub fn run(
             return;
         }
     };
+    let snooze_date =
+        match parse_snooze_date_or_print_error(now, &cmd.snooze, printer) {
+            Ok(Some(snooze_date)) => snooze_date,
+            Ok(None) => now,
+            Err(_) => {
+                return;
+            }
+        };
     let deps = lookup_tasks(model, &cmd.blocked_by);
     let adeps = lookup_tasks(model, &cmd.blocking);
     let before = lookup_tasks(model, &cmd.before);
@@ -64,7 +73,7 @@ pub fn run(
                 priority: priority.unwrap_or(0),
                 due_date: due_date,
                 budget: budget,
-                start_date: now,
+                start_date: snooze_date,
             });
             to_print.insert(id);
             id
@@ -105,12 +114,15 @@ pub fn run(
     TaskSet::from_iter(to_print.into_iter())
         .iter_sorted(model)
         .for_each(|id| {
-            printer.print_task(&format_task(model, id).action(
-                if new_tasks.contains(id) {
+            let mut task_view =
+                format_task(model, id).action(if new_tasks.contains(id) {
                     Action::New
                 } else {
                     Action::None
-                },
-            ));
+                });
+            if snooze_date > now {
+                task_view = task_view.start_date(snooze_date);
+            }
+            printer.print_task(&task_view);
         });
 }
