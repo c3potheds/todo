@@ -419,3 +419,43 @@ fn new_with_multiple_prefixes() {
         .printed_task(&PrintableTask::new("x y c", 3, Incomplete).action(New))
         .end();
 }
+
+#[test]
+#[ignore = "app.new.snooze"]
+fn new_snooze_one_task() {
+    let mut fix = Fixture::new();
+    fix.clock.now = ymdhms(2021, 05, 28, 16, 00, 00);
+    fix.test("todo new a --snooze 1 day")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("a", 1, Blocked)
+                .action(New)
+                .start_date(ymdhms(2021, 05, 29, 00, 00, 00)),
+        )
+        .end();
+}
+
+#[test]
+#[ignore = "app.new.snooze"]
+fn new_snooze_multiple_tasks() {
+    let mut fix = Fixture::new();
+    fix.clock.now = ymdhms(2021, 05, 28, 16, 00, 00);
+    fix.test("todo new a b c --snooze 2 days")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("a", 1, Blocked)
+                .action(New)
+                .start_date(ymdhms(2021, 05, 30, 00, 00, 00)),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 1, Blocked)
+                .action(New)
+                .start_date(ymdhms(2021, 05, 30, 00, 00, 00)),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 1, Blocked)
+                .action(New)
+                .start_date(ymdhms(2021, 05, 30, 00, 00, 00)),
+        )
+        .end();
+}
