@@ -1,4 +1,6 @@
+use app::testing::ymdhms;
 use app::testing::Fixture;
+use printing::Action::*;
 use printing::PrintableTask;
 use printing::Status::*;
 
@@ -91,4 +93,28 @@ fn status_after_unblocking_task() {
         .printed_task(&PrintableTask::new("a", 1, Incomplete))
         .printed_task(&PrintableTask::new("b", 2, Incomplete))
         .end();
+}
+
+#[test]
+#[ignore = "app.snooze"]
+fn status_unsnoozes_if_snooze_time_passed() {
+    let mut fix = Fixture::new();
+    fix.clock.now = ymdhms(2021, 05, 28, 18, 00, 00);
+    fix.test("todo new a");
+    fix.test("todo snooze a --until 1 day");
+    fix.clock.now = ymdhms(2021, 05, 29, 18, 00, 00);
+    fix.test("todo")
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Unsnooze))
+        .end();
+}
+
+#[test]
+#[ignore = "app.snooze"]
+fn status_does_not_unsnooze_if_snooze_time_does_not_pass() {
+    let mut fix = Fixture::new();
+    fix.clock.now = ymdhms(2021, 05, 28, 18, 00, 00);
+    fix.test("todo new a");
+    fix.test("todo snooze a --until 1 day");
+    fix.test("todo").validate().end();
 }
