@@ -138,3 +138,39 @@ fn merge_inside_chain() {
         .printed_task(&PrintableTask::new("e", 4, Blocked))
         .end();
 }
+
+#[test]
+#[ignore = "app.snooze"]
+fn merge_task_with_snoozed_task() {
+    let mut fix = Fixture::new();
+    fix.clock.now = ymdhms(2021, 05, 28, 18, 00, 00);
+    fix.test("todo new a b");
+    fix.test("todo snooze b --until tomorrow");
+    fix.test("todo merge a b --into ab")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("ab", 1, Blocked)
+                .action(Select)
+                .start_date(ymdhms(2021, 05, 29, 00, 00, 00)),
+        )
+        .end();
+}
+
+#[test]
+#[ignore = "app.snooze"]
+fn merge_snoozed_tasks() {
+    let mut fix = Fixture::new();
+    fix.clock.now = ymdhms(2021, 05, 28, 16, 00, 00);
+    fix.test("todo new a b c");
+    fix.test("todo snooze a --until 1 hour");
+    fix.test("todo snooze b --until 2 hours");
+    fix.test("todo snooze c --until 3 hours");
+    fix.test("todo merge a b c --into abc")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("abc", 1, Blocked)
+                .action(Select)
+                .start_date(ymdhms(2021, 05, 28, 19, 00, 00)),
+        )
+        .end();
+}
