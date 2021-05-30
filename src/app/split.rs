@@ -2,6 +2,8 @@ use app::util::format_prefix;
 use app::util::format_task;
 use app::util::lookup_tasks;
 use app::util::pairwise;
+use chrono::DateTime;
+use chrono::Utc;
 use cli::Split;
 use model::NewOptions;
 use model::TaskId;
@@ -71,7 +73,12 @@ fn split(
     }
 }
 
-pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: Split) {
+pub fn run(
+    list: &mut TodoList,
+    printer: &mut impl TodoPrinter,
+    now: DateTime<Utc>,
+    cmd: Split,
+) {
     let prefix = cmd.prefix.join(" ");
     let result = lookup_tasks(list, &cmd.keys).iter_sorted(list).fold(
         SplitResult {
@@ -88,12 +95,16 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: Split) {
         },
     );
     result.to_print.iter_sorted(list).for_each(|id| {
-        printer.print_task(&format_task(list, id).action(
-            if result.shards.contains(id) {
+        let mut task_view =
+            format_task(list, id).action(if result.shards.contains(id) {
                 Action::Select
             } else {
                 Action::None
-            },
-        ));
+            });
+        let start_date = list.get(id).unwrap().start_date;
+        if start_date > now {
+            task_view = task_view.start_date(start_date);
+        }
+        printer.print_task(&task_view);
     });
 }

@@ -1,3 +1,4 @@
+use app::testing::ymdhms;
 use app::testing::Fixture;
 use printing::Action::*;
 use printing::PrintableTask;
@@ -63,6 +64,26 @@ fn split_with_multiple_prefixes() {
         )
         .printed_task(
             &PrintableTask::new("a b y", 2, Incomplete).action(Select),
+        )
+        .end();
+}
+
+#[test]
+fn split_snoozed_task() {
+    let mut fix = Fixture::new();
+    fix.clock.now = ymdhms(2021, 05, 30, 09, 00, 00);
+    fix.test("todo new a --snooze 1 day");
+    fix.test("todo split a --into x y")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("x", 1, Blocked)
+                .action(Select)
+                .start_date(ymdhms(2021, 05, 31, 00, 00, 00)),
+        )
+        .printed_task(
+            &PrintableTask::new("y", 2, Blocked)
+                .action(Select)
+                .start_date(ymdhms(2021, 05, 31, 00, 00, 00)),
         )
         .end();
 }
