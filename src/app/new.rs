@@ -114,15 +114,12 @@ pub fn run(
     TaskSet::from_iter(to_print.into_iter())
         .iter_sorted(model)
         .for_each(|id| {
-            let mut task_view =
-                format_task(model, id).action(if new_tasks.contains(id) {
+            printer.print_task(&format_task(model, id).action(
+                if new_tasks.contains(id) {
                     Action::New
                 } else {
                     Action::None
-                });
-            if snooze_date > now {
-                task_view = task_view.start_date(snooze_date);
-            }
-            printer.print_task(&task_view);
+                },
+            ));
         });
 }

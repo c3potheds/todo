@@ -64,9 +64,9 @@ pub fn todo(
         Some(Restore(cmd)) => restore::run(list, printer, &cmd),
         Some(Rm(cmd)) => rm::run(list, printer, cmd),
         Some(Snooze(cmd)) => snooze::run(list, printer, now, &cmd),
-        Some(Split(cmd)) => split::run(list, printer, now, cmd),
+        Some(Split(cmd)) => split::run(list, printer, cmd),
         Some(Top(cmd)) => top::run(list, printer, &cmd),
         Some(Unblock(cmd)) => unblock::run(list, printer, &cmd),
-        None => status::run(list, printer, &status_options(options)),
+        None => status::run(list, printer, now, &status_options(options)),
     }
 }

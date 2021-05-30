@@ -100,15 +100,12 @@ pub fn run(
     (deps | TaskSet::of(merged) | adeps)
         .iter_sorted(list)
         .for_each(|id| {
-            let mut task_view = format_task(list, id).action(if id == merged {
-                Action::Select
-            } else {
-                Action::None
-            });
-            let start_date = list.get(id).unwrap().start_date;
-            if start_date > now {
-                task_view = task_view.start_date(start_date);
-            }
-            printer.print_task(&task_view);
+            printer.print_task(&format_task(list, id).action(
+                if id == merged {
+                    Action::Select
+                } else {
+                    Action::None
+                },
+            ));
         });
 }

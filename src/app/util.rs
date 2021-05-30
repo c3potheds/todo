@@ -55,6 +55,9 @@ pub fn format_task<'a>(model: &'a TodoList, id: TaskId) -> PrintableTask<'a> {
             if task.budget.0 > 0 {
                 result = result.budget(Duration::seconds(task.budget.0.into()));
             }
+            if task.start_date > task.creation_time {
+                result = result.start_date(task.start_date);
+            }
             result
         }
         _ => panic!("Failed to get task info for id {:?}", id),

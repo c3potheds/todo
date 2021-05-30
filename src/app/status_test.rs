@@ -96,7 +96,6 @@ fn status_after_unblocking_task() {
 }
 
 #[test]
-#[ignore = "app.snooze"]
 fn status_unsnoozes_if_snooze_time_passed() {
     let mut fix = Fixture::new();
     fix.clock.now = ymdhms(2021, 05, 28, 18, 00, 00);
@@ -110,11 +109,27 @@ fn status_unsnoozes_if_snooze_time_passed() {
 }
 
 #[test]
-#[ignore = "app.snooze"]
 fn status_does_not_unsnooze_if_snooze_time_does_not_pass() {
     let mut fix = Fixture::new();
     fix.clock.now = ymdhms(2021, 05, 28, 18, 00, 00);
     fix.test("todo new a");
     fix.test("todo snooze a --until 1 day");
     fix.test("todo").validate().end();
+}
+
+#[test]
+fn status_unsnooze_preserves_order() {
+    let mut fix = Fixture::new();
+    fix.clock.now = ymdhms(2021, 05, 30, 12, 00, 00);
+    fix.test("todo new a b c");
+    fix.test("todo snooze a --until 1 hour");
+    fix.test("todo snooze b --until 2 hours");
+    fix.test("todo snooze c --until 3 hours");
+    fix.clock.now = ymdhms(2021, 05, 30, 16, 00, 00);
+    fix.test("todo")
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Unsnooze))
+        .printed_task(&PrintableTask::new("b", 2, Incomplete).action(Unsnooze))
+        .printed_task(&PrintableTask::new("c", 3, Incomplete).action(Unsnooze))
+        .end();
 }
