@@ -73,20 +73,25 @@ pub fn run(
         .max()
         .map(|secs| DurationInSeconds(secs))
         .unwrap_or_default();
+    let start_date = tasks_to_merge
+        .iter_unsorted()
+        .map(|id| list.get(id).unwrap().start_date)
+        .max()
+        .unwrap_or(now);
     let merged = list.add(NewOptions {
         desc: cmd.into.clone(),
         now: now,
         priority: priority,
         due_date: due_date,
         budget: budget,
-        start_date: now,
+        start_date: start_date,
     });
     deps.iter_sorted(list).for_each(|dep| {
-        // This shouldn't happen if we correctly detected cycles above.
+        // This shouldn't panic if we correctly detected cycles above.
         list.block(merged).on(dep).unwrap();
     });
     adeps.iter_sorted(list).for_each(|adep| {
-        // This shouldn't happen if we correctly detected cycles above.
+        // This shouldn't panic if we correctly detected cycles above.
         list.block(adep).on(merged).unwrap();
     });
     tasks_to_merge.iter_sorted(list).for_each(|id| {
@@ -95,12 +100,15 @@ pub fn run(
     (deps | TaskSet::of(merged) | adeps)
         .iter_sorted(list)
         .for_each(|id| {
-            printer.print_task(&format_task(list, id).action(
-                if id == merged {
-                    Action::Select
-                } else {
-                    Action::None
-                },
-            ));
+            let mut task_view = format_task(list, id).action(if id == merged {
+                Action::Select
+            } else {
+                Action::None
+            });
+            let start_date = list.get(id).unwrap().start_date;
+            if start_date > now {
+                task_view = task_view.start_date(start_date);
+            }
+            printer.print_task(&task_view);
         });
 }

@@ -140,12 +140,11 @@ fn merge_inside_chain() {
 }
 
 #[test]
-#[ignore = "app.snooze"]
 fn merge_task_with_snoozed_task() {
     let mut fix = Fixture::new();
     fix.clock.now = ymdhms(2021, 05, 28, 18, 00, 00);
     fix.test("todo new a b");
-    fix.test("todo snooze b --until tomorrow");
+    fix.test("todo snooze b --until 1 day");
     fix.test("todo merge a b --into ab")
         .validate()
         .printed_task(
@@ -157,7 +156,6 @@ fn merge_task_with_snoozed_task() {
 }
 
 #[test]
-#[ignore = "app.snooze"]
 fn merge_snoozed_tasks() {
     let mut fix = Fixture::new();
     fix.clock.now = ymdhms(2021, 05, 28, 16, 00, 00);
