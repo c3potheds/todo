@@ -49,6 +49,7 @@ pub fn todo(
         Some(Budget(cmd)) => budget::run(list, printer, &cmd),
         Some(Chain(cmd)) => chain::run(list, printer, &cmd),
         Some(Check(cmd)) => check::run(list, printer, now, &cmd),
+        Some(Config(_)) => unimplemented!(),
         Some(Due(cmd)) => due::run(list, printer, now, &cmd),
         Some(Edit(cmd)) => edit::run(list, printer, text_editor, &cmd),
         Some(Find(cmd)) => find::run(list, printer, &cmd),

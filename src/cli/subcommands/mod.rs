@@ -2,6 +2,7 @@ mod block;
 mod budget;
 mod chain;
 mod check;
+mod config;
 mod due;
 mod edit;
 mod find;
@@ -24,6 +25,7 @@ pub use self::block::Block;
 pub use self::budget::Budget;
 pub use self::chain::Chain;
 pub use self::check::Check;
+pub use self::config::Config;
 pub use self::due::Due;
 pub use self::edit::Edit;
 pub use self::find::Find;
@@ -54,6 +56,9 @@ mod chain_test;
 
 #[cfg(test)]
 mod check_test;
+
+#[cfg(test)]
+mod config_test;
 
 #[cfg(test)]
 mod due_test;

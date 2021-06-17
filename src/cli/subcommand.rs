@@ -7,6 +7,7 @@ pub enum SubCommand {
     Budget(Budget),
     Chain(Chain),
     Check(Check),
+    Config(Config),
     Due(Due),
     Edit(Edit),
     Find(Find),
