@@ -117,10 +117,9 @@ pub struct Less {
 }
 
 impl Less {
-    pub fn new() -> std::io::Result<Self> {
-        std::process::Command::new("less")
-            .arg("-r")
-            .arg("-X")
+    pub fn new(cmd: &str, args: &[String]) -> std::io::Result<Self> {
+        std::process::Command::new(cmd)
+            .args(args)
             .stdin(std::process::Stdio::piped())
             .spawn()
             .and_then(|mut child| {

@@ -102,7 +102,13 @@ fn main() -> TodoResult {
             // after the program finishes.
             out: long_output::max_lines(term_height - 1)
                 .primary(std::io::stdout())
-                .alternate(|| long_output::Less::new().unwrap()),
+                .alternate(|| {
+                    long_output::Less::new(
+                        &config.paginator_cmd[0],
+                        &config.paginator_cmd[1..],
+                    )
+                    .unwrap()
+                }),
             context: PrintingContext {
                 max_index_digits: std::cmp::max(
                     // Add one for the minus sign for complete tasks.
