@@ -11,8 +11,8 @@ ansi_term = "0.12"
 atty = "0.2"
 bisection = "0.1"
 chrono = { version = "0.4", features = ["serde"] }
-directories = "3.0"
-daggy = { version = "0.7", features = ["serde-1", "stable_dag"] }
+directories = "4.0"
+daggy = { version = "0.8", features = ["serde-1", "stable_dag"] }
 humantime = "2.1"
 itertools = "0.10"
 scrawl = "1.1"
