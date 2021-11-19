@@ -40,7 +40,7 @@ impl<'a> Fixture<'a> {
 
     pub fn test(&mut self, s: &str) -> FakePrinter {
         let mut printer = FakePrinter::new();
-        let options = Options::from_iter_safe(s.split(" "))
+        let options = Options::from_iter_safe(s.split(' '))
             .expect("Could not parse args");
         crate::app::todo(
             &mut self.list,

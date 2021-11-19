@@ -50,7 +50,7 @@ pub fn run(
             .iter_unsorted()
             .flat_map(|id| list.adeps(id).into_iter_unsorted())
             .collect::<TaskSet>()
-            & tasks_to_merge.clone();
+            & tasks_to_merge;
         printer.print_error(&PrintableError::CannotMerge {
             cycle_through: format_tasks_brief(list, &cycle_through),
             adeps_of: format_tasks_brief(list, &adeps_of),
@@ -71,7 +71,7 @@ pub fn run(
         .iter_unsorted()
         .map(|id| list.get(id).unwrap().budget.0)
         .max()
-        .map(|secs| DurationInSeconds(secs))
+        .map(DurationInSeconds)
         .unwrap_or_default();
     let start_date = tasks_to_merge
         .iter_unsorted()
@@ -80,11 +80,11 @@ pub fn run(
         .unwrap_or(now);
     let merged = list.add(NewOptions {
         desc: cmd.into.clone(),
-        now: now,
-        priority: priority,
-        due_date: due_date,
-        budget: budget,
-        start_date: start_date,
+        now,
+        priority,
+        due_date,
+        budget,
+        start_date,
     });
     deps.iter_sorted(list).for_each(|dep| {
         // This shouldn't panic if we correctly detected cycles above.

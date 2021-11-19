@@ -65,8 +65,8 @@ pub fn run(
     printer: &mut impl TodoPrinter,
     cmd: &Unblock,
 ) {
-    let tasks_to_unblock = lookup_tasks(&model, &cmd.keys);
-    let tasks_to_unblock_from = lookup_tasks(&model, &cmd.from);
+    let tasks_to_unblock = lookup_tasks(model, &cmd.keys);
+    let tasks_to_unblock_from = lookup_tasks(model, &cmd.from);
     let include_done = should_include_done(
         cmd.include_done,
         model,

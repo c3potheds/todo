@@ -42,17 +42,15 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Put) {
         .collect();
     let tasks_to_block_on = after | before_deps;
     let tasks_to_block = before | after_adeps;
-    let pairs_to_block: Vec<(TaskId, TaskId)> = tasks_to_put
+
+    let mut blocked_tasks = HashSet::new();
+    tasks_to_put
         .product(&tasks_to_block_on, model)
         .chain(
             tasks_to_put
                 .product(&tasks_to_block, model)
                 .map(|(a, b)| (b, a)),
         )
-        .collect();
-    let mut blocked_tasks = HashSet::new();
-    pairs_to_block
-        .into_iter()
         .flat_map(|(blocked, blocking)| {
             match model.block(blocked).on(blocking) {
                 Ok(affected) => {

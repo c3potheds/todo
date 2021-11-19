@@ -48,7 +48,7 @@ pub fn run(
                         printer.print_warning(
                             &PrintableWarning::SnoozedAfterDueDate {
                                 snoozed_task: format_task_brief(list, id),
-                                due_date: due_date,
+                                due_date,
                                 snooze_date: snoozed_until,
                             },
                         );

@@ -74,7 +74,7 @@ impl NewOptions {
         let now = Utc::now();
         Self {
             desc: "".to_string(),
-            now: now,
+            now,
             priority: 0,
             due_date: None,
             budget: DurationInSeconds::default(),
@@ -118,7 +118,7 @@ impl<S: Into<String>> From<S> for NewOptions {
         let now = Utc::now();
         Self {
             desc: desc.into(),
-            now: now,
+            now,
             priority: 0,
             due_date: None,
             budget: DurationInSeconds::default(),
@@ -305,10 +305,7 @@ impl TaskSet {
             .iter()
             .flat_map(|&id| {
                 list.position(id)
-                    .map(|pos| TaskIdWithPosition {
-                        id: id,
-                        position: pos,
-                    })
+                    .map(|pos| TaskIdWithPosition { id, position: pos })
                     .into_iter()
             })
             .collect::<BTreeSet<_>>()
@@ -477,7 +474,7 @@ impl TodoList {
             }
         }
         .map(|new_depth| {
-            self.adeps(id).iter_sorted(&self).for_each(|adep| {
+            self.adeps(id).iter_sorted(self).for_each(|adep| {
                 self.update_depth(adep);
             });
             new_depth
@@ -623,7 +620,7 @@ pub struct CheckOptions {
 impl From<TaskId> for CheckOptions {
     fn from(id: TaskId) -> Self {
         Self {
-            id: id,
+            id,
             now: Utc::now(),
         }
     }
@@ -642,10 +639,10 @@ impl TodoList {
         }
         let deps = self.deps(options.id);
         let incomplete_deps: Vec<_> = deps
-            .iter_sorted(&self)
+            .iter_sorted(self)
             .filter(|dep| self.incomplete.contains(dep))
             .collect();
-        if incomplete_deps.len() > 0 {
+        if !incomplete_deps.is_empty() {
             return Err(CheckError::TaskIsBlockedBy(incomplete_deps));
         }
         self.tasks[options.id.0].completion_time = Some(options.now);
@@ -656,7 +653,7 @@ impl TodoList {
             // Update adeps.
             return Ok(self
                 .adeps(options.id)
-                .iter_sorted(&self)
+                .iter_sorted(self)
                 // Do not update the depth of snoozed adeps if they should still
                 // be snoozed and if the checked task was in layer 0 (i.e.
                 // was itself unsnoozed).
@@ -688,7 +685,7 @@ impl TodoList {
                         completed,
                         unblocked,
                     }) => ForceChecked {
-                        completed: completed,
+                        completed,
                         unblocked: result.unblocked | unblocked,
                     },
                     Err(CheckError::TaskIsAlreadyComplete) => result,
@@ -750,7 +747,7 @@ impl TodoList {
         // Update adeps.
         Ok(self
             .adeps(id)
-            .iter_sorted(&self)
+            .iter_sorted(self)
             .filter(|&adep| self.update_depth(adep) == Some(1))
             .collect())
     }
@@ -855,7 +852,7 @@ impl TodoList {
     pub fn unblock(&mut self, blocked: TaskId) -> Unblock {
         Unblock {
             list: self,
-            blocked: blocked,
+            blocked,
         }
     }
 }
@@ -946,7 +943,7 @@ impl TodoList {
             Some(task) => {
                 task.budget = budget.into();
                 self.deps(id)
-                    .iter_sorted(&self)
+                    .iter_sorted(self)
                     .flat_map(|dep| {
                         self.update_implicits(dep).into_iter_unsorted()
                     })
@@ -1091,7 +1088,7 @@ impl TodoList {
                         return Err(vec![
                             SnoozeWarning::SnoozedUntilAfterDueDate {
                                 snoozed_until: start_date,
-                                due_date: due_date,
+                                due_date,
                             },
                         ]);
                     }

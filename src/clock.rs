@@ -25,6 +25,6 @@ impl Clock for FakeClock {
 
 impl FakeClock {
     pub fn new(now: DateTime<Utc>) -> Self {
-        Self { now: now }
+        Self { now }
     }
 }

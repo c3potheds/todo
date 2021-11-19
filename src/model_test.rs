@@ -101,7 +101,7 @@ fn check_by_options_uses_injected_completion_time() {
     let mut list = TodoList::new();
     let a = list.add("a");
     let now = Utc.ymd(2021, 03, 26).and_hms(04, 27, 00);
-    list.check(CheckOptions { id: a, now: now }).unwrap();
+    list.check(CheckOptions { id: a, now }).unwrap();
     assert_eq!(list.get(a).unwrap().completion_time, Some(now));
 }
 
@@ -1907,7 +1907,7 @@ fn check_snoozed_task() {
             .start_date(snooze_a),
     );
     itertools::assert_equal(
-        list.check(CheckOptions { id: a, now: now })
+        list.check(CheckOptions { id: a, now })
             .unwrap()
             .iter_sorted(&list),
         vec![],
@@ -1928,7 +1928,7 @@ fn force_check_snoozed_task() {
             .start_date(snooze_a),
     );
     itertools::assert_equal(
-        list.force_check(CheckOptions { id: a, now: now })
+        list.force_check(CheckOptions { id: a, now })
             .unwrap()
             .completed
             .iter_sorted(&list),
@@ -1987,7 +1987,7 @@ fn snooze_task_until_after_due_date() {
         list.snooze(a, snooze),
         Err(vec![SnoozeWarning::SnoozedUntilAfterDueDate {
             snoozed_until: snooze,
-            due_date: due_date,
+            due_date,
         }])
     );
 }
@@ -2004,7 +2004,7 @@ fn snooze_task_until_after_implicit_due_date() {
         list.snooze(a, snooze),
         Err(vec![SnoozeWarning::SnoozedUntilAfterDueDate {
             snoozed_until: snooze,
-            due_date: due_date,
+            due_date,
         }])
     );
 }

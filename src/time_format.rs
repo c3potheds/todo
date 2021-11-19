@@ -78,7 +78,7 @@ fn parse_time_of_day_step(
         ) => {
             let (start, end) = minute_so_far;
             Ok(ParsingTimeOClock {
-                hour: hour,
+                hour,
                 minute_so_far: (start, end + 1),
             })
         }
@@ -91,7 +91,7 @@ fn parse_time_of_day_step(
         ) => {
             let (start, end) = minute_so_far;
             Ok(ExpectingAm {
-                hour: hour,
+                hour,
                 minute: s[start..end].parse::<u8>().unwrap(),
             })
         }
@@ -104,18 +104,18 @@ fn parse_time_of_day_step(
         ) => {
             let (start, end) = minute_so_far;
             Ok(ExpectingPm {
-                hour: hour,
+                hour,
                 minute: s[start..end].parse::<u8>().unwrap(),
             })
         }
         (ExpectingAm { hour, minute }, 'm') => Ok(FullInfo {
-            hour: hour,
-            minute: minute,
+            hour,
+            minute,
             midi: Midi::Am,
         }),
         (ExpectingPm { hour, minute }, 'm') => Ok(FullInfo {
-            hour: hour,
-            minute: minute,
+            hour,
+            minute,
             midi: Midi::Pm,
         }),
         _ => Err(ParseTimeError),
@@ -183,7 +183,7 @@ fn start_of_month<Tz: TimeZone>(datetime: DateTime<Tz>) -> DateTime<Tz> {
 fn end_of_month<Tz: TimeZone>(datetime: DateTime<Tz>) -> DateTime<Tz> {
     // Increment the datetime by a day until the month changes.
     let this_month = datetime.month();
-    let mut forward = datetime.clone();
+    let mut forward = datetime;
     loop {
         let next = forward.clone() + chrono::Duration::days(1);
         if next.month() != this_month {
@@ -325,9 +325,8 @@ pub fn parse_time<Tz: TimeZone>(
 // in the order of hourse, etc, so we strip off all but the first "word" in the
 // formatted time.
 pub fn format_duration_laconic(duration: chrono::Duration) -> String {
-    let formatted =
-        humantime::format_duration(duration.to_std().unwrap().into());
-    match format!("{}", formatted).split(" ").next() {
+    let formatted = humantime::format_duration(duration.to_std().unwrap());
+    match format!("{}", formatted).split(' ').next() {
         Some(chunk) => {
             let len = chunk.chars().take_while(|c| c.is_digit(10)).count();
             let n = &chunk[0..len];

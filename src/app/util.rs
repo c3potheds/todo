@@ -156,7 +156,7 @@ pub fn parse_budget_or_print_error(
     printer: &mut impl TodoPrinter,
 ) -> Result<DurationInSeconds, ()> {
     let budget_string = budget_vec.join(" ");
-    if budget_string == "0" || budget_string == "" {
+    if budget_string == "0" || budget_string.is_empty() {
         return Ok(DurationInSeconds::default());
     }
     match humantime::parse_duration(&budget_string) {
@@ -176,7 +176,7 @@ pub fn parse_budget_or_print_error(
             printer.print_error(&PrintableError::CannotParseDuration {
                 cannot_parse: budget_string.clone(),
             });
-            return Err(());
+            Err(())
         }
     }
 }
@@ -187,7 +187,7 @@ pub fn parse_snooze_date_or_print_error(
     printer: &mut impl TodoPrinter,
 ) -> Result<Option<DateTime<Utc>>, ()> {
     let date_string = snooze_date_vec.join(" ");
-    if date_string.is_empty() || date_string == "" {
+    if date_string.is_empty() || date_string.is_empty() {
         return Ok(None);
     }
     match ::time_format::parse_time(

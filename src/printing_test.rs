@@ -17,7 +17,7 @@ fn now_context(now: DateTime<Utc>) -> PrintingContext {
     PrintingContext {
         max_index_digits: 3,
         width: 80,
-        now: now,
+        now,
     }
 }
 
@@ -28,7 +28,7 @@ fn print_task_with_context(
     let mut out: Vec<u8> = Vec::new();
     let mut printer = SimpleTodoPrinter {
         out: &mut out,
-        context: context,
+        context,
     };
     printer.print_task(task);
     String::from(std::str::from_utf8(&out).unwrap())

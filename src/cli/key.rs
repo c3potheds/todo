@@ -11,10 +11,7 @@ pub enum Key {
 fn split_once<'a>(s: &'a str, pattern: &'a str) -> Option<(&'a str, &'a str)> {
     let mut iter = s.splitn(2, pattern);
     match iter.next() {
-        Some(first) => match iter.next() {
-            Some(rest) => Some((first, rest)),
-            _ => None,
-        },
+        Some(first) => iter.next().map(|rest| (first, rest)),
         _ => None,
     }
 }

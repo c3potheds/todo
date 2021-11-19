@@ -69,10 +69,10 @@ pub fn run(
         .map(|desc| {
             let id = model.add(NewOptions {
                 desc: format_prefix(&prefix, desc),
-                now: now,
+                now,
                 priority: priority.unwrap_or(0),
-                due_date: due_date,
-                budget: budget,
+                due_date,
+                budget,
                 start_date: snooze_date,
             });
             to_print.insert(id);

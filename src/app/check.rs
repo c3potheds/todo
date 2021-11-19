@@ -53,7 +53,7 @@ fn force_check(
 ) -> CheckResult {
     check_with_fn(
         tasks_to_check.iter_sorted(model).collect(),
-        |id| match model.force_check(CheckOptions { id: id, now: now }) {
+        |id| match model.force_check(CheckOptions { id, now }) {
             Ok(ForceChecked {
                 completed,
                 unblocked,
@@ -87,7 +87,7 @@ fn check(
 ) -> CheckResult {
     check_with_fn(
         tasks_to_check.iter_sorted(model).collect(),
-        |id| match model.check(CheckOptions { id: id, now: now }) {
+        |id| match model.check(CheckOptions { id, now }) {
             Ok(unblocked) => CheckResult {
                 to_print: {
                     let mut to_print = HashMap::new();

@@ -56,8 +56,8 @@ fn force_restore(
 ) -> RestoreResult {
     restore_with_fn(tasks_to_restore, |id| match model.force_restore(id) {
         Ok(ForceRestored { restored, blocked }) => RestoreResult {
-            restored: restored,
-            blocked: blocked,
+            restored,
+            blocked,
             cannot_restore: Vec::new(),
         },
         Err(RestoreError::TaskIsAlreadyIncomplete) => RestoreResult {
@@ -78,7 +78,7 @@ fn restore(
     restore_with_fn(tasks_to_restore, |id| match model.restore(id) {
         Ok(blocked) => RestoreResult {
             restored: std::iter::once(id).collect(),
-            blocked: blocked,
+            blocked,
             cannot_restore: Vec::new(),
         },
         Err(RestoreError::TaskIsAlreadyIncomplete) => RestoreResult {

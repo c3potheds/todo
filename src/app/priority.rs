@@ -14,7 +14,7 @@ fn set_priority(
     include_done: bool,
 ) {
     tasks
-        .iter_sorted(&list)
+        .iter_sorted(list)
         .flat_map(|id| list.set_priority(id, priority).into_iter_unsorted())
         .collect::<TaskSet>()
         .include_done(list, include_done)

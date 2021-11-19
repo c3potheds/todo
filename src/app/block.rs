@@ -23,8 +23,8 @@ fn print_block_error(
 }
 
 pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Block) {
-    let tasks_to_block = lookup_tasks(&model, &cmd.keys);
-    let tasks_to_block_on = lookup_tasks(&model, &cmd.on);
+    let tasks_to_block = lookup_tasks(model, &cmd.keys);
+    let tasks_to_block_on = lookup_tasks(model, &cmd.on);
     let include_done = should_include_done(
         cmd.include_done,
         model,

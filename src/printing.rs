@@ -56,7 +56,7 @@ pub enum InvalidDate {
 
 impl LogDate {
     pub fn ymd(y: u16, m: u8, d: u8) -> Result<LogDate, InvalidDate> {
-        if y < 1000 || y > 9999 {
+        if !(1000..=9999).contains(&y) {
             return Err(InvalidDate::YearOutOfRange(y));
         }
         if m == 0 || m > 12 {
@@ -96,9 +96,9 @@ pub struct PrintableTask<'a> {
 impl<'a> PrintableTask<'a> {
     pub fn new(desc: &'a str, number: i32, status: Status) -> Self {
         Self {
-            desc: desc,
-            number: number,
-            status: status,
+            desc,
+            number,
+            status,
             action: Action::None,
             log_date: None,
             priority: 0,
@@ -152,10 +152,7 @@ pub struct BriefPrintableTask {
 
 impl BriefPrintableTask {
     pub fn new(number: i32, status: Status) -> Self {
-        BriefPrintableTask {
-            number: number,
-            status: status,
-        }
+        BriefPrintableTask { number, status }
     }
 }
 
@@ -244,7 +241,7 @@ const LOG_DATE_OFFSET: usize = 11;
 impl Display for Action {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
-            Action::None => write!(f, "{}", "   "),
+            Action::None => write!(f, "   "),
             Action::New => write!(f, "{}", Color::Green.paint("NEW")),
             Action::Delete => write!(f, "{}", Color::Red.paint("DEL")),
             Action::Check => write!(f, "{}", Color::Green.paint("[✓]")),
@@ -275,7 +272,7 @@ fn format_number(number: i32, status: Status) -> String {
         Status::Removed => Color::White.normal(),
     };
     let mut indexing = number.to_string();
-    indexing.push_str(")");
+    indexing.push(')');
     format!("{}", style.paint(&indexing))
 }
 
@@ -314,8 +311,8 @@ fn calculate_progress(
     let elapsed = now - start;
     let budget_spent: f64 =
         elapsed.num_seconds() as f64 / budget.num_seconds() as f64;
-    let percentage = (budget_spent * 100.0) as i32;
-    percentage
+
+    (budget_spent * 100.0) as i32
 }
 
 #[cfg(test)]
@@ -396,7 +393,7 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
                         ))
                         .to_string(),
                 );
-                start.push_str(" ");
+                start.push(' ');
             }
         }
         if self.task.priority != 0 {
@@ -417,7 +414,7 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
             start.push_str(
                 &style.paint(format!("P{}", self.task.priority)).to_string(),
             );
-            start.push_str(" ");
+            start.push(' ');
         }
         if let Some(due_date) = self.task.due_date {
             let style = match calculate_urgency(self.context.now, due_date) {
@@ -430,18 +427,18 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
                 due_date.with_timezone(&Local),
             );
             start.push_str(&style.paint(format!("Due {}", desc)).to_string());
-            start.push_str(" ");
+            start.push(' ');
             if let Some(budget) = self.task.budget {
                 let target_progress =
                     calculate_progress(self.context.now, due_date, budget);
-                if target_progress >= 0 && target_progress <= 100 {
+                if (0..=100).contains(&target_progress) {
                     start.push_str(
                         &Color::White
                             .bold()
                             .paint("Target progress")
                             .to_string(),
                     );
-                    start.push_str(" ");
+                    start.push(' ');
                     let style = if target_progress < 50 {
                         Color::White.bold().dimmed()
                     } else if target_progress < 80 {
@@ -454,7 +451,7 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
                             .paint(format!("{}%", target_progress))
                             .to_string(),
                     );
-                    start.push_str(" ");
+                    start.push(' ');
                 }
             }
         }
@@ -548,7 +545,7 @@ impl Display for PrintableError {
                 } => format!(
                     "Cannot complete {} because it is blocked by {}",
                     cannot_check,
-                    format_numbers(blocked_by.into_iter()),
+                    format_numbers(blocked_by.iter()),
                 ),
                 PrintableError::CannotRestoreBecauseAntidependencyIsComplete{
                     cannot_restore,
@@ -556,7 +553,7 @@ impl Display for PrintableError {
                 } => format!(
                     "Cannot restore {} because it blocks complete tasks {}",
                     cannot_restore,
-                    format_numbers(complete_antidependencies.into_iter())
+                    format_numbers(complete_antidependencies.iter())
                 ),
                 PrintableError::CannotBlockBecauseWouldCauseCycle {
                     cannot_block,
@@ -579,7 +576,7 @@ impl Display for PrintableError {
                     malformed_line,
                 } => format!("Could not parse line: \"{}\"", malformed_line),
                 PrintableError::FailedToUseTextEditor => {
-                    format!("Failed to open text editor")
+                    "Failed to open text editor".to_string()
                 }
                 PrintableError::NoMatchForKeys{ keys } => {
                     format!(
@@ -653,7 +650,7 @@ impl<Out: Write> TodoPrinter for SimpleTodoPrinter<Out> {
             "{}",
             PrintableTaskWithContext {
                 context: &self.context,
-                task: task,
+                task,
             }
         )
         .unwrap();
@@ -821,10 +818,10 @@ pub struct Validation<'a> {
 #[cfg(test)]
 impl<'a> Validation<'a> {
     fn pop(&mut self, expected: &impl std::fmt::Debug) -> PrintedItem {
-        if self.record.len() == 0 {
+        if self.record.is_empty() {
             panic!("Missing item: {:#?}", expected);
         }
-        self.record.drain(0..1).nth(0).unwrap()
+        self.record.drain(0..1).next().unwrap()
     }
 
     pub fn printed_task(self, task: &PrintableTask<'a>) -> Validation<'a> {
@@ -889,7 +886,7 @@ impl<'a> Validation<'a> {
     }
 
     pub fn end(self) {
-        if self.record.len() > 0 {
+        if !self.record.is_empty() {
             panic!("Extra tasks were recorded: {:#?}", self.record);
         }
     }

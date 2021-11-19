@@ -5,9 +5,7 @@ pub struct RequiresPrimary {
 }
 
 pub fn max_lines(max_lines: usize) -> RequiresPrimary {
-    RequiresPrimary {
-        max_lines: max_lines,
-    }
+    RequiresPrimary { max_lines }
 }
 
 pub struct RequiresAlternate<A: Write> {
@@ -19,7 +17,7 @@ impl RequiresPrimary {
     pub fn primary<A: Write>(self, primary: A) -> RequiresAlternate<A> {
         RequiresAlternate {
             max_lines: self.max_lines,
-            primary: primary,
+            primary,
         }
     }
 }
@@ -122,12 +120,12 @@ impl Less {
             .args(args)
             .stdin(std::process::Stdio::piped())
             .spawn()
-            .and_then(|mut child| {
+            .map(|mut child| {
                 let stdin = child.stdin.take().unwrap();
-                Ok(Less {
+                Less {
                     process: child,
                     stdin: Some(stdin),
-                })
+                }
             })
     }
 }

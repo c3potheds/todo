@@ -125,7 +125,7 @@ pub fn run(
             edit_with_description(model, printer, &tasks_to_edit, desc)
         }
         None => match text_editor
-            .edit_text(&format_tasks_for_text_editor(&model, &tasks_to_edit))
+            .edit_text(&format_tasks_for_text_editor(model, &tasks_to_edit))
         {
             Ok(ref output) => {
                 edit_with_text_editor(model, printer, &tasks_to_edit, output)

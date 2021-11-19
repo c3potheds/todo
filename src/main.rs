@@ -83,15 +83,13 @@ fn main() -> TodoResult {
 
     let mut config_path = project_dirs.config_dir().to_path_buf();
     config_path.push("config.json");
-    let config = File::open(&config_path).map_or_else(
-        |_| Ok(config::Config::default()),
-        |file| config::load(file),
-    )?;
+    let config = File::open(&config_path)
+        .map_or_else(|_| Ok(config::Config::default()), config::load)?;
 
     let mut data_path = project_dirs.data_dir().to_path_buf();
     data_path.push("data.json");
     let mut model = File::open(&data_path)
-        .map_or_else(|_| Ok(TodoList::new()), |file| model::load(file))?;
+        .map_or_else(|_| Ok(TodoList::new()), model::load)?;
 
     if atty::is(atty::Stream::Stdout) {
         let (term_width, term_height) =
