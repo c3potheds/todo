@@ -1,3 +1,5 @@
+#![allow(clippy::zero_prefixed_literal)]
+
 use super::util::*;
 use chrono::Duration;
 use cli::Key;
@@ -9,7 +11,7 @@ use printing::Status::*;
 
 #[test]
 fn format_task_basic() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let actual = format_task(&list, a);
     let expected = PrintableTask::new("a", 1, Incomplete);
@@ -18,7 +20,7 @@ fn format_task_basic() {
 
 #[test]
 fn format_task_with_action() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let actual = format_task(&list, a).action(Punt);
     let expected = PrintableTask::new("a", 1, Incomplete).action(Punt);
@@ -27,7 +29,7 @@ fn format_task_with_action() {
 
 #[test]
 fn format_task_with_priority() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add(NewOptions::new().desc("a").priority(1));
     let actual = format_task(&list, a);
     let expected = PrintableTask::new("a", 1, Incomplete).priority(1);
@@ -36,7 +38,7 @@ fn format_task_with_priority() {
 
 #[test]
 fn format_task_with_zero_priority() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add(NewOptions::new().desc("a").priority(0));
     let actual = format_task(&list, a);
     let expected = PrintableTask::new("a", 1, Incomplete);
@@ -45,7 +47,7 @@ fn format_task_with_zero_priority() {
 
 #[test]
 fn format_task_with_budget() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let now = ::app::testing::ymdhms(2021, 04, 30, 09, 00, 00);
     let due = now + Duration::hours(5);
     let a = list.add(
@@ -63,7 +65,7 @@ fn format_task_with_budget() {
 
 #[test]
 fn lookup_by_number() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -77,7 +79,7 @@ fn lookup_by_number() {
 
 #[test]
 fn lookup_by_name() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -91,7 +93,7 @@ fn lookup_by_name() {
 
 #[test]
 fn lookup_multiple_keys() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -104,7 +106,7 @@ fn lookup_multiple_keys() {
 
 #[test]
 fn lookup_by_range() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");

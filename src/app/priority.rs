@@ -33,7 +33,7 @@ fn show_source_of_priority_for_tasks(
         .flat_map(|id| {
             let priority = match list.implicit_priority(id) {
                 Some(p) => p,
-                None => return TaskSet::new().into_iter_unsorted(),
+                None => return TaskSet::default().into_iter_unsorted(),
             };
             list.transitive_adeps(id)
                 .iter_sorted(list)

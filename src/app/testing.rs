@@ -1,3 +1,5 @@
+#![allow(clippy::zero_prefixed_literal)]
+
 use chrono::DateTime;
 use chrono::Local;
 use chrono::TimeZone;
@@ -29,17 +31,19 @@ pub struct Fixture<'a> {
     pub text_editor: FakeTextEditor<'a>,
 }
 
-impl<'a> Fixture<'a> {
-    pub fn new() -> Self {
-        Self {
-            list: TodoList::new(),
+impl<'a> Default for Fixture<'a> {
+    fn default() -> Self {
+        Fixture {
+            list: TodoList::default(),
             clock: FakeClock::new(Utc.ymd(2000, 01, 01).and_hms(00, 00, 00)),
             text_editor: FakeTextEditor::no_user_output(),
         }
     }
+}
 
+impl<'a> Fixture<'a> {
     pub fn test(&mut self, s: &str) -> FakePrinter {
-        let mut printer = FakePrinter::new();
+        let mut printer = FakePrinter::default();
         let options = Options::from_iter_safe(s.split(' '))
             .expect("Could not parse args");
         crate::app::todo(

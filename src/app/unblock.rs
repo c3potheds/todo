@@ -38,7 +38,7 @@ fn unblock_from_given(
                 Ok(affected) => affected.into_iter_unsorted(),
                 Err(_) => {
                     print_unblock_warning(printer, model, blocking, blocked);
-                    TaskSet::new().into_iter_unsorted()
+                    TaskSet::default().into_iter_unsorted()
                 }
             }
         })

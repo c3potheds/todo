@@ -4,7 +4,7 @@ use printing::Status::*;
 
 #[test]
 fn prefix_one_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo prefix a -P x")
         .validate()
@@ -14,7 +14,7 @@ fn prefix_one_task() {
 
 #[test]
 fn prefix_three_tasks() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo prefix a b c -P y")
         .validate()
@@ -26,7 +26,7 @@ fn prefix_three_tasks() {
 
 #[test]
 fn add_multiple_prefixes() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo prefix a -P x y")
         .validate()
@@ -36,7 +36,7 @@ fn add_multiple_prefixes() {
 
 #[test]
 fn prefix_multiple_tasks_with_same_description() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a a a");
     fix.test("todo prefix a -P z")
         .validate()

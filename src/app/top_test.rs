@@ -4,13 +4,13 @@ use printing::Status::*;
 
 #[test]
 fn top_empty() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo top").validate().end();
 }
 
 #[test]
 fn top_all_tasks_uncategorized() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo top")
         .validate()
@@ -22,7 +22,7 @@ fn top_all_tasks_uncategorized() {
 
 #[test]
 fn top_all_tasks_categorized_the_same() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo new d -p a b c");
     fix.test("todo top")
@@ -33,7 +33,7 @@ fn top_all_tasks_categorized_the_same() {
 
 #[test]
 fn top_multiple_categories() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c d e f");
     fix.test("todo new g -p a b c");
     fix.test("todo new h -p d e f");
@@ -46,7 +46,7 @@ fn top_multiple_categories() {
 
 #[test]
 fn top_deep_category() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo new d e f --chain");
     fix.test("todo top")
@@ -58,7 +58,7 @@ fn top_deep_category() {
 
 #[test]
 fn top_does_not_show_complete_tasks_by_default() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo check a");
     fix.test("todo top")
@@ -70,7 +70,7 @@ fn top_does_not_show_complete_tasks_by_default() {
 
 #[test]
 fn top_show_complete_tasks_with_option() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo check a");
     fix.test("todo top -d")
@@ -83,7 +83,7 @@ fn top_show_complete_tasks_with_option() {
 
 #[test]
 fn top_show_only_top_level_complete_tasks() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo new d e f --chain");
     fix.test("todo check a b c d e f");
@@ -96,7 +96,7 @@ fn top_show_only_top_level_complete_tasks() {
 
 #[test]
 fn top_underneath_one_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b");
     fix.test("todo new c -p a b");
     fix.test("todo top c")
@@ -108,7 +108,7 @@ fn top_underneath_one_task() {
 
 #[test]
 fn top_intersection_of_categories() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new x y");
     fix.test("todo new a b -b x");
     fix.test("todo new c d -b x y");
@@ -122,7 +122,7 @@ fn top_intersection_of_categories() {
 
 #[test]
 fn top_exclude_deps_with_indirect_connection_to_category() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new x");
     fix.test("todo new a b --chain -b x");
     fix.test("todo top x")

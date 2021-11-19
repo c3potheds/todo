@@ -1,3 +1,5 @@
+#![allow(clippy::zero_prefixed_literal)]
+
 use app::testing::Fixture;
 use chrono::Local;
 use chrono::TimeZone;
@@ -8,13 +10,13 @@ use printing::Status::*;
 
 #[test]
 fn log_with_no_tasks_completed() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo log").validate().end();
 }
 
 #[test]
 fn log_after_single_task_completed() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = Utc.ymd(2021, 03, 26).and_hms(17, 37, 00);
     fix.test("todo new a b c");
     fix.test("todo check 2");
@@ -29,7 +31,7 @@ fn log_after_single_task_completed() {
 
 #[test]
 fn log_after_multiple_tasks_completed() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = Utc.ymd(2021, 03, 26).and_hms(17, 42, 00);
     fix.test("todo new a b c");
     fix.test("todo check 1 3");
@@ -49,7 +51,7 @@ fn log_after_multiple_tasks_completed() {
 
 #[test]
 fn log_shows_date_when_it_changes() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = Local
         .ymd(2021, 01, 01)
         .and_hms(00, 00, 00)

@@ -1,3 +1,5 @@
+#![allow(clippy::zero_prefixed_literal)]
+
 use app::testing::ymdhms;
 use app::testing::Fixture;
 use printing::Action::*;
@@ -6,7 +8,7 @@ use printing::Status::*;
 
 #[test]
 fn split_one_into_three() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo split a --into a1 a2 a3")
         .validate()
@@ -18,7 +20,7 @@ fn split_one_into_three() {
 
 #[test]
 fn split_chained() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo split a --into a1 a2 a3 --chain")
         .validate()
@@ -30,7 +32,7 @@ fn split_chained() {
 
 #[test]
 fn split_preserves_dependency_structure() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo split b --into b1 b2 b3")
         .validate()
@@ -44,7 +46,7 @@ fn split_preserves_dependency_structure() {
 
 #[test]
 fn split_with_prefix() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo split a --into x y -P a")
         .validate()
@@ -55,7 +57,7 @@ fn split_with_prefix() {
 
 #[test]
 fn split_with_multiple_prefixes() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo split a --into x y -P a -P b")
         .validate()
@@ -70,7 +72,7 @@ fn split_with_multiple_prefixes() {
 
 #[test]
 fn split_snoozed_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 30, 09, 00, 00);
     fix.test("todo new a --snooze 1 day");
     fix.test("todo split a --into x y")

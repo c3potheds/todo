@@ -75,8 +75,8 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: Split) {
     let prefix = cmd.prefix.join(" ");
     let result = lookup_tasks(list, &cmd.keys).iter_sorted(list).fold(
         SplitResult {
-            shards: TaskSet::new(),
-            to_print: TaskSet::new(),
+            shards: TaskSet::default(),
+            to_print: TaskSet::default(),
         },
         |so_far, id| {
             so_far.combine(split(

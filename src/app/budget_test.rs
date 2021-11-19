@@ -1,3 +1,5 @@
+#![allow(clippy::zero_prefixed_literal)]
+
 use app::testing::ymdhms;
 use app::testing::Fixture;
 use chrono::Duration;
@@ -8,7 +10,7 @@ use printing::Status::*;
 
 #[test]
 fn budget_one_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 29, 15, 00, 00);
     let in_2_days = ymdhms(2021, 05, 01, 23, 59, 59);
     fix.test("todo new a --due 2 days");
@@ -24,7 +26,7 @@ fn budget_one_task() {
 
 #[test]
 fn budget_multiple_tasks() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c d e");
     fix.test("todo budget a c e --is 2 days")
         .validate()
@@ -36,7 +38,7 @@ fn budget_multiple_tasks() {
 
 #[test]
 fn budget_chain_alters_due_dates() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 29, 12, 00, 00);
     fix.test("todo new a b c d e --chain --due today");
     fix.test("todo budget a b c d e --is 1 hour")
@@ -71,7 +73,7 @@ fn budget_chain_alters_due_dates() {
 
 #[test]
 fn budget_shows_affected_tasks() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 29, 15, 00, 00);
     fix.test("todo new a b c --chain --due 5 hours");
     fix.test("todo budget c --is 2 hours")
@@ -94,7 +96,7 @@ fn budget_shows_affected_tasks() {
 
 #[test]
 fn budget_does_not_show_unaffected_tasks() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 29, 15, 00, 00);
     fix.test("todo new a b c --chain --due 5 hours");
     fix.test("todo due a --in 1 hour");
@@ -114,7 +116,7 @@ fn budget_does_not_show_unaffected_tasks() {
 
 #[test]
 fn invalid_budget() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo budget a --is blah")
         .validate()
@@ -126,7 +128,7 @@ fn invalid_budget() {
 
 #[test]
 fn too_long_budget() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo budget a --is 200 years")
         .validate()
@@ -139,7 +141,7 @@ fn too_long_budget() {
 
 #[test]
 fn budget_does_not_include_complete_affected_deps() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 30, 11, 00, 00);
     fix.test("todo new a b c --chain --due today");
     fix.test("todo check a");
@@ -159,7 +161,7 @@ fn budget_does_not_include_complete_affected_deps() {
 
 #[test]
 fn budget_include_complete_affected_deps() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 30, 11, 00, 00);
     fix.test("todo new a b c --chain --due today");
     fix.test("todo check a");
@@ -183,7 +185,7 @@ fn budget_include_complete_affected_deps() {
 
 #[test]
 fn budget_of_zero() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a --budget 1 hour");
     fix.test("todo budget a --is 0")
         .validate()

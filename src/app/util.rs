@@ -31,7 +31,7 @@ pub fn format_prefix(prefix: &str, desc: &str) -> String {
     }
 }
 
-pub fn format_task<'a>(model: &'a TodoList, id: TaskId) -> PrintableTask<'a> {
+pub fn format_task(model: &TodoList, id: TaskId) -> PrintableTask<'_> {
     match (
         model.get(id),
         model.position(id),
@@ -83,19 +83,19 @@ pub fn format_tasks_brief(
 
 pub fn lookup_task(model: &TodoList, key: &Key) -> TaskSet {
     match key {
-        &Key::ByNumber(n) => model.lookup_by_number(n).into_iter().collect(),
-        &Key::ByName(ref name) => model
+        Key::ByNumber(n) => model.lookup_by_number(*n).into_iter().collect(),
+        Key::ByName(ref name) => model
             .all_tasks()
             .filter(|&id| {
                 model.get(id).filter(|task| &task.desc == name).is_some()
             })
             .collect(),
-        &Key::ByRange(start, end) => model
+        Key::ByRange(start, end) => model
             .all_tasks()
             .filter(|&id| {
                 model
                     .position(id)
-                    .filter(|&pos| start <= pos && pos <= end)
+                    .filter(|pos| start <= pos && pos <= end)
                     .is_some()
             })
             .collect(),
@@ -106,7 +106,7 @@ pub fn lookup_tasks<'a>(
     model: &'a TodoList,
     keys: impl IntoIterator<Item = &'a Key>,
 ) -> TaskSet {
-    keys.into_iter().fold(TaskSet::new(), |so_far, key| {
+    keys.into_iter().fold(TaskSet::default(), |so_far, key| {
         so_far | lookup_task(model, key)
     })
 }
@@ -128,7 +128,7 @@ pub fn should_include_done(
 
 pub fn parse_due_date_or_print_error(
     now: DateTime<Utc>,
-    due_date_vec: &Vec<String>,
+    due_date_vec: &[String],
     printer: &mut impl TodoPrinter,
 ) -> Result<Option<DateTime<Utc>>, ()> {
     if due_date_vec.is_empty() {
@@ -152,7 +152,7 @@ pub fn parse_due_date_or_print_error(
 }
 
 pub fn parse_budget_or_print_error(
-    budget_vec: &Vec<String>,
+    budget_vec: &[String],
     printer: &mut impl TodoPrinter,
 ) -> Result<DurationInSeconds, ()> {
     let budget_string = budget_vec.join(" ");
@@ -183,7 +183,7 @@ pub fn parse_budget_or_print_error(
 
 pub fn parse_snooze_date_or_print_error(
     now: DateTime<Utc>,
-    snooze_date_vec: &Vec<String>,
+    snooze_date_vec: &[String],
     printer: &mut impl TodoPrinter,
 ) -> Result<Option<DateTime<Utc>>, ()> {
     let date_string = snooze_date_vec.join(" ");

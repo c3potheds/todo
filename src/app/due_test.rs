@@ -1,3 +1,5 @@
+#![allow(clippy::zero_prefixed_literal)]
+
 use app::testing::ymdhms;
 use app::testing::Fixture;
 use printing::PrintableError;
@@ -6,7 +8,7 @@ use printing::Status::*;
 
 #[test]
 fn show_tasks_with_due_date() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let in_1_day = ymdhms(2021, 04, 13, 23, 59, 59);
     fix.test("todo new a b c --due 1 day");
@@ -27,7 +29,7 @@ fn show_tasks_with_due_date() {
 
 #[test]
 fn show_tasks_with_due_date_includes_blocked() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let in_5_hours = ymdhms(2021, 04, 12, 19, 00, 00);
     let in_2_days = ymdhms(2021, 04, 14, 23, 59, 59);
@@ -47,7 +49,7 @@ fn show_tasks_with_due_date_includes_blocked() {
 
 #[test]
 fn show_tasks_with_due_date_excludes_complete() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let in_2_days = ymdhms(2021, 04, 14, 23, 59, 59);
     fix.test("todo new a --due 5 hours");
@@ -66,7 +68,7 @@ fn show_tasks_with_due_date_excludes_complete() {
 
 #[test]
 fn show_tasks_with_due_date_include_done() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let in_5_hours = ymdhms(2021, 04, 12, 19, 00, 00);
     let in_2_days = ymdhms(2021, 04, 14, 23, 59, 59);
@@ -89,7 +91,7 @@ fn show_tasks_with_due_date_include_done() {
 
 #[test]
 fn show_tasks_with_due_date_earlier_than_given_date() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let in_5_hours = ymdhms(2021, 04, 12, 19, 00, 00);
     let in_6_hours = ymdhms(2021, 04, 12, 20, 00, 00);
@@ -111,7 +113,7 @@ fn show_tasks_with_due_date_earlier_than_given_date() {
 
 #[test]
 fn show_tasks_with_due_date_earlier_than_given_date_include_done() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let in_5_hours = ymdhms(2021, 04, 12, 19, 00, 00);
     let in_6_hours = ymdhms(2021, 04, 12, 20, 00, 00);
@@ -134,7 +136,7 @@ fn show_tasks_with_due_date_earlier_than_given_date_include_done() {
 
 #[test]
 fn show_source_of_implicit_due_date() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let in_2_days = ymdhms(2021, 04, 14, 23, 59, 59);
     fix.test("todo new a --due 5 days");
@@ -153,7 +155,7 @@ fn show_source_of_implicit_due_date() {
 
 #[test]
 fn set_due_date() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let thursday = ymdhms(2021, 04, 15, 23, 59, 59);
     fix.test("todo new a --due 5 hours");
@@ -173,7 +175,7 @@ fn set_due_date() {
 
 #[test]
 fn set_due_date_excludes_complete_tasks() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let thursday = ymdhms(2021, 04, 15, 23, 59, 59);
     fix.test("todo new a b --chain");
@@ -188,7 +190,7 @@ fn set_due_date_excludes_complete_tasks() {
 
 #[test]
 fn set_due_date_include_done() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let thursday = ymdhms(2021, 04, 15, 23, 59, 59);
     fix.test("todo new a b --chain");
@@ -204,7 +206,7 @@ fn set_due_date_include_done() {
 
 #[test]
 fn set_due_date_prints_affected_tasks() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let in_1_hour = ymdhms(2021, 04, 12, 15, 00, 00);
     fix.test("todo new a --due 5 hours");
@@ -223,7 +225,7 @@ fn set_due_date_prints_affected_tasks() {
 
 #[test]
 fn reset_due_date() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a --due 5 hours");
     fix.test("todo new b -p a");
     fix.test("todo new c -p b --due 2 days");
@@ -237,7 +239,7 @@ fn reset_due_date() {
 
 #[test]
 fn show_tasks_without_due_dates() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --due today");
     fix.test("todo new d e f --due tomorrow -p a b c");
     fix.test("todo new g h i --chain");
@@ -251,7 +253,7 @@ fn show_tasks_without_due_dates() {
 
 #[test]
 fn show_tasks_without_due_date_excludes_complete() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --due today");
     fix.test("todo new d e f --chain");
     fix.test("todo check d");
@@ -264,7 +266,7 @@ fn show_tasks_without_due_date_excludes_complete() {
 
 #[test]
 fn show_tasks_without_due_date_include_done() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --due today");
     fix.test("todo new d e f --chain");
     fix.test("todo check d");
@@ -278,7 +280,7 @@ fn show_tasks_without_due_date_include_done() {
 
 #[test]
 fn cannot_use_due_and_none_flags_at_the_same_time() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 13, 18, 00, 00);
     fix.test("todo due --in 1 day --none")
         .validate()

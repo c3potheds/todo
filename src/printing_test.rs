@@ -1,3 +1,5 @@
+#![allow(clippy::zero_prefixed_literal)]
+
 use app::testing::ymdhms;
 use chrono::DateTime;
 use chrono::Utc;
@@ -34,7 +36,7 @@ fn print_task_with_context(
     String::from(std::str::from_utf8(&out).unwrap())
 }
 
-fn print_task<'a>(task: &PrintableTask) -> String {
+fn print_task(task: &PrintableTask) -> String {
     let context = make_printing_context();
     print_task_with_context(context, task)
 }
@@ -508,7 +510,7 @@ fn show_punt_icon_on_punt_action() {
 
 #[test]
 fn validate_task() {
-    let mut printer = FakePrinter::new();
+    let mut printer = FakePrinter::default();
     printer.print_task(&PrintableTask::new("a", 1, Incomplete));
     printer
         .validate()
@@ -518,7 +520,7 @@ fn validate_task() {
 
 #[test]
 fn validate_multiple_tasks() {
-    let mut printer = FakePrinter::new();
+    let mut printer = FakePrinter::default();
     printer.print_task(&PrintableTask::new("a", 1, Incomplete));
     printer.print_task(&PrintableTask::new("b", 2, Incomplete));
     printer.print_task(&PrintableTask::new("c", 3, Incomplete));
@@ -532,7 +534,7 @@ fn validate_multiple_tasks() {
 
 #[test]
 fn validate_warning() {
-    let mut printer = FakePrinter::new();
+    let mut printer = FakePrinter::default();
     let warning = PrintableWarning::NoMatchFoundForKey {
         requested_key: Key::ByName("a".to_string()),
     };
@@ -542,7 +544,7 @@ fn validate_warning() {
 
 #[test]
 fn validate_error() {
-    let mut printer = FakePrinter::new();
+    let mut printer = FakePrinter::default();
     let error = PrintableError::CannotBlockBecauseWouldCauseCycle {
         cannot_block: BriefPrintableTask::new(1, Incomplete),
         requested_dependency: BriefPrintableTask::new(1, Incomplete),
@@ -554,7 +556,7 @@ fn validate_error() {
 #[test]
 #[should_panic(expected = "Missing item")]
 fn fail_validation_on_missing_task_exact() {
-    let mut printer = FakePrinter::new();
+    let mut printer = FakePrinter::default();
     printer
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete))
@@ -564,7 +566,7 @@ fn fail_validation_on_missing_task_exact() {
 #[test]
 #[should_panic(expected = "Unexpected description: \"a\"")]
 fn fail_validation_on_incorrect_description_exact() {
-    let mut printer = FakePrinter::new();
+    let mut printer = FakePrinter::default();
     printer.print_task(&PrintableTask::new("a", 1, Incomplete));
     printer
         .validate()
@@ -575,7 +577,7 @@ fn fail_validation_on_incorrect_description_exact() {
 #[test]
 #[should_panic(expected = "Unexpected number: 1")]
 fn fail_validation_on_incorrect_number_exact() {
-    let mut printer = FakePrinter::new();
+    let mut printer = FakePrinter::default();
     printer.print_task(&PrintableTask::new("a", 1, Incomplete));
     printer
         .validate()
@@ -586,7 +588,7 @@ fn fail_validation_on_incorrect_number_exact() {
 #[test]
 #[should_panic(expected = "Extra tasks were recorded: ")]
 fn fail_validation_on_extra_tasks() {
-    let mut printer = FakePrinter::new();
+    let mut printer = FakePrinter::default();
     printer.print_task(&PrintableTask::new("a", 1, Incomplete));
     printer.validate().end();
 }
@@ -594,7 +596,7 @@ fn fail_validation_on_extra_tasks() {
 #[test]
 #[should_panic(expected = "Unexpected status")]
 fn fail_validation_on_incorrect_status_exact() {
-    let mut printer = FakePrinter::new();
+    let mut printer = FakePrinter::default();
     printer.print_task(&PrintableTask::new("a", 1, Incomplete));
     printer
         .validate()
@@ -605,7 +607,7 @@ fn fail_validation_on_incorrect_status_exact() {
 #[test]
 #[should_panic(expected = "Unexpected action")]
 fn fail_validation_on_incorrect_action_exact() {
-    let mut printer = FakePrinter::new();
+    let mut printer = FakePrinter::default();
     printer.print_task(
         &PrintableTask::new("a", 1, Incomplete).action(Action::New),
     );
@@ -620,7 +622,7 @@ fn fail_validation_on_incorrect_action_exact() {
 #[test]
 #[should_panic(expected = "Unexpected warning")]
 fn fail_validation_on_wrong_warning() {
-    let mut printer = FakePrinter::new();
+    let mut printer = FakePrinter::default();
     let warning1 = PrintableWarning::NoMatchFoundForKey {
         requested_key: Key::ByNumber(1),
     };
@@ -634,7 +636,7 @@ fn fail_validation_on_wrong_warning() {
 #[test]
 #[should_panic(expected = "Expected")]
 fn fail_validation_on_task_instead_of_warning() {
-    let mut printer = FakePrinter::new();
+    let mut printer = FakePrinter::default();
     let warning = PrintableWarning::CannotPuntBecauseComplete {
         cannot_punt: BriefPrintableTask::new(0, Incomplete),
     };
@@ -645,7 +647,7 @@ fn fail_validation_on_task_instead_of_warning() {
 #[test]
 #[should_panic(expected = "Unexpected error")]
 fn fail_validation_on_wrong_error() {
-    let mut printer = FakePrinter::new();
+    let mut printer = FakePrinter::default();
     let error1 = PrintableError::CannotCheckBecauseBlocked {
         cannot_check: BriefPrintableTask::new(3, Blocked),
         blocked_by: vec![BriefPrintableTask::new(2, Incomplete)],
@@ -661,7 +663,7 @@ fn fail_validation_on_wrong_error() {
 #[test]
 #[should_panic(expected = "Expected")]
 fn fail_validation_on_task_instead_of_error() {
-    let mut printer = FakePrinter::new();
+    let mut printer = FakePrinter::default();
     let error = PrintableError::CannotCheckBecauseBlocked {
         cannot_check: BriefPrintableTask::new(3, Blocked),
         blocked_by: vec![BriefPrintableTask::new(2, Incomplete)],
@@ -673,7 +675,7 @@ fn fail_validation_on_task_instead_of_error() {
 #[test]
 #[should_panic(expected = "Missing required log date")]
 fn fail_validation_on_missing_log_date_exact() {
-    let mut printer = FakePrinter::new();
+    let mut printer = FakePrinter::default();
     printer.print_task(&PrintableTask::new("a", 1, Incomplete));
     printer
         .validate()
@@ -687,7 +689,7 @@ fn fail_validation_on_missing_log_date_exact() {
 #[test]
 #[should_panic(expected = "Unexpected log date")]
 fn fail_validation_on_incorrect_log_date_exact() {
-    let mut printer = FakePrinter::new();
+    let mut printer = FakePrinter::default();
     printer.print_task(
         &PrintableTask::new("a", 1, Incomplete).log_date(LogDate::Invisible),
     );
@@ -703,7 +705,7 @@ fn fail_validation_on_incorrect_log_date_exact() {
 #[test]
 #[should_panic(expected = "Unexpected priority")]
 fn fail_validation_on_missing_priority_exact() {
-    let mut printer = FakePrinter::new();
+    let mut printer = FakePrinter::default();
     printer.print_task(&PrintableTask::new("a", 1, Incomplete));
     printer
         .validate()
@@ -714,7 +716,7 @@ fn fail_validation_on_missing_priority_exact() {
 #[test]
 #[should_panic(expected = "Unexpected priority")]
 fn fail_validation_on_extraneous_priority() {
-    let mut printer = FakePrinter::new();
+    let mut printer = FakePrinter::default();
     printer.print_task(&PrintableTask::new("a", 1, Incomplete).priority(1));
     printer
         .validate()
@@ -725,7 +727,7 @@ fn fail_validation_on_extraneous_priority() {
 #[test]
 #[should_panic(expected = "Missing required start date")]
 fn fail_validation_on_missing_start_date() {
-    let mut printer = FakePrinter::new();
+    let mut printer = FakePrinter::default();
     printer.print_task(&PrintableTask::new("a", 1, Incomplete));
     printer
         .validate()
@@ -739,7 +741,7 @@ fn fail_validation_on_missing_start_date() {
 #[test]
 #[should_panic(expected = "Unexpected start date")]
 fn fail_validation_on_incorrect_start_date() {
-    let mut printer = FakePrinter::new();
+    let mut printer = FakePrinter::default();
     printer.print_task(
         &PrintableTask::new("a", 1, Incomplete)
             .start_date(ymdhms(2021, 05, 28, 00, 00, 00)),

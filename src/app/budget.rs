@@ -20,7 +20,7 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Budget) {
         should_include_done(cmd.include_done, list, tasks.iter_unsorted());
     tasks
         .iter_sorted(list)
-        .fold(TaskSet::new(), |so_far, id| {
+        .fold(TaskSet::default(), |so_far, id| {
             so_far | list.set_budget(id, budget)
         })
         .include_done(list, include_done)

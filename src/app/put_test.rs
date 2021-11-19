@@ -7,7 +7,7 @@ use printing::Status::*;
 
 #[test]
 fn put_one_after_one() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b");
     fix.test("todo put a --after b")
         .validate()
@@ -18,7 +18,7 @@ fn put_one_after_one() {
 
 #[test]
 fn put_three_after_one() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c d");
     fix.test("todo put a b c --after d")
         .validate()
@@ -31,7 +31,7 @@ fn put_three_after_one() {
 
 #[test]
 fn put_one_after_three() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c d");
     fix.test("todo put a --after b c d")
         .validate()
@@ -44,7 +44,7 @@ fn put_one_after_three() {
 
 #[test]
 fn put_after_task_with_adeps() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo new c");
     fix.test("todo put c --after a")
@@ -57,7 +57,7 @@ fn put_after_task_with_adeps() {
 
 #[test]
 fn put_one_before_one() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b");
     fix.test("todo put b --before a")
         .validate()
@@ -68,7 +68,7 @@ fn put_one_before_one() {
 
 #[test]
 fn put_three_before_one() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c d");
     fix.test("todo put b c d --before a")
         .validate()
@@ -81,7 +81,7 @@ fn put_three_before_one() {
 
 #[test]
 fn put_one_before_three() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c d");
     fix.test("todo put d --before a b c")
         .validate()
@@ -94,7 +94,7 @@ fn put_one_before_three() {
 
 #[test]
 fn put_before_task_with_deps() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo new c");
     fix.test("todo put c --before b")
@@ -107,7 +107,7 @@ fn put_before_task_with_deps() {
 
 #[test]
 fn put_before_and_after() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo new d e f --chain");
     fix.test("todo new g");
@@ -123,7 +123,7 @@ fn put_before_and_after() {
 
 #[test]
 fn put_causing_cycle() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo put a --after b")
         .validate()
@@ -141,7 +141,7 @@ fn put_causing_cycle() {
 
 #[test]
 fn put_before_prints_updated_priority() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b d --chain");
     fix.test("todo new c --priority 1");
     fix.test("todo put c --before d")
@@ -157,7 +157,7 @@ fn put_before_prints_updated_priority() {
 
 #[test]
 fn put_after_prints_updated_priority() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b d --chain");
     fix.test("todo new c --priority 1");
     fix.test("todo put c --after b")
@@ -173,7 +173,7 @@ fn put_after_prints_updated_priority() {
 
 #[test]
 fn put_excludes_complete_affected_tasks() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo check a");
     fix.test("todo new c --priority 1");
@@ -188,7 +188,7 @@ fn put_excludes_complete_affected_tasks() {
 
 #[test]
 fn put_include_done() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo check a");
     fix.test("todo new c --priority 1");

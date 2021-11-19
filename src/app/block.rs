@@ -37,7 +37,7 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Block) {
                 Ok(affected) => affected.into_iter_unsorted(),
                 Err(_) => {
                     print_block_error(printer, model, blocked, blocking);
-                    TaskSet::new().into_iter_unsorted()
+                    TaskSet::default().into_iter_unsorted()
                 }
             }
         })

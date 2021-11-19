@@ -9,8 +9,8 @@ fn prints_to_primary_for_short_output() {
         let mut out = long_output::max_lines(10)
             .primary(&mut primary)
             .alternate(|| &mut alternate);
-        out.write("a\n".as_bytes()).unwrap();
-        out.write("b\n".as_bytes()).unwrap();
+        out.write_all("a\n".as_bytes()).unwrap();
+        out.write_all("b\n".as_bytes()).unwrap();
         out.flush().unwrap();
     }
     assert_eq!(primary, "a\nb\n".as_bytes());
@@ -25,11 +25,11 @@ fn prints_to_secondary_for_long_output() {
         let mut out = long_output::max_lines(4)
             .primary(&mut primary)
             .alternate(|| &mut alternate);
-        out.write("a\n".as_bytes()).unwrap();
-        out.write("b\n".as_bytes()).unwrap();
-        out.write("c\n".as_bytes()).unwrap();
-        out.write("d\n".as_bytes()).unwrap();
-        out.write("e\n".as_bytes()).unwrap();
+        out.write_all("a\n".as_bytes()).unwrap();
+        out.write_all("b\n".as_bytes()).unwrap();
+        out.write_all("c\n".as_bytes()).unwrap();
+        out.write_all("d\n".as_bytes()).unwrap();
+        out.write_all("e\n".as_bytes()).unwrap();
     }
     assert_eq!(primary, "".as_bytes());
     assert_eq!(alternate, "a\nb\nc\nd\ne\n".as_bytes());

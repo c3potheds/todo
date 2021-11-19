@@ -38,7 +38,7 @@ pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Path) {
         })
         .collect::<Vec<_>>();
     match pairwise(tasks.iter().copied()).try_fold(
-        TaskSet::new(),
+        TaskSet::default(),
         |so_far, (a, b)| {
             let a_and_adeps = TaskSet::of(a) | model.transitive_adeps(a);
             let b_and_deps = TaskSet::of(b) | model.transitive_deps(b);

@@ -8,7 +8,7 @@ use printing::Status::*;
 
 #[test]
 fn path_between_tasks_with_no_path() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b");
     fix.test("todo path a b")
         .validate()
@@ -21,7 +21,7 @@ fn path_between_tasks_with_no_path() {
 
 #[test]
 fn path_between_tasks_with_direct_dependency() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo path a b")
         .validate()
@@ -32,7 +32,7 @@ fn path_between_tasks_with_direct_dependency() {
 
 #[test]
 fn path_between_tasks_with_indirect_dependency() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo path a c")
         .validate()
@@ -44,7 +44,7 @@ fn path_between_tasks_with_indirect_dependency() {
 
 #[test]
 fn warn_if_key_is_ambiguous() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a a b b");
     fix.test("todo path a b")
         .validate()
@@ -71,7 +71,7 @@ fn warn_if_key_is_ambiguous() {
 
 #[test]
 fn warn_if_key_has_no_match() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo path a b")
         .validate()
         .printed_warning(&PrintableWarning::NoMatchFoundForKey {
@@ -85,7 +85,7 @@ fn warn_if_key_has_no_match() {
 
 #[test]
 fn path_between_task_with_one_match() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo path a")
         .validate()
@@ -95,7 +95,7 @@ fn path_between_task_with_one_match() {
 
 #[test]
 fn path_between_tasks_of_same_name() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b a --chain");
     fix.test("todo path a")
         .validate()
@@ -114,7 +114,7 @@ fn path_between_tasks_of_same_name() {
 
 #[test]
 fn path_between_three_tasks() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c d e --chain");
     fix.test("todo path a c e")
         .validate()

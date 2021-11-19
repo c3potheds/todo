@@ -8,7 +8,7 @@ use printing::Status::*;
 
 #[test]
 fn restore_incomplete_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo restore 1")
         .validate()
@@ -22,7 +22,7 @@ fn restore_incomplete_task() {
 
 #[test]
 fn restore_complete_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo check 1");
     fix.test("todo restore 0")
@@ -33,7 +33,7 @@ fn restore_complete_task() {
 
 #[test]
 fn restore_task_with_negative_number() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo check 1");
     fix.test("todo check 1");
@@ -45,7 +45,7 @@ fn restore_task_with_negative_number() {
 
 #[test]
 fn restore_same_task_with_multiple_keys() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b");
     fix.test("todo check 1");
     fix.test("todo restore 0 0")
@@ -56,7 +56,7 @@ fn restore_same_task_with_multiple_keys() {
 
 #[test]
 fn restore_task_with_incomplete_antidependency() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b");
     fix.test("todo block b --on a");
     fix.test("todo check 1");
@@ -69,7 +69,7 @@ fn restore_task_with_incomplete_antidependency() {
 
 #[test]
 fn restore_task_with_complete_antidependency() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b");
     fix.test("todo block b --on a");
     fix.test("todo check 1");
@@ -89,7 +89,7 @@ fn restore_task_with_complete_antidependency() {
 
 #[test]
 fn restore_by_name() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b");
     fix.test("todo check a");
     fix.test("todo restore a")
@@ -100,7 +100,7 @@ fn restore_by_name() {
 
 #[test]
 fn force_restore_complete_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo check a");
     fix.test("todo restore a --force")
@@ -111,7 +111,7 @@ fn force_restore_complete_task() {
 
 #[test]
 fn force_restore_incomplete_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo restore a --force")
         .validate()
@@ -125,7 +125,7 @@ fn force_restore_incomplete_task() {
 
 #[test]
 fn force_restore_task_with_complete_adeps() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo check a b");
     fix.test("todo restore a --force")
@@ -137,7 +137,7 @@ fn force_restore_task_with_complete_adeps() {
 
 #[test]
 fn force_restore_task_with_complete_adeps_with_complete_adeps() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo check a b c");
     fix.test("todo restore a --force")
@@ -150,7 +150,7 @@ fn force_restore_task_with_complete_adeps_with_complete_adeps() {
 
 #[test]
 fn force_restore_task_with_complete_and_incomplete_adeps() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c d --chain");
     fix.test("todo check a b c");
     fix.test("todo restore a --force")
@@ -164,7 +164,7 @@ fn force_restore_task_with_complete_and_incomplete_adeps() {
 
 #[test]
 fn restore_chain() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo check a b");
     fix.test("todo restore a b")

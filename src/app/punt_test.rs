@@ -5,7 +5,7 @@ use printing::Status::*;
 
 #[test]
 fn punt_first_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo punt 1")
         .validate()
@@ -15,7 +15,7 @@ fn punt_first_task() {
 
 #[test]
 fn punt_blocked_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo new b c -p 1");
     fix.test("todo punt 2")
@@ -26,7 +26,7 @@ fn punt_blocked_task() {
 
 #[test]
 fn punt_by_name() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo punt a")
         .validate()

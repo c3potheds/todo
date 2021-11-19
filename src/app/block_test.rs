@@ -7,7 +7,7 @@ use printing::Status::*;
 
 #[test]
 fn block_one_on_one() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b");
     fix.test("todo block 1 --on 2")
         .validate()
@@ -18,7 +18,7 @@ fn block_one_on_one() {
 
 #[test]
 fn block_by_name() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b");
     fix.test("todo block a --on b")
         .validate()
@@ -29,7 +29,7 @@ fn block_by_name() {
 
 #[test]
 fn block_one_on_three() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c d");
     fix.test("todo block 1 --on 2 3 4")
         .validate()
@@ -42,7 +42,7 @@ fn block_one_on_three() {
 
 #[test]
 fn block_three_on_one() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c d");
     fix.test("todo block 1 2 3 --on 4")
         .validate()
@@ -55,7 +55,7 @@ fn block_three_on_one() {
 
 #[test]
 fn block_on_complete_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo check 1 2");
     fix.test("todo block 1 --on -1")
@@ -67,7 +67,7 @@ fn block_on_complete_task() {
 
 #[test]
 fn block_multiple_on_following_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c d");
     fix.test("todo block 1 2 --on 3")
         .validate()
@@ -79,7 +79,7 @@ fn block_multiple_on_following_task() {
 
 #[test]
 fn cannot_block_on_self() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo block 1 --on 1")
         .validate()
@@ -92,7 +92,7 @@ fn cannot_block_on_self() {
 
 #[test]
 fn block_updates_implicit_priority_of_deps() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo new c --priority 1");
     fix.test("todo block c --on b")
@@ -107,7 +107,7 @@ fn block_updates_implicit_priority_of_deps() {
 
 #[test]
 fn block_does_not_print_priority_updates_for_unaffected_deps() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain --priority 1");
     fix.test("todo new c --priority 1");
     fix.test("todo block c --on b")
@@ -121,7 +121,7 @@ fn block_does_not_print_priority_updates_for_unaffected_deps() {
 
 #[test]
 fn block_excludes_complete_affected_tasks() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo new c --priority 1");
     fix.test("todo check a");
@@ -136,7 +136,7 @@ fn block_excludes_complete_affected_tasks() {
 
 #[test]
 fn block_include_done() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo new c --priority 1");
     fix.test("todo check a");

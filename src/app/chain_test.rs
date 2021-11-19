@@ -7,14 +7,14 @@ use printing::Status::*;
 
 #[test]
 fn chain_one() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo chain a").validate().end();
 }
 
 #[test]
 fn chain_three() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c d e");
     fix.test("todo chain a b c")
         .validate()
@@ -26,7 +26,7 @@ fn chain_three() {
 
 #[test]
 fn chain_would_cause_cycle() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo chain b a")
         .validate()
@@ -39,7 +39,7 @@ fn chain_would_cause_cycle() {
 
 #[test]
 fn chain_shows_affected_deps() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo new c --priority 1");
     fix.test("todo chain b c")
@@ -54,7 +54,7 @@ fn chain_shows_affected_deps() {
 
 #[test]
 fn chain_excludes_complete_affected_deps() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo new c --priority 1");
     fix.test("todo check a");
@@ -69,7 +69,7 @@ fn chain_excludes_complete_affected_deps() {
 
 #[test]
 fn chain_by_range() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo chain 1..3")
         .validate()
@@ -81,7 +81,7 @@ fn chain_by_range() {
 
 #[test]
 fn chain_ambiguous_key() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a a a");
     fix.test("todo chain a")
         .validate()

@@ -1,3 +1,5 @@
+#![allow(clippy::zero_prefixed_literal)]
+
 use chrono::Local;
 use chrono::TimeZone;
 use time_format::*;

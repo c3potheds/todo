@@ -22,7 +22,7 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Chain) {
         should_include_done(cmd.include_done, model, tasks.iter().copied());
     let mut actions = HashMap::new();
     pairwise(tasks.iter().copied())
-        .fold(TaskSet::new(), |so_far, (a, b)| {
+        .fold(TaskSet::default(), |so_far, (a, b)| {
             match model.block(b).on(a) {
                 Ok(affected) => {
                     actions.insert(b, Action::Lock);

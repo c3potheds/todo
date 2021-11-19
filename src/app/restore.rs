@@ -31,8 +31,8 @@ fn restore_with_fn<Restore: FnMut(TaskId) -> RestoreResult>(
 ) -> RestoreResult {
     tasks_to_restore.into_iter().rev().fold(
         RestoreResult {
-            restored: TaskSet::new(),
-            blocked: TaskSet::new(),
+            restored: TaskSet::default(),
+            blocked: TaskSet::default(),
             cannot_restore: Vec::new(),
         },
         |so_far, id| {
@@ -61,8 +61,8 @@ fn force_restore(
             cannot_restore: Vec::new(),
         },
         Err(RestoreError::TaskIsAlreadyIncomplete) => RestoreResult {
-            restored: TaskSet::new(),
-            blocked: TaskSet::new(),
+            restored: TaskSet::default(),
+            blocked: TaskSet::default(),
             cannot_restore: vec![(id, Reason::AlreadyIncomplete)],
         },
         Err(RestoreError::WouldRestore(_)) => {
@@ -82,13 +82,13 @@ fn restore(
             cannot_restore: Vec::new(),
         },
         Err(RestoreError::TaskIsAlreadyIncomplete) => RestoreResult {
-            restored: TaskSet::new(),
-            blocked: TaskSet::new(),
+            restored: TaskSet::default(),
+            blocked: TaskSet::default(),
             cannot_restore: vec![(id, Reason::AlreadyIncomplete)],
         },
         Err(RestoreError::WouldRestore(adeps)) => RestoreResult {
-            restored: TaskSet::new(),
-            blocked: TaskSet::new(),
+            restored: TaskSet::default(),
+            blocked: TaskSet::default(),
             cannot_restore: vec![(id, Reason::BlockingComplete(adeps))],
         },
     })

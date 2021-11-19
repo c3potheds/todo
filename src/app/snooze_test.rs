@@ -1,3 +1,5 @@
+#![allow(clippy::zero_prefixed_literal)]
+
 use app::testing::ymdhms;
 use app::testing::Fixture;
 use printing::Action::*;
@@ -8,7 +10,7 @@ use printing::Status::*;
 
 #[test]
 fn snooze_one_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 27, 11, 00, 00);
     fix.test("todo new a b");
     fix.test("todo snooze a --until 1 day")
@@ -23,7 +25,7 @@ fn snooze_one_task() {
 
 #[test]
 fn snooze_multiple_tasks() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 27, 11, 00, 00);
     fix.test("todo new a b c d e");
     fix.test("todo snooze a c e --until saturday")
@@ -48,7 +50,7 @@ fn snooze_multiple_tasks() {
 
 #[test]
 fn snooze_snoozed_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 27, 11, 00, 00);
     fix.test("todo new a --snooze 2 hours");
     fix.test("todo snooze a --until 3 hours")
@@ -63,7 +65,7 @@ fn snooze_snoozed_task() {
 
 #[test]
 fn cannot_snooze_completed_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 27, 11, 00, 00);
     fix.test("todo new a");
     fix.test("todo check a");
@@ -77,7 +79,7 @@ fn cannot_snooze_completed_task() {
 
 #[test]
 fn snooze_blocked_task_above_layer_1() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 27, 11, 00, 00);
     fix.test("todo new a b c --chain");
     fix.test("todo snooze c --until 1 day")

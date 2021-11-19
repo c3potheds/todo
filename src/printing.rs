@@ -258,9 +258,9 @@ impl Display for Action {
 
 fn format_key(key: &Key) -> String {
     match key {
-        &Key::ByNumber(n) => format!("\"{}\"", n),
-        &Key::ByName(ref name) => format!("\"{}\"", name),
-        &Key::ByRange(start, end) => format!("range({}..{})", start, end),
+        Key::ByNumber(n) => format!("\"{}\"", n),
+        Key::ByName(ref name) => format!("\"{}\"", name),
+        Key::ByRange(start, end) => format!("range({}..{})", start, end),
     }
 }
 
@@ -318,6 +318,7 @@ fn calculate_progress(
 #[cfg(test)]
 #[test]
 fn calculate_progress_test() {
+    #![allow(clippy::zero_prefixed_literal)]
     use app::testing::ymdhms;
     assert_eq!(
         0,
@@ -893,12 +894,15 @@ impl<'a> Validation<'a> {
 }
 
 #[cfg(test)]
-impl FakePrinter {
-    pub fn new() -> Self {
-        Self { record: Vec::new() }
+impl Default for FakePrinter {
+    fn default() -> Self {
+        Self { record: vec![] }
     }
+}
 
-    pub fn validate<'a>(&'a mut self) -> Validation<'a> {
+#[cfg(test)]
+impl FakePrinter {
+    pub fn validate(&mut self) -> Validation<'_> {
         Validation {
             record: &mut self.record,
         }

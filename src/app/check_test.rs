@@ -8,7 +8,7 @@ use printing::Status::*;
 
 #[test]
 fn check_one_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo check 1")
         .validate()
@@ -18,7 +18,7 @@ fn check_one_task() {
 
 #[test]
 fn check_by_name() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo check b")
         .validate()
@@ -28,7 +28,7 @@ fn check_by_name() {
 
 #[test]
 fn check_task_with_incomplete_dependencies() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b");
     fix.test("todo block 2 --on 1");
     fix.test("todo check 2")
@@ -42,7 +42,7 @@ fn check_task_with_incomplete_dependencies() {
 
 #[test]
 fn cannot_check_blocked_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b");
     fix.test("todo block 1 --on 2");
     fix.test("todo check 2")
@@ -56,7 +56,7 @@ fn cannot_check_blocked_task() {
 
 #[test]
 fn check_newly_unblocked_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b");
     fix.test("todo block 1 --on 2");
     fix.test("todo check 1")
@@ -72,7 +72,7 @@ fn check_newly_unblocked_task() {
 
 #[test]
 fn check_newly_unblocked_task_with_multiple_dependencies() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo block 1 --on 2 3");
     fix.test("todo check 1 2")
@@ -89,7 +89,7 @@ fn check_newly_unblocked_task_with_multiple_dependencies() {
 
 #[test]
 fn check_newly_unblocked_task_with_chained_dependencies() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo block 3 --on 2");
     fix.test("todo block 2 --on 1");
@@ -111,7 +111,7 @@ fn check_newly_unblocked_task_with_chained_dependencies() {
 
 #[test]
 fn check_does_not_show_adeps_that_are_not_unlocked() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo new b c -p 1 --chain");
     fix.test("todo check 1")
@@ -125,7 +125,7 @@ fn check_does_not_show_adeps_that_are_not_unlocked() {
 
 #[test]
 fn check_same_task_twice_in_one_command() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo check 1 1")
         .validate()
@@ -135,7 +135,7 @@ fn check_same_task_twice_in_one_command() {
 
 #[test]
 fn check_complete_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo check a");
     fix.test("todo check a")
@@ -148,7 +148,7 @@ fn check_complete_task() {
 
 #[test]
 fn force_check_incomplete_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo check a --force")
         .validate()
@@ -158,7 +158,7 @@ fn force_check_incomplete_task() {
 
 #[test]
 fn force_check_blocked_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo check b --force")
         .validate()
@@ -169,7 +169,7 @@ fn force_check_blocked_task() {
 
 #[test]
 fn force_check_transitively_blocked_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo check c --force")
         .validate()
@@ -181,7 +181,7 @@ fn force_check_transitively_blocked_task() {
 
 #[test]
 fn force_check_task_with_complete_deps() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b");
     fix.test("todo new c -p a b");
     fix.test("todo check a");
@@ -194,7 +194,7 @@ fn force_check_task_with_complete_deps() {
 
 #[test]
 fn force_check_complete_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo check a");
     fix.test("todo check a --force")
@@ -207,7 +207,7 @@ fn force_check_complete_task() {
 
 #[test]
 fn check_blocking_chain() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo check a b c")
         .validate()

@@ -4,7 +4,7 @@ use printing::Status::*;
 
 #[test]
 fn priority_set_for_one_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo priority a --is 1")
         .validate()
@@ -14,7 +14,7 @@ fn priority_set_for_one_task() {
 
 #[test]
 fn priority_set_for_three_tasks() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo priority a b c --is 2")
         .validate()
@@ -26,7 +26,7 @@ fn priority_set_for_three_tasks() {
 
 #[test]
 fn priority_reorders_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo priority b --is 1")
         .validate()
@@ -42,7 +42,7 @@ fn priority_reorders_task() {
 
 #[test]
 fn priority_shows_affected_deps() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo new d -p a c");
     fix.test("todo priority d --is 1")
@@ -55,7 +55,7 @@ fn priority_shows_affected_deps() {
 
 #[test]
 fn priority_does_not_show_complete_affected_deps() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo new d -p a c");
     fix.test("todo check a");
@@ -68,7 +68,7 @@ fn priority_does_not_show_complete_affected_deps() {
 
 #[test]
 fn priority_include_done() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo new d -p a c");
     fix.test("todo check a");
@@ -82,7 +82,7 @@ fn priority_include_done() {
 
 #[test]
 fn priority_shows_affected_transitive_deps() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c d --chain");
     fix.test("todo priority c --is 1")
         .validate()
@@ -94,7 +94,7 @@ fn priority_shows_affected_transitive_deps() {
 
 #[test]
 fn priority_set_negative() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo priority a --is -1")
         .validate()
@@ -104,7 +104,7 @@ fn priority_set_negative() {
 
 #[test]
 fn priority_does_not_show_deps_with_higher_priorities() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --priority 3");
     fix.test("todo new d e f --priority 1");
     fix.test("todo new g -p a b c d e f");
@@ -120,7 +120,7 @@ fn priority_does_not_show_deps_with_higher_priorities() {
 
 #[test]
 fn get_all_tasks_with_priority() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo new d e f --priority 1");
     fix.test("todo new g h i --priority 2");
@@ -134,7 +134,7 @@ fn get_all_tasks_with_priority() {
 
 #[test]
 fn get_all_tasks_with_unspecified_priority() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo new d e f --priority 1");
     fix.test("todo new g h i --priority 2");
@@ -151,7 +151,7 @@ fn get_all_tasks_with_unspecified_priority() {
 
 #[test]
 fn explain_source_of_priority() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo priority c --is 1");
     fix.test("todo priority a")

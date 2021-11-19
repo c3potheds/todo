@@ -70,6 +70,7 @@ pub struct NewOptions {
 }
 
 impl NewOptions {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         let now = Utc::now();
         Self {
@@ -157,6 +158,15 @@ struct Layering<T: Copy + Eq + Hash> {
     depth: HashMap<T, usize>,
 }
 
+impl<T: Copy + Eq + Hash> Default for Layering<T> {
+    fn default() -> Self {
+        Self {
+            layers: vec![],
+            depth: HashMap::new(),
+        }
+    }
+}
+
 impl<T> Layering<T>
 where
     T: Copy + Eq + Hash,
@@ -166,13 +176,6 @@ where
             self.layers.push(Vec::new());
         }
         &mut self.layers[layer]
-    }
-
-    pub fn new() -> Self {
-        Self {
-            layers: Vec::new(),
-            depth: HashMap::new(),
-        }
     }
 
     pub fn len(&self) -> usize {
@@ -262,13 +265,15 @@ impl Ord for TaskIdWithPosition {
     }
 }
 
-impl TaskSet {
-    pub fn new() -> Self {
-        TaskSet {
+impl Default for TaskSet {
+    fn default() -> Self {
+        Self {
             ids: HashSet::new(),
         }
     }
+}
 
+impl TaskSet {
     pub fn of(id: TaskId) -> Self {
         TaskSet {
             ids: HashSet::from_iter(std::iter::once(id)),
@@ -523,7 +528,7 @@ impl TodoList {
             }
         }
         if !changed {
-            return TaskSet::new();
+            return TaskSet::default();
         }
         self.punt(id).unwrap_or_default();
         self.deps(id)
@@ -581,15 +586,17 @@ impl TodoList {
     }
 }
 
-impl TodoList {
-    pub fn new() -> Self {
+impl Default for TodoList {
+    fn default() -> Self {
         Self {
-            tasks: StableDag::new(),
-            complete: Vec::new(),
-            incomplete: Layering::new(),
+            tasks: Default::default(),
+            incomplete: Default::default(),
+            complete: Default::default(),
         }
     }
+}
 
+impl TodoList {
     pub fn add<T: Into<NewOptions>>(&mut self, task: T) -> TaskId {
         let task = Task::new(task.into());
         let snooze = task.start_date > task.creation_time;
@@ -677,8 +684,8 @@ impl TodoList {
         if let Err(CheckError::TaskIsBlockedBy(blocked_by)) = &check_result {
             let mut result = blocked_by.iter().copied().fold(
                 ForceChecked {
-                    completed: TaskSet::new(),
-                    unblocked: TaskSet::new(),
+                    completed: TaskSet::default(),
+                    unblocked: TaskSet::default(),
                 },
                 |result, dep| match self.force_check(dep) {
                     Ok(ForceChecked {
@@ -765,8 +772,8 @@ impl TodoList {
         {
             let result = would_restore.iter_sorted(self).fold(
                 ForceRestored {
-                    restored: TaskSet::new(),
-                    blocked: TaskSet::new(),
+                    restored: TaskSet::default(),
+                    blocked: TaskSet::default(),
                 },
                 |result, adep| match self.force_restore(adep) {
                     Ok(ForceRestored { restored, blocked }) => ForceRestored {
@@ -917,7 +924,7 @@ impl TodoList {
                 task.priority = priority;
                 self.update_implicits(id)
             }
-            None => TaskSet::new(),
+            None => TaskSet::default(),
         }
     }
 
@@ -931,7 +938,7 @@ impl TodoList {
                 task.due_date = due_date;
                 self.update_implicits(id)
             }
-            None => TaskSet::new(),
+            None => TaskSet::default(),
         }
     }
 
@@ -950,7 +957,7 @@ impl TodoList {
                     .chain(std::iter::once(id))
                     .collect()
             }
-            None => TaskSet::new(),
+            None => TaskSet::default(),
         }
     }
 

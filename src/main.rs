@@ -22,41 +22,41 @@ use todo::text_editing::ScrawlTextEditor;
 
 #[derive(Debug)]
 enum TodoError {
-    NoDataDirectoryError,
-    IoError(std::io::Error),
-    CommandLineParsingError(structopt::clap::Error),
-    LoadError(model::LoadError),
-    SaveError(model::SaveError),
-    LoadConfigError(config::LoadError),
+    NoDataDirectory,
+    Io(std::io::Error),
+    CommandLineParsing(structopt::clap::Error),
+    Load(model::LoadError),
+    Save(model::SaveError),
+    LoadConfig(config::LoadError),
 }
 
 impl From<std::io::Error> for TodoError {
     fn from(src: std::io::Error) -> Self {
-        Self::IoError(src)
+        Self::Io(src)
     }
 }
 
 impl From<structopt::clap::Error> for TodoError {
     fn from(src: structopt::clap::Error) -> Self {
-        Self::CommandLineParsingError(src)
+        Self::CommandLineParsing(src)
     }
 }
 
 impl From<model::LoadError> for TodoError {
     fn from(src: model::LoadError) -> Self {
-        Self::LoadError(src)
+        Self::Load(src)
     }
 }
 
 impl From<model::SaveError> for TodoError {
     fn from(src: model::SaveError) -> Self {
-        Self::SaveError(src)
+        Self::Save(src)
     }
 }
 
 impl From<config::LoadError> for TodoError {
     fn from(src: config::LoadError) -> Self {
-        Self::LoadConfigError(src)
+        Self::LoadConfig(src)
     }
 }
 
@@ -78,7 +78,7 @@ fn main() -> TodoResult {
     let options = Options::from_args();
     let project_dirs = match directories::ProjectDirs::from("", "", "todo") {
         Some(project_dirs) => project_dirs,
-        None => return Err(TodoError::NoDataDirectoryError),
+        None => return Err(TodoError::NoDataDirectory),
     };
 
     let mut config_path = project_dirs.config_dir().to_path_buf();
@@ -89,7 +89,7 @@ fn main() -> TodoResult {
     let mut data_path = project_dirs.data_dir().to_path_buf();
     data_path.push("data.json");
     let mut model = File::open(&data_path)
-        .map_or_else(|_| Ok(TodoList::new()), model::load)?;
+        .map_or_else(|_| Ok(TodoList::default()), model::load)?;
 
     if atty::is(atty::Stream::Stdout) {
         let (term_width, term_height) =

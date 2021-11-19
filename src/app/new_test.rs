@@ -1,3 +1,5 @@
+#![allow(clippy::zero_prefixed_literal)]
+
 use app::testing::ymdhms;
 use app::testing::Fixture;
 use printing::Action::*;
@@ -8,7 +10,7 @@ use printing::Status::*;
 
 #[test]
 fn new_one_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a")
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete).action(New))
@@ -17,7 +19,7 @@ fn new_one_task() {
 
 #[test]
 fn new_multiple_tasks() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c")
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete).action(New))
@@ -28,7 +30,7 @@ fn new_multiple_tasks() {
 
 #[test]
 fn new_block_on_complete_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo check 1");
     fix.test("todo new b -p 0")
@@ -40,7 +42,7 @@ fn new_block_on_complete_task() {
 
 #[test]
 fn new_blocking_complete_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo check 1");
     fix.test("todo new b -b 0")
@@ -52,7 +54,7 @@ fn new_blocking_complete_task() {
 
 #[test]
 fn new_by_name() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo new d -p c -b a")
         .validate()
@@ -64,7 +66,7 @@ fn new_by_name() {
 
 #[test]
 fn new_chain_three() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --chain")
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete).action(New))
@@ -75,7 +77,7 @@ fn new_chain_three() {
 
 #[test]
 fn new_one_blocking_one() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo new b --blocking 1")
         .validate()
@@ -86,7 +88,7 @@ fn new_one_blocking_one() {
 
 #[test]
 fn new_blocked_by_one() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo new b --blocked-by 1")
         .validate()
@@ -97,7 +99,7 @@ fn new_blocked_by_one() {
 
 #[test]
 fn new_one_blocking_one_short() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo new b -b 1")
         .validate()
@@ -108,7 +110,7 @@ fn new_one_blocking_one_short() {
 
 #[test]
 fn new_blocked_by_one_short() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo new b -p 1")
         .validate()
@@ -119,7 +121,7 @@ fn new_blocked_by_one_short() {
 
 #[test]
 fn new_blocking_multiple() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo new d -b 1 2 3")
         .validate()
@@ -132,7 +134,7 @@ fn new_blocking_multiple() {
 
 #[test]
 fn new_blocking_and_blocked_by() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b");
     fix.test("todo new c -p 1 -b 2")
         .validate()
@@ -144,7 +146,7 @@ fn new_blocking_and_blocked_by() {
 
 #[test]
 fn new_in_between_blocking_pair() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo new c -p 1 -b 2")
         .validate()
@@ -156,7 +158,7 @@ fn new_in_between_blocking_pair() {
 
 #[test]
 fn new_one_before_one() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo new d --before b")
         .validate()
@@ -168,7 +170,7 @@ fn new_one_before_one() {
 
 #[test]
 fn new_three_before_one() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo new d e f --before b")
         .validate()
@@ -182,7 +184,7 @@ fn new_three_before_one() {
 
 #[test]
 fn new_one_before_three() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo new b c d -p a");
     fix.test("todo new e --before b c d")
@@ -197,7 +199,7 @@ fn new_one_before_three() {
 
 #[test]
 fn new_one_after_one() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo new d --after b")
         .validate()
@@ -209,7 +211,7 @@ fn new_one_after_one() {
 
 #[test]
 fn new_three_after_one() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo new d e f --after b")
         .validate()
@@ -223,7 +225,7 @@ fn new_three_after_one() {
 
 #[test]
 fn new_one_after_three() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo new d -p a b c");
     fix.test("todo new e --after a b c")
@@ -238,7 +240,7 @@ fn new_one_after_three() {
 
 #[test]
 fn print_warning_on_cycle() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo new c -p b -b a")
         .validate()
@@ -253,7 +255,7 @@ fn print_warning_on_cycle() {
 
 #[test]
 fn new_with_priority() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a --priority 1")
         .validate()
         .printed_task(
@@ -266,7 +268,7 @@ fn new_with_priority() {
 
 #[test]
 fn new_task_with_priority_inserted_before_unprioritized_tasks() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b");
     fix.test("todo new c --priority 1")
         .validate()
@@ -280,7 +282,7 @@ fn new_task_with_priority_inserted_before_unprioritized_tasks() {
 
 #[test]
 fn new_task_with_negative_priority_inserted_after_unprioritized_tasks() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b");
     fix.test("todo new c --priority -1")
         .validate()
@@ -294,7 +296,7 @@ fn new_task_with_negative_priority_inserted_after_unprioritized_tasks() {
 
 #[test]
 fn new_task_with_priority_inserted_in_sorted_order() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a --priority 1");
     fix.test("todo new b --priority 3");
     fix.test("todo new c --priority 2")
@@ -309,7 +311,7 @@ fn new_task_with_priority_inserted_in_sorted_order() {
 
 #[test]
 fn new_with_due_date() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 15, 00, 00);
     let in_5_hours = ymdhms(2021, 04, 12, 20, 00, 00);
     fix.test("todo new a --due 5 hours")
@@ -324,7 +326,7 @@ fn new_with_due_date() {
 
 #[test]
 fn new_with_invalid_due_date() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 15, 00, 00);
     fix.test("todo new a --due blah blah")
         .validate()
@@ -336,7 +338,7 @@ fn new_with_invalid_due_date() {
 
 #[test]
 fn new_with_due_date_shows_affected_deps() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 15, 00, 00);
     let in_2_days = ymdhms(2021, 04, 14, 23, 59, 59);
     fix.test("todo new a b c --chain");
@@ -357,7 +359,7 @@ fn new_with_due_date_shows_affected_deps() {
 
 #[test]
 fn new_with_budget_shows_affected_deps() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 29, 09, 30, 00);
     let before_7 = ymdhms(2021, 04, 29, 18, 59, 59);
     let end_of_day = ymdhms(2021, 04, 29, 23, 59, 59);
@@ -377,7 +379,7 @@ fn new_with_budget_shows_affected_deps() {
 
 #[test]
 fn new_with_too_long_time_budget() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a --budget 137 years")
         .validate()
         .printed_error(&PrintableError::DurationIsTooLong {
@@ -389,7 +391,7 @@ fn new_with_too_long_time_budget() {
 
 #[test]
 fn new_with_unintelligible_time_budget() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a --budget blah")
         .validate()
         .printed_error(&PrintableError::CannotParseDuration {
@@ -400,7 +402,7 @@ fn new_with_unintelligible_time_budget() {
 
 #[test]
 fn new_with_prefix() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --prefix x")
         .validate()
         .printed_task(&PrintableTask::new("x a", 1, Incomplete).action(New))
@@ -411,7 +413,7 @@ fn new_with_prefix() {
 
 #[test]
 fn new_with_multiple_prefixes() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c -P x -P y")
         .validate()
         .printed_task(&PrintableTask::new("x y a", 1, Incomplete).action(New))
@@ -422,7 +424,7 @@ fn new_with_multiple_prefixes() {
 
 #[test]
 fn new_invalid_snooze_date() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a --snooze blah")
         .validate()
         .printed_error(&PrintableError::CannotParseDueDate {
@@ -433,7 +435,7 @@ fn new_invalid_snooze_date() {
 
 #[test]
 fn new_snooze_one_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 28, 16, 00, 00);
     fix.test("todo new a --snooze 1 day")
         .validate()
@@ -447,7 +449,7 @@ fn new_snooze_one_task() {
 
 #[test]
 fn new_snooze_multiple_tasks() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 28, 16, 00, 00);
     fix.test("todo new a b c --snooze 2 days")
         .validate()

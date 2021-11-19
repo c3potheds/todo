@@ -9,7 +9,7 @@ use printing::Status::*;
 
 #[test]
 fn unblock_task_from_direct_dependency() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b");
     fix.test("todo block 2 --on 1");
     fix.test("todo unblock 2 --from 1")
@@ -21,7 +21,7 @@ fn unblock_task_from_direct_dependency() {
 
 #[test]
 fn unblock_task_from_indirect_dependency() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo block 3 --on 2");
     fix.test("todo block 2 --on 1");
@@ -38,7 +38,7 @@ fn unblock_task_from_indirect_dependency() {
 
 #[test]
 fn unblock_complete_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo check 1 2");
     fix.test("todo unblock 0 --from -1")
@@ -50,7 +50,7 @@ fn unblock_complete_task() {
 
 #[test]
 fn unblock_by_name() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo unblock b --from a")
         .validate()
@@ -61,7 +61,7 @@ fn unblock_by_name() {
 
 #[test]
 fn unblock_from_all() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b");
     fix.test("todo new c -p a b");
     fix.test("todo unblock c")
@@ -72,7 +72,7 @@ fn unblock_from_all() {
 
 #[test]
 fn unblock_from_all2() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo new c -p a b");
     fix.test("todo unblock c")
@@ -83,7 +83,7 @@ fn unblock_from_all2() {
 
 #[test]
 fn unblock_from_matchless_key_is_error() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo unblock b --from c")
         .validate()
@@ -95,7 +95,7 @@ fn unblock_from_matchless_key_is_error() {
 
 #[test]
 fn unblock_updates_priority() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain --priority 1");
     fix.test("Todo new c --priority 2");
     fix.test("todo block c --on b");
@@ -115,7 +115,7 @@ fn unblock_updates_priority() {
 
 #[test]
 fn unblock_does_not_show_unaffected_priority() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain --priority 1");
     fix.test("Todo new c --priority 1");
     fix.test("todo block c --on b");
@@ -132,7 +132,7 @@ fn unblock_does_not_show_unaffected_priority() {
 
 #[test]
 fn unblock_excludes_affected_complete_tasks() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo priority c --is 1");
     fix.test("todo check a");
@@ -149,7 +149,7 @@ fn unblock_excludes_affected_complete_tasks() {
 
 #[test]
 fn unblock_include_done() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo priority c --is 1");
     fix.test("todo check a");

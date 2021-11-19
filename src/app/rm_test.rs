@@ -5,13 +5,13 @@ use printing::Status::*;
 
 #[test]
 fn rm_nonexistent_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo rm a").validate().end();
 }
 
 #[test]
 fn rm_only_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo rm a")
         .validate()
@@ -21,7 +21,7 @@ fn rm_only_task() {
 
 #[test]
 fn rm_task_with_adeps() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo rm a")
         .validate()
@@ -32,7 +32,7 @@ fn rm_task_with_adeps() {
 
 #[test]
 fn rm_task_with_deps_and_adeps() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo rm b")
         .validate()
@@ -43,7 +43,7 @@ fn rm_task_with_deps_and_adeps() {
 
 #[test]
 fn rm_three_tasks() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c d e");
     fix.test("todo rm a c e")
         .validate()
@@ -60,7 +60,7 @@ fn rm_three_tasks() {
 
 #[test]
 fn rm_complete_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo check a");
     fix.test("todo rm a")

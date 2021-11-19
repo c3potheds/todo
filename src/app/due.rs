@@ -41,9 +41,9 @@ fn show_source_of_due_dates_for_tasks(
             let due_date = match list.get(id) {
                 Some(task) => match task.implicit_due_date {
                     Some(due_date) => due_date,
-                    None => return TaskSet::new().into_iter_unsorted(),
+                    None => return TaskSet::default().into_iter_unsorted(),
                 },
-                None => return TaskSet::new().into_iter_unsorted(),
+                None => return TaskSet::default().into_iter_unsorted(),
             };
             list.transitive_adeps(id)
                 .iter_sorted(list)

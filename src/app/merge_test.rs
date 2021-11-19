@@ -1,3 +1,5 @@
+#![allow(clippy::zero_prefixed_literal)]
+
 use app::testing::ymdhms;
 use app::testing::Fixture;
 use printing::Action::*;
@@ -8,7 +10,7 @@ use printing::Status::*;
 
 #[test]
 fn merge_two_tasks() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo merge a b --into ab")
         .validate()
@@ -18,7 +20,7 @@ fn merge_two_tasks() {
 
 #[test]
 fn merge_three_tasks() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo merge a b c --into abc")
         .validate()
@@ -28,7 +30,7 @@ fn merge_three_tasks() {
 
 #[test]
 fn merge_preserves_deps() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo merge b c --into bc")
         .validate()
@@ -39,7 +41,7 @@ fn merge_preserves_deps() {
 
 #[test]
 fn merge_preserves_adeps() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo merge a b --into ab")
         .validate()
@@ -50,7 +52,7 @@ fn merge_preserves_adeps() {
 
 #[test]
 fn merge_preserves_deps_and_adeps() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c d e --chain");
     fix.test("todo merge b c d --into bcd")
         .validate()
@@ -62,7 +64,7 @@ fn merge_preserves_deps_and_adeps() {
 
 #[test]
 fn merged_task_has_min_due_date_of_sources() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 25, 23, 20, 00);
     let in_10_min = ymdhms(2021, 04, 25, 23, 30, 00);
     fix.test("todo new a --due 15 min");
@@ -80,7 +82,7 @@ fn merged_task_has_min_due_date_of_sources() {
 
 #[test]
 fn merged_task_has_max_priority_of_sources() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a --priority 1");
     fix.test("todo new b --priority -1");
     fix.test("todo new c --priority 2");
@@ -97,7 +99,7 @@ fn merged_task_has_max_priority_of_sources() {
 
 #[test]
 fn merge_causes_cycle() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo merge a c --into ac")
         .validate()
@@ -111,7 +113,7 @@ fn merge_causes_cycle() {
 
 #[test]
 fn merge_causes_cycle_indirect() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c d e --chain");
     fix.test("todo merge a e --into ae")
         .validate()
@@ -129,7 +131,7 @@ fn merge_causes_cycle_indirect() {
 
 #[test]
 fn merge_inside_chain() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.test("todo new a b c d e f --chain");
     fix.test("todo merge c d --into cd")
         .validate()
@@ -141,7 +143,7 @@ fn merge_inside_chain() {
 
 #[test]
 fn merge_task_with_snoozed_task() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 28, 18, 00, 00);
     fix.test("todo new a b");
     fix.test("todo snooze b --until 1 day");
@@ -157,7 +159,7 @@ fn merge_task_with_snoozed_task() {
 
 #[test]
 fn merge_snoozed_tasks() {
-    let mut fix = Fixture::new();
+    let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 28, 16, 00, 00);
     fix.test("todo new a b c");
     fix.test("todo snooze a --until 1 hour");

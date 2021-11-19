@@ -1,3 +1,5 @@
+#![allow(clippy::zero_prefixed_literal)]
+
 use chrono::Duration;
 use chrono::TimeZone;
 use chrono::Utc;
@@ -5,7 +7,7 @@ use model::*;
 
 #[test]
 fn no_tasks() {
-    let list = TodoList::new();
+    let list = TodoList::default();
     let mut tasks = list.incomplete_tasks();
     assert_eq!(tasks.next(), None);
 }
@@ -26,7 +28,7 @@ fn deserialize_task_with_missing_creation_time() {
 
 #[test]
 fn get_incomplete_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     assert_eq!(list.get(a).unwrap().desc, "a");
@@ -35,7 +37,7 @@ fn get_incomplete_task() {
 
 #[test]
 fn get_completed_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.check(a).expect("Could not check a");
@@ -46,7 +48,7 @@ fn get_completed_task() {
 
 #[test]
 fn add_one_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("hello, world");
     let mut tasks = list.incomplete_tasks();
     assert_eq!(tasks.next(), Some(a));
@@ -55,7 +57,7 @@ fn add_one_task() {
 
 #[test]
 fn add_multiple_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("walk the dog");
     let b = list.add("do the dishes");
     let c = list.add("take out the trash");
@@ -68,7 +70,7 @@ fn add_multiple_tasks() {
 
 #[test]
 fn check_complete_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     list.check(a).expect("Could not check a");
     list.check(a)
@@ -77,7 +79,7 @@ fn check_complete_task() {
 
 #[test]
 fn checked_task_has_completion_time() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     list.check(a).expect("Could not check a");
     assert!(list.get(a).unwrap().completion_time.is_some());
@@ -85,7 +87,7 @@ fn checked_task_has_completion_time() {
 
 #[test]
 fn completion_time_of_completed_task_does_not_update_if_checked() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     list.check(a).expect("Could not check a");
     let original_completion_time =
@@ -98,7 +100,7 @@ fn completion_time_of_completed_task_does_not_update_if_checked() {
 
 #[test]
 fn check_by_options_uses_injected_completion_time() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let now = Utc.ymd(2021, 03, 26).and_hms(04, 27, 00);
     list.check(CheckOptions { id: a, now }).unwrap();
@@ -107,7 +109,7 @@ fn check_by_options_uses_injected_completion_time() {
 
 #[test]
 fn check_first_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("walk the dog");
     let b = list.add("do the dishes");
     let c = list.add("take out the trash");
@@ -120,7 +122,7 @@ fn check_first_task() {
 
 #[test]
 fn check_second_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("walk the dog");
     let b = list.add("do the dishes");
     let c = list.add("take out the trash");
@@ -133,7 +135,7 @@ fn check_second_task() {
 
 #[test]
 fn check_third_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("walk the dog");
     let b = list.add("do the dishes");
     let c = list.add("take out the trash");
@@ -146,7 +148,7 @@ fn check_third_task() {
 
 #[test]
 fn complete_task_shows_up_in_complete_list() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     list.check(a).expect("Could not check a");
     let mut complete_tasks = list.complete_tasks();
@@ -156,7 +158,7 @@ fn complete_task_shows_up_in_complete_list() {
 
 #[test]
 fn iterate_multiple_complete_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -187,20 +189,20 @@ fn reload(list: &TodoList) {
 
 #[test]
 fn reload_empty() {
-    let list = TodoList::new();
+    let list = TodoList::default();
     reload(&list);
 }
 
 #[test]
 fn reload_single_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     list.add("pass this test");
     reload(&list);
 }
 
 #[test]
 fn reload_three_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     list.add("first");
     list.add("second");
     list.add("third");
@@ -209,7 +211,7 @@ fn reload_three_tasks() {
 
 #[test]
 fn number_of_incomplete_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -220,7 +222,7 @@ fn number_of_incomplete_tasks() {
 
 #[test]
 fn number_of_complete_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -234,7 +236,7 @@ fn number_of_complete_tasks() {
 
 #[test]
 fn number_of_task_updates_when_predecessor_completes() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -246,7 +248,7 @@ fn number_of_task_updates_when_predecessor_completes() {
 
 #[test]
 fn existent_incomplete_task_by_number() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -257,13 +259,13 @@ fn existent_incomplete_task_by_number() {
 
 #[test]
 fn nonexistent_incomplete_task_by_number() {
-    let list = TodoList::new();
+    let list = TodoList::default();
     assert_eq!(list.lookup_by_number(1), None);
 }
 
 #[test]
 fn existent_complete_task_by_number() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -277,13 +279,13 @@ fn existent_complete_task_by_number() {
 
 #[test]
 fn nonexistent_complete_task_by_number() {
-    let list = TodoList::new();
+    let list = TodoList::default();
     assert_eq!(list.lookup_by_number(0), None);
 }
 
 #[test]
 fn lookup_by_number_is_inverse_of_position() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     list.add("b");
     let c = list.add("c");
@@ -301,7 +303,7 @@ fn lookup_by_number_is_inverse_of_position() {
 
 #[test]
 fn restore_incomplete_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     assert!(list.restore(a).is_err());
     assert_eq!(list.position(a), Some(1));
@@ -309,7 +311,7 @@ fn restore_incomplete_task() {
 
 #[test]
 fn restore_complete_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     list.check(a).expect("Could not check a");
     list.restore(a).expect("Could not restore a");
@@ -318,7 +320,7 @@ fn restore_complete_task() {
 
 #[test]
 fn restore_complete_task_to_nonempty_list() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -331,14 +333,14 @@ fn restore_complete_task_to_nonempty_list() {
 
 #[test]
 fn status_of_incomplete_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     assert_eq!(list.status(a), Some(TaskStatus::Incomplete));
 }
 
 #[test]
 fn status_of_complete_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     list.check(a).expect("Could not check a");
     assert_eq!(list.status(a), Some(TaskStatus::Complete));
@@ -346,7 +348,7 @@ fn status_of_complete_task() {
 
 #[test]
 fn status_of_blocked_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.block(b).on(a).expect("Could not block b on a");
@@ -355,7 +357,7 @@ fn status_of_blocked_task() {
 
 #[test]
 fn ordering_of_blocked_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.block(b).on(a).expect("Could not block b on a");
@@ -365,7 +367,7 @@ fn ordering_of_blocked_task() {
 
 #[test]
 fn blocked_task_appears_after_task_that_blocks_it() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.block(a).on(b).expect("Could not block a on b");
@@ -375,7 +377,7 @@ fn blocked_task_appears_after_task_that_blocks_it() {
 
 #[test]
 fn cannot_block_blocking_task_on_task_it_blocks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.block(a).on(b).expect("Could not block a on b");
@@ -386,7 +388,7 @@ fn cannot_block_blocking_task_on_task_it_blocks() {
 
 #[test]
 fn cannot_block_on_self() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     list.block(a)
         .on(a)
@@ -395,7 +397,7 @@ fn cannot_block_on_self() {
 
 #[test]
 fn incomplete_tasks_includes_blocked_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.block(b).on(a).expect("Could not block b on a");
@@ -407,7 +409,7 @@ fn incomplete_tasks_includes_blocked_tasks() {
 
 #[test]
 fn chained_blocking() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -427,7 +429,7 @@ fn chained_blocking() {
 
 #[test]
 fn indirect_blocking_cycle() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -444,7 +446,7 @@ fn indirect_blocking_cycle() {
 
 #[test]
 fn block_returns_affected_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -460,7 +462,7 @@ fn block_returns_affected_tasks() {
 
 #[test]
 fn block_returns_affected_task_priority_update() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -477,7 +479,7 @@ fn block_returns_affected_task_priority_update() {
 
 #[test]
 fn block_does_not_return_unaffected_task_priority_update() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -495,7 +497,7 @@ fn block_does_not_return_unaffected_task_priority_update() {
 
 #[test]
 fn cannot_check_blocked_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.block(b).on(a).expect("Could not block b on a");
@@ -504,7 +506,7 @@ fn cannot_check_blocked_task() {
 
 #[test]
 fn can_check_task_whose_dependency_is_complete() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.block(b).on(a).expect("Could not block b on a");
@@ -514,7 +516,7 @@ fn can_check_task_whose_dependency_is_complete() {
 
 #[test]
 fn can_check_task_whose_dependencies_are_complete() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -527,7 +529,7 @@ fn can_check_task_whose_dependencies_are_complete() {
 
 #[test]
 fn force_check_incomplete_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let result = list.force_check(a).unwrap();
     itertools::assert_equal(result.completed.iter_sorted(&list), vec![a]);
@@ -536,7 +538,7 @@ fn force_check_incomplete_task() {
 
 #[test]
 fn force_check_blocked_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -552,7 +554,7 @@ fn force_check_blocked_task() {
 
 #[test]
 fn force_check_complete_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     list.check(a).unwrap();
     assert_eq!(list.force_check(a), Err(CheckError::TaskIsAlreadyComplete));
@@ -560,7 +562,7 @@ fn force_check_complete_task() {
 
 #[test]
 fn task_becomes_blocked_if_dependency_is_restored() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.block(b).on(a).expect("Could not block b on a");
@@ -571,7 +573,7 @@ fn task_becomes_blocked_if_dependency_is_restored() {
 
 #[test]
 fn cannot_restore_task_with_complete_adeps() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.block(b).on(a).unwrap();
@@ -585,7 +587,7 @@ fn cannot_restore_task_with_complete_adeps() {
 
 #[test]
 fn complete_task_becomes_blocked_if_dependency_is_force_restored() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.block(b).on(a).expect("Could not block b on a");
@@ -601,7 +603,7 @@ fn complete_task_becomes_blocked_if_dependency_is_force_restored() {
 
 #[test]
 fn complete_task_becomes_blocked_if_transitive_dependency_is_force_restored() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -621,7 +623,7 @@ fn complete_task_becomes_blocked_if_transitive_dependency_is_force_restored() {
 
 #[test]
 fn force_restore_returns_newly_blocked_tasks_on_success() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -637,7 +639,7 @@ fn force_restore_returns_newly_blocked_tasks_on_success() {
 
 #[test]
 fn force_restore_already_incomplete() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     assert_eq!(
         list.force_restore(a),
@@ -647,7 +649,7 @@ fn force_restore_already_incomplete() {
 
 #[test]
 fn blocked_task_comes_after_all_unblocked_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -661,7 +663,7 @@ fn blocked_task_comes_after_all_unblocked_tasks() {
 
 #[test]
 fn block_blocked_task_on_other_blocked_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -677,7 +679,7 @@ fn block_blocked_task_on_other_blocked_task() {
 
 #[test]
 fn block_complete_task_on_previously_complete_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.check(a).expect("Could not check a");
@@ -692,7 +694,7 @@ fn block_complete_task_on_previously_complete_task() {
 #[test]
 #[ignore = "Do we need layers for complete tasks?"]
 fn block_complete_task_on_later_complete_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.check(a).expect("Could not check a");
@@ -706,7 +708,7 @@ fn block_complete_task_on_later_complete_task() {
 
 #[test]
 fn unlbock_task_from_self_is_error() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     list.unblock(a)
         .from(a)
@@ -715,7 +717,7 @@ fn unlbock_task_from_self_is_error() {
 
 #[test]
 fn unblock_task_from_task_that_does_not_block_it() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.unblock(b)
@@ -725,7 +727,7 @@ fn unblock_task_from_task_that_does_not_block_it() {
 
 #[test]
 fn unblock_task_from_blocking_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.block(b).on(a).expect("Could not block b on a");
@@ -734,7 +736,7 @@ fn unblock_task_from_blocking_task() {
 
 #[test]
 fn unblock_task_from_indirectly_blocking_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -747,7 +749,7 @@ fn unblock_task_from_indirectly_blocking_task() {
 
 #[test]
 fn newly_unblocked_task_has_incomplete_status() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.block(b).on(a).expect("Could not block b on a");
@@ -757,7 +759,7 @@ fn newly_unblocked_task_has_incomplete_status() {
 
 #[test]
 fn unblocked_task_is_still_blocked_if_it_has_remaining_dependencies() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -770,7 +772,7 @@ fn unblocked_task_is_still_blocked_if_it_has_remaining_dependencies() {
 
 #[test]
 fn partially_unblocked_task_moves_to_lowest_possible_layer() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -790,7 +792,7 @@ fn partially_unblocked_task_moves_to_lowest_possible_layer() {
 
 #[test]
 fn unblock_returns_affected_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.block(b).on(a).unwrap();
@@ -805,7 +807,7 @@ fn unblock_returns_affected_tasks() {
 
 #[test]
 fn unblock_returns_affected_tasks_priority_update() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -823,7 +825,7 @@ fn unblock_returns_affected_tasks_priority_update() {
 
 #[test]
 fn unblock_does_not_return_unaffected_tasks_priority_update() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -842,7 +844,7 @@ fn unblock_does_not_return_unaffected_tasks_priority_update() {
 
 #[test]
 fn all_tasks_when_all_are_incomplete() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -851,7 +853,7 @@ fn all_tasks_when_all_are_incomplete() {
 
 #[test]
 fn all_tasks_when_all_are_complete() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -863,7 +865,7 @@ fn all_tasks_when_all_are_complete() {
 
 #[test]
 fn all_tasks_when_some_are_complete_and_some_are_blocked() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -874,14 +876,14 @@ fn all_tasks_when_some_are_complete_and_some_are_blocked() {
 
 #[test]
 fn deps_of_standalone_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     itertools::assert_equal(list.deps(a).iter_sorted(&list), Vec::new());
 }
 
 #[test]
 fn deps_of_blocked_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -892,7 +894,7 @@ fn deps_of_blocked_task() {
 
 #[test]
 fn deps_of_task_blocked_by_completed_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.block(b).on(a).expect("Could not block b on a");
@@ -902,7 +904,7 @@ fn deps_of_task_blocked_by_completed_task() {
 
 #[test]
 fn deps_of_task_with_depth_higher_than_one() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -913,14 +915,14 @@ fn deps_of_task_with_depth_higher_than_one() {
 
 #[test]
 fn adeps_of_standalone_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     itertools::assert_equal(list.adeps(a).iter_sorted(&list), vec![]);
 }
 
 #[test]
 fn adeps_of_blocked_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -931,7 +933,7 @@ fn adeps_of_blocked_task() {
 
 #[test]
 fn adeps_of_completed_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.block(b).on(a).expect("Could not block b on a");
@@ -941,7 +943,7 @@ fn adeps_of_completed_task() {
 
 #[test]
 fn adeps_of_task_with_depth_of_one() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -952,14 +954,14 @@ fn adeps_of_task_with_depth_of_one() {
 
 #[test]
 fn transitive_deps_of_standalone_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     itertools::assert_equal(list.transitive_deps(a).iter_sorted(&list), vec![]);
 }
 
 #[test]
 fn transitive_deps_of_blocked_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -976,7 +978,7 @@ fn transitive_deps_of_blocked_task() {
 
 #[test]
 fn transitive_deps_includes_complete_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -992,7 +994,7 @@ fn transitive_deps_includes_complete_tasks() {
 
 #[test]
 fn transitive_adeps_of_standalone_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     itertools::assert_equal(
         list.transitive_adeps(a).iter_sorted(&list),
@@ -1002,7 +1004,7 @@ fn transitive_adeps_of_standalone_task() {
 
 #[test]
 fn transitive_adeps_of_blocking_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -1019,7 +1021,7 @@ fn transitive_adeps_of_blocking_task() {
 
 #[test]
 fn transitive_adeps_includes_complete_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -1035,7 +1037,7 @@ fn transitive_adeps_includes_complete_tasks() {
 
 #[test]
 fn punt_only_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     list.punt(a).expect("Cannot punt a");
     assert_eq!(list.position(a), Some(1));
@@ -1043,7 +1045,7 @@ fn punt_only_task() {
 
 #[test]
 fn punt_first_of_three_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -1053,7 +1055,7 @@ fn punt_first_of_three_tasks() {
 
 #[test]
 fn cannot_punt_complete_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     list.check(a).expect("Cannot check a");
     list.punt(a)
@@ -1062,7 +1064,7 @@ fn cannot_punt_complete_task() {
 
 #[test]
 fn punt_blocked_task_moves_to_end_of_layer() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -1074,7 +1076,7 @@ fn punt_blocked_task_moves_to_end_of_layer() {
 
 #[test]
 fn remove_task_does_not_invalidate_task_ids() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -1088,7 +1090,7 @@ fn remove_task_does_not_invalidate_task_ids() {
 
 #[test]
 fn remove_task_updates_depth_of_adeps() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.block(b).on(a).unwrap();
@@ -1099,7 +1101,7 @@ fn remove_task_updates_depth_of_adeps() {
 
 #[test]
 fn remove_task_attaches_deps_to_adeps() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -1113,7 +1115,8 @@ fn remove_task_attaches_deps_to_adeps() {
 
 #[test]
 fn remove_task_attaches_all_deps_to_adeps() {
-    let mut list = TodoList::new();
+    #![allow(clippy::many_single_char_names)]
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -1134,7 +1137,7 @@ fn remove_task_attaches_all_deps_to_adeps() {
 
 #[test]
 fn sorted_by_priority_two_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add(NewOptions::new().desc("a").priority(1));
     let b = list.add(NewOptions::new().desc("b").priority(2));
     itertools::assert_equal(list.all_tasks(), vec![b, a]);
@@ -1142,7 +1145,7 @@ fn sorted_by_priority_two_tasks() {
 
 #[test]
 fn sorted_by_priority_three_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add(NewOptions::new().desc("a").priority(1));
     let b = list.add(NewOptions::new().desc("b").priority(2));
     let c = list.add(NewOptions::new().desc("c").priority(3));
@@ -1151,7 +1154,7 @@ fn sorted_by_priority_three_tasks() {
 
 #[test]
 fn priority_tasks_before_no_priority_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add(NewOptions::new().desc("a").priority(1));
     let c = list.add("c");
@@ -1160,7 +1163,7 @@ fn priority_tasks_before_no_priority_tasks() {
 
 #[test]
 fn tasks_with_negative_priority_appear_last() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add(NewOptions::new().desc("b").priority(-1));
     let c = list.add("c");
@@ -1169,7 +1172,7 @@ fn tasks_with_negative_priority_appear_last() {
 
 #[test]
 fn sort_by_implicit_priority() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add(NewOptions::new().desc("a").priority(1));
     let b = list.add("b");
     let c = list.add(NewOptions::new().desc("c").priority(2));
@@ -1181,7 +1184,7 @@ fn sort_by_implicit_priority() {
 
 #[test]
 fn transitive_deps_sorted_by_priority() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -1194,7 +1197,7 @@ fn transitive_deps_sorted_by_priority() {
 
 #[test]
 fn implicit_priority_resets_if_adep_with_priority_is_unblocked() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add(NewOptions::new().desc("a").priority(1));
     let b = list.add("b");
     let c = list.add(NewOptions::new().desc("c").priority(2));
@@ -1209,7 +1212,7 @@ fn implicit_priority_resets_if_adep_with_priority_is_unblocked() {
 
 #[test]
 fn num_incomplete_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     assert_eq!(list.num_incomplete_tasks(), 0);
     let a = list.add("a");
     assert_eq!(list.num_incomplete_tasks(), 1);
@@ -1219,7 +1222,7 @@ fn num_incomplete_tasks() {
 
 #[test]
 fn num_complete_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     assert_eq!(list.num_complete_tasks(), 0);
     let a = list.add("a");
     assert_eq!(list.num_complete_tasks(), 0);
@@ -1229,7 +1232,7 @@ fn num_complete_tasks() {
 
 #[test]
 fn set_desc_existent() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     assert!(list.set_desc(a, "b"));
     assert_eq!(list.get(a).unwrap().desc, "b");
@@ -1237,7 +1240,7 @@ fn set_desc_existent() {
 
 #[test]
 fn set_desc_nonexistent() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     list.remove(a);
     assert!(!list.set_desc(a, "b"));
@@ -1246,21 +1249,21 @@ fn set_desc_nonexistent() {
 
 #[test]
 fn implicit_priority_of_unprioritized_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     assert_eq!(list.implicit_priority(a), Some(0));
 }
 
 #[test]
 fn implicit_priority_of_task_with_explicit_priority() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add(NewOptions::new().desc("a").priority(1));
     assert_eq!(list.implicit_priority(a), Some(1));
 }
 
 #[test]
 fn implicit_priority_of_task_with_prioritized_adep() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add(NewOptions::new().desc("b").priority(1));
     assert_eq!(list.implicit_priority(a), Some(0));
@@ -1270,7 +1273,7 @@ fn implicit_priority_of_task_with_prioritized_adep() {
 
 #[test]
 fn set_priority_simple() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     assert_eq!(list.get(a).map(|task| task.priority), Some(0));
     list.set_priority(a, 1);
@@ -1279,7 +1282,7 @@ fn set_priority_simple() {
 
 #[test]
 fn set_priority_updates_deps_position() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -1292,7 +1295,7 @@ fn set_priority_updates_deps_position() {
 
 #[test]
 fn set_priority_updates_transitive_deps_position() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -1306,7 +1309,7 @@ fn set_priority_updates_transitive_deps_position() {
 
 #[test]
 fn set_priority_does_not_return_unaffected_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     list.add("a");
     let b = list.add("b");
     let affected = list.set_priority(b, 1);
@@ -1315,7 +1318,7 @@ fn set_priority_does_not_return_unaffected_tasks() {
 
 #[test]
 fn set_priority_returns_empty_set_if_priority_is_same() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let affected = list.set_priority(a, 0);
     itertools::assert_equal(affected.iter_sorted(&list), vec![]);
@@ -1323,7 +1326,7 @@ fn set_priority_returns_empty_set_if_priority_is_same() {
 
 #[test]
 fn set_priority_returns_affected_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -1335,7 +1338,7 @@ fn set_priority_returns_affected_tasks() {
 
 #[test]
 fn set_priority_returns_transitively_affected_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -1347,7 +1350,7 @@ fn set_priority_returns_transitively_affected_tasks() {
 
 #[test]
 fn set_priority_returns_empty_set_if_task_is_removed() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     list.remove(a);
     let affected = list.set_priority(a, 1);
@@ -1356,7 +1359,7 @@ fn set_priority_returns_empty_set_if_task_is_removed() {
 
 #[test]
 fn set_priority_includes_complete_deps() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.block(b).on(a).unwrap();
@@ -1367,7 +1370,8 @@ fn set_priority_includes_complete_deps() {
 
 #[test]
 fn set_priority_shows_affected_deps_without_b() {
-    let mut list = TodoList::new();
+    #![allow(clippy::many_single_char_names)]
+    let mut list = TodoList::default();
     let b = list.add("b");
     let e = list.add("e");
     let a = list.add("a");
@@ -1386,7 +1390,7 @@ fn set_priority_shows_affected_deps_without_b() {
 
 #[test]
 fn set_priority_shows_affected_deps() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -1405,7 +1409,7 @@ fn set_priority_shows_affected_deps() {
 
 #[test]
 fn set_priority_with_no_affected_deps() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     list.set_priority(a, 1);
     let b = list.add("b");
@@ -1420,7 +1424,7 @@ fn set_priority_with_no_affected_deps() {
 
 #[test]
 fn set_due_date_simple() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let affected =
         list.set_due_date(a, Some(Utc.ymd(2021, 04, 13).and_hms(17, 00, 00)));
@@ -1437,7 +1441,7 @@ fn set_due_date_simple() {
 
 #[test]
 fn set_due_date_returns_transitively_affected_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
@@ -1453,7 +1457,7 @@ fn set_due_date_returns_transitively_affected_tasks() {
 
 #[test]
 fn set_due_date_excludes_unaffected_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add(
         NewOptions::new()
             .desc("a")
@@ -1470,7 +1474,7 @@ fn set_due_date_excludes_unaffected_tasks() {
 
 #[test]
 fn get_due_date() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add(
         NewOptions::new()
             .desc("a")
@@ -1484,7 +1488,7 @@ fn get_due_date() {
 
 #[test]
 fn due_date_from_new_options() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add(
         NewOptions::new()
             .desc("a")
@@ -1498,7 +1502,7 @@ fn due_date_from_new_options() {
 
 #[test]
 fn sort_by_explicit_due_date() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add(
         NewOptions::new()
             .desc("a")
@@ -1514,7 +1518,7 @@ fn sort_by_explicit_due_date() {
 
 #[test]
 fn sort_keeps_task_with_earlier_due_date_first() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add(
         NewOptions::new()
             .desc("a")
@@ -1530,7 +1534,7 @@ fn sort_keeps_task_with_earlier_due_date_first() {
 
 #[test]
 fn sort_puts_task_with_due_date_before_task_without_due_date() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add(
         NewOptions::new()
@@ -1542,7 +1546,7 @@ fn sort_puts_task_with_due_date_before_task_without_due_date() {
 
 #[test]
 fn sort_by_implicit_due_date() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add(
         NewOptions::new()
             .desc("a")
@@ -1569,7 +1573,7 @@ fn sort_by_implicit_due_date() {
 
 #[test]
 fn sort_by_priority_then_due_date() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add(
         NewOptions::new()
             .desc("a")
@@ -1593,14 +1597,14 @@ fn sort_by_priority_then_due_date() {
 
 #[test]
 fn implicit_due_date_of_task_with_no_adeps_or_due_date() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     assert_eq!(list.implicit_due_date(a), Some(None));
 }
 
 #[test]
 fn implicit_due_date_of_nonexistent_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     list.remove(a);
     assert_eq!(list.implicit_due_date(a), None);
@@ -1608,7 +1612,7 @@ fn implicit_due_date_of_nonexistent_task() {
 
 #[test]
 fn implicit_due_date_is_earliest_due_date_of_adeps() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add(
         NewOptions::new()
@@ -1636,7 +1640,7 @@ fn implicit_due_date_is_earliest_due_date_of_adeps() {
 
 #[test]
 fn implicit_due_date_is_earliest_due_date_of_transitive_adeps() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add(
         NewOptions::new()
@@ -1664,7 +1668,7 @@ fn implicit_due_date_is_earliest_due_date_of_transitive_adeps() {
 
 #[test]
 fn default_budget_is_zero() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let budget = DurationInSeconds(0);
     let a = list.add(NewOptions::new().desc("a"));
     assert_eq!(list.get(a).unwrap().budget, budget);
@@ -1672,7 +1676,7 @@ fn default_budget_is_zero() {
 
 #[test]
 fn new_task_with_budget() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let budget = DurationInSeconds::from(Duration::days(1));
     let a = list.add(NewOptions::new().desc("a").budget(budget));
     assert_eq!(list.get(a).unwrap().budget, budget);
@@ -1680,7 +1684,7 @@ fn new_task_with_budget() {
 
 #[test]
 fn dep_of_task_with_budget_incorporates_budget_in_due_date() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let budget = DurationInSeconds::from(Duration::days(1));
     let a = list.add("a");
     let b = list.add(
@@ -1698,7 +1702,7 @@ fn dep_of_task_with_budget_incorporates_budget_in_due_date() {
 
 #[test]
 fn chain_of_tasks_with_budgets() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add(NewOptions::new().desc("b").budget(Duration::days(1)));
     let c = list.add(
@@ -1718,7 +1722,7 @@ fn chain_of_tasks_with_budgets() {
 
 #[test]
 fn set_budget_for_nonexistent_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     list.remove(a);
     assert_eq!(
@@ -1731,7 +1735,7 @@ fn set_budget_for_nonexistent_task() {
 
 #[test]
 fn set_budget_for_task_with_no_deps() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     assert_eq!(
         list.set_budget(a, Duration::days(1))
@@ -1747,7 +1751,7 @@ fn set_budget_for_task_with_no_deps() {
 
 #[test]
 fn set_budget_updates_deps() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add(
         NewOptions::new()
@@ -1769,7 +1773,7 @@ fn set_budget_updates_deps() {
 
 #[test]
 fn start_date_defaults_to_creation_time() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add(NewOptions::new().desc("a"));
     assert_eq!(
         list.get(a).unwrap().start_date,
@@ -1779,7 +1783,7 @@ fn start_date_defaults_to_creation_time() {
 
 #[test]
 fn set_start_date_in_new_options() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let start_date = Utc.ymd(2021, 06, 01).and_hms(00, 00, 00);
     let a = list.add(NewOptions::new().desc("a").start_date(start_date));
     assert_eq!(list.get(a).unwrap().start_date, start_date);
@@ -1787,7 +1791,7 @@ fn set_start_date_in_new_options() {
 
 #[test]
 fn new_task_with_start_time_later_than_now_starts_out_snoozed() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let now = Utc.ymd(2021, 05, 25).and_hms(09, 00, 00);
     let start_date = Utc.ymd(2021, 06, 01).and_hms(00, 00, 00);
     let a = list.add(
@@ -1801,7 +1805,7 @@ fn new_task_with_start_time_later_than_now_starts_out_snoozed() {
 
 #[test]
 fn unsnooze_up_to_before_snooze_date() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let now = Utc.ymd(2021, 05, 25).and_hms(09, 00, 00);
     let start_date = Utc.ymd(2021, 06, 01).and_hms(00, 00, 00);
     let a = list.add(
@@ -1818,7 +1822,7 @@ fn unsnooze_up_to_before_snooze_date() {
 
 #[test]
 fn unsnooze_up_to_after_snooze_date() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let now = Utc.ymd(2021, 05, 25).and_hms(09, 00, 00);
     let start_date = Utc.ymd(2021, 06, 01).and_hms(00, 00, 00);
     let a = list.add(
@@ -1835,7 +1839,7 @@ fn unsnooze_up_to_after_snooze_date() {
 
 #[test]
 fn unsnooze_up_to_unsnoozes_multiple_tasks() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let now = Utc.ymd(2021, 06, 01).and_hms(00, 00, 00);
     let snooze_a = Utc.ymd(2021, 06, 02).and_hms(00, 00, 00);
     let a = list.add(
@@ -1868,7 +1872,7 @@ fn unsnooze_up_to_unsnoozes_multiple_tasks() {
 
 #[test]
 fn unsnooze_updates_depth_of_adeps() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let now = Utc.ymd(2021, 05, 25).and_hms(10, 00, 00);
     let snooze_a = Utc.ymd(2021, 05, 25).and_hms(11, 00, 00);
     let a = list.add(
@@ -1897,7 +1901,7 @@ fn unsnooze_updates_depth_of_adeps() {
 
 #[test]
 fn check_snoozed_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let now = Utc.ymd(2021, 05, 25).and_hms(13, 00, 00);
     let snooze_a = Utc.ymd(2021, 05, 25).and_hms(14, 00, 00);
     let a = list.add(
@@ -1918,7 +1922,7 @@ fn check_snoozed_task() {
 
 #[test]
 fn force_check_snoozed_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let now = Utc.ymd(2021, 05, 25).and_hms(13, 00, 00);
     let snooze_a = Utc.ymd(2021, 05, 25).and_hms(14, 00, 00);
     let a = list.add(
@@ -1940,7 +1944,7 @@ fn force_check_snoozed_task() {
 
 #[test]
 fn snooze_incomplete_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     assert_eq!(
         list.snooze(a, Utc.ymd(2021, 05, 25).and_hms(14, 00, 00)),
@@ -1950,7 +1954,7 @@ fn snooze_incomplete_task() {
 
 #[test]
 fn snooze_complete_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     list.check(a).unwrap();
     assert_eq!(
@@ -1961,7 +1965,7 @@ fn snooze_complete_task() {
 
 #[test]
 fn snooze_blocked_task() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.block(b).on(a).unwrap();
@@ -1979,7 +1983,7 @@ fn snooze_blocked_task() {
 
 #[test]
 fn snooze_task_until_after_due_date() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let due_date = Utc.ymd(2021, 05, 25).and_hms(20, 00, 00);
     let snooze = Utc.ymd(2021, 05, 26).and_hms(00, 00, 00);
     let a = list.add(NewOptions::new().desc("a").due_date(due_date));
@@ -1994,7 +1998,7 @@ fn snooze_task_until_after_due_date() {
 
 #[test]
 fn snooze_task_until_after_implicit_due_date() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let due_date = Utc.ymd(2021, 05, 25).and_hms(20, 00, 00);
     let snooze = Utc.ymd(2021, 05, 26).and_hms(00, 00, 00);
     let a = list.add("a");
@@ -2011,7 +2015,7 @@ fn snooze_task_until_after_implicit_due_date() {
 
 #[test]
 fn snoozed_blocked_task_remains_snoozed_when_deps_completed() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.block(b).on(a).unwrap();
@@ -2031,7 +2035,7 @@ fn snoozed_blocked_task_remains_snoozed_when_deps_completed() {
 
 #[test]
 fn snoozed_blocked_task_unsnoozes_when_deps_completed_after_snooze_date() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.block(b).on(a).unwrap();
@@ -2051,7 +2055,7 @@ fn snoozed_blocked_task_unsnoozes_when_deps_completed_after_snooze_date() {
 
 #[test]
 fn unblock_does_not_unsnooze() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add(
         NewOptions::new()
@@ -2066,7 +2070,7 @@ fn unblock_does_not_unsnooze() {
 
 #[test]
 fn remove_does_not_unsnooze() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add(
         NewOptions::new()
@@ -2081,7 +2085,7 @@ fn remove_does_not_unsnooze() {
 
 #[test]
 fn block_does_not_unsnooze() {
-    let mut list = TodoList::new();
+    let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add(
         NewOptions::new()
