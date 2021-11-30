@@ -20,3 +20,12 @@ pub use self::todo_printer::*;
 
 #[cfg(test)]
 pub use self::testing::*;
+
+#[cfg(test)]
+mod printable_error_test;
+#[cfg(test)]
+mod printable_task_test;
+#[cfg(test)]
+mod printable_warning_test;
+#[cfg(test)]
+mod testing_test;
