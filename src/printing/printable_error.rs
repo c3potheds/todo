@@ -57,7 +57,7 @@ impl Display for PrintableError {
         write!(
             f,
             "{}: {}",
-            format!("{}", Color::Red.bold().paint("error")),
+            Color::Red.bold().paint("error"),
             match self {
                 PrintableError::CannotCheckBecauseBlocked {
                     cannot_check,

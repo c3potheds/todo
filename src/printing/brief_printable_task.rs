@@ -4,6 +4,11 @@ use std::fmt;
 use std::fmt::Display;
 use std::fmt::Formatter;
 
+/// Represents a task in the to-do list without its description.
+///
+/// When formatted, the representation will use ANSI colors to display the
+/// task number (its position in the list) with a color corresponding to its
+/// status.
 #[derive(Debug, Clone, PartialEq)]
 pub struct BriefPrintableTask {
     pub number: i32,

@@ -47,7 +47,7 @@ impl Display for PrintableWarning {
         write!(
             f,
             "{}: {}",
-            format!("{}", Color::Yellow.bold().paint("warning")),
+            Color::Yellow.bold().paint("warning"),
             match self {
                 PrintableWarning::NoMatchFoundForKey { requested_key } =>
                     format!("No match found for {}", format_key(requested_key)),
