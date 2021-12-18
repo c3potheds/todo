@@ -44,49 +44,56 @@ pub enum PrintableWarning {
 
 impl Display for PrintableWarning {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{}: {}",
-            Color::Yellow.bold().paint("warning"),
-            match self {
-                PrintableWarning::NoMatchFoundForKey { requested_key } =>
-                    format!("No match found for {}", format_key(requested_key)),
-                PrintableWarning::CannotCheckBecauseAlreadyComplete {
-                    cannot_check,
-                } => format!("Task {} is already complete", cannot_check),
-                PrintableWarning::CannotRestoreBecauseAlreadyIncomplete {
-                    cannot_restore,
-                } => format!("Task {} is already incomplete", cannot_restore),
-                PrintableWarning::CannotUnblockBecauseTaskIsNotBlocked {
-                    cannot_unblock,
-                    requested_unblock_from,
-                } => format!(
-                    "Task {} is not blocked by {}",
-                    cannot_unblock, requested_unblock_from
-                ),
-                PrintableWarning::CannotPuntBecauseComplete { cannot_punt } =>
-                    format!("Cannot punt complete task {}", cannot_punt),
-                PrintableWarning::CannotSnoozeBecauseComplete {
-                    cannot_snooze,
-                } => format!("Cannot snooze complete task {}", cannot_snooze),
-                PrintableWarning::SnoozedAfterDueDate {
-                    snoozed_task,
-                    due_date: _due_date,
-                    snooze_date: _snooze_date,
-                } => {
-                    format!("Snoozed {} until after its due date", snoozed_task)
-                }
-                PrintableWarning::AmbiguousKey { key, matches } => {
-                    format!(
-                        "Ambiguous key {} matches multiple tasks: {}",
-                        format_key(key),
-                        format_numbers(matches.iter())
-                    )
-                }
-                PrintableWarning::NoPathFoundBetween(a, b) => {
-                    format!("No path found between {} and {}", a, b)
-                }
+        write!(f, "{}: ", Color::Yellow.bold().paint("warning"))?;
+        use self::PrintableWarning::*;
+        match self {
+            NoMatchFoundForKey { requested_key } => {
+                write!(f, "No match found for {}", format_key(requested_key))
             }
-        )
+            CannotCheckBecauseAlreadyComplete { cannot_check } => {
+                write!(f, "Task {} is already complete", cannot_check)
+            }
+            CannotRestoreBecauseAlreadyIncomplete { cannot_restore } => {
+                write!(f, "Task {} is already incomplete", cannot_restore)
+            }
+            CannotUnblockBecauseTaskIsNotBlocked {
+                cannot_unblock,
+                requested_unblock_from,
+            } => write!(
+                f,
+                "Task {} is not blocked by {}",
+                cannot_unblock, requested_unblock_from
+            ),
+            CannotPuntBecauseComplete { cannot_punt } => {
+                write!(f, "Cannot punt {} because it is complete", cannot_punt)
+            }
+            CannotSnoozeBecauseComplete { cannot_snooze } => {
+                write!(
+                    f,
+                    "Cannot snooze {} because it is complete",
+                    cannot_snooze
+                )
+            }
+            SnoozedAfterDueDate {
+                snoozed_task,
+                due_date,
+                snooze_date: _,
+            } => write!(
+                f,
+                "Snoozed {} until after its due date {}",
+                snoozed_task, due_date
+            ),
+            AmbiguousKey { key, matches } => {
+                write!(
+                    f,
+                    "Ambiguous key {} matches {}",
+                    format_key(key),
+                    format_numbers(matches)
+                )
+            }
+            NoPathFoundBetween(from, to) => {
+                write!(f, "No path found between {} and {}", from, to)
+            }
+        }
     }
 }
