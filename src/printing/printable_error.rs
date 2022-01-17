@@ -1,4 +1,4 @@
-use super::format_util::format_key;
+use super::format_util::format_keys;
 use super::format_util::format_numbers;
 use super::BriefPrintableTask;
 use ansi_term::Color;
@@ -101,10 +101,7 @@ impl Display for PrintableError {
                 PrintableError::NoMatchForKeys{ keys } => {
                     format!(
                         "No match for keys {}",
-                        keys.iter()
-                            .map(|key| format_key(key))
-                            .collect::<Vec<_>>()
-                            .join(", "),
+                        format_keys(keys),
                     )
                 }
                 PrintableError::CannotParseDueDate { cannot_parse } => {
