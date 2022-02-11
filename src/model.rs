@@ -554,24 +554,36 @@ impl TodoList {
             .collect()
     }
 
-    pub fn transitive_deps(&self, id: TaskId) -> TaskSet {
+    fn transitive_deps_impl(&self, visited: &mut HashSet<TaskId>, id: TaskId) {
+        if !visited.insert(id) {
+            return;
+        }
         self.deps(id)
-            | self
-                .deps(id)
-                .into_iter_unsorted()
-                .flat_map(|dep| self.transitive_deps(dep).into_iter_unsorted())
-                .collect()
+            .iter_sorted(self)
+            .for_each(|dep| self.transitive_deps_impl(visited, dep));
+    }
+
+    pub fn transitive_deps(&self, id: TaskId) -> TaskSet {
+        let mut visited = HashSet::new();
+        self.transitive_deps_impl(&mut visited, id);
+        visited.remove(&id);
+        visited.into_iter().collect()
+    }
+
+    fn transitive_adeps_impl(&self, visited: &mut HashSet<TaskId>, id: TaskId) {
+        if !visited.insert(id) {
+            return;
+        }
+        self.adeps(id)
+            .iter_sorted(self)
+            .for_each(|dep| self.transitive_adeps_impl(visited, dep));
     }
 
     pub fn transitive_adeps(&self, id: TaskId) -> TaskSet {
-        self.adeps(id)
-            | self
-                .adeps(id)
-                .iter_unsorted()
-                .flat_map(|adep| {
-                    self.transitive_adeps(adep).into_iter_unsorted()
-                })
-                .collect()
+        let mut visited = HashSet::new();
+        self.transitive_adeps_impl(&mut visited, id);
+        visited.remove(&id);
+        visited.into_iter().collect()
     }
 
     pub fn implicit_priority(&self, id: TaskId) -> Option<i32> {
