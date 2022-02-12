@@ -2097,3 +2097,19 @@ fn block_does_not_unsnooze() {
     list.block(b).on(a).unwrap();
     assert_eq!(list.status(b), Some(TaskStatus::Blocked));
 }
+
+#[test]
+fn check_snoozed_task_should_unsnooze() {
+    let mut list = TodoList::default();
+    let today = Utc.ymd(2022, 02, 12).and_hms(00, 00, 00);
+    let tomorrow = Utc.ymd(2022, 02, 13).and_hms(00, 00, 00);
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .creation_time(today)
+            .start_date(tomorrow),
+    );
+    assert_eq!(list.get(a).unwrap().start_date, tomorrow);
+    list.check(a).unwrap();
+    assert_eq!(list.get(a).unwrap().start_date, today);
+}

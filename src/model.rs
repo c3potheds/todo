@@ -647,6 +647,12 @@ impl TodoList {
             return Err(CheckError::TaskIsBlockedBy(incomplete_deps));
         }
         self.tasks[options.id.0].completion_time = Some(options.now);
+        // It's legal to complete a task that's snoozed, but reset the snoozed
+        // date to the task's creation time.
+        if self.tasks[options.id.0].start_date > options.now {
+            self.tasks[options.id.0].start_date =
+                self.tasks[options.id.0].creation_time;
+        }
         if let Some(&depth) = self.incomplete.depth.get(&options.id) {
             assert!(depth == 0 || depth == 1);
             self.incomplete.remove_from_layer(&options.id, depth);
