@@ -205,6 +205,23 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
                 }
             }
         }
+        // If the task has dependents, show a lock icon, followed by the number
+        // of unlockable dependents and the number of total dependents, as a
+        // fraction. E.g. if the task would unlock two dependents when it is
+        // completed, out of three total dependents, show "🔒2/3".
+        //
+        // If none of the dependents are unlockable, the first number is 0.
+        //
+        // If the task has no dependents, show nothing.
+        let (unlockable, total) = self.task.dependent_tasks;
+        if total > 0 {
+            start.push_str(
+                &Color::White
+                    .paint(format!("🔒{unlockable}/{total}"))
+                    .to_string(),
+            );
+            start.push(' ');
+        }
         write!(
             f,
             "{}",

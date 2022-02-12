@@ -313,3 +313,61 @@ fn show_punt_icon_on_punt_action() {
     );
     assert_eq!(fmt, " ⏎    \u{1b}[33m5)\u{1b}[0m punt this\n");
 }
+
+#[test]
+fn show_done_icon_on_done_action() {
+    let fmt = print_task(
+        &PrintableTask::new("finish this", 5, Incomplete).action(Check),
+    );
+    assert_eq!(
+        fmt,
+        "\u{1b}[32m[✓]\u{1b}[0m   \u{1b}[33m5)\u{1b}[0m finish this\n"
+    );
+}
+
+#[test]
+fn show_stats_on_dependent_tasks() {
+    let fmt = print_task(
+        &PrintableTask::new("a", 1, Incomplete).dependent_tasks(1, 2),
+    );
+    assert_eq!(
+        fmt,
+        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[37m🔒1/2\u{1b}[0m a\n"
+    );
+}
+
+#[test]
+fn show_stats_on_dependent_tasks_and_priority() {
+    let fmt = print_task(
+        &PrintableTask::new("a", 1, Incomplete)
+            .priority(1)
+            .dependent_tasks(2, 4),
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "      \u{1b}[33m1)\u{1b}[0m ",
+            "\u{1b}[1;35mP1\u{1b}[0m ",
+            "\u{1b}[37m🔒2/4\u{1b}[0m a\n"
+        )
+    );
+}
+
+#[test]
+fn show_due_date_and_stats_on_dependent_tasks() {
+    let now = ymdhms(2021, 04, 15, 10, 00, 00);
+    let fmt = print_task_with_context(
+        now_context(now),
+        &PrintableTask::new("a", 1, Incomplete)
+            .due_date(now - chrono::Duration::days(1))
+            .dependent_tasks(12, 20),
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "      \u{1b}[33m1)\u{1b}[0m ",
+            "\u{1b}[1;31mDue 1 day ago\u{1b}[0m ",
+            "\u{1b}[37m🔒12/20\u{1b}[0m a\n"
+        )
+    );
+}
