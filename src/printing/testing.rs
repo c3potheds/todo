@@ -28,6 +28,7 @@ enum PrintedItem {
     Error(PrintableError),
 }
 
+#[derive(Default)]
 pub struct FakePrinter {
     record: Vec<PrintedItem>,
 }
@@ -212,12 +213,6 @@ impl<'a> Validation<'a> {
         if !self.record.is_empty() {
             panic!("Extra tasks were recorded: {:#?}", self.record);
         }
-    }
-}
-
-impl Default for FakePrinter {
-    fn default() -> Self {
-        Self { record: vec![] }
     }
 }
 

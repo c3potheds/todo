@@ -235,14 +235,14 @@ where
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 pub struct TodoList {
     tasks: StableDag<Task, ()>,
     complete: Vec<TaskId>,
     incomplete: Layering<TaskId>,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Default)]
 pub struct TaskSet {
     ids: HashSet<TaskId>,
 }
@@ -262,14 +262,6 @@ impl PartialOrd for TaskIdWithPosition {
 impl Ord for TaskIdWithPosition {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.position.cmp(&other.position)
-    }
-}
-
-impl Default for TaskSet {
-    fn default() -> Self {
-        Self {
-            ids: HashSet::new(),
-        }
     }
 }
 
@@ -595,16 +587,6 @@ impl TodoList {
         id: TaskId,
     ) -> Option<Option<DateTime<Utc>>> {
         self.get(id).map(|task| task.implicit_due_date)
-    }
-}
-
-impl Default for TodoList {
-    fn default() -> Self {
-        Self {
-            tasks: Default::default(),
-            incomplete: Default::default(),
-            complete: Default::default(),
-        }
     }
 }
 
