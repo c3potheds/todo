@@ -21,35 +21,29 @@ pub fn run(
     let tasks_to_merge = lookup_tasks(list, &cmd.keys);
     let deps = &tasks_to_merge
         .iter_unsorted()
-        .flat_map(|id| list.deps(id).into_iter_unsorted())
-        .collect::<TaskSet>()
+        .fold(TaskSet::default(), |so_far, id| so_far | list.deps(id))
         - &tasks_to_merge;
     let adeps = &tasks_to_merge
         .iter_unsorted()
-        .flat_map(|id| list.adeps(id).into_iter_unsorted())
-        .collect::<TaskSet>()
+        .fold(TaskSet::default(), |so_far, id| so_far | list.adeps(id))
         - &tasks_to_merge;
     let transitive_deps = &tasks_to_merge
         .iter_unsorted()
-        .flat_map(|id| list.transitive_deps(id).into_iter_unsorted())
-        .collect::<TaskSet>()
+        .fold(TaskSet::default(), |so_far, id| so_far | list.transitive_deps(id))
         - &tasks_to_merge;
     let transitive_adeps = &tasks_to_merge
         .iter_unsorted()
-        .flat_map(|id| list.transitive_adeps(id).into_iter_unsorted())
-        .collect::<TaskSet>()
+        .fold(TaskSet::default(), |so_far, id| so_far | list.transitive_adeps(id))
         - &tasks_to_merge;
     let cycle_through = transitive_deps & transitive_adeps;
     if !cycle_through.is_empty() {
         let adeps_of = cycle_through
             .iter_unsorted()
-            .flat_map(|id| list.deps(id).into_iter_unsorted())
-            .collect::<TaskSet>()
+            .fold(TaskSet::default(), |so_far, id| so_far | list.deps(id))
             & tasks_to_merge.clone();
         let deps_of = cycle_through
             .iter_unsorted()
-            .flat_map(|id| list.adeps(id).into_iter_unsorted())
-            .collect::<TaskSet>()
+            .fold(TaskSet::default(), |so_far, id| so_far | list.adeps(id))
             & tasks_to_merge;
         printer.print_error(&PrintableError::CannotMerge {
             cycle_through: format_tasks_brief(list, &cycle_through),
