@@ -7,6 +7,7 @@ use cli::Due;
 use model::TaskSet;
 use model::TaskStatus;
 use model::TodoList;
+use model::TaskId;
 use printing::PrintableError;
 use printing::TodoPrinter;
 
@@ -30,6 +31,24 @@ fn show_all_tasks_with_due_dates(
         .for_each(|id| printer.print_task(&format_task(list, id)));
 }
 
+fn source_of_due_date(list: &TodoList, id: TaskId) -> TaskSet {
+    let due_date = match list.get(id) {
+        Some(task) => match task.implicit_due_date {
+            Some(due_date) => due_date,
+            None => return TaskSet::default(),
+        },
+        None => return TaskSet::default(),
+    };
+    list.transitive_adeps(id)
+        .iter_sorted(list)
+        .filter(|&adep| match list.implicit_due_date(adep) {
+            Some(Some(adep_due_date)) => due_date == adep_due_date,
+            _ => false,
+        })
+        .chain(std::iter::once(id))
+        .collect()
+}
+
 fn show_source_of_due_dates_for_tasks(
     list: &TodoList,
     printer: &mut impl TodoPrinter,
@@ -37,25 +56,9 @@ fn show_source_of_due_dates_for_tasks(
 ) {
     tasks
         .iter_sorted(list)
-        .flat_map(|id| {
-            let due_date = match list.get(id) {
-                Some(task) => match task.implicit_due_date {
-                    Some(due_date) => due_date,
-                    None => return TaskSet::default().into_iter_unsorted(),
-                },
-                None => return TaskSet::default().into_iter_unsorted(),
-            };
-            list.transitive_adeps(id)
-                .iter_sorted(list)
-                .filter(|&adep| match list.implicit_due_date(adep) {
-                    Some(Some(adep_due_date)) => due_date == adep_due_date,
-                    _ => false,
-                })
-                .chain(std::iter::once(id))
-                .collect::<TaskSet>()
-                .into_iter_unsorted()
+        .fold(TaskSet::default(), |so_far, id| {
+            so_far | source_of_due_date(list, id)
         })
-        .collect::<TaskSet>()
         .iter_sorted(list)
         .for_each(|id| printer.print_task(&format_task(list, id)));
 }
@@ -69,8 +72,9 @@ fn set_due_dates(
 ) {
     tasks
         .iter_sorted(list)
-        .flat_map(|id| list.set_due_date(id, due_date).into_iter_unsorted())
-        .collect::<TaskSet>()
+        .fold(TaskSet::default(), |so_far, id| {
+            so_far | list.set_due_date(id, due_date)
+        })
         .iter_sorted(list)
         .filter(|&id| {
             include_done || list.status(id) != Some(TaskStatus::Complete)
