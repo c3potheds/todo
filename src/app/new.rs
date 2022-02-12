@@ -51,13 +51,11 @@ pub fn run(
     let before = lookup_tasks(model, &cmd.before);
     let before_deps = before
         .iter_unsorted()
-        .flat_map(|id| model.deps(id).into_iter_unsorted())
-        .collect::<TaskSet>();
+        .fold(TaskSet::default(), |so_far, id| so_far | model.deps(id));
     let after = lookup_tasks(model, &cmd.after);
     let after_adeps = after
         .iter_unsorted()
-        .flat_map(|id| model.adeps(id).into_iter_unsorted())
-        .collect::<TaskSet>();
+        .fold(TaskSet::default(), |so_far, id| so_far | model.adeps(id));
     let deps = deps | before_deps | after;
     let adeps = adeps | before | after_adeps;
     let priority = cmd.priority;
