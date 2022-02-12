@@ -161,3 +161,20 @@ fn explain_source_of_priority() {
         .printed_task(&PrintableTask::new("c", 3, Blocked).priority(1))
         .end();
 }
+
+#[test]
+fn explain_source_of_priority_deep() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c d e f g h i --chain");
+    fix.test("todo priority g --is 1");
+    fix.test("todo priority a")
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).priority(1))
+        .printed_task(&PrintableTask::new("b", 2, Blocked).priority(1))
+        .printed_task(&PrintableTask::new("c", 3, Blocked).priority(1))
+        .printed_task(&PrintableTask::new("d", 4, Blocked).priority(1))
+        .printed_task(&PrintableTask::new("e", 5, Blocked).priority(1))
+        .printed_task(&PrintableTask::new("f", 6, Blocked).priority(1))
+        .printed_task(&PrintableTask::new("g", 7, Blocked).priority(1))
+        .end();
+}

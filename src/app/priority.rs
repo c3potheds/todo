@@ -1,6 +1,7 @@
 use app::util::format_task;
 use app::util::lookup_tasks;
 use cli::Priority;
+use model::TaskId;
 use model::TaskSet;
 use model::TaskStatus;
 use model::TodoList;
@@ -15,11 +16,26 @@ fn set_priority(
 ) {
     tasks
         .iter_sorted(list)
-        .flat_map(|id| list.set_priority(id, priority).into_iter_unsorted())
-        .collect::<TaskSet>()
+        .fold(TaskSet::default(), |so_far, id| {
+            so_far | list.set_priority(id, priority)
+        })
         .include_done(list, include_done)
         .iter_sorted(list)
         .for_each(|id| printer.print_task(&format_task(list, id)));
+}
+
+fn source_of_priority(list: &TodoList, id: TaskId) -> TaskSet {
+    let priority = match list.implicit_priority(id) {
+        Some(p) => p,
+        None => return TaskSet::default(),
+    };
+    list.transitive_adeps(id)
+        .iter_sorted(list)
+        .take_while(|&adep| match list.implicit_priority(adep) {
+            Some(p) => p == priority,
+            None => false,
+        })
+        .collect()
 }
 
 fn show_source_of_priority_for_tasks(
@@ -30,22 +46,9 @@ fn show_source_of_priority_for_tasks(
 ) {
     tasks
         .iter_unsorted()
-        .flat_map(|id| {
-            let priority = match list.implicit_priority(id) {
-                Some(p) => p,
-                None => return TaskSet::default().into_iter_unsorted(),
-            };
-            list.transitive_adeps(id)
-                .iter_sorted(list)
-                .filter(|&adep| match list.implicit_priority(adep) {
-                    Some(p) => p == priority,
-                    None => false,
-                })
-                .chain(std::iter::once(id))
-                .collect::<TaskSet>()
-                .into_iter_unsorted()
+        .fold(TaskSet::default(), |so_far, id| {
+            so_far | source_of_priority(list, id) | TaskSet::of(id)
         })
-        .collect::<TaskSet>()
         .include_done(list, include_done)
         .iter_sorted(list)
         .for_each(|id| {
