@@ -77,6 +77,18 @@ pub fn format_task(model: &TodoList, id: TaskId) -> PrintableTask<'_> {
                     .count();
                 result = result.adeps_stats(unlockable, adeps.len());
             }
+            let deps = model.transitive_deps(id);
+            if !deps.is_empty() {
+                // Incomplete deps are deps that can be completed now (i.e.
+                // neither complete nor blocked).
+                let incomplete = deps
+                    .iter_unsorted()
+                    .filter(|&dep| {
+                        model.status(dep) == Some(TaskStatus::Incomplete)
+                    })
+                    .count();
+                result = result.deps_stats(incomplete, deps.len());
+            }
             result
         }
         _ => panic!("Failed to get task info for id {:?}", id),

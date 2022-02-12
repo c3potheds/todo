@@ -149,6 +149,70 @@ fn format_task_with_long_adep_chain() {
 }
 
 #[test]
+fn format_task_with_two_deps() {
+    let mut list = TodoList::default();
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
+    list.block(c).on(a).unwrap();
+    list.block(c).on(b).unwrap();
+    let actual = format_task(&list, c);
+    let expected = PrintableTask::new("c", 3, Blocked).deps_stats(2, 2);
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn format_task_with_one_dep() {
+    let mut list = TodoList::default();
+    let a = list.add("a");
+    let b = list.add("b");
+    list.block(b).on(a).unwrap();
+    let actual = format_task(&list, b);
+    let expected = PrintableTask::new("b", 2, Blocked).deps_stats(1, 1);
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn format_task_with_complete_deps() {
+    let mut list = TodoList::default();
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
+    list.block(c).on(a).unwrap();
+    list.block(c).on(b).unwrap();
+    list.check(a).unwrap();
+    let actual = format_task(&list, c);
+    let expected = PrintableTask::new("c", 2, Blocked).deps_stats(1, 2);
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn format_task_with_blocked_deps() {
+    let mut list = TodoList::default();
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
+    list.block(b).on(a).unwrap();
+    list.block(c).on(b).unwrap();
+    let actual = format_task(&list, c);
+    let expected = PrintableTask::new("c", 3, Blocked).deps_stats(1, 2);
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn format_task_with_deps_and_adeps() {
+    let mut list = TodoList::default();
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
+    list.block(b).on(a).unwrap();
+    list.block(c).on(b).unwrap();
+    let actual = format_task(&list, b);
+    let expected = PrintableTask::new("b", 2, Blocked).adeps_stats(1, 1).deps_stats(1, 1);
+    assert_eq!(actual, expected);
+}
+
+#[test]
 fn lookup_by_number() {
     let mut list = TodoList::default();
     let a = list.add("a");
