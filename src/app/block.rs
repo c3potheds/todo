@@ -32,16 +32,15 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Block) {
     );
     tasks_to_block
         .product(&tasks_to_block_on, model)
-        .flat_map(|(blocked, blocking)| {
+        .fold(TaskSet::default(), |so_far, (blocked, blocking)| {
             match model.block(blocked).on(blocking) {
-                Ok(affected) => affected.into_iter_unsorted(),
+                Ok(affected) => so_far | affected,
                 Err(_) => {
                     print_block_error(printer, model, blocked, blocking);
-                    TaskSet::default().into_iter_unsorted()
+                    so_far
                 }
             }
         })
-        .collect::<TaskSet>()
         .include_done(model, include_done)
         .iter_sorted(model)
         .for_each(|id| {
