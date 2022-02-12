@@ -34,12 +34,10 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Put) {
     );
     let before_deps: TaskSet = before
         .iter_unsorted()
-        .flat_map(|id| model.deps(id).into_iter_unsorted())
-        .collect();
+        .fold(TaskSet::default(), |so_far, id| so_far | model.deps(id));
     let after_adeps: TaskSet = after
         .iter_unsorted()
-        .flat_map(|id| model.adeps(id).into_iter_unsorted())
-        .collect();
+        .fold(TaskSet::default(), |so_far, id| so_far | model.adeps(id));
     let tasks_to_block_on = after | before_deps;
     let tasks_to_block = before | after_adeps;
 
@@ -51,19 +49,18 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Put) {
                 .product(&tasks_to_block, model)
                 .map(|(a, b)| (b, a)),
         )
-        .flat_map(|(blocked, blocking)| {
+        .fold(TaskSet::default(), |so_far, (blocked, blocking)| {
             match model.block(blocked).on(blocking) {
                 Ok(affected) => {
                     blocked_tasks.insert(blocked);
-                    affected.into_iter_unsorted()
+                    so_far | affected
                 }
                 Err(_) => {
                     print_block_error(printer, model, blocked, blocking);
-                    TaskSet::default().into_iter_unsorted()
+                    so_far
                 }
             }
         })
-        .collect::<TaskSet>()
         .include_done(model, include_done)
         .iter_sorted(model)
         .for_each(|id| {
