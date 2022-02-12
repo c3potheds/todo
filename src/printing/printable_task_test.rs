@@ -328,7 +328,7 @@ fn show_done_icon_on_done_action() {
 #[test]
 fn show_stats_on_dependent_tasks() {
     let fmt = print_task(
-        &PrintableTask::new("a", 1, Incomplete).dependent_tasks(1, 2),
+        &PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 2),
     );
     assert_eq!(
         fmt,
@@ -341,7 +341,7 @@ fn show_stats_on_dependent_tasks_and_priority() {
     let fmt = print_task(
         &PrintableTask::new("a", 1, Incomplete)
             .priority(1)
-            .dependent_tasks(2, 4),
+            .adeps_stats(2, 4),
     );
     assert_eq!(
         fmt,
@@ -360,7 +360,7 @@ fn show_due_date_and_stats_on_dependent_tasks() {
         now_context(now),
         &PrintableTask::new("a", 1, Incomplete)
             .due_date(now - chrono::Duration::days(1))
-            .dependent_tasks(12, 20),
+            .adeps_stats(12, 20),
     );
     assert_eq!(
         fmt,

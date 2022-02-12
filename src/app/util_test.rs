@@ -72,7 +72,7 @@ fn format_task_with_adep_stats() {
     list.block(b).on(a).unwrap();
     list.block(c).on(b).unwrap();
     let actual = format_task(&list, a);
-    let expected = PrintableTask::new("a", 1, Incomplete).dependent_tasks(1, 2);
+    let expected = PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 2);
     assert_eq!(actual, expected);
 }
 
@@ -85,7 +85,7 @@ fn format_task_with_all_all_adeps_unlockable() {
     list.block(b).on(a).unwrap();
     list.block(c).on(a).unwrap();
     let actual = format_task(&list, a);
-    let expected = PrintableTask::new("a", 1, Incomplete).dependent_tasks(2, 2);
+    let expected = PrintableTask::new("a", 1, Incomplete).adeps_stats(2, 2);
     assert_eq!(actual, expected);
 }
 
@@ -144,7 +144,7 @@ fn format_task_with_long_adep_chain() {
     list.block(y).on(x).unwrap();
     list.block(z).on(y).unwrap();
     let actual = format_task(&list, a);
-    let expected = PrintableTask::new("a", 1, Incomplete).dependent_tasks(1, 25);
+    let expected = PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 25);
     assert_eq!(actual, expected);
 }
 

@@ -213,7 +213,7 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
         // If none of the dependents are unlockable, the first number is 0.
         //
         // If the task has no dependents, show nothing.
-        let (unlockable, total) = self.task.dependent_tasks;
+        let (unlockable, total) = self.task.adeps_stats;
         if total > 0 {
             start.push_str(
                 &Color::White

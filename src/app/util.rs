@@ -75,7 +75,7 @@ pub fn format_task(model: &TodoList, id: TaskId) -> PrintableTask<'_> {
                             })
                     })
                     .collect::<Vec<_>>();
-                result = result.dependent_tasks(unlockable.len(), adeps.len());
+                result = result.adeps_stats(unlockable.len(), adeps.len());
             }
             result
         }

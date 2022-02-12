@@ -99,7 +99,7 @@ pub struct PrintableTask<'a> {
     pub due_date: Option<DateTime<Utc>>,
     pub budget: Option<Duration>,
     pub start_date: Option<DateTime<Utc>>,
-    pub dependent_tasks: (usize, usize),
+    pub adeps_stats: (usize, usize),
 }
 
 impl<'a> PrintableTask<'a> {
@@ -114,7 +114,7 @@ impl<'a> PrintableTask<'a> {
             due_date: None,
             budget: None,
             start_date: None,
-            dependent_tasks: (0, 0),
+            adeps_stats: (0, 0),
         }
     }
 
@@ -148,8 +148,8 @@ impl<'a> PrintableTask<'a> {
         self
     }
 
-    pub fn dependent_tasks(mut self, immediate: usize, total: usize) -> Self {
-        self.dependent_tasks = (immediate, total);
+    pub fn adeps_stats(mut self, immediate: usize, total: usize) -> Self {
+        self.adeps_stats = (immediate, total);
         self
     }
 }
