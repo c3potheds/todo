@@ -74,8 +74,8 @@ pub fn format_task(model: &TodoList, id: TaskId) -> PrintableTask<'_> {
                                 model.status(dep) == Some(TaskStatus::Complete)
                             })
                     })
-                    .collect::<Vec<_>>();
-                result = result.adeps_stats(unlockable.len(), adeps.len());
+                    .count();
+                result = result.adeps_stats(unlockable, adeps.len());
             }
             result
         }
