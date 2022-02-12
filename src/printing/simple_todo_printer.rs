@@ -205,19 +205,31 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
                 }
             }
         }
-        // If the task has dependents, show a lock icon, followed by the number
-        // of unlockable dependents and the number of total dependents, as a
-        // fraction. E.g. if the task would unlock two dependents when it is
-        // completed, out of three total dependents, show "🔒2/3".
+        // If the task has deps, show a lock icon, followed by the number of
+        // incomplete deps and the number of total deps, as a fraction. E.g.
+        // if the task has 3 deps, 2 of which are incomplete, show "🔓 2/3".
+        let (incomplete, total) = self.task.deps_stats;
+        if total > 0 {
+            start.push_str(
+                &Color::Yellow
+                    .paint(format!("🔒{}/{}", incomplete, total))
+                    .to_string(),
+            );
+            start.push(' ');
+        }
+        // If the task has adeps, show an unlock icon, followed by the number of
+        // unlockable adeps and the number of total adeps, as a fraction. E.g.
+        // if the task would unlock two adeps when it is completed, out of three
+        // total adeps, show "🔓2/3".
         //
-        // If none of the dependents are unlockable, the first number is 0.
+        // If none of the adeps are unlockable, the first number is 0.
         //
-        // If the task has no dependents, show nothing.
+        // If the task has no adeps, show nothing.
         let (unlockable, total) = self.task.adeps_stats;
         if total > 0 {
             start.push_str(
                 &Color::White
-                    .paint(format!("🔒{unlockable}/{total}"))
+                    .paint(format!("🔓{unlockable}/{total}"))
                     .to_string(),
             );
             start.push(' ');

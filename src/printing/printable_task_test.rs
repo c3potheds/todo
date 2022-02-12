@@ -326,18 +326,18 @@ fn show_done_icon_on_done_action() {
 }
 
 #[test]
-fn show_stats_on_dependent_tasks() {
+fn show_adeps_stats() {
     let fmt = print_task(
         &PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 2),
     );
     assert_eq!(
         fmt,
-        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[37m🔒1/2\u{1b}[0m a\n"
+        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[37m🔓1/2\u{1b}[0m a\n"
     );
 }
 
 #[test]
-fn show_stats_on_dependent_tasks_and_priority() {
+fn show_adeps_stats_and_priority() {
     let fmt = print_task(
         &PrintableTask::new("a", 1, Incomplete)
             .priority(1)
@@ -348,13 +348,13 @@ fn show_stats_on_dependent_tasks_and_priority() {
         concat!(
             "      \u{1b}[33m1)\u{1b}[0m ",
             "\u{1b}[1;35mP1\u{1b}[0m ",
-            "\u{1b}[37m🔒2/4\u{1b}[0m a\n"
+            "\u{1b}[37m🔓2/4\u{1b}[0m a\n"
         )
     );
 }
 
 #[test]
-fn show_due_date_and_stats_on_dependent_tasks() {
+fn show_due_date_and_adeps_stats() {
     let now = ymdhms(2021, 04, 15, 10, 00, 00);
     let fmt = print_task_with_context(
         now_context(now),
@@ -367,7 +367,73 @@ fn show_due_date_and_stats_on_dependent_tasks() {
         concat!(
             "      \u{1b}[33m1)\u{1b}[0m ",
             "\u{1b}[1;31mDue 1 day ago\u{1b}[0m ",
-            "\u{1b}[37m🔒12/20\u{1b}[0m a\n"
+            "\u{1b}[37m🔓12/20\u{1b}[0m a\n"
+        )
+    );
+}
+
+#[test]
+fn show_deps_stats() {
+    let fmt = print_task(
+        &PrintableTask::new("a", 1, Incomplete).deps_stats(1, 2),
+    );
+    assert_eq!(
+        fmt,
+        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[33m🔒1/2\u{1b}[0m a\n"
+    );
+}
+
+#[test]
+fn show_deps_and_adeps_stats() {
+    let fmt = print_task(
+        &PrintableTask::new("a", 1, Incomplete)
+            .deps_stats(1, 2)
+            .adeps_stats(3, 4),
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "      \u{1b}[33m1)\u{1b}[0m ",
+            "\u{1b}[33m🔒1/2\u{1b}[0m ",
+            "\u{1b}[37m🔓3/4\u{1b}[0m a\n"
+        )
+    );
+}
+
+#[test]
+fn show_deps_and_adeps_stats_and_priority() {
+    let fmt = print_task(
+        &PrintableTask::new("a", 1, Incomplete)
+            .priority(1)
+            .deps_stats(2, 4)
+            .adeps_stats(5, 6),
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "      \u{1b}[33m1)\u{1b}[0m ",
+            "\u{1b}[1;35mP1\u{1b}[0m ",
+            "\u{1b}[33m🔒2/4\u{1b}[0m ",
+            "\u{1b}[37m🔓5/6\u{1b}[0m a\n"
+        )
+    );
+}
+
+#[test]
+fn show_due_date_and_deps_stats() {
+    let now = ymdhms(2021, 04, 15, 10, 00, 00);
+    let fmt = print_task_with_context(
+        now_context(now),
+        &PrintableTask::new("a", 1, Incomplete)
+            .due_date(now - chrono::Duration::days(1))
+            .deps_stats(12, 20),
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "      \u{1b}[33m1)\u{1b}[0m ",
+            "\u{1b}[1;31mDue 1 day ago\u{1b}[0m ",
+            "\u{1b}[33m🔒12/20\u{1b}[0m a\n"
         )
     );
 }
