@@ -22,8 +22,7 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: Rm) {
         })
         .collect::<Vec<_>>()
         .into_iter()
-        .flat_map(|id| model.remove(id).into_iter_unsorted())
-        .collect::<TaskSet>()
+        .fold(TaskSet::default(), |so_far, id| so_far | model.remove(id))
         .iter_sorted(model)
         .for_each(|id| printer.print_task(&format_task(model, id)))
 }
