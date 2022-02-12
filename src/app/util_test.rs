@@ -64,6 +64,91 @@ fn format_task_with_budget() {
 }
 
 #[test]
+fn format_task_with_adep_stats() {
+    let mut list = TodoList::default();
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
+    list.block(b).on(a).unwrap();
+    list.block(c).on(b).unwrap();
+    let actual = format_task(&list, a);
+    let expected = PrintableTask::new("a", 1, Incomplete).dependent_tasks(1, 2);
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn format_task_with_all_all_adeps_unlockable() {
+    let mut list = TodoList::default();
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
+    list.block(b).on(a).unwrap();
+    list.block(c).on(a).unwrap();
+    let actual = format_task(&list, a);
+    let expected = PrintableTask::new("a", 1, Incomplete).dependent_tasks(2, 2);
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn format_task_with_long_adep_chain() {
+    let mut list = TodoList::default();
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
+    let d = list.add("d");
+    let e = list.add("e");
+    let f = list.add("f");
+    let g = list.add("g");
+    let h = list.add("h");
+    let i = list.add("i");
+    let j = list.add("j");
+    let k = list.add("k");
+    let l = list.add("l");
+    let m = list.add("m");
+    let n = list.add("n");
+    let o = list.add("o");
+    let p = list.add("p");
+    let q = list.add("q");
+    let r = list.add("r");
+    let s = list.add("s");
+    let t = list.add("t");
+    let u = list.add("u");
+    let v = list.add("v");
+    let w = list.add("w");
+    let x = list.add("x");
+    let y = list.add("y");
+    let z = list.add("z");
+    list.block(b).on(a).unwrap();
+    list.block(c).on(b).unwrap();
+    list.block(d).on(c).unwrap();
+    list.block(e).on(d).unwrap();
+    list.block(f).on(e).unwrap();
+    list.block(g).on(f).unwrap();
+    list.block(h).on(g).unwrap();
+    list.block(i).on(h).unwrap();
+    list.block(j).on(i).unwrap();
+    list.block(k).on(j).unwrap();
+    list.block(l).on(k).unwrap();
+    list.block(m).on(l).unwrap();
+    list.block(n).on(m).unwrap();
+    list.block(o).on(n).unwrap();
+    list.block(p).on(o).unwrap();
+    list.block(q).on(p).unwrap();
+    list.block(r).on(q).unwrap();
+    list.block(s).on(r).unwrap();
+    list.block(t).on(s).unwrap();
+    list.block(u).on(t).unwrap();
+    list.block(v).on(u).unwrap();
+    list.block(w).on(v).unwrap();
+    list.block(x).on(w).unwrap();
+    list.block(y).on(x).unwrap();
+    list.block(z).on(y).unwrap();
+    let actual = format_task(&list, a);
+    let expected = PrintableTask::new("a", 1, Incomplete).dependent_tasks(1, 25);
+    assert_eq!(actual, expected);
+}
+
+#[test]
 fn lookup_by_number() {
     let mut list = TodoList::default();
     let a = list.add("a");

@@ -58,6 +58,25 @@ pub fn format_task(model: &TodoList, id: TaskId) -> PrintableTask<'_> {
             if task.start_date > task.creation_time {
                 result = result.start_date(task.start_date);
             }
+            let adeps = model.transitive_adeps(id);
+            if !adeps.is_empty() {
+                // Unlockable adeps are tasks that would be unlocked if this
+                // task were completed. In other words, the adep is unlockable
+                // if this task is the only incomplete dependency of the adep.
+                let unlockable = adeps
+                    .iter_unsorted()
+                    .filter(|&adep| {
+                        model
+                            .deps(adep)
+                            .iter_unsorted()
+                            .filter(|&dep| dep != id)
+                            .all(|dep| {
+                                model.status(dep) == Some(TaskStatus::Complete)
+                            })
+                    })
+                    .collect::<Vec<_>>();
+                result = result.dependent_tasks(unlockable.len(), adeps.len());
+            }
             result
         }
         _ => panic!("Failed to get task info for id {:?}", id),
