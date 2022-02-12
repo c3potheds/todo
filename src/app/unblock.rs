@@ -33,16 +33,15 @@ fn unblock_from_given(
 ) -> TaskSet {
     tasks_to_unblock
         .product(tasks_to_unblock_from, model)
-        .flat_map(|(blocked, blocking)| {
+        .fold(TaskSet::default(), |so_far, (blocked, blocking)| {
             match model.unblock(blocked).from(blocking) {
-                Ok(affected) => affected.into_iter_unsorted(),
+                Ok(affected) => so_far | affected,
                 Err(_) => {
                     print_unblock_warning(printer, model, blocking, blocked);
-                    TaskSet::default().into_iter_unsorted()
+                    so_far
                 }
             }
         })
-        .collect()
 }
 
 fn unblock_from_all(
