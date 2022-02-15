@@ -2102,6 +2102,7 @@ fn block_does_not_unsnooze() {
 fn check_snoozed_task_should_unsnooze() {
     let mut list = TodoList::default();
     let today = Utc.ymd(2022, 02, 12).and_hms(00, 00, 00);
+    let now = Utc.ymd(2022, 02, 12).and_hms(12, 00, 00);
     let tomorrow = Utc.ymd(2022, 02, 13).and_hms(00, 00, 00);
     let a = list.add(
         NewOptions::new()
@@ -2110,6 +2111,6 @@ fn check_snoozed_task_should_unsnooze() {
             .start_date(tomorrow),
     );
     assert_eq!(list.get(a).unwrap().start_date, tomorrow);
-    list.check(a).unwrap();
+    list.check(CheckOptions { id: a, now }).unwrap();
     assert_eq!(list.get(a).unwrap().start_date, today);
 }
