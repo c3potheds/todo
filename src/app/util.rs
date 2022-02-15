@@ -31,6 +31,59 @@ pub fn format_prefix(prefix: &str, desc: &str) -> String {
     }
 }
 
+impl<'a> PrintableTask<'a> {
+    fn add_deps_if_necessary(
+        self,
+        model: &TodoList,
+        id: TaskId,
+        status: TaskStatus,
+    ) -> PrintableTask<'a> {
+        if status != TaskStatus::Blocked {
+            return self;
+        }
+        let deps = model.transitive_deps(id);
+        if deps.is_empty() {
+            return self;
+        }
+        // Incomplete deps are deps that can be completed now (i.e. neither
+        // complete nor blocked).
+        let incomplete = deps
+            .iter_unsorted()
+            .filter(|&dep| model.status(dep) == Some(TaskStatus::Incomplete))
+            .count();
+        self.deps_stats(incomplete, deps.len())
+    }
+
+    fn add_adeps_if_necessary(
+        self,
+        model: &TodoList,
+        id: TaskId,
+        status: TaskStatus,
+    ) -> PrintableTask<'a> {
+        if status != TaskStatus::Incomplete {
+            return self;
+        }
+        let adeps = model.transitive_adeps(id);
+        if adeps.is_empty() {
+            return self;
+        }
+        // Unlockable adeps are tasks that would be unlocked if this
+        // task were completed. In other words, the adep is unlockable
+        // if this task is the only incomplete dependency of the adep.
+        let unlockable = adeps
+            .iter_unsorted()
+            .filter(|&adep| {
+                model
+                    .deps(adep)
+                    .iter_unsorted()
+                    .filter(|&dep| dep != id)
+                    .all(|dep| model.status(dep) == Some(TaskStatus::Complete))
+            })
+            .count();
+        self.adeps_stats(unlockable, adeps.len())
+    }
+}
+
 pub fn format_task(model: &TodoList, id: TaskId) -> PrintableTask<'_> {
     match (
         model.get(id),
@@ -58,38 +111,9 @@ pub fn format_task(model: &TodoList, id: TaskId) -> PrintableTask<'_> {
             if task.start_date > task.creation_time {
                 result = result.start_date(task.start_date);
             }
-            let adeps = model.transitive_adeps(id);
-            if !adeps.is_empty() {
-                // Unlockable adeps are tasks that would be unlocked if this
-                // task were completed. In other words, the adep is unlockable
-                // if this task is the only incomplete dependency of the adep.
-                let unlockable = adeps
-                    .iter_unsorted()
-                    .filter(|&adep| {
-                        model
-                            .deps(adep)
-                            .iter_unsorted()
-                            .filter(|&dep| dep != id)
-                            .all(|dep| {
-                                model.status(dep) == Some(TaskStatus::Complete)
-                            })
-                    })
-                    .count();
-                result = result.adeps_stats(unlockable, adeps.len());
-            }
-            let deps = model.transitive_deps(id);
-            if !deps.is_empty() {
-                // Incomplete deps are deps that can be completed now (i.e.
-                // neither complete nor blocked).
-                let incomplete = deps
-                    .iter_unsorted()
-                    .filter(|&dep| {
-                        model.status(dep) == Some(TaskStatus::Incomplete)
-                    })
-                    .count();
-                result = result.deps_stats(incomplete, deps.len());
-            }
             result
+                .add_deps_if_necessary(model, id, status)
+                .add_adeps_if_necessary(model, id, status)
         }
         _ => panic!("Failed to get task info for id {:?}", id),
     }

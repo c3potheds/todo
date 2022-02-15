@@ -64,7 +64,7 @@ fn format_task_with_budget() {
 }
 
 #[test]
-fn format_task_with_adep_stats() {
+fn format_incomplete_task_with_adep_stats() {
     let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
@@ -77,7 +77,7 @@ fn format_task_with_adep_stats() {
 }
 
 #[test]
-fn format_task_with_all_all_adeps_unlockable() {
+fn format_incomplete_task_with_all_all_adeps_unlockable() {
     let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
@@ -90,7 +90,7 @@ fn format_task_with_all_all_adeps_unlockable() {
 }
 
 #[test]
-fn format_task_with_long_adep_chain() {
+fn format_incomplete_task_with_long_adep_chain() {
     let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
@@ -149,7 +149,7 @@ fn format_task_with_long_adep_chain() {
 }
 
 #[test]
-fn format_task_with_two_deps() {
+fn format_blocked_task_with_two_deps() {
     let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
@@ -162,7 +162,7 @@ fn format_task_with_two_deps() {
 }
 
 #[test]
-fn format_task_with_one_dep() {
+fn format_blocked_task_with_one_dep() {
     let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
@@ -173,7 +173,7 @@ fn format_task_with_one_dep() {
 }
 
 #[test]
-fn format_task_with_complete_deps() {
+fn format_blocked_task_with_complete_deps() {
     let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
@@ -187,7 +187,7 @@ fn format_task_with_complete_deps() {
 }
 
 #[test]
-fn format_task_with_blocked_deps() {
+fn format_blocked_task_with_blocked_deps() {
     let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
@@ -200,7 +200,7 @@ fn format_task_with_blocked_deps() {
 }
 
 #[test]
-fn format_task_with_deps_and_adeps() {
+fn format_blocked_task_with_deps_and_adeps() {
     let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
@@ -208,7 +208,35 @@ fn format_task_with_deps_and_adeps() {
     list.block(b).on(a).unwrap();
     list.block(c).on(b).unwrap();
     let actual = format_task(&list, b);
-    let expected = PrintableTask::new("b", 2, Blocked).adeps_stats(1, 1).deps_stats(1, 1);
+    let expected = PrintableTask::new("b", 2, Blocked).deps_stats(1, 1);
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn format_complete_task_does_not_show_deps_or_adeps() {
+    let mut list = TodoList::default();
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
+    list.block(b).on(a).unwrap();
+    list.block(c).on(b).unwrap();
+    list.check(a).unwrap();
+    list.check(b).unwrap();
+    list.check(c).unwrap();
+    let actual = format_task(&list, b);
+    let expected = PrintableTask::new("b", -1, Complete);
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn format_incomplete_task_does_not_show_deps() {
+    let mut list = TodoList::default();
+    let a = list.add("a");
+    let b = list.add("b");
+    list.block(b).on(a).unwrap();
+    list.check(a).unwrap();
+    let actual = format_task(&list, b);
+    let expected = PrintableTask::new("b", 1, Incomplete);
     assert_eq!(actual, expected);
 }
 
