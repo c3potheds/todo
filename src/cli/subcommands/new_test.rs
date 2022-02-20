@@ -23,17 +23,7 @@ fn new_one() {
         "todo new a",
         SubCommand::New(New {
             desc: vec!["a".to_string()],
-            blocked_by: Vec::new(),
-            blocking: Vec::new(),
-            before: Vec::new(),
-            after: Vec::new(),
-            chain: false,
-            priority: None,
-            due: vec![],
-            budget: vec![],
-            prefix: vec![],
-            snooze: vec![],
-            done: false,
+            ..Default::default()
         }),
     );
 }
@@ -44,17 +34,7 @@ fn new_three() {
         "todo new a b c",
         SubCommand::New(New {
             desc: vec!["a".to_string(), "b".to_string(), "c".to_string()],
-            blocked_by: Vec::new(),
-            blocking: Vec::new(),
-            before: Vec::new(),
-            after: Vec::new(),
-            chain: false,
-            priority: None,
-            due: vec![],
-            budget: vec![],
-            prefix: vec![],
-            snooze: vec![],
-            done: false,
+            ..Default::default()
         }),
     );
 }
@@ -66,16 +46,7 @@ fn new_blocked_by_long() {
         SubCommand::New(New {
             desc: vec!["b".to_string()],
             blocked_by: vec![ByNumber(1)],
-            blocking: Vec::new(),
-            before: Vec::new(),
-            after: Vec::new(),
-            chain: false,
-            priority: None,
-            due: vec![],
-            budget: vec![],
-            prefix: vec![],
-            snooze: vec![],
-            done: false,
+            ..Default::default()
         }),
     );
 }
@@ -87,16 +58,7 @@ fn new_blocked_by_short() {
         SubCommand::New(New {
             desc: vec!["b".to_string()],
             blocked_by: vec![ByNumber(1)],
-            blocking: Vec::new(),
-            before: Vec::new(),
-            after: Vec::new(),
-            chain: false,
-            priority: None,
-            due: vec![],
-            budget: vec![],
-            prefix: vec![],
-            snooze: vec![],
-            done: false,
+            ..Default::default()
         }),
     );
 }
@@ -107,17 +69,8 @@ fn new_blocking_long() {
         "todo new b --blocking 1",
         SubCommand::New(New {
             desc: vec!["b".to_string()],
-            blocked_by: Vec::new(),
             blocking: vec![ByNumber(1)],
-            before: Vec::new(),
-            after: Vec::new(),
-            chain: false,
-            priority: None,
-            due: vec![],
-            budget: vec![],
-            prefix: vec![],
-            snooze: vec![],
-            done: false,
+            ..Default::default()
         }),
     );
 }
@@ -128,17 +81,8 @@ fn new_blocking_short() {
         "todo new c -b 1 2",
         SubCommand::New(New {
             desc: vec!["c".to_string()],
-            blocked_by: Vec::new(),
             blocking: vec![ByNumber(1), ByNumber(2)],
-            before: Vec::new(),
-            after: Vec::new(),
-            chain: false,
-            priority: None,
-            due: vec![],
-            budget: vec![],
-            prefix: vec![],
-            snooze: vec![],
-            done: false,
+            ..Default::default()
         }),
     );
 }
@@ -149,17 +93,8 @@ fn new_blocking_by_name() {
         "todo new a.b -b b",
         SubCommand::New(New {
             desc: vec!["a.b".to_string()],
-            blocked_by: Vec::new(),
             blocking: vec![ByName("b".to_string())],
-            before: Vec::new(),
-            after: Vec::new(),
-            chain: false,
-            priority: None,
-            due: vec![],
-            budget: vec![],
-            prefix: vec![],
-            snooze: vec![],
-            done: false,
+            ..Default::default()
         }),
     );
 }
@@ -170,17 +105,8 @@ fn new_chain() {
         "todo new a b c --chain",
         SubCommand::New(New {
             desc: vec!["a".to_string(), "b".to_string(), "c".to_string()],
-            blocked_by: Vec::new(),
-            blocking: Vec::new(),
-            before: Vec::new(),
-            after: Vec::new(),
             chain: true,
-            priority: None,
-            due: vec![],
-            budget: vec![],
-            prefix: vec![],
-            snooze: vec![],
-            done: false,
+            ..Default::default()
         }),
     );
 }
@@ -191,17 +117,9 @@ fn new_before_after() {
         "todo new c --before a --after b",
         SubCommand::New(New {
             desc: vec!["c".to_string()],
-            blocked_by: Vec::new(),
-            blocking: Vec::new(),
             before: vec![ByName("a".to_string())],
             after: vec![ByName("b".to_string())],
-            chain: false,
-            priority: None,
-            due: vec![],
-            budget: vec![],
-            prefix: vec![],
-            snooze: vec![],
-            done: false,
+            ..Default::default()
         }),
     );
 }
@@ -212,17 +130,8 @@ fn new_one_with_priority() {
         "todo new a --priority 1",
         SubCommand::New(New {
             desc: vec!["a".to_string()],
-            blocked_by: Vec::new(),
-            blocking: Vec::new(),
-            before: Vec::new(),
-            after: Vec::new(),
-            chain: false,
             priority: Some(1),
-            due: vec![],
-            budget: vec![],
-            prefix: vec![],
-            snooze: vec![],
-            done: false,
+            ..Default::default()
         }),
     )
 }
@@ -233,17 +142,8 @@ fn new_three_with_priority() {
         "todo new a b c --priority 2",
         SubCommand::New(New {
             desc: vec!["a".to_string(), "b".to_string(), "c".to_string()],
-            blocked_by: Vec::new(),
-            blocking: Vec::new(),
-            before: Vec::new(),
-            after: Vec::new(),
-            chain: false,
             priority: Some(2),
-            due: vec![],
-            budget: vec![],
-            prefix: vec![],
-            snooze: vec![],
-            done: false,
+            ..Default::default()
         }),
     )
 }
@@ -254,17 +154,8 @@ fn new_with_negative_priority() {
         "todo new a --priority -3",
         SubCommand::New(New {
             desc: vec!["a".to_string()],
-            blocked_by: Vec::new(),
-            blocking: Vec::new(),
-            before: Vec::new(),
-            after: Vec::new(),
-            chain: false,
             priority: Some(-3),
-            due: vec![],
-            budget: vec![],
-            prefix: vec![],
-            snooze: vec![],
-            done: false,
+            ..Default::default()
         }),
     )
 }
@@ -275,17 +166,8 @@ fn new_with_due_date() {
         "todo new a --due 7 days",
         SubCommand::New(New {
             desc: vec!["a".to_string()],
-            blocked_by: Vec::new(),
-            blocking: Vec::new(),
-            before: Vec::new(),
-            after: Vec::new(),
-            chain: false,
-            priority: None,
             due: vec!["7".to_string(), "days".to_string()],
-            budget: vec![],
-            prefix: vec![],
-            snooze: vec![],
-            done: false,
+            ..Default::default()
         }),
     )
 }
@@ -296,17 +178,8 @@ fn new_with_budget() {
         "todo new a --budget 2 days",
         SubCommand::New(New {
             desc: vec!["a".to_string()],
-            blocked_by: vec![],
-            blocking: vec![],
-            before: vec![],
-            after: vec![],
-            chain: false,
-            priority: None,
-            due: vec![],
             budget: vec!["2".to_string(), "days".to_string()],
-            prefix: vec![],
-            snooze: vec![],
-            done: false,
+            ..Default::default()
         }),
     );
 }
@@ -317,17 +190,8 @@ fn new_with_prefix() {
         "todo new a b c --prefix x",
         SubCommand::New(New {
             desc: vec!["a".to_string(), "b".to_string(), "c".to_string()],
-            blocked_by: vec![],
-            blocking: vec![],
-            before: vec![],
-            after: vec![],
-            chain: false,
-            priority: None,
-            due: vec![],
-            budget: vec![],
             prefix: vec!["x".to_string()],
-            snooze: vec![],
-            done: false,
+            ..Default::default()
         }),
     );
 }
@@ -338,17 +202,8 @@ fn new_with_prefix_short() {
         "todo new a b c -P x",
         SubCommand::New(New {
             desc: vec!["a".to_string(), "b".to_string(), "c".to_string()],
-            blocked_by: vec![],
-            blocking: vec![],
-            before: vec![],
-            after: vec![],
-            chain: false,
-            priority: None,
-            due: vec![],
-            budget: vec![],
             prefix: vec!["x".to_string()],
-            snooze: vec![],
-            done: false,
+            ..Default::default()
         }),
     );
 }
@@ -359,17 +214,8 @@ fn new_multiple_prefixes() {
         "todo new a b c --prefix x --prefix y",
         SubCommand::New(New {
             desc: vec!["a".to_string(), "b".to_string(), "c".to_string()],
-            blocked_by: vec![],
-            blocking: vec![],
-            before: vec![],
-            after: vec![],
-            chain: false,
-            priority: None,
-            due: vec![],
-            budget: vec![],
             prefix: vec!["x".to_string(), "y".to_string()],
-            snooze: vec![],
-            done: false,
+            ..Default::default()
         }),
     );
 }
@@ -380,17 +226,8 @@ fn new_multiple_prefixes_in_list() {
         "todo new a b c --prefix x y",
         SubCommand::New(New {
             desc: vec!["a".to_string(), "b".to_string(), "c".to_string()],
-            blocked_by: vec![],
-            blocking: vec![],
-            before: vec![],
-            after: vec![],
-            chain: false,
-            priority: None,
-            due: vec![],
-            budget: vec![],
             prefix: vec!["x".to_string(), "y".to_string()],
-            snooze: vec![],
-            done: false,
+            ..Default::default()
         }),
     );
 }
@@ -401,17 +238,8 @@ fn new_snooze_long() {
         "todo new a --snooze tomorrow",
         SubCommand::New(New {
             desc: vec!["a".to_string()],
-            blocked_by: vec![],
-            blocking: vec![],
-            before: vec![],
-            after: vec![],
-            chain: false,
-            priority: None,
-            due: vec![],
-            budget: vec![],
-            prefix: vec![],
             snooze: vec!["tomorrow".to_string()],
-            done: false,
+            ..Default::default()
         }),
     );
 }
@@ -422,17 +250,8 @@ fn new_snooze_short() {
         "todo new a -s 2 days",
         SubCommand::New(New {
             desc: vec!["a".to_string()],
-            blocked_by: vec![],
-            blocking: vec![],
-            before: vec![],
-            after: vec![],
-            chain: false,
-            priority: None,
-            due: vec![],
-            budget: vec![],
-            prefix: vec![],
             snooze: vec!["2".to_string(), "days".to_string()],
-            done: false,
+            ..Default::default()
         }),
     );
 }
@@ -443,17 +262,8 @@ fn new_done() {
         "todo new a --done",
         SubCommand::New(New {
             desc: vec!["a".to_string()],
-            blocked_by: vec![],
-            blocking: vec![],
-            before: vec![],
-            after: vec![],
-            chain: false,
-            priority: None,
-            due: vec![],
-            budget: vec![],
-            prefix: vec![],
-            snooze: vec![],
             done: true,
+            ..Default::default()
         }),
     );
 }
@@ -464,17 +274,8 @@ fn new_done_short() {
         "todo new a -d",
         SubCommand::New(New {
             desc: vec!["a".to_string()],
-            blocked_by: vec![],
-            blocking: vec![],
-            before: vec![],
-            after: vec![],
-            chain: false,
-            priority: None,
-            due: vec![],
-            budget: vec![],
-            prefix: vec![],
-            snooze: vec![],
             done: true,
+            ..Default::default()
         }),
     );
 }
