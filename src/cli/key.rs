@@ -15,8 +15,8 @@ impl FromStr for Key {
             return Ok(Key::ByNumber(n));
         }
         if let Some((prefix, suffix)) = s.split_once("..") {
-            let prefix = prefix.strip_prefix("[").unwrap_or(prefix);
-            let suffix = suffix.strip_suffix("]").unwrap_or(suffix);
+            let prefix = prefix.strip_prefix('[').unwrap_or(prefix);
+            let suffix = suffix.strip_suffix(']').unwrap_or(suffix);
             if let (Ok(start), Ok(end)) =
                 (prefix.parse::<i32>(), suffix.parse::<i32>())
             {
