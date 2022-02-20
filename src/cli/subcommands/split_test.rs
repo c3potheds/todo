@@ -19,8 +19,7 @@ fn split_one_into_one() {
         SubCommand::Split(Split {
             keys: vec![ByNumber(1)],
             into: vec!["a".to_string()],
-            chain: false,
-            prefix: vec![],
+            ..Default::default()
         }),
     );
 }
@@ -32,8 +31,7 @@ fn split_one_into_three() {
         SubCommand::Split(Split {
             keys: vec![ByNumber(1)],
             into: vec!["a".to_string(), "b".to_string(), "c".to_string()],
-            chain: false,
-            prefix: vec![],
+            ..Default::default()
         }),
     );
 }
@@ -45,8 +43,7 @@ fn split_three_into_two() {
         SubCommand::Split(Split {
             keys: vec![ByNumber(1), ByNumber(2), ByNumber(3)],
             into: vec!["a".to_string(), "b".to_string()],
-            chain: false,
-            prefix: vec![],
+            ..Default::default()
         }),
     );
 }
@@ -59,7 +56,7 @@ fn split_into_chain() {
             keys: vec![ByNumber(1)],
             into: vec!["a".to_string(), "b".to_string(), "c".to_string()],
             chain: true,
-            prefix: vec![],
+            ..Default::default()
         }),
     );
 }
@@ -71,8 +68,8 @@ fn split_with_prefix_long() {
         SubCommand::Split(Split {
             keys: vec![ByNumber(1)],
             into: vec!["a".to_string(), "b".to_string()],
-            chain: false,
             prefix: vec!["x".to_string()],
+            ..Default::default()
         }),
     );
 }
@@ -84,8 +81,8 @@ fn split_with_prefix_short() {
         SubCommand::Split(Split {
             keys: vec![ByNumber(1)],
             into: vec!["a".to_string(), "b".to_string()],
-            chain: false,
             prefix: vec!["x".to_string()],
+            ..Default::default()
         }),
     );
 }
@@ -97,8 +94,8 @@ fn split_with_multiple_prefixes() {
         SubCommand::Split(Split {
             keys: vec![ByNumber(1)],
             into: vec!["a".to_string(), "b".to_string()],
-            chain: false,
             prefix: vec!["x".to_string(), "y".to_string()],
+            ..Default::default()
         }),
     );
 }

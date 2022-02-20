@@ -39,7 +39,7 @@ use structopt::StructOpt;
 /// ... which results in:
 ///
 ///  a <- b1 <- b2 <- b3 <- c
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, PartialEq, StructOpt, Default)]
 #[structopt(
     setting = structopt::clap::AppSettings::AllowNegativeNumbers,
     verbatim_doc_comment,
