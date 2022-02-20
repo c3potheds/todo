@@ -33,6 +33,7 @@ fn new_one() {
             budget: vec![],
             prefix: vec![],
             snooze: vec![],
+            done: false,
         }),
     );
 }
@@ -53,6 +54,7 @@ fn new_three() {
             budget: vec![],
             prefix: vec![],
             snooze: vec![],
+            done: false,
         }),
     );
 }
@@ -73,6 +75,7 @@ fn new_blocked_by_long() {
             budget: vec![],
             prefix: vec![],
             snooze: vec![],
+            done: false,
         }),
     );
 }
@@ -93,6 +96,7 @@ fn new_blocked_by_short() {
             budget: vec![],
             prefix: vec![],
             snooze: vec![],
+            done: false,
         }),
     );
 }
@@ -113,6 +117,7 @@ fn new_blocking_long() {
             budget: vec![],
             prefix: vec![],
             snooze: vec![],
+            done: false,
         }),
     );
 }
@@ -133,6 +138,7 @@ fn new_blocking_short() {
             budget: vec![],
             prefix: vec![],
             snooze: vec![],
+            done: false,
         }),
     );
 }
@@ -153,6 +159,7 @@ fn new_blocking_by_name() {
             budget: vec![],
             prefix: vec![],
             snooze: vec![],
+            done: false,
         }),
     );
 }
@@ -173,6 +180,7 @@ fn new_chain() {
             budget: vec![],
             prefix: vec![],
             snooze: vec![],
+            done: false,
         }),
     );
 }
@@ -193,6 +201,7 @@ fn new_before_after() {
             budget: vec![],
             prefix: vec![],
             snooze: vec![],
+            done: false,
         }),
     );
 }
@@ -213,6 +222,7 @@ fn new_one_with_priority() {
             budget: vec![],
             prefix: vec![],
             snooze: vec![],
+            done: false,
         }),
     )
 }
@@ -233,6 +243,7 @@ fn new_three_with_priority() {
             budget: vec![],
             prefix: vec![],
             snooze: vec![],
+            done: false,
         }),
     )
 }
@@ -253,6 +264,7 @@ fn new_with_negative_priority() {
             budget: vec![],
             prefix: vec![],
             snooze: vec![],
+            done: false,
         }),
     )
 }
@@ -273,6 +285,7 @@ fn new_with_due_date() {
             budget: vec![],
             prefix: vec![],
             snooze: vec![],
+            done: false,
         }),
     )
 }
@@ -293,6 +306,7 @@ fn new_with_budget() {
             budget: vec!["2".to_string(), "days".to_string()],
             prefix: vec![],
             snooze: vec![],
+            done: false,
         }),
     );
 }
@@ -313,6 +327,7 @@ fn new_with_prefix() {
             budget: vec![],
             prefix: vec!["x".to_string()],
             snooze: vec![],
+            done: false,
         }),
     );
 }
@@ -333,6 +348,7 @@ fn new_with_prefix_short() {
             budget: vec![],
             prefix: vec!["x".to_string()],
             snooze: vec![],
+            done: false,
         }),
     );
 }
@@ -353,6 +369,7 @@ fn new_multiple_prefixes() {
             budget: vec![],
             prefix: vec!["x".to_string(), "y".to_string()],
             snooze: vec![],
+            done: false,
         }),
     );
 }
@@ -373,6 +390,7 @@ fn new_multiple_prefixes_in_list() {
             budget: vec![],
             prefix: vec!["x".to_string(), "y".to_string()],
             snooze: vec![],
+            done: false,
         }),
     );
 }
@@ -393,6 +411,7 @@ fn new_snooze_long() {
             budget: vec![],
             prefix: vec![],
             snooze: vec!["tomorrow".to_string()],
+            done: false,
         }),
     );
 }
@@ -413,6 +432,49 @@ fn new_snooze_short() {
             budget: vec![],
             prefix: vec![],
             snooze: vec!["2".to_string(), "days".to_string()],
+            done: false,
+        }),
+    );
+}
+
+#[test]
+fn new_done() {
+    expect_parses_into(
+        "todo new a --done",
+        SubCommand::New(New {
+            desc: vec!["a".to_string()],
+            blocked_by: vec![],
+            blocking: vec![],
+            before: vec![],
+            after: vec![],
+            chain: false,
+            priority: None,
+            due: vec![],
+            budget: vec![],
+            prefix: vec![],
+            snooze: vec![],
+            done: true,
+        }),
+    );
+}
+
+#[test]
+fn new_done_short() {
+    expect_parses_into(
+        "todo new a -d",
+        SubCommand::New(New {
+            desc: vec!["a".to_string()],
+            blocked_by: vec![],
+            blocking: vec![],
+            before: vec![],
+            after: vec![],
+            chain: false,
+            priority: None,
+            due: vec![],
+            budget: vec![],
+            prefix: vec![],
+            snooze: vec![],
+            done: true,
         }),
     );
 }

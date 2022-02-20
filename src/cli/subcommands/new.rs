@@ -132,4 +132,12 @@ pub struct New {
     /// due dates, which snap to the end of the time interval.
     #[structopt(long, short = "s", min_values = 1)]
     pub snooze: Vec<String>,
+
+    /// Complete the new tasks.
+    ///
+    /// You can use this to mark a task as complete when you create it. This is
+    /// useful if you want to write down an accomplishment that you've already
+    /// done, so that it shows up in the completed task list.
+    #[structopt(long, short = "d")]
+    pub done: bool,
 }

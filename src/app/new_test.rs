@@ -470,3 +470,105 @@ fn new_snooze_multiple_tasks() {
         )
         .end();
 }
+
+#[test]
+fn new_complete_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a --done")
+        .validate()
+        .printed_task(&PrintableTask::new("a", 0, Complete).action(New))
+        .end();
+}
+
+#[test]
+fn multiple_new_complete_tasks() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --done")
+        .validate()
+        .printed_task(&PrintableTask::new("a", -2, Complete).action(New))
+        .printed_task(&PrintableTask::new("b", -1, Complete).action(New))
+        .printed_task(&PrintableTask::new("c", 0, Complete).action(New))
+        .end();
+}
+
+#[test]
+fn new_complete_chain() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --chain --done")
+        .validate()
+        .printed_task(&PrintableTask::new("a", -2, Complete).action(New))
+        .printed_task(&PrintableTask::new("b", -1, Complete).action(New))
+        .printed_task(&PrintableTask::new("c", 0, Complete).action(New))
+        .end();
+}
+
+#[test]
+fn new_blocked_by_incomplete_task_but_tried_to_complete() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a");
+    fix.test("todo new b -p a --done")
+        .validate()
+        .printed_error(&PrintableError::CannotCheckBecauseBlocked {
+            cannot_check: BriefPrintableTask::new(2, Blocked),
+            blocked_by: vec![BriefPrintableTask::new(1, Incomplete)],
+        })
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("b", 2, Blocked).action(New))
+        .end();
+}
+
+#[test]
+fn new_blocked_by_incomplete_task_and_blocks_other_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a c");
+    fix.test("todo new b -p a -b c --done")
+        .validate()
+        .printed_error(&PrintableError::CannotCheckBecauseBlocked {
+            cannot_check: BriefPrintableTask::new(2, Blocked),
+            blocked_by: vec![BriefPrintableTask::new(1, Incomplete)],
+        })
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("b", 2, Blocked).action(New))
+        .printed_task(&PrintableTask::new("c", 3, Blocked))
+        .end();
+}
+
+#[test]
+fn new_blocked_by_incomplete_task_and_blocks_other_task_with_chain() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a1 a2 a3");
+    fix.test("todo new b1 b2 b3 -p a1 a2 a3");
+    fix.test("todo new c1 c2 c3 -p b1 b2 b3 --done")
+        .validate()
+        .printed_error(&PrintableError::CannotCheckBecauseBlocked {
+            cannot_check: BriefPrintableTask::new(7, Blocked),
+            blocked_by: vec![
+                BriefPrintableTask::new(4, Blocked),
+                BriefPrintableTask::new(5, Blocked),
+                BriefPrintableTask::new(6, Blocked),
+            ],
+        })
+        .printed_error(&PrintableError::CannotCheckBecauseBlocked {
+            cannot_check: BriefPrintableTask::new(8, Blocked),
+            blocked_by: vec![
+                BriefPrintableTask::new(4, Blocked),
+                BriefPrintableTask::new(5, Blocked),
+                BriefPrintableTask::new(6, Blocked),
+            ],
+        })
+        .printed_error(&PrintableError::CannotCheckBecauseBlocked {
+            cannot_check: BriefPrintableTask::new(9, Blocked),
+            blocked_by: vec![
+                BriefPrintableTask::new(4, Blocked),
+                BriefPrintableTask::new(5, Blocked),
+                BriefPrintableTask::new(6, Blocked),
+            ],
+        })
+        .printed_task(&PrintableTask::new("b1", 4, Blocked))
+        .printed_task(&PrintableTask::new("b2", 5, Blocked))
+        .printed_task(&PrintableTask::new("b3", 6, Blocked))
+        .printed_task(&PrintableTask::new("c1", 7, Blocked).action(New))
+        .printed_task(&PrintableTask::new("c2", 8, Blocked).action(New))
+        .printed_task(&PrintableTask::new("c3", 9, Blocked).action(New))
+        .end();
+}

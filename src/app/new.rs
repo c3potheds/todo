@@ -3,6 +3,7 @@ extern crate humantime;
 use app::util::format_prefix;
 use app::util::format_task;
 use app::util::format_task_brief;
+use app::util::format_tasks_brief;
 use app::util::lookup_tasks;
 use app::util::pairwise;
 use app::util::parse_budget_or_print_error;
@@ -11,6 +12,8 @@ use app::util::parse_snooze_date_or_print_error;
 use chrono::DateTime;
 use chrono::Utc;
 use cli::New;
+use model::CheckError;
+use model::CheckOptions;
 use model::NewOptions;
 use model::TaskSet;
 use model::TodoList;
@@ -106,6 +109,23 @@ pub fn run(
                 Err(_) => {
                     panic!("This should never happen because all tasks are new")
                 }
+            }
+        });
+    }
+    if cmd.done {
+        new_tasks.iter_sorted(model).for_each(|id| {
+            if let Err(CheckError::TaskIsBlockedBy(blocking)) =
+                model.check(CheckOptions { id, now })
+            {
+                printer.print_error(
+                    &PrintableError::CannotCheckBecauseBlocked {
+                        cannot_check: format_task_brief(model, id),
+                        blocked_by: format_tasks_brief(
+                            model,
+                            &TaskSet::from_iter(blocking),
+                        ),
+                    },
+                );
             }
         });
     }
