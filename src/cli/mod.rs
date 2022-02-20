@@ -12,4 +12,7 @@ pub use self::subcommands::*;
 pub mod testing;
 
 #[cfg(test)]
+mod key_test;
+
+#[cfg(test)]
 mod options_test;

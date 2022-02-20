@@ -15,10 +15,13 @@ impl FromStr for Key {
             return Ok(Key::ByNumber(n));
         }
         if let Some((prefix, suffix)) = s.split_once("..") {
+            let prefix = prefix.strip_prefix("[").unwrap_or(prefix);
+            let suffix = suffix.strip_suffix("]").unwrap_or(suffix);
             if let (Ok(start), Ok(end)) =
                 (prefix.parse::<i32>(), suffix.parse::<i32>())
             {
-                return Ok(Key::ByRange(start, end));
+                use std::cmp::{max, min};
+                return Ok(Key::ByRange(min(start, end), max(start, end)));
             }
         }
         Ok(Key::ByName(s.to_string()))
