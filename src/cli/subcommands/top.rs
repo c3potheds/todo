@@ -6,7 +6,7 @@ use structopt::StructOpt;
 /// One can represent "categories" for tasks by blocking a task representing
 /// a category on the tasks that should be in that category. When running
 /// this command, you can see all "uncategorized" tasks.
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, PartialEq, StructOpt, Default)]
 #[structopt(
     setting = structopt::clap::AppSettings::AllowNegativeNumbers,
     verbatim_doc_comment,
