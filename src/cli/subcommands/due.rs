@@ -35,7 +35,7 @@ use structopt::StructOpt;
 /// dependencies whose due dates changed) will be printed.
 ///
 ///   todo due "buy christmas presents" --on dec 24
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, PartialEq, StructOpt, Default)]
 #[structopt(
     setting = structopt::clap::AppSettings::AllowNegativeNumbers,
     verbatim_doc_comment,
