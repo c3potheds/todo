@@ -8,21 +8,13 @@ pub enum Key {
     ByRange(i32, i32),
 }
 
-fn split_once<'a>(s: &'a str, pattern: &'a str) -> Option<(&'a str, &'a str)> {
-    let mut iter = s.splitn(2, pattern);
-    match iter.next() {
-        Some(first) => iter.next().map(|rest| (first, rest)),
-        _ => None,
-    }
-}
-
 impl FromStr for Key {
     type Err = ParseIntError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if let Ok(n) = s.parse::<i32>() {
             return Ok(Key::ByNumber(n));
         }
-        if let Some((prefix, suffix)) = split_once(s, "..") {
+        if let Some((prefix, suffix)) = s.split_once("..") {
             if let (Ok(start), Ok(end)) =
                 (prefix.parse::<i32>(), suffix.parse::<i32>())
             {
