@@ -1,5 +1,7 @@
 use app::testing::Fixture;
+use cli::Key;
 use printing::PrintableTask;
+use printing::PrintableWarning;
 use printing::Status::*;
 
 #[test]
@@ -107,16 +109,20 @@ fn top_underneath_one_task() {
 }
 
 #[test]
-fn top_intersection_of_categories() {
+fn top_union_of_categories() {
     let mut fix = Fixture::default();
     fix.test("todo new x y");
     fix.test("todo new a b -b x");
     fix.test("todo new c d -b x y");
-    fix.test("todo new d e -b y");
+    fix.test("todo new e f -b y");
     fix.test("todo top x y")
         .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("b", 2, Incomplete))
         .printed_task(&PrintableTask::new("c", 3, Incomplete))
         .printed_task(&PrintableTask::new("d", 4, Incomplete))
+        .printed_task(&PrintableTask::new("e", 5, Incomplete))
+        .printed_task(&PrintableTask::new("f", 6, Incomplete))
         .end();
 }
 
@@ -131,5 +137,17 @@ fn top_exclude_deps_with_indirect_connection_to_category() {
         // the top, through b. On the other hand, b is included because the only
         // path to the top is direct.
         .printed_task(&PrintableTask::new("b", 2, Blocked))
+        .end();
+}
+
+#[test]
+fn top_with_typo() {
+    let mut fix = Fixture::default();
+    fix.test("todo new blah");
+    fix.test("todo top bleh")
+        .validate()
+        .printed_warning(&PrintableWarning::NoMatchFoundForKey {
+            requested_key: Key::ByName("bleh".to_string()),
+        })
         .end();
 }
