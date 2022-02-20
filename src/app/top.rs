@@ -1,5 +1,6 @@
 use app::util::format_task;
 use app::util::lookup_task;
+use app::util::should_include_done;
 use cli::Top;
 use model::TaskSet;
 use model::TaskStatus;
@@ -31,23 +32,24 @@ pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Top) {
     // themselves directly or indirectly block the specified tasks. In other
     // words, the top tasks for a given task are the ones that, if completed,
     // would unblock the given task.
-    cmd.keys
-        .iter()
-        .fold(TaskSet::default(), |so_far, key| {
-            let tasks = lookup_task(model, key);
-            if tasks.is_empty() {
-                printer.print_warning(&PrintableWarning::NoMatchFoundForKey {
-                    requested_key: key.clone(),
-                });
-            }
-            so_far | tasks
-        })
+    let tasks = cmd.keys.iter().fold(TaskSet::default(), |so_far, key| {
+        let tasks = lookup_task(model, key);
+        if tasks.is_empty() {
+            printer.print_warning(&PrintableWarning::NoMatchFoundForKey {
+                requested_key: key.clone(),
+            });
+        }
+        so_far | tasks
+    });
+    let include_done =
+        should_include_done(cmd.include_done, model, tasks.iter_unsorted());
+    tasks
         .iter_unsorted()
         // For each matching task, find the top tasks that directly block it.
         .fold(TaskSet::default(), |so_far, id| {
             model
                 .deps(id)
-                .include_done(model, cmd.include_done)
+                .include_done(model, include_done)
                 .iter_unsorted()
                 .filter(|&dep| {
                     !model

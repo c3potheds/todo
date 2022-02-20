@@ -151,3 +151,14 @@ fn top_with_typo() {
         })
         .end();
 }
+
+#[test]
+fn top_implicit_include_done() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b --chain");
+    fix.test("todo check a b");
+    fix.test("todo top b")
+        .validate()
+        .printed_task(&PrintableTask::new("a", -1, Complete))
+        .end();
+}
