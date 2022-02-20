@@ -572,3 +572,14 @@ fn new_blocked_by_incomplete_task_and_blocks_other_task_with_chain() {
         .printed_task(&PrintableTask::new("c3", 9, Blocked).action(New))
         .end();
 }
+
+#[test]
+fn new_block_completed_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a --done");
+    fix.test("todo new b -b a")
+        .validate()
+        .printed_task(&PrintableTask::new("b", 1, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("a", 2, Blocked))
+        .end();
+}

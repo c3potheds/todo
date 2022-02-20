@@ -31,23 +31,17 @@ pub fn run(
 ) {
     let due_date = match parse_due_date_or_print_error(now, &cmd.due, printer) {
         Ok(due_date) => due_date,
-        Err(_) => {
-            return;
-        }
+        Err(_) => return,
     };
     let budget = match parse_budget_or_print_error(&cmd.budget, printer) {
         Ok(budget) => budget,
-        Err(_) => {
-            return;
-        }
+        Err(_) => return,
     };
     let snooze_date =
         match parse_snooze_date_or_print_error(now, &cmd.snooze, printer) {
             Ok(Some(snooze_date)) => snooze_date,
             Ok(None) => now,
-            Err(_) => {
-                return;
-            }
+            Err(_) => return,
         };
     let deps = lookup_tasks(model, &cmd.blocked_by);
     let adeps = lookup_tasks(model, &cmd.blocking);
