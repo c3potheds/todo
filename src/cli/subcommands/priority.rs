@@ -28,7 +28,7 @@ use structopt::StructOpt;
 /// And if both task keys and a priority are supplied, matching tasks will
 /// have their priority set to the given level, and all affected tasks will
 /// be printed.
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, PartialEq, StructOpt, Default)]
 #[structopt(
     setting = structopt::clap::AppSettings::AllowNegativeNumbers,
     verbatim_doc_comment,

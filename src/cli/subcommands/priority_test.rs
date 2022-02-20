@@ -7,11 +7,7 @@ use cli::SubCommand;
 fn priority_query_all() {
     expect_parses_into(
         "todo priority",
-        SubCommand::Priority(Priority {
-            keys: vec![],
-            priority: None,
-            include_done: false,
-        }),
+        SubCommand::Priority(Priority::default()),
     );
 }
 
@@ -21,8 +17,7 @@ fn priority_query_task() {
         "todo priority 1",
         SubCommand::Priority(Priority {
             keys: vec![ByNumber(1)],
-            priority: None,
-            include_done: false,
+            ..Default::default()
         }),
     );
 }
@@ -32,9 +27,8 @@ fn priority_query_priority() {
     expect_parses_into(
         "todo priority --is 1",
         SubCommand::Priority(Priority {
-            keys: vec![],
             priority: Some(1),
-            include_done: false,
+            ..Default::default()
         }),
     );
 }
