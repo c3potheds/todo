@@ -478,3 +478,39 @@ fn new_done_short() {
         }),
     );
 }
+
+#[test]
+fn new_blocked_by_range() {
+    expect_parses_into(
+        "todo new a -p 1..2",
+        SubCommand::New(New {
+            desc: vec!["a".to_string()],
+            blocked_by: vec![ByRange(1, 2)],
+            ..Default::default()
+        }),
+    )
+}
+
+#[test]
+fn new_blocked_by_negative_range() {
+    expect_parses_into(
+        "todo new a -p [-20..-10]",
+        SubCommand::New(New {
+            desc: vec!["a".to_string()],
+            blocked_by: vec![ByRange(-20, -10)],
+            ..Default::default()
+        }),
+    )
+}
+
+#[test]
+fn new_blocking_negative_range() {
+    expect_parses_into(
+        "todo new a -b [-2..0]",
+        SubCommand::New(New {
+            desc: vec!["a".to_string()],
+            blocking: vec![ByRange(-2, 0)],
+            ..Default::default()
+        }),
+    )
+}

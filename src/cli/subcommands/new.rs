@@ -6,7 +6,7 @@ use structopt::StructOpt;
 /// Each positional string will become the description of a new task in the
 /// to-do list. By default, all new tasks are in the incomplete state, showing
 /// up in the default list that you see when you invoke a raw 'todo' command.
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, PartialEq, StructOpt, Default)]
 #[structopt(
     setting = structopt::clap::AppSettings::AllowNegativeNumbers,
     verbatim_doc_comment,
