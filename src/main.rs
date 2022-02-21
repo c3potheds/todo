@@ -76,10 +76,8 @@ fn log10(n: usize) -> usize {
 
 fn main() -> TodoResult {
     let options = Options::from_args();
-    let project_dirs = match directories::ProjectDirs::from("", "", "todo") {
-        Some(project_dirs) => project_dirs,
-        None => return Err(TodoError::NoDataDirectory),
-    };
+    let project_dirs = directories::ProjectDirs::from("", "", "todo")
+        .ok_or(TodoError::NoDataDirectory)?;
 
     let mut config_path = project_dirs.config_dir().to_path_buf();
     config_path.push("config.json");
