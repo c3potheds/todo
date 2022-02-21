@@ -4,7 +4,6 @@ use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
 use daggy::stable_dag::StableDag;
-use daggy::NodeIndex;
 use daggy::Walker;
 use std::collections::BTreeSet;
 use std::collections::HashMap;
@@ -14,8 +13,8 @@ use std::io::Read;
 use std::io::Write;
 use std::iter::FromIterator;
 
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Deserialize, Serialize)]
-pub struct TaskId(NodeIndex);
+mod task_id;
+pub use self::task_id::*;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum TaskStatus {
