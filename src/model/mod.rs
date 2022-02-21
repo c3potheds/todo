@@ -16,12 +16,8 @@ use std::iter::FromIterator;
 mod task_id;
 pub use self::task_id::*;
 
-#[derive(Debug, PartialEq, Copy, Clone)]
-pub enum TaskStatus {
-    Complete,
-    Incomplete,
-    Blocked,
-}
+mod task_status;
+pub use self::task_status::*;
 
 fn default_creation_time() -> DateTime<Utc> {
     Utc::now()
