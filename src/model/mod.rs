@@ -6,9 +6,7 @@ use chrono::Utc;
 use daggy::stable_dag::StableDag;
 use daggy::Walker;
 use std::collections::BTreeSet;
-use std::collections::HashMap;
 use std::collections::HashSet;
-use std::hash::Hash;
 use std::io::Read;
 use std::io::Write;
 use std::iter::FromIterator;
@@ -25,96 +23,8 @@ pub use self::duration::*;
 mod task;
 pub use self::task::*;
 
-
-fn remove_first_occurrence_from_vec<T: PartialEq>(
-    vec: &mut Vec<T>,
-    data: &T,
-) -> Option<T> {
-    vec.iter().position(|x| x == data).map(|i| vec.remove(i))
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct Layering<T: Copy + Eq + Hash> {
-    layers: Vec<Vec<T>>,
-    depth: HashMap<T, usize>,
-}
-
-impl<T: Copy + Eq + Hash> Default for Layering<T> {
-    fn default() -> Self {
-        Self {
-            layers: vec![],
-            depth: HashMap::new(),
-        }
-    }
-}
-
-impl<T> Layering<T>
-where
-    T: Copy + Eq + Hash,
-{
-    fn layer(&mut self, layer: usize) -> &mut Vec<T> {
-        while self.layers.len() <= layer {
-            self.layers.push(Vec::new());
-        }
-        &mut self.layers[layer]
-    }
-
-    pub fn len(&self) -> usize {
-        self.layers.iter().map(|layer| layer.len()).sum()
-    }
-
-    pub fn bisect_layer(
-        &self,
-        data: &T,
-        layer: usize,
-        cmp: impl Fn(&T, &T) -> std::cmp::Ordering,
-    ) -> usize {
-        if self.layers.len() <= layer {
-            return 0;
-        }
-        bisection::bisect_right_by(&self.layers[layer], |other| {
-            (&cmp)(other, data)
-        })
-    }
-
-    pub fn put_in_layer(&mut self, data: T, layer: usize, pos: usize) {
-        self.layer(layer).insert(pos, data);
-        self.depth.insert(data, layer);
-    }
-
-    pub fn remove_from_layer(&mut self, data: &T, layer: usize) -> bool {
-        if layer >= self.layers.len() {
-            return false;
-        }
-        remove_first_occurrence_from_vec(&mut self.layers[layer], data)
-            .map(|_| self.depth.remove(data))
-            .is_some()
-    }
-
-    pub fn position(&self, data: &T) -> Option<usize> {
-        self.depth.get(data).and_then(|&depth| {
-            self.layers[depth]
-                .iter()
-                .position(|item| item == data)
-                .map(|pos| {
-                    pos + self
-                        .layers
-                        .iter()
-                        .map(|layer| layer.len())
-                        .take(depth)
-                        .sum::<usize>()
-                })
-        })
-    }
-
-    pub fn iter(&self) -> impl Iterator<Item = &T> + '_ {
-        self.layers.iter().flat_map(|layer| layer.iter())
-    }
-
-    pub fn contains(&self, data: &T) -> bool {
-        self.depth.contains_key(data)
-    }
-}
+mod layering;
+use self::layering::*;
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub struct TodoList {
@@ -306,9 +216,7 @@ impl TodoList {
     fn max_depth_of_deps(&self, id: TaskId) -> Option<usize> {
         self.deps(id)
             .into_iter_unsorted()
-            .flat_map(|dep| {
-                self.incomplete.depth.get(&dep).into_iter().copied()
-            })
+            .flat_map(|dep| self.incomplete.depth(&dep).into_iter())
             .max()
     }
 
@@ -316,7 +224,7 @@ impl TodoList {
     /// Returns Some with the new depth if a change was made, None otherwise.
     fn update_depth(&mut self, id: TaskId) -> Option<usize> {
         match (
-            self.incomplete.depth.get(&id).copied(),
+            self.incomplete.depth(&id),
             self.max_depth_of_deps(id).map(|depth| depth + 1),
         ) {
             // Task is complete, doesn't need to change
@@ -367,8 +275,8 @@ impl TodoList {
         let task = self.get(id).unwrap();
         let start_date = task.start_date;
         let creation_time = task.creation_time;
-        match self.incomplete.depth.get(&id) {
-            Some(&depth) => {
+        match self.incomplete.depth(&id) {
+            Some(depth) => {
                 depth == 1
                     && match now {
                         Some(now) => start_date > now,
@@ -534,7 +442,7 @@ impl TodoList {
             self.tasks[options.id.0].start_date =
                 self.tasks[options.id.0].creation_time;
         }
-        if let Some(&depth) = self.incomplete.depth.get(&options.id) {
+        if let Some(depth) = self.incomplete.depth(&options.id) {
             assert!(depth == 0 || depth == 1);
             self.incomplete.remove_from_layer(&options.id, depth);
             self.complete.push(options.id);
@@ -776,8 +684,8 @@ pub enum PuntError {
 
 impl TodoList {
     pub fn punt(&mut self, id: TaskId) -> Result<(), PuntError> {
-        match self.incomplete.depth.get(&id) {
-            Some(&depth) => {
+        match self.incomplete.depth(&id) {
+            Some(depth) => {
                 self.incomplete.remove_from_layer(&id, depth);
                 self.put_in_incomplete_layer(id, depth);
                 Ok(())
@@ -859,7 +767,7 @@ impl TodoList {
         if self.complete.contains(&id) {
             return Some(TaskStatus::Complete);
         }
-        match self.incomplete.depth.get(&id) {
+        match self.incomplete.depth(&id) {
             Some(0) => Some(TaskStatus::Incomplete),
             Some(_) => Some(TaskStatus::Blocked),
             _ => None,
@@ -904,7 +812,7 @@ impl TodoList {
             .collect::<Vec<_>>()
             .into_iter()
             .map(|id| {
-                let old_depth = *self.incomplete.depth.get(&id).unwrap();
+                let old_depth = self.incomplete.depth(&id).unwrap();
                 self.incomplete.remove_from_layer(&id, old_depth);
                 self.put_in_incomplete_layer(id, 0);
                 self.adeps(id).iter_sorted(self).for_each(|adep| {
@@ -920,7 +828,7 @@ impl TodoList {
     pub fn remove(&mut self, id: TaskId) -> TaskSet {
         if self.incomplete.contains(&id) {
             self.incomplete
-                .remove_from_layer(&id, self.incomplete.depth[&id]);
+                .remove_from_layer(&id, self.incomplete.depth(&id).unwrap());
         } else if self.complete.contains(&id) {
             remove_first_occurrence_from_vec(&mut self.complete, &id);
         };
@@ -962,8 +870,8 @@ impl TodoList {
         id: TaskId,
         start_date: DateTime<Utc>,
     ) -> Result<(), Vec<SnoozeWarning>> {
-        match self.incomplete.depth.get(&id) {
-            Some(&depth) => {
+        match self.incomplete.depth(&id) {
+            Some(depth) => {
                 if depth == 0 {
                     self.incomplete.remove_from_layer(&id, 0);
                     self.put_in_incomplete_layer(id, 1);
