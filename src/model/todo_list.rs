@@ -5,10 +5,10 @@ use daggy::stable_dag::StableDag;
 use daggy::Walker;
 use model::layering::remove_first_occurrence_from_vec;
 use model::layering::Layering;
+use model::DurationInSeconds;
 use model::NewOptions;
 use model::Task;
 use model::TaskId;
-use model::DurationInSeconds;
 use model::TaskSet;
 use model::TaskStatus;
 use std::collections::HashSet;
@@ -750,6 +750,39 @@ impl TodoList {
                 Ok(())
             }
             None => Err(vec![SnoozeWarning::TaskIsComplete]),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub enum UnsnoozeWarning {
+    TaskIsComplete,
+    TaskIsBlocked,
+    NotSnoozed,
+}
+
+impl TodoList {
+    pub fn unsnooze(&mut self, id: TaskId) -> Result<(), Vec<UnsnoozeWarning>> {
+        // If the task is blocked by any incomplete tasks, return an error.
+        if self
+            .deps(id)
+            .iter_unsorted()
+            .any(|dep| self.status(dep).unwrap() != TaskStatus::Complete)
+        {
+            return Err(vec![UnsnoozeWarning::TaskIsBlocked]);
+        }
+        match self.incomplete.depth(&id) {
+            Some(0) => Err(vec![UnsnoozeWarning::NotSnoozed]),
+            Some(1) => {
+                self.incomplete.remove_from_layer(&id, 1);
+                self.put_in_incomplete_layer(id, 0);
+                // Reset the start date to the creation time.
+                self.tasks.node_weight_mut(id.0).unwrap().start_date =
+                    self.tasks.node_weight(id.0).unwrap().creation_time;
+                Ok(())
+            }
+            Some(_) => unreachable!(),
+            None => Err(vec![UnsnoozeWarning::TaskIsComplete]),
         }
     }
 }

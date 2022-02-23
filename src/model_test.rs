@@ -2114,3 +2114,53 @@ fn check_snoozed_task_should_unsnooze() {
     list.check(CheckOptions { id: a, now }).unwrap();
     assert_eq!(list.get(a).unwrap().start_date, today);
 }
+
+#[test]
+fn unsnooze_task_that_is_not_snoozed() {
+    let mut list = TodoList::default();
+    let a = list.add("a");
+    assert_eq!(list.unsnooze(a), Err(vec![UnsnoozeWarning::NotSnoozed]));
+}
+
+#[test]
+fn unsnooze_task_that_is_complete() {
+    let mut list = TodoList::default();
+    let a = list.add("a");
+    list.check(a).unwrap();
+    assert_eq!(list.unsnooze(a), Err(vec![UnsnoozeWarning::TaskIsComplete]));
+}
+
+#[test]
+fn unsnooze_task_that_is_snoozed() {
+    let mut list = TodoList::default();
+    let today = Utc.ymd(2022, 02, 12).and_hms(00, 00, 00);
+    let tomorrow = Utc.ymd(2022, 02, 13).and_hms(00, 00, 00);
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .creation_time(today)
+            .start_date(tomorrow),
+    );
+    assert_eq!(list.unsnooze(a), Ok(()));
+    assert_eq!(list.get(a).unwrap().start_date, today);
+}
+
+#[test]
+fn unsnooze_blocked_task() {
+    let mut list = TodoList::default();
+    let a = list.add("a");
+    let b = list.add("b");
+    list.block(b).on(a).unwrap();
+    assert_eq!(list.unsnooze(b), Err(vec![UnsnoozeWarning::TaskIsBlocked]));
+}
+
+#[test]
+fn unsnooze_deeply_blocked_task() {
+    let mut list = TodoList::default();
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
+    list.block(b).on(a).unwrap();
+    list.block(c).on(b).unwrap();
+    assert_eq!(list.unsnooze(c), Err(vec![UnsnoozeWarning::TaskIsBlocked]));
+}

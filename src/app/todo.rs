@@ -21,6 +21,7 @@ use app::split;
 use app::status;
 use app::top;
 use app::unblock;
+use app::unsnooze;
 use cli::Options;
 use cli::SubCommand;
 use clock::Clock;
@@ -68,6 +69,7 @@ pub fn todo(
         Some(Split(cmd)) => split::run(list, printer, cmd),
         Some(Top(cmd)) => top::run(list, printer, &cmd),
         Some(Unblock(cmd)) => unblock::run(list, printer, &cmd),
+        Some(Unsnooze(cmd)) => unsnooze::run(list, printer, &cmd),
         None => status::run(list, printer, now, &status_options(options)),
     }
 }

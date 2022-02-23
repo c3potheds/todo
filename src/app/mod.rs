@@ -22,6 +22,7 @@ mod status;
 pub mod todo;
 mod top;
 mod unblock;
+mod unsnooze;
 mod util;
 
 pub use self::todo::todo;
@@ -94,6 +95,9 @@ mod top_test;
 
 #[cfg(test)]
 mod unblock_test;
+
+#[cfg(test)]
+mod unsnooze_test;
 
 #[cfg(test)]
 mod util_test;

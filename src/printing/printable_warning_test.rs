@@ -1,7 +1,7 @@
-use super::PrintableWarning::*;
 use super::BriefPrintableTask;
-use cli::Key::*;
+use super::PrintableWarning::*;
 use super::Status::*;
+use cli::Key::*;
 
 #[test]
 fn display_no_match_found_warning() {
@@ -94,6 +94,55 @@ fn display_cannot_unblock_because_task_is_not_blocked_warning() {
             "\u{1b}[1;33mwarning\u{1b}[0m: ",
             "Task \u{1b}[33m2)\u{1b}[0m is not blocked by ",
             "\u{1b}[33m1)\u{1b}[0m"
+        )
+    );
+}
+
+#[test]
+fn display_cannot_unsnooze_because_blocked() {
+    let fmt = format!(
+        "{}",
+        CannotUnsnoozeBecauseBlocked {
+            cannot_unsnooze: BriefPrintableTask::new(2, Incomplete),
+            blocked_by: vec![BriefPrintableTask::new(1, Incomplete)],
+        },
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "\u{1b}[1;33mwarning\u{1b}[0m: ",
+            "Cannot unsnooze \u{1b}[33m2)\u{1b}[0m because it is blocked by ",
+            "\u{1b}[33m1)\u{1b}[0m"
+        )
+    );
+}
+
+#[test]
+fn display_cannot_unsnooze_because_complete() {
+    let fmt = format!(
+        "{}",
+        CannotUnsnoozeBecauseComplete(BriefPrintableTask::new(-2, Complete))
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "\u{1b}[1;33mwarning\u{1b}[0m: ",
+            "Cannot unsnooze \u{1b}[32m-2)\u{1b}[0m because it is complete",
+        )
+    );
+}
+
+#[test]
+fn display_cannot_unsnooze_because_not_snoozed() {
+    let fmt = format!(
+        "{}",
+        CannotUnsnoozeBecauseNotSnoozed(BriefPrintableTask::new(2, Incomplete))
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "\u{1b}[1;33mwarning\u{1b}[0m: ",
+            "Cannot unsnooze \u{1b}[33m2)\u{1b}[0m because it is not snoozed"
         )
     );
 }

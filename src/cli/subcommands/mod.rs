@@ -20,6 +20,7 @@ mod snooze;
 mod split;
 mod top;
 mod unblock;
+mod unsnooze;
 
 pub use self::block::Block;
 pub use self::budget::Budget;
@@ -43,6 +44,7 @@ pub use self::snooze::Snooze;
 pub use self::split::Split;
 pub use self::top::Top;
 pub use self::unblock::Unblock;
+pub use self::unsnooze::Unsnooze;
 pub use super::Key;
 
 #[cfg(test)]
@@ -110,3 +112,6 @@ mod top_test;
 
 #[cfg(test)]
 mod unblock_test;
+
+#[cfg(test)]
+mod unsnooze_test;

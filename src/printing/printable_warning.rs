@@ -35,6 +35,12 @@ pub enum PrintableWarning {
         due_date: DateTime<Utc>,
         snooze_date: DateTime<Utc>,
     },
+    CannotUnsnoozeBecauseComplete(BriefPrintableTask),
+    CannotUnsnoozeBecauseBlocked {
+        cannot_unsnooze: BriefPrintableTask,
+        blocked_by: Vec<BriefPrintableTask>,
+    },
+    CannotUnsnoozeBecauseNotSnoozed(BriefPrintableTask),
     AmbiguousKey {
         key: Key,
         matches: Vec<BriefPrintableTask>,
@@ -83,6 +89,21 @@ impl Display for PrintableWarning {
                 "Snoozed {} until after its due date {}",
                 snoozed_task, due_date
             ),
+            CannotUnsnoozeBecauseComplete(task) => {
+                write!(f, "Cannot unsnooze {} because it is complete", task)
+            }
+            CannotUnsnoozeBecauseBlocked {
+                cannot_unsnooze,
+                blocked_by,
+            } => write!(
+                f,
+                "Cannot unsnooze {} because it is blocked by {}",
+                cannot_unsnooze,
+                format_numbers(blocked_by)
+            ),
+            CannotUnsnoozeBecauseNotSnoozed(task) => {
+                write!(f, "Cannot unsnooze {} because it is not snoozed", task)
+            }
             AmbiguousKey { key, matches } => {
                 write!(
                     f,
