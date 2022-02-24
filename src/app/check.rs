@@ -149,7 +149,7 @@ pub fn run(
         .iter_sorted(model).for_each(|id| {
             printer.print_task(&format_task(model, id).action(Action::Check));
         });
-    (&unlocked - &checked)
+    (unlocked - checked)
         .iter_sorted(model).for_each(|id| {
             printer.print_task(&format_task(model, id).action(Action::Unlock));
         });

@@ -110,26 +110,26 @@ impl FromIterator<TaskId> for TaskSet {
 impl std::ops::BitOr for TaskSet {
     type Output = TaskSet;
     fn bitor(self, other: Self) -> Self::Output {
-        TaskSet {
-            ids: &self.ids | &other.ids,
-        }
+        let mut ids = self.ids;
+        ids.extend(other.ids);
+        Self { ids }
     }
 }
 
 impl std::ops::BitAnd for TaskSet {
     type Output = TaskSet;
     fn bitand(self, other: Self) -> Self::Output {
-        TaskSet {
-            ids: &self.ids & &other.ids,
-        }
+        let mut ids = self.ids;
+        ids.retain(|&id| other.ids.contains(&id));
+        Self { ids }
     }
 }
 
-impl std::ops::Sub<&TaskSet> for &TaskSet {
+impl std::ops::Sub for TaskSet {
     type Output = TaskSet;
-    fn sub(self, other: &TaskSet) -> Self::Output {
-        TaskSet {
-            ids: &self.ids - &other.ids,
-        }
+    fn sub(self, other: TaskSet) -> Self::Output {
+        let mut ids = self.ids;
+        ids.retain(|&id| !other.ids.contains(&id));
+        Self { ids }
     }
 }

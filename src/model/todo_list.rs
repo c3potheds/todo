@@ -350,7 +350,7 @@ impl<'ser> TodoList<'ser> {
                     ),
                 },
             );
-            result.unblocked = &result.unblocked - &TaskSet::of(options.id);
+            result.unblocked = result.unblocked - TaskSet::of(options.id);
             match self.check(options) {
                 Ok(newly_unblocked) => Ok(ForceChecked {
                     completed: result.completed

@@ -20,26 +20,26 @@ pub fn run(
     cmd: &Merge,
 ) {
     let tasks_to_merge = lookup_tasks(list, &cmd.keys);
-    let deps = &tasks_to_merge
+    let deps = tasks_to_merge
         .iter_unsorted()
         .fold(TaskSet::default(), |so_far, id| so_far | list.deps(id))
-        - &tasks_to_merge;
-    let adeps = &tasks_to_merge
+        - tasks_to_merge.clone();
+    let adeps = tasks_to_merge
         .iter_unsorted()
         .fold(TaskSet::default(), |so_far, id| so_far | list.adeps(id))
-        - &tasks_to_merge;
-    let transitive_deps = &tasks_to_merge
+        - tasks_to_merge.clone();
+    let transitive_deps = tasks_to_merge
         .iter_unsorted()
         .fold(TaskSet::default(), |so_far, id| {
             so_far | list.transitive_deps(id)
         })
-        - &tasks_to_merge;
-    let transitive_adeps = &tasks_to_merge
+        - tasks_to_merge.clone();
+    let transitive_adeps = tasks_to_merge
         .iter_unsorted()
         .fold(TaskSet::default(), |so_far, id| {
             so_far | list.transitive_adeps(id)
         })
-        - &tasks_to_merge;
+        - tasks_to_merge.clone();
     let cycle_through = transitive_deps & transitive_adeps;
     if !cycle_through.is_empty() {
         let adeps_of = cycle_through
