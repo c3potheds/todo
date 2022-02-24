@@ -28,4 +28,6 @@ mod printable_task_test;
 #[cfg(test)]
 mod printable_warning_test;
 #[cfg(test)]
+mod simple_todo_printer_test;
+#[cfg(test)]
 mod testing_test;
