@@ -1,6 +1,7 @@
 use chrono::DateTime;
 use chrono::Utc;
 use model::DurationInSeconds;
+use std::borrow::Cow;
 
 fn default_creation_time() -> DateTime<Utc> {
     Utc::now()
@@ -9,8 +10,9 @@ fn default_creation_time() -> DateTime<Utc> {
 // NOTE: all new fields need to be Options or be marked #[serde(default)] to
 // allow backwards compatibility.
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
-pub struct Task {
-    pub desc: String,
+pub struct Task<'ser> {
+    #[serde(borrow)]
+    pub desc: Cow<'ser, str>,
     #[serde(default = "default_creation_time")]
     pub creation_time: DateTime<Utc>,
     #[serde(default)]
@@ -29,8 +31,8 @@ pub struct Task {
     pub start_date: DateTime<Utc>,
 }
 
-pub struct NewOptions {
-    pub desc: String,
+pub struct NewOptions<'ser> {
+    pub desc: Cow<'ser, str>,
     pub now: DateTime<Utc>,
     pub priority: i32,
     pub due_date: Option<DateTime<Utc>>,
@@ -38,12 +40,12 @@ pub struct NewOptions {
     pub start_date: DateTime<Utc>,
 }
 
-impl NewOptions {
+impl<'ser> NewOptions<'ser> {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         let now = Utc::now();
         Self {
-            desc: "".to_string(),
+            desc: Cow::Borrowed(""),
             now,
             priority: 0,
             due_date: None,
@@ -52,7 +54,7 @@ impl NewOptions {
         }
     }
 
-    pub fn desc<S: Into<String>>(mut self, desc: S) -> Self {
+    pub fn desc<S: Into<Cow<'ser, str>>>(mut self, desc: S) -> Self {
         self.desc = desc.into();
         self
     }
@@ -83,7 +85,7 @@ impl NewOptions {
     }
 }
 
-impl<S: Into<String>> From<S> for NewOptions {
+impl<'ser, S: Into<Cow<'ser, str>>> From<S> for NewOptions<'ser> {
     fn from(desc: S) -> Self {
         let now = Utc::now();
         Self {
@@ -97,8 +99,8 @@ impl<S: Into<String>> From<S> for NewOptions {
     }
 }
 
-impl Task {
-    pub fn new<Options: Into<NewOptions>>(options: Options) -> Task {
+impl<'ser> Task<'ser> {
+    pub fn new<Options: Into<NewOptions<'ser>>>(options: Options) -> Task<'ser> {
         let options = options.into();
         Task {
             desc: options.desc,

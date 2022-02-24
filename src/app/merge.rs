@@ -11,6 +11,7 @@ use model::TodoList;
 use printing::Action;
 use printing::PrintableError;
 use printing::TodoPrinter;
+use std::borrow::Cow;
 
 pub fn run(
     list: &mut TodoList,
@@ -29,11 +30,15 @@ pub fn run(
         - &tasks_to_merge;
     let transitive_deps = &tasks_to_merge
         .iter_unsorted()
-        .fold(TaskSet::default(), |so_far, id| so_far | list.transitive_deps(id))
+        .fold(TaskSet::default(), |so_far, id| {
+            so_far | list.transitive_deps(id)
+        })
         - &tasks_to_merge;
     let transitive_adeps = &tasks_to_merge
         .iter_unsorted()
-        .fold(TaskSet::default(), |so_far, id| so_far | list.transitive_adeps(id))
+        .fold(TaskSet::default(), |so_far, id| {
+            so_far | list.transitive_adeps(id)
+        })
         - &tasks_to_merge;
     let cycle_through = transitive_deps & transitive_adeps;
     if !cycle_through.is_empty() {
@@ -73,7 +78,7 @@ pub fn run(
         .max()
         .unwrap_or(now);
     let merged = list.add(NewOptions {
-        desc: cmd.into.clone(),
+        desc: Cow::Owned(cmd.into.to_string()),
         now,
         priority,
         due_date,

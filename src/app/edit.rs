@@ -7,6 +7,7 @@ use model::TaskSet;
 use model::TodoList;
 use printing::PrintableError;
 use printing::TodoPrinter;
+use std::borrow::Cow;
 use text_editing::TextEditor;
 
 fn format_tasks_for_text_editor(model: &TodoList, ids: &TaskSet) -> String {
@@ -28,7 +29,7 @@ fn edit_with_description(
     desc: &str,
 ) {
     ids.iter_sorted(model)
-        .filter(|&id| model.set_desc(id, desc))
+        .filter(|&id| model.set_desc(id, Cow::Owned(desc.to_string())))
         .collect::<TaskSet>()
         .iter_sorted(model)
         .for_each(|id| printer.print_task(&format_task(model, id)));
@@ -83,7 +84,7 @@ fn update_desc(
             None
         }
     }
-    .filter(|&id| model.set_desc(id, desc))
+    .filter(|&id| model.set_desc(id, Cow::Owned(desc.to_string())))
 }
 
 fn edit_with_text_editor(

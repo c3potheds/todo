@@ -14,7 +14,6 @@ use todo::clock::SystemClock;
 use todo::config;
 use todo::long_output;
 use todo::model;
-use todo::model::TodoList;
 use todo::printing::PrintingContext;
 use todo::printing::ScriptingTodoPrinter;
 use todo::printing::SimpleTodoPrinter;
@@ -86,8 +85,12 @@ fn main() -> TodoResult {
 
     let mut data_path = project_dirs.data_dir().to_path_buf();
     data_path.push("data.json");
-    let mut model = File::open(&data_path)
-        .map_or_else(|_| Ok(TodoList::default()), model::load)?;
+
+    let read_file_result = std::fs::read_to_string(&data_path);
+    let mut model = match &read_file_result {
+        Ok(s) => model::load(s)?,
+        Err(_) => model::TodoList::default(),
+    };
 
     if atty::is(atty::Stream::Stdout) {
         let (term_width, term_height) =

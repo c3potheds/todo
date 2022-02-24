@@ -9,6 +9,7 @@ use model::TaskSet;
 use model::TodoList;
 use printing::Action;
 use printing::TodoPrinter;
+use std::borrow::Cow;
 
 struct SplitResult {
     shards: TaskSet,
@@ -36,7 +37,7 @@ fn split(
         .map(|desc| {
             let task = list.get(id).unwrap();
             let options = NewOptions {
-                desc,
+                desc: Cow::Owned(desc.to_string()),
                 now: task.creation_time,
                 priority: task.priority,
                 due_date: task.due_date,

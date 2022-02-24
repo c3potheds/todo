@@ -1,6 +1,4 @@
-
 use model::TodoList;
-use std::io::Read;
 use std::io::Write;
 
 #[derive(Debug)]
@@ -21,11 +19,8 @@ impl From<serde_json::Error> for LoadError {
     }
 }
 
-pub fn load<R>(reader: R) -> Result<TodoList, LoadError>
-where
-    R: Read,
-{
-    Ok(serde_json::from_reader(reader)?)
+pub fn load(s: &str) -> Result<TodoList<'_>, LoadError> {
+    Ok(serde_json::from_str(s)?)
 }
 
 #[derive(Debug)]

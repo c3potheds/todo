@@ -26,7 +26,7 @@ pub fn ymdhms(
 }
 
 pub struct Fixture<'a> {
-    pub list: TodoList,
+    pub list: TodoList<'a>,
     pub clock: FakeClock,
     pub text_editor: FakeTextEditor<'a>,
 }

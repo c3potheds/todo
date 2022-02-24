@@ -12,15 +12,17 @@ use model::TaskId;
 use model::TaskSet;
 use model::TaskStatus;
 use std::collections::HashSet;
+use std::borrow::Cow;
 
 #[derive(Debug, Deserialize, Serialize, Default)]
-pub struct TodoList {
-    tasks: StableDag<Task, ()>,
+pub struct TodoList<'ser> {
+    #[serde(borrow)]
+    tasks: StableDag<Task<'ser>, ()>,
     complete: Vec<TaskId>,
     incomplete: Layering<TaskId>,
 }
 
-impl TodoList {
+impl<'ser> TodoList<'ser> {
     fn calculate_implicit_priority(&self, id: TaskId) -> i32 {
         self.get(id)
             .into_iter()
@@ -237,8 +239,8 @@ impl TodoList {
     }
 }
 
-impl TodoList {
-    pub fn add<T: Into<NewOptions>>(&mut self, task: T) -> TaskId {
+impl<'ser> TodoList<'ser> {
+    pub fn add<T: Into<NewOptions<'ser>>>(&mut self, task: T) -> TaskId {
         let task = Task::new(task.into());
         let snooze = task.start_date > task.creation_time;
         let id = TaskId(self.tasks.add_node(task));
@@ -274,7 +276,7 @@ impl From<TaskId> for CheckOptions {
     }
 }
 
-impl TodoList {
+impl<'ser> TodoList<'ser> {
     /// Marks the task with the given id as complete. If successful, returns a
     /// set of tasks that became unblocked, if any.
     pub fn check<Options: Into<CheckOptions>>(
@@ -380,7 +382,7 @@ pub enum RestoreError {
     WouldRestore(TaskSet),
 }
 
-impl TodoList {
+impl<'ser> TodoList<'ser> {
     /// Marks a complete task as incomplete. If successful, returns a set of
     /// tasks that become blocked, if any.
     pub fn restore(&mut self, id: TaskId) -> Result<TaskSet, RestoreError> {
@@ -452,13 +454,13 @@ impl TodoList {
     }
 }
 
-pub struct Block<'a> {
-    list: &'a mut TodoList,
+pub struct Block<'a, 'ser> {
+    list: &'a mut TodoList<'ser>,
     blocked: TaskId,
 }
 
-impl TodoList {
-    pub fn block(&mut self, id: TaskId) -> Block {
+impl<'ser> TodoList<'ser> {
+    pub fn block(&mut self, id: TaskId) -> Block<'_, 'ser> {
         Block {
             list: self,
             blocked: id,
@@ -478,7 +480,7 @@ impl From<daggy::WouldCycle<()>> for BlockError {
     }
 }
 
-impl<'a> Block<'a> {
+impl<'a, 'ser> Block<'a, 'ser> {
     pub fn on(self, blocking: TaskId) -> Result<TaskSet, BlockError> {
         if blocking == self.blocked {
             return Err(BlockError::WouldBlockOnSelf);
@@ -497,13 +499,13 @@ impl<'a> Block<'a> {
     }
 }
 
-pub struct Unblock<'a> {
-    list: &'a mut TodoList,
+pub struct Unblock<'a, 'ser> {
+    list: &'a mut TodoList<'ser>,
     blocked: TaskId,
 }
 
-impl TodoList {
-    pub fn unblock(&mut self, blocked: TaskId) -> Unblock {
+impl<'ser> TodoList<'ser> {
+    pub fn unblock(&mut self, blocked: TaskId) -> Unblock<'_, 'ser> {
         Unblock {
             list: self,
             blocked,
@@ -517,7 +519,7 @@ pub enum UnblockError {
     WasNotDirectlyBlocking,
 }
 
-impl<'a> Unblock<'a> {
+impl<'a, 'ser> Unblock<'a, 'ser> {
     pub fn from(self, blocking: TaskId) -> Result<TaskSet, UnblockError> {
         if blocking == self.blocked {
             return Err(UnblockError::WouldUnblockFromSelf);
@@ -540,7 +542,7 @@ pub enum PuntError {
     TaskIsComplete,
 }
 
-impl TodoList {
+impl<'ser> TodoList<'ser> {
     pub fn punt(&mut self, id: TaskId) -> Result<(), PuntError> {
         match self.incomplete.depth(&id) {
             Some(depth) => {
@@ -553,15 +555,19 @@ impl TodoList {
     }
 }
 
-impl TodoList {
+impl<'ser> TodoList<'ser> {
     pub fn get(&self, id: TaskId) -> Option<&Task> {
         self.tasks.node_weight(id.0)
     }
 
-    pub fn set_desc(&mut self, id: TaskId, desc: &str) -> bool {
+    pub fn set_desc<S: Into<Cow<'ser, str>>>(
+        &mut self,
+        id: TaskId,
+        desc: S,
+    ) -> bool {
         self.tasks
             .node_weight_mut(id.0)
-            .map(|task| task.desc = desc.to_string())
+            .map(|task| task.desc = desc.into())
             .is_some()
     }
 
@@ -722,7 +728,7 @@ pub enum SnoozeWarning {
     },
 }
 
-impl TodoList {
+impl<'ser> TodoList<'ser> {
     pub fn snooze(
         &mut self,
         id: TaskId,
@@ -761,7 +767,7 @@ pub enum UnsnoozeWarning {
     NotSnoozed,
 }
 
-impl TodoList {
+impl<'ser> TodoList<'ser> {
     pub fn unsnooze(&mut self, id: TaskId) -> Result<(), Vec<UnsnoozeWarning>> {
         // If the task is blocked by any incomplete tasks, return an error.
         if self

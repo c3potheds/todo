@@ -84,7 +84,7 @@ impl<'a> PrintableTask<'a> {
     }
 }
 
-pub fn format_task(model: &TodoList, id: TaskId) -> PrintableTask<'_> {
+pub fn format_task<'ser, 'list>(model: &'list TodoList<'ser>, id: TaskId) -> PrintableTask<'list> {
     match (
         model.get(id),
         model.position(id),

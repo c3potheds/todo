@@ -22,6 +22,7 @@ use printing::PrintableError;
 use printing::TodoPrinter;
 use std::collections::HashSet;
 use std::iter::FromIterator;
+use std::borrow::Cow;
 
 pub fn run(
     model: &mut TodoList,
@@ -63,7 +64,7 @@ pub fn run(
         .iter()
         .map(|desc| {
             let id = model.add(NewOptions {
-                desc: format_prefix(&prefix, desc),
+                desc: Cow::Owned(format_prefix(&prefix, desc)),
                 now,
                 priority: priority.unwrap_or(0),
                 due_date,
