@@ -100,7 +100,9 @@ impl<'ser, S: Into<Cow<'ser, str>>> From<S> for NewOptions<'ser> {
 }
 
 impl<'ser> Task<'ser> {
-    pub fn new<Options: Into<NewOptions<'ser>>>(options: Options) -> Task<'ser> {
+    pub fn new<Options: Into<NewOptions<'ser>>>(
+        options: Options,
+    ) -> Task<'ser> {
         let options = options.into();
         Task {
             desc: options.desc,
