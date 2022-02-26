@@ -13,62 +13,58 @@ use printing::TodoPrinter;
 
 fn print_unblock_warning(
     printer: &mut impl TodoPrinter,
-    model: &TodoList,
+    list: &TodoList,
     blocking: TaskId,
     blocked: TaskId,
 ) {
     printer.print_warning(
         &PrintableWarning::CannotUnblockBecauseTaskIsNotBlocked {
-            cannot_unblock: format_task_brief(model, blocked),
-            requested_unblock_from: format_task_brief(model, blocking),
+            cannot_unblock: format_task_brief(list, blocked),
+            requested_unblock_from: format_task_brief(list, blocking),
         },
     );
 }
 
 fn unblock_from_given(
-    model: &mut TodoList,
+    list: &mut TodoList,
     printer: &mut impl TodoPrinter,
     tasks_to_unblock: &TaskSet,
     tasks_to_unblock_from: &TaskSet,
 ) -> TaskSet {
-    tasks_to_unblock
-        .product(tasks_to_unblock_from, model)
-        .fold(TaskSet::default(), |so_far, (blocked, blocking)| {
-            match model.unblock(blocked).from(blocking) {
-                Ok(affected) => so_far | affected,
-                Err(_) => {
-                    print_unblock_warning(printer, model, blocking, blocked);
-                    so_far
-                }
+    tasks_to_unblock.product(tasks_to_unblock_from, list).fold(
+        TaskSet::default(),
+        |so_far, (blocked, blocking)| match list.unblock(blocked).from(blocking)
+        {
+            Ok(affected) => so_far | affected,
+            Err(_) => {
+                print_unblock_warning(printer, list, blocking, blocked);
+                so_far
             }
-        })
+        },
+    )
 }
 
 fn unblock_from_all(
-    model: &mut TodoList,
+    list: &mut TodoList,
     tasks_to_unblock: &TaskSet,
 ) -> TaskSet {
     tasks_to_unblock
         .iter_unsorted()
         .map(|id| {
-            model.deps(id).iter_unsorted().for_each(|dep| {
-                model.unblock(id).from(dep).unwrap();
+            list.deps(id).iter_unsorted().for_each(|dep| {
+                list.unblock(id).from(dep).unwrap();
             });
             id
         })
         .collect()
 }
 
-pub fn run(
-    model: &mut TodoList,
-    printer: &mut impl TodoPrinter,
-    cmd: &Unblock,
-) {
-    let tasks_to_unblock = lookup_tasks(model, &cmd.keys);
-    let tasks_to_unblock_from = lookup_tasks(model, &cmd.from);
+pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Unblock) {
+    let tasks_to_unblock = lookup_tasks(list, &cmd.keys);
+    let tasks_to_unblock_from = lookup_tasks(list, &cmd.from);
     let include_done = should_include_done(
         cmd.include_done,
-        model,
+        list,
         (tasks_to_unblock.clone() | tasks_to_unblock_from.clone())
             .iter_unsorted(),
     );
@@ -79,20 +75,20 @@ pub fn run(
         return;
     }
     let tasks_to_print = if tasks_to_unblock_from.is_empty() {
-        unblock_from_all(model, &tasks_to_unblock)
+        unblock_from_all(list, &tasks_to_unblock)
     } else {
         unblock_from_given(
-            model,
+            list,
             printer,
             &tasks_to_unblock,
             &tasks_to_unblock_from,
         )
     };
     tasks_to_print
-        .include_done(model, include_done)
-        .iter_sorted(model)
+        .include_done(list, include_done)
+        .iter_sorted(list)
         .for_each(|id| {
-            printer.print_task(&format_task(model, id).action(
+            printer.print_task(&format_task(list, id).action(
                 if tasks_to_unblock.contains(id) {
                     Action::Unlock
                 } else {

@@ -19,18 +19,12 @@ fn parse_key_from_name() {
 
 #[test]
 fn parse_key_from_name_with_spaces() {
-    assert_eq!(
-        Ok(ByName("foo bar".to_string())),
-        Key::from_str("foo bar")
-    );
+    assert_eq!(Ok(ByName("foo bar".to_string())), Key::from_str("foo bar"));
 }
 
 #[test]
 fn parse_key_from_name_with_spaces_and_dots() {
-    assert_eq!(
-        Ok(ByName("foo.bar".to_string())),
-        Key::from_str("foo.bar")
-    );
+    assert_eq!(Ok(ByName("foo.bar".to_string())), Key::from_str("foo.bar"));
 }
 
 #[test]

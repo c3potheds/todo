@@ -8,14 +8,14 @@ use printing::Action;
 use printing::PrintableWarning;
 use printing::TodoPrinter;
 
-pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Punt) {
-    lookup_tasks(model, &cmd.keys)
-        .iter_sorted(model)
-        .filter(|&id| match model.punt(id) {
+pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Punt) {
+    lookup_tasks(list, &cmd.keys)
+        .iter_sorted(list)
+        .filter(|&id| match list.punt(id) {
             Err(PuntError::TaskIsComplete) => {
                 printer.print_warning(
                     &PrintableWarning::CannotPuntBecauseComplete {
-                        cannot_punt: format_task_brief(model, id),
+                        cannot_punt: format_task_brief(list, id),
                     },
                 );
                 false
@@ -25,6 +25,6 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Punt) {
         .collect::<Vec<_>>()
         .into_iter()
         .for_each(|id| {
-            printer.print_task(&format_task(model, id).action(Action::Punt))
+            printer.print_task(&format_task(list, id).action(Action::Punt))
         });
 }

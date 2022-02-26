@@ -327,9 +327,8 @@ fn show_done_icon_on_done_action() {
 
 #[test]
 fn show_adeps_stats() {
-    let fmt = print_task(
-        &PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 2),
-    );
+    let fmt =
+        print_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 2));
     assert_eq!(
         fmt,
         "      \u{1b}[33m1)\u{1b}[0m \u{1b}[37m🔓1/2\u{1b}[0m a\n"
@@ -374,9 +373,8 @@ fn show_due_date_and_adeps_stats() {
 
 #[test]
 fn show_deps_stats() {
-    let fmt = print_task(
-        &PrintableTask::new("a", 1, Incomplete).deps_stats(1, 2),
-    );
+    let fmt =
+        print_task(&PrintableTask::new("a", 1, Incomplete).deps_stats(1, 2));
     assert_eq!(
         fmt,
         "      \u{1b}[33m1)\u{1b}[0m \u{1b}[33m🔒1/2\u{1b}[0m a\n"

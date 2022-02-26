@@ -4,10 +4,10 @@ use app::util::parse_due_date_or_print_error;
 use chrono::DateTime;
 use chrono::Utc;
 use cli::Due;
+use model::TaskId;
 use model::TaskSet;
 use model::TaskStatus;
 use model::TodoList;
-use model::TaskId;
 use printing::PrintableError;
 use printing::TodoPrinter;
 

@@ -5,13 +5,12 @@ use model::TodoList;
 use printing::LogDate;
 use printing::TodoPrinter;
 
-pub fn run(model: &TodoList, printer: &mut impl TodoPrinter) {
+pub fn run(list: &TodoList, printer: &mut impl TodoPrinter) {
     let mut most_recent_shown = None;
-    model.complete_tasks().for_each(|id| {
-        let mut formatted_task = format_task(model, id);
+    list.complete_tasks().for_each(|id| {
+        let mut formatted_task = format_task(list, id);
         let to_show =
-            model
-                .get(id)
+            list.get(id)
                 .unwrap()
                 .completion_time
                 .map(|completion_time| {

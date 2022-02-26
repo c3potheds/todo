@@ -1,7 +1,7 @@
 use cli::testing::expect_parses_into;
+use cli::Key::*;
 use cli::SubCommand;
 use cli::Top;
-use cli::Key::*;
 
 #[test]
 fn top() {

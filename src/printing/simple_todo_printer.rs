@@ -265,7 +265,8 @@ impl<Out: Write> TodoPrinter for SimpleTodoPrinter<Out> {
                 context: &self.context,
                 task,
             }
-        ).unwrap_or_default();
+        )
+        .unwrap_or_default();
     }
     fn print_warning(&mut self, warning: &PrintableWarning) {
         writeln!(self.out, "{}", warning).unwrap_or_default();

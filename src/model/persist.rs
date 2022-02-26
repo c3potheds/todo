@@ -41,9 +41,9 @@ impl From<serde_json::Error> for SaveError {
     }
 }
 
-pub fn save<W>(writer: W, model: &TodoList) -> Result<(), SaveError>
+pub fn save<W>(writer: W, list: &TodoList) -> Result<(), SaveError>
 where
     W: Write,
 {
-    Ok(serde_json::to_writer(writer, model)?)
+    Ok(serde_json::to_writer(writer, list)?)
 }

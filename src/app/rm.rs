@@ -8,12 +8,12 @@ use printing::PrintableTask;
 use printing::Status;
 use printing::TodoPrinter;
 
-pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: Rm) {
-    lookup_tasks(model, &cmd.keys)
-        .iter_sorted(model)
+pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: Rm) {
+    lookup_tasks(list, &cmd.keys)
+        .iter_sorted(list)
         .map(|id| {
-            let task = model.get(id).unwrap();
-            let pos = model.position(id).unwrap();
+            let task = list.get(id).unwrap();
+            let pos = list.position(id).unwrap();
             printer.print_task(
                 &PrintableTask::new(&task.desc, pos, Status::Removed)
                     .action(Action::Delete),
@@ -22,7 +22,7 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: Rm) {
         })
         .collect::<Vec<_>>()
         .into_iter()
-        .fold(TaskSet::default(), |so_far, id| so_far | model.remove(id))
-        .iter_sorted(model)
-        .for_each(|id| printer.print_task(&format_task(model, id)))
+        .fold(TaskSet::default(), |so_far, id| so_far | list.remove(id))
+        .iter_sorted(list)
+        .for_each(|id| printer.print_task(&format_task(list, id)))
 }

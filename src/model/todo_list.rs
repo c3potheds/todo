@@ -11,8 +11,8 @@ use model::Task;
 use model::TaskId;
 use model::TaskSet;
 use model::TaskStatus;
-use std::collections::HashSet;
 use std::borrow::Cow;
+use std::collections::HashSet;
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub struct TodoList<'ser> {

@@ -8,20 +8,19 @@ use model::TodoList;
 use printing::PrintableWarning;
 use printing::TodoPrinter;
 
-pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Top) {
+pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Top) {
     // Handle the case where no tasks are specified. In this case, we want to
     // print all tasks that do not have any antidependencies (including complete
     // tasks iff '--include_done' is passed).)
     if cmd.keys.is_empty() {
-        model
-            .all_tasks()
+        list.all_tasks()
             .filter(|&id| {
                 cmd.include_done
-                    || model.status(id) != Some(TaskStatus::Complete)
+                    || list.status(id) != Some(TaskStatus::Complete)
             })
-            .filter(|&id| model.adeps(id).is_empty())
+            .filter(|&id| list.adeps(id).is_empty())
             .for_each(|id| {
-                printer.print_task(&format_task(model, id));
+                printer.print_task(&format_task(list, id));
             });
         return;
     }
@@ -33,7 +32,7 @@ pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Top) {
     // words, the top tasks for a given task are the ones that, if completed,
     // would unblock the given task.
     let tasks = cmd.keys.iter().fold(TaskSet::default(), |so_far, key| {
-        let tasks = lookup_task(model, key);
+        let tasks = lookup_task(list, key);
         if tasks.is_empty() {
             printer.print_warning(&PrintableWarning::NoMatchFoundForKey {
                 requested_key: key.clone(),
@@ -42,26 +41,25 @@ pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Top) {
         so_far | tasks
     });
     let include_done =
-        should_include_done(cmd.include_done, model, tasks.iter_unsorted());
+        should_include_done(cmd.include_done, list, tasks.iter_unsorted());
     tasks
         .iter_unsorted()
         // For each matching task, find the top tasks that directly block it.
         .fold(TaskSet::default(), |so_far, id| {
-            model
-                .deps(id)
-                .include_done(model, include_done)
+            list.deps(id)
+                .include_done(list, include_done)
                 .iter_unsorted()
                 .filter(|&dep| {
-                    !model
+                    !list
                         .adeps(dep)
                         .iter_unsorted()
-                        .any(|adep| model.transitive_adeps(adep).contains(id))
+                        .any(|adep| list.transitive_adeps(adep).contains(id))
                 })
                 .collect::<TaskSet>()
                 | so_far
         })
-        .iter_sorted(model)
+        .iter_sorted(list)
         .for_each(|id| {
-            printer.print_task(&format_task(model, id));
+            printer.print_task(&format_task(list, id));
         });
 }

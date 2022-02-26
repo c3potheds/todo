@@ -51,10 +51,10 @@ fn restore_with_fn<Restore: FnMut(TaskId) -> RestoreResult>(
 }
 
 fn force_restore(
-    model: &mut TodoList,
+    list: &mut TodoList,
     tasks_to_restore: Vec<TaskId>,
 ) -> RestoreResult {
-    restore_with_fn(tasks_to_restore, |id| match model.force_restore(id) {
+    restore_with_fn(tasks_to_restore, |id| match list.force_restore(id) {
         Ok(ForceRestored { restored, blocked }) => RestoreResult {
             restored,
             blocked,
@@ -72,10 +72,10 @@ fn force_restore(
 }
 
 fn restore(
-    model: &mut TodoList,
+    list: &mut TodoList,
     tasks_to_restore: Vec<TaskId>,
 ) -> RestoreResult {
-    restore_with_fn(tasks_to_restore, |id| match model.restore(id) {
+    restore_with_fn(tasks_to_restore, |id| match list.restore(id) {
         Ok(blocked) => RestoreResult {
             restored: std::iter::once(id).collect(),
             blocked,
@@ -94,17 +94,13 @@ fn restore(
     })
 }
 
-pub fn run(
-    model: &mut TodoList,
-    printer: &mut impl TodoPrinter,
-    cmd: &Restore,
-) {
+pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Restore) {
     let tasks_to_restore =
-        lookup_tasks(model, &cmd.keys).iter_sorted(model).collect();
+        lookup_tasks(list, &cmd.keys).iter_sorted(list).collect();
     let result = if cmd.force {
-        force_restore(model, tasks_to_restore)
+        force_restore(list, tasks_to_restore)
     } else {
-        restore(model, tasks_to_restore)
+        restore(list, tasks_to_restore)
     };
     result
         .cannot_restore
@@ -112,28 +108,26 @@ pub fn run(
         .for_each(|(id, reason)| match reason {
             Reason::AlreadyIncomplete => printer.print_warning(
                 &PrintableWarning::CannotRestoreBecauseAlreadyIncomplete {
-                    cannot_restore: format_task_brief(model, id),
+                    cannot_restore: format_task_brief(list, id),
                 },
             ),
             Reason::BlockingComplete(adeps) => printer.print_error(
                 &PrintableError::CannotRestoreBecauseAntidependencyIsComplete {
-                    cannot_restore: format_task_brief(model, id),
-                    complete_antidependencies: format_tasks_brief(
-                        model, &adeps,
-                    ),
+                    cannot_restore: format_task_brief(list, id),
+                    complete_antidependencies: format_tasks_brief(list, &adeps),
                 },
             ),
         });
     // A task that was restored may become blocked by another task's restoration
     // and thus may show up in more than one of the TaskSets.
     let mut do_not_print_again = HashSet::new();
-    result.restored.iter_sorted(model).for_each(|id| {
+    result.restored.iter_sorted(list).for_each(|id| {
         do_not_print_again.insert(id);
-        printer.print_task(&format_task(model, id).action(Action::Uncheck))
+        printer.print_task(&format_task(list, id).action(Action::Uncheck))
     });
-    result.blocked.iter_sorted(model).for_each(|id| {
+    result.blocked.iter_sorted(list).for_each(|id| {
         if !do_not_print_again.contains(&id) {
-            printer.print_task(&format_task(model, id).action(Action::Lock));
+            printer.print_task(&format_task(list, id).action(Action::Lock));
         }
     });
 }

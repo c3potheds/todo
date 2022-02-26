@@ -12,18 +12,18 @@ use printing::PrintableError;
 use printing::TodoPrinter;
 use std::collections::HashMap;
 
-pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Chain) {
+pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Chain) {
     let tasks = cmd
         .keys
         .iter()
-        .flat_map(|key| lookup_task(model, key).iter_sorted(model))
+        .flat_map(|key| lookup_task(list, key).iter_sorted(list))
         .collect::<Vec<_>>();
     let include_done =
-        should_include_done(cmd.include_done, model, tasks.iter().copied());
+        should_include_done(cmd.include_done, list, tasks.iter().copied());
     let mut actions = HashMap::new();
     pairwise(tasks.iter().copied())
         .fold(TaskSet::default(), |so_far, (a, b)| {
-            match model.block(b).on(a) {
+            match list.block(b).on(a) {
                 Ok(affected) => {
                     actions.insert(b, Action::Lock);
                     so_far | affected
@@ -31,8 +31,8 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Chain) {
                 Err(BlockError::WouldCycle(_)) => {
                     printer.print_error(
                         &PrintableError::CannotBlockBecauseWouldCauseCycle {
-                            cannot_block: format_task_brief(model, b),
-                            requested_dependency: format_task_brief(model, a),
+                            cannot_block: format_task_brief(list, b),
+                            requested_dependency: format_task_brief(list, a),
                         },
                     );
                     so_far
@@ -40,11 +40,11 @@ pub fn run(model: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Chain) {
                 Err(BlockError::WouldBlockOnSelf) => so_far,
             }
         })
-        .include_done(model, include_done)
-        .iter_sorted(model)
+        .include_done(list, include_done)
+        .iter_sorted(list)
         .for_each(|id| {
             printer.print_task(
-                &format_task(model, id)
+                &format_task(list, id)
                     .action(*actions.get(&id).unwrap_or(&Action::None)),
             );
         });

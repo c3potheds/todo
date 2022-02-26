@@ -6,22 +6,22 @@ use model::TodoList;
 use printing::Action;
 use printing::TodoPrinter;
 
-pub fn run(model: &TodoList, printer: &mut impl TodoPrinter, cmd: &Get) {
-    let requested_tasks = lookup_tasks(model, &cmd.keys);
+pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Get) {
+    let requested_tasks = lookup_tasks(list, &cmd.keys);
     let include_done = should_include_done(
         cmd.include_done,
-        model,
+        list,
         requested_tasks.iter_unsorted(),
     );
     requested_tasks
-        .iter_sorted(model)
+        .iter_sorted(list)
         .fold(requested_tasks.clone(), |so_far, id| {
-            so_far | model.transitive_deps(id) | model.transitive_adeps(id)
+            so_far | list.transitive_deps(id) | list.transitive_adeps(id)
         })
-        .include_done(model, include_done)
-        .iter_sorted(model)
+        .include_done(list, include_done)
+        .iter_sorted(list)
         .for_each(|id| {
-            printer.print_task(&format_task(model, id).action(
+            printer.print_task(&format_task(list, id).action(
                 if requested_tasks.contains(id) {
                     Action::Select
                 } else {

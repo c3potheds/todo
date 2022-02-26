@@ -5,10 +5,7 @@ use cli::SubCommand;
 
 #[test]
 fn due_no_keys_no_date() {
-    expect_parses_into(
-        "todo due",
-        SubCommand::Due(Due::default()),
-    );
+    expect_parses_into("todo due", SubCommand::Due(Due::default()));
 }
 
 #[test]

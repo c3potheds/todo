@@ -1,6 +1,6 @@
-use super::Status::*;
-use super::PrintableError::*;
 use super::BriefPrintableTask;
+use super::PrintableError::*;
+use super::Status::*;
 
 #[test]
 fn display_cannot_check_because_blocked_error() {
@@ -70,10 +70,7 @@ fn display_cannot_block_because_would_cause_cycle_error() {
 
 #[test]
 fn display_cannot_edit_because_unexpected_number_error() {
-    let fmt = format!(
-        "{}",
-        CannotEditBecauseUnexpectedNumber { requested: 0 }
-    );
+    let fmt = format!("{}", CannotEditBecauseUnexpectedNumber { requested: 0 });
     assert_eq!(
         fmt,
         concat!(
@@ -85,10 +82,8 @@ fn display_cannot_edit_because_unexpected_number_error() {
 
 #[test]
 fn display_cannot_edit_because_no_task_with_number_error() {
-    let fmt = format!(
-        "{}",
-        CannotEditBecauseNoTaskWithNumber { requested: 100 }
-    );
+    let fmt =
+        format!("{}", CannotEditBecauseNoTaskWithNumber { requested: 100 });
     assert_eq!(fmt, "\u{1b}[1;31merror\u{1b}[0m: No task with number 100)");
 }
 

@@ -34,14 +34,14 @@ pub fn format_prefix(prefix: &str, desc: &str) -> String {
 impl<'a> PrintableTask<'a> {
     fn add_deps_if_necessary(
         self,
-        model: &TodoList,
+        list: &TodoList,
         id: TaskId,
         status: TaskStatus,
     ) -> PrintableTask<'a> {
         if status != TaskStatus::Blocked {
             return self;
         }
-        let deps = model.transitive_deps(id);
+        let deps = list.transitive_deps(id);
         if deps.is_empty() {
             return self;
         }
@@ -49,21 +49,21 @@ impl<'a> PrintableTask<'a> {
         // complete nor blocked).
         let incomplete = deps
             .iter_unsorted()
-            .filter(|&dep| model.status(dep) == Some(TaskStatus::Incomplete))
+            .filter(|&dep| list.status(dep) == Some(TaskStatus::Incomplete))
             .count();
         self.deps_stats(incomplete, deps.len())
     }
 
     fn add_adeps_if_necessary(
         self,
-        model: &TodoList,
+        list: &TodoList,
         id: TaskId,
         status: TaskStatus,
     ) -> PrintableTask<'a> {
         if status != TaskStatus::Incomplete {
             return self;
         }
-        let adeps = model.transitive_adeps(id);
+        let adeps = list.transitive_adeps(id);
         if adeps.is_empty() {
             return self;
         }
@@ -73,24 +73,26 @@ impl<'a> PrintableTask<'a> {
         let unlockable = adeps
             .iter_unsorted()
             .filter(|&adep| {
-                model
-                    .deps(adep)
+                list.deps(adep)
                     .iter_unsorted()
                     .filter(|&dep| dep != id)
-                    .all(|dep| model.status(dep) == Some(TaskStatus::Complete))
+                    .all(|dep| list.status(dep) == Some(TaskStatus::Complete))
             })
             .count();
         self.adeps_stats(unlockable, adeps.len())
     }
 }
 
-pub fn format_task<'ser, 'list>(model: &'list TodoList<'ser>, id: TaskId) -> PrintableTask<'list> {
+pub fn format_task<'ser, 'list>(
+    list: &'list TodoList<'ser>,
+    id: TaskId,
+) -> PrintableTask<'list> {
     match (
-        model.get(id),
-        model.position(id),
-        model.status(id),
-        model.implicit_priority(id),
-        model.implicit_due_date(id),
+        list.get(id),
+        list.position(id),
+        list.status(id),
+        list.implicit_priority(id),
+        list.implicit_due_date(id),
     ) {
         (
             Some(task),
@@ -112,44 +114,43 @@ pub fn format_task<'ser, 'list>(model: &'list TodoList<'ser>, id: TaskId) -> Pri
                 result = result.start_date(task.start_date);
             }
             result
-                .add_deps_if_necessary(model, id, status)
-                .add_adeps_if_necessary(model, id, status)
+                .add_deps_if_necessary(list, id, status)
+                .add_adeps_if_necessary(list, id, status)
         }
         _ => panic!("Failed to get task info for id {:?}", id),
     }
 }
 
-pub fn format_task_brief(model: &TodoList, id: TaskId) -> BriefPrintableTask {
+pub fn format_task_brief(list: &TodoList, id: TaskId) -> BriefPrintableTask {
     BriefPrintableTask::new(
-        model.position(id).unwrap(),
-        to_printing_status(model.status(id).unwrap()),
+        list.position(id).unwrap(),
+        to_printing_status(list.status(id).unwrap()),
     )
 }
 
 pub fn format_tasks_brief(
-    model: &TodoList,
+    list: &TodoList,
     tasks: &TaskSet,
 ) -> Vec<BriefPrintableTask> {
     tasks
-        .iter_sorted(model)
-        .map(|id| format_task_brief(model, id))
+        .iter_sorted(list)
+        .map(|id| format_task_brief(list, id))
         .collect()
 }
 
-pub fn lookup_task(model: &TodoList, key: &Key) -> TaskSet {
+pub fn lookup_task(list: &TodoList, key: &Key) -> TaskSet {
     match key {
-        Key::ByNumber(n) => model.lookup_by_number(*n).into_iter().collect(),
-        Key::ByName(ref name) => model
+        Key::ByNumber(n) => list.lookup_by_number(*n).into_iter().collect(),
+        Key::ByName(ref name) => list
             .all_tasks()
             .filter(|&id| {
-                model.get(id).filter(|task| &task.desc == name).is_some()
+                list.get(id).filter(|task| &task.desc == name).is_some()
             })
             .collect(),
-        Key::ByRange(start, end) => model
+        Key::ByRange(start, end) => list
             .all_tasks()
             .filter(|&id| {
-                model
-                    .position(id)
+                list.position(id)
                     .filter(|pos| start <= pos && pos <= end)
                     .is_some()
             })
@@ -158,11 +159,11 @@ pub fn lookup_task(model: &TodoList, key: &Key) -> TaskSet {
 }
 
 pub fn lookup_tasks<'a>(
-    model: &'a TodoList,
+    list: &'a TodoList,
     keys: impl IntoIterator<Item = &'a Key>,
 ) -> TaskSet {
     keys.into_iter().fold(TaskSet::default(), |so_far, key| {
-        so_far | lookup_task(model, key)
+        so_far | lookup_task(list, key)
     })
 }
 

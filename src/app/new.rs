@@ -20,12 +20,12 @@ use model::TodoList;
 use printing::Action;
 use printing::PrintableError;
 use printing::TodoPrinter;
+use std::borrow::Cow;
 use std::collections::HashSet;
 use std::iter::FromIterator;
-use std::borrow::Cow;
 
 pub fn run(
-    model: &mut TodoList,
+    list: &mut TodoList,
     printer: &mut impl TodoPrinter,
     now: DateTime<Utc>,
     cmd: &New,
@@ -44,16 +44,16 @@ pub fn run(
             Ok(None) => now,
             Err(_) => return,
         };
-    let deps = lookup_tasks(model, &cmd.blocked_by);
-    let adeps = lookup_tasks(model, &cmd.blocking);
-    let before = lookup_tasks(model, &cmd.before);
+    let deps = lookup_tasks(list, &cmd.blocked_by);
+    let adeps = lookup_tasks(list, &cmd.blocking);
+    let before = lookup_tasks(list, &cmd.before);
     let before_deps = before
         .iter_unsorted()
-        .fold(TaskSet::default(), |so_far, id| so_far | model.deps(id));
-    let after = lookup_tasks(model, &cmd.after);
+        .fold(TaskSet::default(), |so_far, id| so_far | list.deps(id));
+    let after = lookup_tasks(list, &cmd.after);
     let after_adeps = after
         .iter_unsorted()
-        .fold(TaskSet::default(), |so_far, id| so_far | model.adeps(id));
+        .fold(TaskSet::default(), |so_far, id| so_far | list.adeps(id));
     let deps = deps | before_deps | after;
     let adeps = adeps | before | after_adeps;
     let priority = cmd.priority;
@@ -63,7 +63,7 @@ pub fn run(
         .desc
         .iter()
         .map(|desc| {
-            let id = model.add(NewOptions {
+            let id = list.add(NewOptions {
                 desc: Cow::Owned(format_prefix(&prefix, desc)),
                 now,
                 priority: priority.unwrap_or(0),
@@ -75,31 +75,31 @@ pub fn run(
             id
         })
         .collect();
-    deps.product(&new_tasks, model).for_each(|(dep, new)| {
-        match model.block(new).on(dep) {
+    deps.product(&new_tasks, list).for_each(|(dep, new)| {
+        match list.block(new).on(dep) {
             Ok(affected) => to_print.extend(affected.iter_unsorted()),
             Err(_) => printer.print_error(
                 &PrintableError::CannotBlockBecauseWouldCauseCycle {
-                    cannot_block: format_task_brief(model, new),
-                    requested_dependency: format_task_brief(model, dep),
+                    cannot_block: format_task_brief(list, new),
+                    requested_dependency: format_task_brief(list, dep),
                 },
             ),
         }
     });
-    adeps.product(&new_tasks, model).for_each(|(adep, new)| {
-        match model.block(adep).on(new) {
+    adeps.product(&new_tasks, list).for_each(|(adep, new)| {
+        match list.block(adep).on(new) {
             Ok(affected) => to_print.extend(affected.iter_unsorted()),
             Err(_) => printer.print_error(
                 &PrintableError::CannotBlockBecauseWouldCauseCycle {
-                    cannot_block: format_task_brief(model, adep),
-                    requested_dependency: format_task_brief(model, new),
+                    cannot_block: format_task_brief(list, adep),
+                    requested_dependency: format_task_brief(list, new),
                 },
             ),
         }
     });
     if cmd.chain {
-        pairwise(new_tasks.iter_sorted(model)).for_each(|(a, b)| {
-            match model.block(b).on(a) {
+        pairwise(new_tasks.iter_sorted(list)).for_each(|(a, b)| {
+            match list.block(b).on(a) {
                 Ok(affected) => to_print.extend(affected.iter_unsorted()),
                 Err(_) => {
                     panic!("This should never happen because all tasks are new")
@@ -108,15 +108,15 @@ pub fn run(
         });
     }
     if cmd.done {
-        new_tasks.iter_sorted(model).for_each(|id| {
+        new_tasks.iter_sorted(list).for_each(|id| {
             if let Err(CheckError::TaskIsBlockedBy(blocking)) =
-                model.check(CheckOptions { id, now })
+                list.check(CheckOptions { id, now })
             {
                 printer.print_error(
                     &PrintableError::CannotCheckBecauseBlocked {
-                        cannot_check: format_task_brief(model, id),
+                        cannot_check: format_task_brief(list, id),
                         blocked_by: format_tasks_brief(
-                            model,
+                            list,
                             &TaskSet::from_iter(blocking),
                         ),
                     },
@@ -125,9 +125,9 @@ pub fn run(
         });
     }
     TaskSet::from_iter(to_print.into_iter())
-        .iter_sorted(model)
+        .iter_sorted(list)
         .for_each(|id| {
-            printer.print_task(&format_task(model, id).action(
+            printer.print_task(&format_task(list, id).action(
                 if new_tasks.contains(id) {
                     Action::New
                 } else {
