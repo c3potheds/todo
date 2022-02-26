@@ -5,7 +5,6 @@ use app::util::format_task;
 use app::util::format_task_brief;
 use app::util::format_tasks_brief;
 use app::util::lookup_tasks;
-use app::util::pairwise;
 use app::util::parse_budget_or_print_error;
 use app::util::parse_due_date_or_print_error;
 use app::util::parse_snooze_date_or_print_error;
@@ -98,14 +97,15 @@ pub fn run(
         }
     });
     if cmd.chain {
-        pairwise(new_tasks.iter_sorted(list)).for_each(|(a, b)| {
-            match list.block(b).on(a) {
+        use itertools::Itertools;
+        new_tasks.iter_sorted(list).tuple_windows().for_each(
+            |(a, b)| match list.block(b).on(a) {
                 Ok(affected) => to_print.extend(affected.iter_unsorted()),
                 Err(_) => {
                     panic!("This should never happen because all tasks are new")
                 }
-            }
-        });
+            },
+        );
     }
     if cmd.done {
         new_tasks.iter_sorted(list).for_each(|id| {

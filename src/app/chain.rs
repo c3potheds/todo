@@ -1,7 +1,6 @@
 use app::util::format_task;
 use app::util::format_task_brief;
 use app::util::lookup_task;
-use app::util::pairwise;
 use app::util::should_include_done;
 use cli::Chain;
 use model::BlockError;
@@ -21,7 +20,8 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Chain) {
     let include_done =
         should_include_done(cmd.include_done, list, tasks.iter().copied());
     let mut actions = HashMap::new();
-    pairwise(tasks.iter().copied())
+    use itertools::Itertools;
+    tasks.iter().copied().tuple_windows()
         .fold(TaskSet::default(), |so_far, (a, b)| {
             match list.block(b).on(a) {
                 Ok(affected) => {

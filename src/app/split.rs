@@ -1,7 +1,6 @@
 use app::util::format_prefix;
 use app::util::format_task;
 use app::util::lookup_tasks;
-use app::util::pairwise;
 use cli::Split;
 use model::NewOptions;
 use model::TaskId;
@@ -56,7 +55,8 @@ fn split(
         });
     });
     if chain {
-        pairwise(shards.iter()).for_each(|(&a, &b)| {
+        use itertools::Itertools;
+        shards.iter().tuple_windows().for_each(|(&a, &b)| {
             list.block(b).on(a).unwrap();
         });
     }

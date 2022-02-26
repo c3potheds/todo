@@ -2,7 +2,6 @@ use app::util::format_task;
 use app::util::format_task_brief;
 use app::util::format_tasks_brief;
 use app::util::lookup_task;
-use app::util::pairwise;
 use cli::Path;
 use model::TaskId;
 use model::TaskSet;
@@ -37,7 +36,8 @@ pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Path) {
                 .flat_map(|id| std::iter::once(id).chain(std::iter::once(id)))
         })
         .collect::<Vec<_>>();
-    match pairwise(tasks.iter().copied()).try_fold(
+    use itertools::Itertools;
+    match tasks.iter().copied().tuple_windows().try_fold(
         TaskSet::default(),
         |so_far, (a, b)| {
             let a_and_adeps = TaskSet::of(a) | list.transitive_adeps(a);
