@@ -377,7 +377,7 @@ fn show_deps_stats() {
         print_task(&PrintableTask::new("a", 1, Incomplete).deps_stats(1, 2));
     assert_eq!(
         fmt,
-        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[33m🔒1/2\u{1b}[0m a\n"
+        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[31m🔒1/2\u{1b}[0m a\n"
     );
 }
 
@@ -392,7 +392,7 @@ fn show_deps_and_adeps_stats() {
         fmt,
         concat!(
             "      \u{1b}[33m1)\u{1b}[0m ",
-            "\u{1b}[33m🔒1/2\u{1b}[0m ",
+            "\u{1b}[31m🔒1/2\u{1b}[0m ",
             "\u{1b}[37m🔓3/4\u{1b}[0m a\n"
         )
     );
@@ -411,7 +411,7 @@ fn show_deps_and_adeps_stats_and_priority() {
         concat!(
             "      \u{1b}[33m1)\u{1b}[0m ",
             "\u{1b}[1;35mP1\u{1b}[0m ",
-            "\u{1b}[33m🔒2/4\u{1b}[0m ",
+            "\u{1b}[31m🔒2/4\u{1b}[0m ",
             "\u{1b}[37m🔓5/6\u{1b}[0m a\n"
         )
     );
@@ -431,7 +431,7 @@ fn show_due_date_and_deps_stats() {
         concat!(
             "      \u{1b}[33m1)\u{1b}[0m ",
             "\u{1b}[1;31mDue 1 day ago\u{1b}[0m ",
-            "\u{1b}[33m🔒12/20\u{1b}[0m a\n"
+            "\u{1b}[31m🔒12/20\u{1b}[0m a\n"
         )
     );
 }

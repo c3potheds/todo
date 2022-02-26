@@ -211,7 +211,7 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
         let (incomplete, total) = self.task.deps_stats;
         if total > 0 {
             start.push_str(
-                &Color::Yellow
+                &Color::Red
                     .paint(format!("🔒{}/{}", incomplete, total))
                     .to_string(),
             );
