@@ -21,7 +21,10 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Chain) {
         should_include_done(cmd.include_done, list, tasks.iter().copied());
     let mut actions = HashMap::new();
     use itertools::Itertools;
-    tasks.iter().copied().tuple_windows()
+    tasks
+        .iter()
+        .copied()
+        .tuple_windows()
         .fold(TaskSet::default(), |so_far, (a, b)| {
             match list.block(b).on(a) {
                 Ok(affected) => {
