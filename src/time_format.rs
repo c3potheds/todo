@@ -137,14 +137,16 @@ fn parse_time_of_day<Tz: TimeZone>(
         )
         .and_then(|state| match state {
             ParseTimeOfDayState::FullInfo { hour, minute, midi } => {
-                let hour = (hour
-                    + match midi {
-                        Midi::Am => 0,
-                        Midi::Pm => 12,
-                    }) as u32;
+                let hour = match (hour, midi) {
+                    (0..=11, Midi::Am) => hour,
+                    (0..=11, Midi::Pm) => hour + 12,
+                    (12, Midi::Am) => 0,
+                    (12, Midi::Pm) => 12,
+                    _ => return Err(ParseTimeError),
+                };
                 let mut target = tz
                     .ymd(now.year(), now.month(), now.day())
-                    .and_hms(hour, minute as u32, 00);
+                    .and_hms(hour as u32, minute as u32, 00);
                 if target < now {
                     target = target.with_day(target.day() + 1).unwrap();
                 }

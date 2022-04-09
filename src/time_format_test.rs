@@ -141,6 +141,30 @@ fn am_next_day() {
 }
 
 #[test]
+fn today_12pm() {
+    let now = Local.ymd(2022, 04, 08).and_hms(10, 00, 00);
+    let expected = Local.ymd(2022, 04, 08).and_hms(12, 00, 00);
+    let actual = parse_time(Local, now, "12pm", Snap::ToEnd).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn today_1pm() {
+    let now = Local.ymd(2022, 04, 08).and_hms(10, 00, 00);
+    let expected = Local.ymd(2022, 04, 08).and_hms(13, 00, 00);
+    let actual = parse_time(Local, now, "1pm", Snap::ToEnd).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn today_10am() {
+    let now = Local.ymd(2022, 04, 08).and_hms(5, 00, 00);
+    let expected = Local.ymd(2022, 04, 08).and_hms(10, 00, 00);
+    let actual = parse_time(Local, now, "10am", Snap::ToEnd).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
 fn month_without_day_next_month() {
     let now = Local.ymd(2021, 03, 30).and_hms(10, 00, 00);
     let expected = Local.ymd(2021, 04, 30).and_hms(23, 59, 59);
