@@ -4,7 +4,7 @@ use chrono::DateTime;
 use chrono::Datelike;
 use chrono::TimeZone;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct ParseTimeError;
 
 enum Midi {
@@ -51,21 +51,27 @@ fn parse_time_of_day_step(
         (ParsingNumber { number_so_far }, ':') => {
             let (start, end) = number_so_far;
             Ok(ParsingTimeOClock {
-                hour: s[start..end].parse::<u8>().unwrap(),
+                hour: s[start..end]
+                    .parse::<u8>()
+                    .map_err(|_| ParseTimeError)?,
                 minute_so_far: (end + 1, end + 1),
             })
         }
         (ParsingNumber { number_so_far }, 'a') => {
             let (start, end) = number_so_far;
             Ok(ExpectingAm {
-                hour: s[start..end].parse::<u8>().unwrap(),
+                hour: s[start..end]
+                    .parse::<u8>()
+                    .map_err(|_| ParseTimeError)?,
                 minute: 00,
             })
         }
         (ParsingNumber { number_so_far }, 'p') => {
             let (start, end) = number_so_far;
             Ok(ExpectingPm {
-                hour: s[start..end].parse::<u8>().unwrap(),
+                hour: s[start..end]
+                    .parse::<u8>()
+                    .map_err(|_| ParseTimeError)?,
                 minute: 00,
             })
         }
@@ -92,7 +98,9 @@ fn parse_time_of_day_step(
             let (start, end) = minute_so_far;
             Ok(ExpectingAm {
                 hour,
-                minute: s[start..end].parse::<u8>().unwrap(),
+                minute: s[start..end]
+                    .parse::<u8>()
+                    .map_err(|_| ParseTimeError)?,
             })
         }
         (
@@ -105,7 +113,9 @@ fn parse_time_of_day_step(
             let (start, end) = minute_so_far;
             Ok(ExpectingPm {
                 hour,
-                minute: s[start..end].parse::<u8>().unwrap(),
+                minute: s[start..end]
+                    .parse::<u8>()
+                    .map_err(|_| ParseTimeError)?,
             })
         }
         (ExpectingAm { hour, minute }, 'm') => Ok(FullInfo {
@@ -148,7 +158,7 @@ fn parse_time_of_day<Tz: TimeZone>(
                     .ymd(now.year(), now.month(), now.day())
                     .and_hms(hour as u32, minute as u32, 00);
                 if target < now {
-                    target = target.with_day(target.day() + 1).unwrap();
+                    target = target + chrono::Duration::days(1);
                 }
                 Ok(target)
             }

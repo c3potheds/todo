@@ -301,6 +301,77 @@ fn start_previous_day_of_week() {
 }
 
 #[test]
+fn time_of_day_earlier_than_now_at_end_of_month() {
+    let now = Local.ymd(2022, 04, 30).and_hms(10, 00, 00);
+    let expected = Local.ymd(2022, 05, 01).and_hms(09, 00, 00);
+    let actual = parse_time(Local, now, "9 am", Snap::ToEnd).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn complete_gobbledeygook() {
+    let now = Local.ymd(2022, 04, 09).and_hms(11, 00, 00);
+    assert_eq!(
+        parse_time(Local, now, "blah", Snap::ToEnd),
+        Err(ParseTimeError)
+    );
+}
+
+#[test]
+fn invalid_hour() {
+    let now = Local.ymd(2022, 04, 09).and_hms(11, 00, 00);
+    assert_eq!(
+        parse_time(Local, now, "13am", Snap::ToStart),
+        Err(ParseTimeError)
+    );
+}
+
+#[test]
+fn too_large_hour_am() {
+    let now = Local.ymd(2022, 04, 09).and_hms(11, 00, 00);
+    assert_eq!(
+        parse_time(Local, now, "256am", Snap::ToStart),
+        Err(ParseTimeError)
+    );
+}
+
+#[test]
+fn too_large_hour_pm() {
+    let now = Local.ymd(2022, 04, 09).and_hms(11, 00, 00);
+    assert_eq!(
+        parse_time(Local, now, "256pm", Snap::ToStart),
+        Err(ParseTimeError)
+    );
+}
+
+#[test]
+fn too_large_hour_followed_by_minutes() {
+    let now = Local.ymd(2022, 04, 09).and_hms(11, 00, 00);
+    assert_eq!(
+        parse_time(Local, now, "256:30am", Snap::ToStart),
+        Err(ParseTimeError)
+    );
+}
+
+#[test]
+fn too_large_minute_am() {
+    let now = Local.ymd(2022, 04, 09).and_hms(11, 00, 00);
+    assert_eq!(
+        parse_time(Local, now, "1:256am", Snap::ToStart),
+        Err(ParseTimeError)
+    );
+}
+
+#[test]
+fn too_large_minute_pm() {
+    let now = Local.ymd(2022, 04, 09).and_hms(11, 00, 00);
+    assert_eq!(
+        parse_time(Local, now, "1:256pm", Snap::ToStart),
+        Err(ParseTimeError)
+    );
+}
+
+#[test]
 fn relative_time_in_one_second() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let then = Local.ymd(2021, 03, 19).and_hms(10, 00, 01);
