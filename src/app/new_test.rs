@@ -583,3 +583,15 @@ fn new_block_completed_task() {
         .printed_task(&PrintableTask::new("a", 2, Blocked))
         .end();
 }
+
+#[test]
+fn new_transitively_block_completed_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new b c --chain --done");
+    fix.test("todo new a -b b")
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("b", 2, Blocked))
+        .printed_task(&PrintableTask::new("c", 3, Blocked))
+        .end();
+}

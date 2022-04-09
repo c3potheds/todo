@@ -706,6 +706,38 @@ fn block_complete_task_on_later_complete_task() {
 }
 
 #[test]
+fn block_complete_task_affects_complete_adeps() {
+    // If 'b' blocks 'c' and both are complete, and we block 'b' on an
+    // incomplete task 'a', then both 'b' and 'c' are implicitly incomplete and
+    // should be in the set of affected tasks.
+    let mut list = TodoList::default();
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
+    list.block(c).on(b).unwrap();
+    list.check(b).unwrap();
+    list.check(c).unwrap();
+    let res = list.block(b).on(a).unwrap();
+    itertools::assert_equal(res.iter_sorted(&list), vec![a, b, c]);
+}
+
+#[test]
+fn block_blocked_task_on_task_with_higher_depth() {
+    let mut list = TodoList::default();
+    let a = list.add("a");
+    let b = list.add("b");
+    let c = list.add("c");
+    let d = list.add("d");
+    let e = list.add("e");
+    list.block(b).on(a).unwrap();
+    list.block(c).on(b).unwrap();
+    list.block(e).on(d).unwrap();
+    let res = list.block(e).on(c).unwrap();
+    itertools::assert_equal(res.iter_sorted(&list), vec![c, e]);
+    itertools::assert_equal(list.incomplete_tasks(), vec![a, d, b, c, e]);
+}
+
+#[test]
 fn unlbock_task_from_self_is_error() {
     let mut list = TodoList::default();
     let a = list.add("a");

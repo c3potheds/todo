@@ -484,20 +484,53 @@ impl From<daggy::WouldCycle<()>> for BlockError {
     }
 }
 
+fn get_complete_adeps(list: &TodoList, id: TaskId) -> TaskSet {
+    list.adeps(id)
+        .into_iter_unsorted()
+        .filter(|&adep| list.status(adep) == Some(TaskStatus::Complete))
+        .collect()
+}
+
+fn get_incomplete_adeps(list: &TodoList, id: TaskId) -> TaskSet {
+    list.adeps(id)
+        .into_iter_unsorted()
+        .filter(|&adep| list.status(adep) != Some(TaskStatus::Complete))
+        .collect()
+}
+
 impl<'a, 'ser> Block<'a, 'ser> {
-    pub fn on(self, blocking: TaskId) -> Result<TaskSet, BlockError> {
+    fn update_depth_of_blocked_and_get_implicitly_restored_adeps(
+        &mut self,
+    ) -> TaskSet {
+        if !self.list.should_keep_snoozed(self.blocked, None) {
+            self.list.update_depth(self.blocked);
+            return TaskSet::default();
+        }
+        let was_blocked_complete =
+            self.list.status(self.blocked) == Some(TaskStatus::Complete);
+        if !was_blocked_complete {
+            return TaskSet::default();
+        }
+        // Find the intersection of adeps that were complete before the
+        // update and adeps that are not complete after the update.
+        get_complete_adeps(self.list, self.blocked)
+            & match self.list.update_depth(self.blocked) {
+                Some(_) => get_incomplete_adeps(self.list, self.blocked),
+                None => TaskSet::default(),
+            }
+    }
+
+    pub fn on(mut self, blocking: TaskId) -> Result<TaskSet, BlockError> {
         if blocking == self.blocked {
             return Err(BlockError::WouldBlockOnSelf);
         }
         self.list
             .tasks
             .update_edge(blocking.0, self.blocked.0, ())?;
-        if !self.list.should_keep_snoozed(self.blocked, None)
-            || self.list.status(self.blocked) == Some(TaskStatus::Complete)
-        {
-            self.list.update_depth(self.blocked);
-        }
-        Ok(self.list.update_implicits(blocking)
+        let extra_affected =
+            self.update_depth_of_blocked_and_get_implicitly_restored_adeps();
+        Ok(extra_affected
+            | self.list.update_implicits(blocking)
             | TaskSet::of(self.blocked)
             | TaskSet::of(blocking))
     }
