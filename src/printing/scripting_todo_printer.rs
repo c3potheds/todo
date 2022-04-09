@@ -2,19 +2,20 @@ use super::PrintableError;
 use super::PrintableTask;
 use super::PrintableWarning;
 use super::TodoPrinter;
+use std::io::Write;
 
 pub struct ScriptingTodoPrinter;
 
 impl TodoPrinter for ScriptingTodoPrinter {
     fn print_task(&mut self, task: &PrintableTask) {
-        println!("{}", task.number);
+        writeln!(std::io::stdout(), "{}", task.number).unwrap_or_default();
     }
 
     fn print_warning(&mut self, warning: &PrintableWarning) {
-        eprintln!("{}", warning);
+        writeln!(std::io::stderr(), "{}", warning).unwrap_or_default();
     }
 
     fn print_error(&mut self, error: &PrintableError) {
-        eprintln!("{}", error);
+        writeln!(std::io::stderr(), "{}", error).unwrap_or_default();
     }
 }
