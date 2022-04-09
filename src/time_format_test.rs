@@ -109,10 +109,26 @@ fn today() {
 }
 
 #[test]
+fn today_snap_to_start() {
+    let now = Local.ymd(2022, 04, 09).and_hms(10, 00, 00);
+    let expected = Local.ymd(2022, 04, 09).and_hms(00, 00, 00);
+    let actual = parse_time(Local, now, "today", Snap::ToStart).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
 fn tomorrow() {
     let now = Local.ymd(2021, 03, 19).and_hms(10, 00, 00);
     let expected = Local.ymd(2021, 03, 20).and_hms(23, 59, 59);
     let actual = parse_time(Local, now, "tomorrow", Snap::ToEnd).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn tomorrow_snap_to_start() {
+    let now = Local.ymd(2022, 04, 09).and_hms(09, 30, 00);
+    let expected = Local.ymd(2022, 04, 10).and_hms(00, 00, 00);
+    let actual = parse_time(Local, now, "tomorrow", Snap::ToStart).unwrap();
     assert_eq!(actual, expected);
 }
 

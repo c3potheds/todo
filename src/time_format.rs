@@ -264,14 +264,24 @@ pub fn parse_time<Tz: TimeZone>(
         .or_else(|_| parse_day_of_week(now.clone(), s, snap))
         .or_else(|_| {
             if s == "today" {
-                Ok(end_of_day(now.clone()))
+                match snap {
+                    Snap::ToStart => Ok(start_of_day(now.clone())),
+                    Snap::ToEnd => Ok(end_of_day(now.clone())),
+                }
             } else {
                 Err(ParseTimeError)
             }
         })
         .or_else(|_| {
             if s == "tomorrow" {
-                Ok(end_of_day(now.clone() + chrono::Duration::days(1)))
+                match snap {
+                    Snap::ToStart => Ok(start_of_day(
+                        now.clone() + chrono::Duration::days(1),
+                    )),
+                    Snap::ToEnd => {
+                        Ok(end_of_day(now.clone() + chrono::Duration::days(1)))
+                    }
+                }
             } else {
                 Err(ParseTimeError)
             }
