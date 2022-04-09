@@ -149,3 +149,59 @@ fn block_include_done() {
         )
         .end();
 }
+
+#[test]
+fn block_complete_task_on_preceding_complete_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b --done");
+    fix.test("todo block b --on a")
+        .validate()
+        .printed_task(&PrintableTask::new("a", -1, Complete))
+        .printed_task(&PrintableTask::new("b", 0, Complete).action(Lock))
+        .end();
+}
+
+#[test]
+fn block_complete_task_on_distantly_preceding_complete_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c d e --done");
+    fix.test("todo block e --on a")
+        .validate()
+        .printed_task(&PrintableTask::new("a", -4, Complete))
+        .printed_task(&PrintableTask::new("e", 0, Complete).action(Lock))
+        .end();
+}
+
+#[test]
+fn block_complete_task_on_later_complete_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b --done");
+    fix.test("todo block a --on b")
+        .validate()
+        .printed_task(&PrintableTask::new("b", -1, Complete))
+        .printed_task(&PrintableTask::new("a", 0, Complete).action(Lock))
+        .end();
+}
+
+#[test]
+fn block_complete_task_on_distant_later_complete_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c d e --done");
+    fix.test("todo block a --on e")
+        .validate()
+        .printed_task(&PrintableTask::new("e", -1, Complete))
+        .printed_task(&PrintableTask::new("a", 0, Complete).action(Lock))
+        .end();
+}
+
+#[test]
+fn block_multiple_complete_tasks_on_later_complete_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c d --done");
+    fix.test("todo block a b --on d")
+        .validate()
+        .printed_task(&PrintableTask::new("d", -2, Complete))
+        .printed_task(&PrintableTask::new("a", -1, Complete).action(Lock))
+        .printed_task(&PrintableTask::new("b", 0, Complete).action(Lock))
+        .end();
+}

@@ -692,7 +692,6 @@ fn block_complete_task_on_previously_complete_task() {
 }
 
 #[test]
-#[ignore = "Do we need layers for complete tasks?"]
 fn block_complete_task_on_later_complete_task() {
     let mut list = TodoList::default();
     let a = list.add("a");

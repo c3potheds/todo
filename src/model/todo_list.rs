@@ -87,8 +87,12 @@ impl<'ser> TodoList<'ser> {
             self.incomplete.depth(&id),
             self.max_depth_of_deps(id).map(|depth| depth + 1),
         ) {
-            // Task is complete, doesn't need to change
-            (None, None) => None,
+            // Task is complete, put it back at the top of the complete layer.
+            (None, None) => {
+                remove_first_occurrence_from_vec(&mut self.complete, &id);
+                self.complete.push(id);
+                None
+            }
             // Task is complete, needs to be put into a layer.
             (None, Some(new_depth)) => {
                 remove_first_occurrence_from_vec(&mut self.complete, &id);
