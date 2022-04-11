@@ -1,5 +1,7 @@
 use super::*;
 
+type TestResult = Result<(), TodoListError>;
+
 mod add_test;
 mod basic_test;
 mod block_test;

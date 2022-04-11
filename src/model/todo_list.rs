@@ -1,3 +1,5 @@
+extern crate thiserror;
+use self::thiserror::Error;
 use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
@@ -259,9 +261,11 @@ pub struct ForceChecked {
     pub unblocked: TaskSet,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Error)]
 pub enum CheckError {
+    #[error("task is already complete")]
     TaskIsAlreadyComplete,
+    #[error("task is blocked by incomplete deps")]
     TaskIsBlockedBy(Vec<TaskId>),
 }
 
@@ -380,9 +384,11 @@ pub struct ForceRestored {
     pub blocked: TaskSet,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Error)]
 pub enum RestoreError {
+    #[error("task is already incomplete")]
     TaskIsAlreadyIncomplete,
+    #[error("restoring task would implicitly restore complete adeps")]
     WouldRestore(TaskSet),
 }
 
@@ -472,9 +478,11 @@ impl<'ser> TodoList<'ser> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum BlockError {
+    #[error("trying to block task on self")]
     WouldBlockOnSelf,
+    #[error("would create a dependency cycle")]
     WouldCycle(daggy::WouldCycle<()>),
 }
 
@@ -550,9 +558,11 @@ impl<'ser> TodoList<'ser> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum UnblockError {
+    #[error("trying to unblock task from self")]
     WouldUnblockFromSelf,
+    #[error("was not directly blocking")]
     WasNotDirectlyBlocking,
 }
 
@@ -574,8 +584,9 @@ impl<'a, 'ser> Unblock<'a, 'ser> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum PuntError {
+    #[error("cannot punt complete task")]
     TaskIsComplete,
 }
 
@@ -756,9 +767,11 @@ impl<'ser> TodoList<'ser> {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Error)]
 pub enum SnoozeWarning {
+    #[error("task is complete")]
     TaskIsComplete,
+    #[error("snoozed until after due date")]
     SnoozedUntilAfterDueDate {
         snoozed_until: DateTime<Utc>,
         due_date: DateTime<Utc>,
@@ -828,4 +841,18 @@ impl<'ser> TodoList<'ser> {
             None => Err(vec![UnsnoozeWarning::TaskIsComplete]),
         }
     }
+}
+
+#[derive(Debug, Error)]
+pub enum TodoListError {
+    #[error("could not complete task")]
+    Check(#[from] CheckError),
+    #[error("could not restore task")]
+    Restore(#[from] RestoreError),
+    #[error("could not block task")]
+    Block(#[from] BlockError),
+    #[error("could not unblock task")]
+    Unblock(#[from] UnblockError),
+    #[error("could not punt task")]
+    Punt(#[from] PuntError),
 }
