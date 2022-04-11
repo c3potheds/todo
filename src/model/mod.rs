@@ -14,3 +14,9 @@ pub use self::task_id::*;
 pub use self::task_set::*;
 pub use self::task_status::*;
 pub use self::todo_list::*;
+
+#[cfg(test)]
+mod task_test;
+
+#[cfg(test)]
+mod todo_list_test;

@@ -22,9 +22,6 @@ pub mod time_format;
 mod long_output_test;
 
 #[cfg(test)]
-mod model_test;
-
-#[cfg(test)]
 mod text_editing_test;
 
 #[cfg(test)]
