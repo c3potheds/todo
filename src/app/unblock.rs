@@ -50,13 +50,14 @@ fn unblock_from_all(
 ) -> TaskSet {
     tasks_to_unblock
         .iter_unsorted()
-        .map(|id| {
-            list.deps(id).iter_unsorted().for_each(|dep| {
-                list.unblock(id).from(dep).unwrap();
-            });
-            id
+        .fold(TaskSet::default(), |so_far, id| {
+            list.deps(id)
+                .iter_unsorted()
+                .fold(TaskSet::default(), |so_far, dep| {
+                    list.unblock(id).from(dep).unwrap() | so_far
+                })
+                | so_far
         })
-        .collect()
 }
 
 pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Unblock) {

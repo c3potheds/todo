@@ -66,6 +66,8 @@ fn unblock_from_all() {
     fix.test("todo new c -p a b");
     fix.test("todo unblock c")
         .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("b", 2, Incomplete))
         .printed_task(&PrintableTask::new("c", 3, Incomplete).action(Unlock))
         .end();
 }
@@ -77,7 +79,21 @@ fn unblock_from_all2() {
     fix.test("todo new c -p a b");
     fix.test("todo unblock c")
         .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
         .printed_task(&PrintableTask::new("c", 2, Incomplete).action(Unlock))
+        .printed_task(&PrintableTask::new("b", 3, Blocked))
+        .end();
+}
+
+#[test]
+fn unblock_complete() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b --chain");
+    fix.test("todo check a b");
+    fix.test("todo unblock b")
+        .validate()
+        .printed_task(&PrintableTask::new("a", -1, Complete))
+        .printed_task(&PrintableTask::new("b", 0, Complete).action(Unlock))
         .end();
 }
 
