@@ -47,7 +47,7 @@ fn check_with_fn<Check: FnMut(TaskId) -> CheckResult>(
     tasks_to_check
         .into_iter()
         .fold(CheckResult::default(), |so_far, id| {
-            so_far | (&mut check_fn)(id)
+            so_far | check_fn(id)
         })
 }
 

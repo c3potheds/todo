@@ -48,7 +48,7 @@ where
             return 0;
         }
         bisection::bisect_right_by(&self.layers[layer], |other| {
-            (&cmp)(other, data)
+            cmp(other, data)
         })
     }
 
