@@ -16,6 +16,7 @@ fn get_one() {
         SubCommand::Get(Get {
             keys: vec![ByNumber(1)],
             include_done: false,
+            no_context: false,
         }),
     );
 }
@@ -27,6 +28,7 @@ fn get_three() {
         SubCommand::Get(Get {
             keys: vec![ByNumber(1), ByNumber(2), ByNumber(3)],
             include_done: false,
+            no_context: false,
         }),
     );
 }
@@ -38,6 +40,7 @@ fn get_by_name() {
         SubCommand::Get(Get {
             keys: vec![ByName("a".to_string())],
             include_done: false,
+            no_context: false,
         }),
     );
 }
@@ -49,6 +52,7 @@ fn get_negative() {
         SubCommand::Get(Get {
             keys: vec![ByNumber(-1)],
             include_done: false,
+            no_context: false,
         }),
     );
 }
@@ -60,6 +64,7 @@ fn get_include_done_long() {
         SubCommand::Get(Get {
             keys: vec![ByNumber(1)],
             include_done: true,
+            no_context: false,
         }),
     );
 }
@@ -71,6 +76,31 @@ fn get_include_done_short() {
         SubCommand::Get(Get {
             keys: vec![ByNumber(1)],
             include_done: true,
+            no_context: false,
+        }),
+    );
+}
+
+#[test]
+fn get_no_context() {
+    expect_parses_into(
+        "todo get 1 --no-context",
+        SubCommand::Get(Get {
+            keys: vec![ByNumber(1)],
+            include_done: false,
+            no_context: true,
+        }),
+    );
+}
+
+#[test]
+fn get_no_context_short() {
+    expect_parses_into(
+        "todo get 1 -n",
+        SubCommand::Get(Get {
+            keys: vec![ByNumber(1)],
+            include_done: false,
+            no_context: true,
         }),
     );
 }

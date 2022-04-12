@@ -107,3 +107,69 @@ fn get_by_name_multiple_matches() {
         .printed_task(&PrintableTask::new("bob", 3, Incomplete).action(Select))
         .end();
 }
+
+#[test]
+fn get_no_context_single_task_by_name() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --chain");
+    fix.test("todo get a -n")
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Select))
+        .end();
+}
+
+#[test]
+fn get_no_context_multiple_tasks_by_name() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --chain");
+    fix.test("todo get a b -n")
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Select))
+        .printed_task(&PrintableTask::new("b", 2, Blocked).action(Select))
+        .end();
+}
+
+#[test]
+fn get_no_context_single_completed_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --chain");
+    fix.test("todo check a b c");
+    fix.test("todo get a -n")
+        .validate()
+        .printed_task(&PrintableTask::new("a", -2, Complete).action(Select))
+        .end();
+}
+
+#[test]
+fn get_no_context_multiple_completed_tasks() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --chain");
+    fix.test("todo check a b c");
+    fix.test("todo get a b -n")
+        .validate()
+        .printed_task(&PrintableTask::new("a", -2, Complete).action(Select))
+        .printed_task(&PrintableTask::new("b", -1, Complete).action(Select))
+        .end();
+}
+
+#[test]
+fn get_no_context_blocked_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --chain");
+    fix.test("todo get c -n")
+        .validate()
+        .printed_task(&PrintableTask::new("c", 3, Blocked).action(Select))
+        .end();
+}
+
+#[test]
+fn get_no_context_complete_and_incomplete_match() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b a --chain");
+    fix.test("todo check 1");
+    fix.test("todo get a -n")
+        .validate()
+        .printed_task(&PrintableTask::new("a", 0, Complete).action(Select))
+        .printed_task(&PrintableTask::new("a", 2, Blocked).action(Select))
+        .end();
+}
