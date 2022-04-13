@@ -47,66 +47,6 @@ fn calculate_urgency(now: DateTime<Utc>, then: DateTime<Utc>) -> Urgency {
     }
 }
 
-fn calculate_progress(
-    now: DateTime<Utc>,
-    due: DateTime<Utc>,
-    budget: Duration,
-) -> i32 {
-    let start = due - budget;
-    let elapsed = now - start;
-    let budget_spent: f64 =
-        elapsed.num_seconds() as f64 / budget.num_seconds() as f64;
-
-    (budget_spent * 100.0) as i32
-}
-
-#[cfg(test)]
-#[test]
-fn calculate_progress_test() {
-    #![allow(clippy::zero_prefixed_literal)]
-    use app::testing::ymdhms;
-    assert_eq!(
-        0,
-        calculate_progress(
-            ymdhms(2021, 04, 30, 10, 00, 00),
-            ymdhms(2021, 04, 30, 12, 00, 00),
-            Duration::hours(2)
-        )
-    );
-    assert_eq!(
-        50,
-        calculate_progress(
-            ymdhms(2021, 04, 30, 11, 00, 00),
-            ymdhms(2021, 04, 30, 12, 00, 00),
-            Duration::hours(2)
-        )
-    );
-    assert_eq!(
-        100,
-        calculate_progress(
-            ymdhms(2021, 04, 30, 12, 00, 00),
-            ymdhms(2021, 04, 30, 12, 00, 00),
-            Duration::hours(2)
-        )
-    );
-    assert_eq!(
-        -100,
-        calculate_progress(
-            ymdhms(2021, 04, 30, 08, 00, 00),
-            ymdhms(2021, 04, 30, 12, 00, 00),
-            Duration::hours(2)
-        )
-    );
-    assert_eq!(
-        200,
-        calculate_progress(
-            ymdhms(2021, 04, 30, 14, 00, 00),
-            ymdhms(2021, 04, 30, 12, 00, 00),
-            Duration::hours(2)
-        )
-    );
-}
-
 const ANSI_OFFSET: usize = 10;
 const SELECTOR_OFFSET: usize = 6;
 const LOG_DATE_OFFSET: usize = 11;
@@ -167,20 +107,6 @@ fn fmt_priority(priority: i32, out: &mut String) {
     out.push(' ');
 }
 
-fn fmt_budget(target_progress: i32, out: &mut String) {
-    out.push_str(&Color::White.bold().paint("Target progress").to_string());
-    out.push(' ');
-    let style = if target_progress < 50 {
-        Color::White.bold().dimmed()
-    } else if target_progress < 80 {
-        Color::Yellow.bold()
-    } else {
-        Color::Red.bold()
-    };
-    out.push_str(&style.paint(format!("{}%", target_progress)).to_string());
-    out.push(' ');
-}
-
 fn fmt_due_date(
     due_date: DateTime<Utc>,
     context: &PrintingContext,
@@ -236,13 +162,6 @@ fn get_body(task: &PrintableTask, context: &PrintingContext) -> String {
     }
     if let Some(due_date) = task.due_date {
         fmt_due_date(due_date, context, &mut body);
-        if let Some(budget) = task.budget {
-            let target_progress =
-                calculate_progress(context.now, due_date, budget);
-            if (0..=100).contains(&target_progress) {
-                fmt_budget(target_progress, &mut body)
-            }
-        }
     }
     let (incomplete, total) = task.deps_stats;
     if total > 0 {
