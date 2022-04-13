@@ -113,7 +113,7 @@ const LOG_DATE_OFFSET: usize = 11;
 
 impl<'a> Display for PrintableTaskWithContext<'a> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        let mut start = if let Some(log_date) = &self.task.log_date {
+        let start = if let Some(log_date) = &self.task.log_date {
             format!(
                 "{} {} {:>width$} ",
                 log_date,
@@ -129,10 +129,11 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
                 width = self.context.max_index_digits + ANSI_OFFSET
             )
         };
+        let mut body = String::new();
         if let Some(start_date) = self.task.start_date {
             let snooze_duration = start_date - self.context.now;
             if snooze_duration > chrono::Duration::zero() {
-                start.push_str(
+                body.push_str(
                     &Color::Purple
                         .bold()
                         .paint(format!(
@@ -143,7 +144,7 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
                         ))
                         .to_string(),
                 );
-                start.push(' ');
+                body.push(' ');
             }
         }
         if self.task.priority != 0 {
@@ -161,10 +162,10 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
             } else {
                 color.bold().dimmed()
             };
-            start.push_str(
+            body.push_str(
                 &style.paint(format!("P{}", self.task.priority)).to_string(),
             );
-            start.push(' ');
+            body.push(' ');
         }
         if let Some(due_date) = self.task.due_date {
             let style = match calculate_urgency(self.context.now, due_date) {
@@ -176,19 +177,19 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
                 self.context.now.with_timezone(&Local),
                 due_date.with_timezone(&Local),
             );
-            start.push_str(&style.paint(format!("Due {}", desc)).to_string());
-            start.push(' ');
+            body.push_str(&style.paint(format!("Due {}", desc)).to_string());
+            body.push(' ');
             if let Some(budget) = self.task.budget {
                 let target_progress =
                     calculate_progress(self.context.now, due_date, budget);
                 if (0..=100).contains(&target_progress) {
-                    start.push_str(
+                    body.push_str(
                         &Color::White
                             .bold()
                             .paint("Target progress")
                             .to_string(),
                     );
-                    start.push(' ');
+                    body.push(' ');
                     let style = if target_progress < 50 {
                         Color::White.bold().dimmed()
                     } else if target_progress < 80 {
@@ -196,12 +197,12 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
                     } else {
                         Color::Red.bold()
                     };
-                    start.push_str(
+                    body.push_str(
                         &style
                             .paint(format!("{}%", target_progress))
                             .to_string(),
                     );
-                    start.push(' ');
+                    body.push(' ');
                 }
             }
         }
@@ -210,12 +211,12 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
         // if the task has 3 deps, 2 of which are incomplete, show "🔓 2/3".
         let (incomplete, total) = self.task.deps_stats;
         if total > 0 {
-            start.push_str(
+            body.push_str(
                 &Color::Red
                     .paint(format!("🔒{}/{}", incomplete, total))
                     .to_string(),
             );
-            start.push(' ');
+            body.push(' ');
         }
         // If the task has adeps, show an unlock icon, followed by the number of
         // unlockable adeps and the number of total adeps, as a fraction. E.g.
@@ -227,18 +228,19 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
         // If the task has no adeps, show nothing.
         let (unlockable, total) = self.task.adeps_stats;
         if total > 0 {
-            start.push_str(
+            body.push_str(
                 &Color::White
                     .paint(format!("🔓{unlockable}/{total}"))
                     .to_string(),
             );
-            start.push(' ');
+            body.push(' ');
         }
+        body.push_str(self.task.desc);
         write!(
             f,
             "{}",
             textwrap::fill(
-                self.task.desc,
+                &body,
                 textwrap::Options::new(self.context.width)
                     .initial_indent(&start)
                     .break_words(false)
