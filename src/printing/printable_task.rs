@@ -97,6 +97,7 @@ pub struct PrintableTask<'a> {
     pub log_date: Option<LogDate>,
     pub priority: i32,
     pub due_date: Option<DateTime<Utc>>,
+    pub punctuality: Option<Duration>,
     pub budget: Option<Duration>,
     pub start_date: Option<DateTime<Utc>>,
     pub deps_stats: (usize, usize),
@@ -113,6 +114,7 @@ impl<'a> PrintableTask<'a> {
             log_date: None,
             priority: 0,
             due_date: None,
+            punctuality: None,
             budget: None,
             start_date: None,
             deps_stats: (0, 0),
@@ -137,6 +139,11 @@ impl<'a> PrintableTask<'a> {
 
     pub fn due_date(mut self, due_date: DateTime<Utc>) -> Self {
         self.due_date = Some(due_date);
+        self
+    }
+
+    pub fn punctuality(mut self, punctuality: Duration) -> Self {
+        self.punctuality = Some(punctuality);
         self
     }
 

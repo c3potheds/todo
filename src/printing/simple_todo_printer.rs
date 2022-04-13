@@ -125,6 +125,19 @@ fn fmt_due_date(
     out.push(' ');
 }
 
+fn fmt_punctuality(punctuality: Duration, out: &mut String) {
+    let (style, suffix, abs_punctuality) = if punctuality > chrono::Duration::zero() {
+        (Color::Red.bold(), "late", punctuality)
+    } else {
+        (Color::Green.bold(), "early", -punctuality)
+    };
+    let desc = ::time_format::format_duration_laconic(abs_punctuality);
+    out.push_str(
+        &style.paint(format!("Done {} {}", desc, suffix)).to_string(),
+    );
+    out.push(' ');
+}
+
 // If the task has deps, show a lock icon, followed by the number of incomplete
 // deps and the number of total deps, as a fraction. E.g. if the task has 3
 // deps, 2 of which are incomplete, show "🔓 2/3".
@@ -170,6 +183,9 @@ fn get_body(task: &PrintableTask, context: &PrintingContext) -> String {
     }
     if let Some(due_date) = task.due_date {
         fmt_due_date(due_date, context, &mut body);
+    }
+    if let Some(punctuality) = task.punctuality {
+        fmt_punctuality(punctuality, &mut body);
     }
     body.push_str(task.desc);
     body

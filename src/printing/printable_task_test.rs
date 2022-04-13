@@ -435,3 +435,71 @@ fn show_due_date_and_deps_stats() {
         )
     );
 }
+
+#[test]
+fn show_punctuality_completed_early() {
+    let now = ymdhms(2022, 04, 11, 09, 00, 00);
+    let fmt = print_task_with_context(
+        now_context(now),
+        &PrintableTask::new("a", 0, Complete)
+            .punctuality(-chrono::Duration::days(1)),
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "      \u{1b}[32m0)\u{1b}[0m ",
+            "\u{1b}[1;32mDone 1 day early\u{1b}[0m a\n"
+        )
+    );
+}
+
+#[test]
+fn show_punctuality_completed_late() {
+    let now = ymdhms(2022, 04, 11, 09, 00, 00);
+    let fmt = print_task_with_context(
+        now_context(now),
+        &PrintableTask::new("a", 0, Complete)
+            .punctuality(chrono::Duration::days(1)),
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "      \u{1b}[32m0)\u{1b}[0m ",
+            "\u{1b}[1;31mDone 1 day late\u{1b}[0m a\n"
+        )
+    );
+}
+
+#[test]
+fn show_punctuality_completed_minutes_early() {
+    let now = ymdhms(2022, 04, 11, 09, 00, 00);
+    let fmt = print_task_with_context(
+        now_context(now),
+        &PrintableTask::new("a", 0, Complete)
+            .punctuality(-chrono::Duration::minutes(1)),
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "      \u{1b}[32m0)\u{1b}[0m ",
+            "\u{1b}[1;32mDone 1 minute early\u{1b}[0m a\n"
+        )
+    );
+}
+
+#[test]
+fn show_punctuality_completed_minutes_late() {
+    let now = ymdhms(2022, 04, 11, 09, 00, 00);
+    let fmt = print_task_with_context(
+        now_context(now),
+        &PrintableTask::new("a", 0, Complete)
+            .punctuality(chrono::Duration::minutes(1)),
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "      \u{1b}[32m0)\u{1b}[0m ",
+            "\u{1b}[1;31mDone 1 minute late\u{1b}[0m a\n"
+        )
+    );
+}
