@@ -1,44 +1,25 @@
 use model::TodoList;
 use std::io::Write;
+use thiserror::Error;
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum LoadError {
-    IoError(std::io::Error),
-    DeserializeError(serde_json::Error),
-}
-
-impl From<std::io::Error> for LoadError {
-    fn from(src: std::io::Error) -> Self {
-        Self::IoError(src)
-    }
-}
-
-impl From<serde_json::Error> for LoadError {
-    fn from(src: serde_json::Error) -> Self {
-        Self::DeserializeError(src)
-    }
+    #[error("IO error")]
+    IoError(#[from] std::io::Error),
+    #[error("Deserialize error")]
+    DeserializeError(#[from] serde_json::Error),
 }
 
 pub fn load(s: &str) -> Result<TodoList<'_>, LoadError> {
     Ok(serde_json::from_str(s)?)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum SaveError {
-    IoError(std::io::Error),
-    SerializeError(serde_json::Error),
-}
-
-impl From<std::io::Error> for SaveError {
-    fn from(src: std::io::Error) -> Self {
-        Self::IoError(src)
-    }
-}
-
-impl From<serde_json::Error> for SaveError {
-    fn from(src: serde_json::Error) -> Self {
-        Self::SerializeError(src)
-    }
+    #[error("IO error")]
+    IoError(#[from] std::io::Error),
+    #[error("Serialize error")]
+    SerializeError(#[from] serde_json::Error),
 }
 
 pub fn save<W>(writer: W, list: &TodoList) -> Result<(), SaveError>

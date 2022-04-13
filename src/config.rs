@@ -1,4 +1,5 @@
 use std::io::Read;
+use thiserror::Error;
 
 #[derive(Default, Debug, PartialEq, Deserialize, Serialize)]
 struct ConfigModel {
@@ -41,23 +42,12 @@ impl Default for Config {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum LoadError {
-    IoError(std::io::Error),
-    DeserializeError(serde_json::Error),
+    #[error("Load error")]
+    DeserializeError(#[from] serde_json::Error),
 }
 
-impl From<std::io::Error> for LoadError {
-    fn from(src: std::io::Error) -> Self {
-        Self::IoError(src)
-    }
-}
-
-impl From<serde_json::Error> for LoadError {
-    fn from(src: serde_json::Error) -> Self {
-        Self::DeserializeError(src)
-    }
-}
 pub fn load<R>(reader: R) -> Result<Config, LoadError>
 where
     R: Read,

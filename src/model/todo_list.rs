@@ -1,5 +1,3 @@
-extern crate thiserror;
-use self::thiserror::Error;
 use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
@@ -15,6 +13,7 @@ use model::TaskSet;
 use model::TaskStatus;
 use std::borrow::Cow;
 use std::collections::HashSet;
+use thiserror::Error;
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub struct TodoList<'ser> {

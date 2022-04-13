@@ -2,11 +2,13 @@ extern crate atty;
 extern crate directories;
 extern crate structopt;
 extern crate term_size;
+extern crate thiserror;
 extern crate todo;
 
 use std::fs::File;
 use std::io::BufWriter;
 use structopt::StructOpt;
+use thiserror::Error;
 use todo::app;
 use todo::cli::Options;
 use todo::clock::Clock;
@@ -19,44 +21,20 @@ use todo::printing::ScriptingTodoPrinter;
 use todo::printing::SimpleTodoPrinter;
 use todo::text_editing::ScrawlTextEditor;
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 enum TodoError {
+    #[error("IO error")]
     NoDataDirectory,
-    Io(std::io::Error),
-    CommandLineParsing(structopt::clap::Error),
-    Load(model::LoadError),
-    Save(model::SaveError),
-    LoadConfig(config::LoadError),
-}
-
-impl From<std::io::Error> for TodoError {
-    fn from(src: std::io::Error) -> Self {
-        Self::Io(src)
-    }
-}
-
-impl From<structopt::clap::Error> for TodoError {
-    fn from(src: structopt::clap::Error) -> Self {
-        Self::CommandLineParsing(src)
-    }
-}
-
-impl From<model::LoadError> for TodoError {
-    fn from(src: model::LoadError) -> Self {
-        Self::Load(src)
-    }
-}
-
-impl From<model::SaveError> for TodoError {
-    fn from(src: model::SaveError) -> Self {
-        Self::Save(src)
-    }
-}
-
-impl From<config::LoadError> for TodoError {
-    fn from(src: config::LoadError) -> Self {
-        Self::LoadConfig(src)
-    }
+    #[error("IO error")]
+    Io(#[from] std::io::Error),
+    #[error("Command line parsing error")]
+    CommandLineParsing(#[from] structopt::clap::Error),
+    #[error("Load error")]
+    Load(#[from] model::LoadError),
+    #[error("Save error")]
+    Save(#[from] model::SaveError),
+    #[error("Config error")]
+    LoadConfig(#[from] config::LoadError),
 }
 
 type TodoResult = Result<(), TodoError>;

@@ -7,6 +7,7 @@ extern crate daggy;
 extern crate itertools;
 extern crate structopt;
 extern crate textwrap;
+extern crate thiserror;
 
 pub mod app;
 pub mod cli;
