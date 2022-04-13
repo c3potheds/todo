@@ -70,7 +70,6 @@ fn show_tasks_with_due_date_excludes_complete() {
 fn show_tasks_with_due_date_include_done() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
-    let in_5_hours = ymdhms(2021, 04, 12, 19, 00, 00);
     let in_2_days = ymdhms(2021, 04, 14, 23, 59, 59);
     fix.test("todo new a --due 5 hours");
     fix.test("todo new b -p a");
@@ -80,7 +79,8 @@ fn show_tasks_with_due_date_include_done() {
     fix.test("todo due --include-done")
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 0, Complete).due_date(in_5_hours),
+            &PrintableTask::new("a", 0, Complete)
+                .punctuality(chrono::Duration::hours(5)),
         )
         .printed_task(
             &PrintableTask::new("b", 1, Incomplete).due_date(in_2_days),
@@ -116,7 +116,6 @@ fn show_tasks_with_due_date_earlier_than_given_date_include_done() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let in_5_hours = ymdhms(2021, 04, 12, 19, 00, 00);
-    let in_6_hours = ymdhms(2021, 04, 12, 20, 00, 00);
     fix.test("todo new a --due 5 hours");
     fix.test("todo new b -p a");
     fix.test("todo new c -p b --due 2 days");
@@ -126,7 +125,8 @@ fn show_tasks_with_due_date_earlier_than_given_date_include_done() {
     fix.test("todo due --in 1 day -d")
         .validate()
         .printed_task(
-            &PrintableTask::new("g", 0, Complete).due_date(in_6_hours),
+            &PrintableTask::new("g", 0, Complete)
+                .punctuality(chrono::Duration::hours(6)),
         )
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete).due_date(in_5_hours),
@@ -191,13 +191,17 @@ fn set_due_date_excludes_complete_tasks() {
 #[test]
 fn set_due_date_include_done() {
     let mut fix = Fixture::default();
+    // Monday.
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let thursday = ymdhms(2021, 04, 15, 23, 59, 59);
     fix.test("todo new a b --chain");
     fix.test("todo check a");
     fix.test("todo due b --on thursday --include-done")
         .validate()
-        .printed_task(&PrintableTask::new("a", 0, Complete).due_date(thursday))
+        .printed_task(
+            &PrintableTask::new("a", 0, Complete)
+                .punctuality(fix.clock.now - thursday),
+        )
         .printed_task(
             &PrintableTask::new("b", 1, Incomplete).due_date(thursday),
         )

@@ -3,6 +3,7 @@
 use super::util::*;
 use chrono::Duration;
 use cli::Key;
+use model::CheckOptions;
 use model::NewOptions;
 use model::TodoList;
 use printing::Action::*;
@@ -237,6 +238,40 @@ fn format_incomplete_task_does_not_show_deps() {
     list.check(a).unwrap();
     let actual = format_task(&list, b);
     let expected = PrintableTask::new("b", 1, Incomplete);
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn format_complete_task_with_punctuality_early() {
+    let now = ::app::testing::ymdhms(2022, 04, 13, 09, 00, 00);
+    let mut list = TodoList::default();
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .creation_time(now)
+            .due_date(now + chrono::Duration::hours(2)),
+    );
+    list.check(CheckOptions { id: a, now }).unwrap();
+    let actual = format_task(&list, a);
+    let expected = PrintableTask::new("a", 0, Complete)
+        .punctuality(-chrono::Duration::hours(2));
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn format_complete_task_with_punctuality_late() {
+    let now = ::app::testing::ymdhms(2022, 04, 13, 09, 00, 00);
+    let mut list = TodoList::default();
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .creation_time(now)
+            .due_date(now - chrono::Duration::days(3)),
+    );
+    list.check(CheckOptions { id: a, now }).unwrap();
+    let actual = format_task(&list, a);
+    let expected = PrintableTask::new("a", 0, Complete)
+        .punctuality(chrono::Duration::days(3));
     assert_eq!(actual, expected);
 }
 

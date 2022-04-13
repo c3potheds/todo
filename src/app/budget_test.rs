@@ -169,7 +169,7 @@ fn budget_include_complete_affected_deps() {
         .validate()
         .printed_task(
             &PrintableTask::new("a", 0, Complete)
-                .due_date(ymdhms(2021, 04, 30, 22, 59, 59)),
+                .punctuality(-chrono::Duration::hours(10))
         )
         .printed_task(
             &PrintableTask::new("b", 1, Incomplete)

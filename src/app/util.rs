@@ -104,9 +104,15 @@ pub fn format_task<'ser, 'list>(
             let mut result =
                 PrintableTask::new(&task.desc, pos, to_printing_status(status))
                     .priority(implicit_priority);
-            if let Some(due_date) = implicit_due_date {
-                result = result.due_date(due_date);
-            }
+            result = match (status, implicit_due_date, task.completion_time) {
+                (
+                    TaskStatus::Complete,
+                    Some(due_date),
+                    Some(completion_time),
+                ) => result.punctuality(completion_time - due_date),
+                (_, Some(due_date), _) => result.due_date(due_date),
+                _ => result,
+            };
             if task.budget.0 > 0 {
                 result = result.budget(Duration::seconds(task.budget.0.into()));
             }
