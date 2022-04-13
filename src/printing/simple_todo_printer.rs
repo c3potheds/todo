@@ -160,9 +160,6 @@ fn get_body(task: &PrintableTask, context: &PrintingContext) -> String {
     if task.priority != 0 {
         fmt_priority(task.priority, &mut body);
     }
-    if let Some(due_date) = task.due_date {
-        fmt_due_date(due_date, context, &mut body);
-    }
     let (incomplete, total) = task.deps_stats;
     if total > 0 {
         fmt_locks(incomplete, total, &mut body);
@@ -170,6 +167,9 @@ fn get_body(task: &PrintableTask, context: &PrintingContext) -> String {
     let (unlockable, total) = task.adeps_stats;
     if total > 0 {
         fmt_unlocks(unlockable, total, &mut body);
+    }
+    if let Some(due_date) = task.due_date {
+        fmt_due_date(due_date, context, &mut body);
     }
     body.push_str(task.desc);
     body

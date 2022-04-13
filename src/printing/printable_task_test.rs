@@ -365,8 +365,8 @@ fn show_due_date_and_adeps_stats() {
         fmt,
         concat!(
             "      \u{1b}[33m1)\u{1b}[0m ",
-            "\u{1b}[1;31mDue 1 day ago\u{1b}[0m ",
-            "\u{1b}[37m🔓12/20\u{1b}[0m a\n"
+            "\u{1b}[37m🔓12/20\u{1b}[0m ",
+            "\u{1b}[1;31mDue 1 day ago\u{1b}[0m a\n"
         )
     );
 }
@@ -430,8 +430,8 @@ fn show_due_date_and_deps_stats() {
         fmt,
         concat!(
             "      \u{1b}[33m1)\u{1b}[0m ",
-            "\u{1b}[1;31mDue 1 day ago\u{1b}[0m ",
-            "\u{1b}[31m🔒12/20\u{1b}[0m a\n"
+            "\u{1b}[31m🔒12/20\u{1b}[0m ",
+            "\u{1b}[1;31mDue 1 day ago\u{1b}[0m a\n"
         )
     );
 }
