@@ -111,150 +111,177 @@ const ANSI_OFFSET: usize = 10;
 const SELECTOR_OFFSET: usize = 6;
 const LOG_DATE_OFFSET: usize = 11;
 
+fn get_initial_indent(
+    task: &PrintableTask,
+    context: &PrintingContext,
+) -> String {
+    if let Some(log_date) = &task.log_date {
+        format!(
+            "{} {} {:>width$} ",
+            log_date,
+            task.action,
+            format_number(task.number, task.status),
+            width = context.max_index_digits + ANSI_OFFSET
+        )
+    } else {
+        format!(
+            "{} {:>width$} ",
+            task.action,
+            format_number(task.number, task.status),
+            width = context.max_index_digits + ANSI_OFFSET
+        )
+    }
+}
+
+fn fmt_snooze_date(snooze_duration: Duration, out: &mut String) {
+    if snooze_duration > chrono::Duration::zero() {
+        out.push_str(
+            &Color::Purple
+                .bold()
+                .paint(format!(
+                    "Snoozed for {}",
+                    ::time_format::format_duration_laconic(snooze_duration)
+                ))
+                .to_string(),
+        );
+        out.push(' ');
+    }
+}
+
+fn fmt_priority(priority: i32, out: &mut String) {
+    let color = match priority.abs() {
+        6..=i32::MAX => Color::Red,
+        5 => Color::Yellow,
+        4 => Color::Green,
+        3 => Color::Cyan,
+        2 => Color::Blue,
+        1 => Color::Purple,
+        _ => Color::Black,
+    };
+    let style = if priority >= 0 {
+        color.bold()
+    } else {
+        color.bold().dimmed()
+    };
+    out.push_str(&style.paint(format!("P{}", priority)).to_string());
+    out.push(' ');
+}
+
+fn fmt_budget(target_progress: i32, out: &mut String) {
+    out.push_str(&Color::White.bold().paint("Target progress").to_string());
+    out.push(' ');
+    let style = if target_progress < 50 {
+        Color::White.bold().dimmed()
+    } else if target_progress < 80 {
+        Color::Yellow.bold()
+    } else {
+        Color::Red.bold()
+    };
+    out.push_str(&style.paint(format!("{}%", target_progress)).to_string());
+    out.push(' ');
+}
+
+fn fmt_due_date(
+    due_date: DateTime<Utc>,
+    context: &PrintingContext,
+    out: &mut String,
+) {
+    let style = match calculate_urgency(context.now, due_date) {
+        Urgency::Urgent => Color::Red.bold(),
+        Urgency::Moderate => Color::Yellow.bold(),
+        Urgency::Meh => Color::White.bold().dimmed(),
+    };
+    let desc = ::time_format::display_relative_time(
+        context.now.with_timezone(&Local),
+        due_date.with_timezone(&Local),
+    );
+    out.push_str(&style.paint(format!("Due {}", desc)).to_string());
+    out.push(' ');
+}
+
+// If the task has deps, show a lock icon, followed by the number of incomplete
+// deps and the number of total deps, as a fraction. E.g. if the task has 3
+// deps, 2 of which are incomplete, show "🔓 2/3".
+fn fmt_locks(incomplete: usize, total: usize, out: &mut String) {
+    out.push_str(
+        &Color::Red
+            .paint(format!("🔒{}/{}", incomplete, total))
+            .to_string(),
+    );
+    out.push(' ');
+}
+
+// If the task has adeps, show an unlock icon, followed by the number of
+// unlockable adeps and the number of total adeps, as a fraction. E.g. if the
+// task would unlock two adeps when it is completed, out of three total adeps,
+// show "🔓2/3".
+//
+// If none of the adeps are unlockable, the first number is 0.
+fn fmt_unlocks(unlockable: usize, total: usize, out: &mut String) {
+    out.push_str(
+        &Color::White
+            .paint(format!("🔓{unlockable}/{total}"))
+            .to_string(),
+    );
+    out.push(' ');
+}
+
+fn get_body(task: &PrintableTask, context: &PrintingContext) -> String {
+    let mut body = String::new();
+    if let Some(start_date) = task.start_date {
+        fmt_snooze_date(start_date - context.now, &mut body);
+    }
+    if task.priority != 0 {
+        fmt_priority(task.priority, &mut body);
+    }
+    if let Some(due_date) = task.due_date {
+        fmt_due_date(due_date, context, &mut body);
+        if let Some(budget) = task.budget {
+            let target_progress =
+                calculate_progress(context.now, due_date, budget);
+            if (0..=100).contains(&target_progress) {
+                fmt_budget(target_progress, &mut body)
+            }
+        }
+    }
+    let (incomplete, total) = task.deps_stats;
+    if total > 0 {
+        fmt_locks(incomplete, total, &mut body);
+    }
+    let (unlockable, total) = task.adeps_stats;
+    if total > 0 {
+        fmt_unlocks(unlockable, total, &mut body);
+    }
+    body.push_str(task.desc);
+    body
+}
+
+fn get_subsequent_indent(
+    task: &PrintableTask,
+    context: &PrintingContext,
+) -> String {
+    let maybe_log_date_offset = if task.log_date.is_some() {
+        LOG_DATE_OFFSET
+    } else {
+        0
+    };
+    let total_offset =
+        context.max_index_digits + SELECTOR_OFFSET + maybe_log_date_offset;
+    " ".repeat(total_offset)
+}
+
 impl<'a> Display for PrintableTaskWithContext<'a> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        let start = if let Some(log_date) = &self.task.log_date {
-            format!(
-                "{} {} {:>width$} ",
-                log_date,
-                self.task.action,
-                format_number(self.task.number, self.task.status),
-                width = self.context.max_index_digits + ANSI_OFFSET
-            )
-        } else {
-            format!(
-                "{} {:>width$} ",
-                self.task.action,
-                format_number(self.task.number, self.task.status),
-                width = self.context.max_index_digits + ANSI_OFFSET
-            )
-        };
-        let mut body = String::new();
-        if let Some(start_date) = self.task.start_date {
-            let snooze_duration = start_date - self.context.now;
-            if snooze_duration > chrono::Duration::zero() {
-                body.push_str(
-                    &Color::Purple
-                        .bold()
-                        .paint(format!(
-                            "Snoozed for {}",
-                            ::time_format::format_duration_laconic(
-                                snooze_duration
-                            )
-                        ))
-                        .to_string(),
-                );
-                body.push(' ');
-            }
-        }
-        if self.task.priority != 0 {
-            let color = match self.task.priority.abs() {
-                6..=i32::MAX => Color::Red,
-                5 => Color::Yellow,
-                4 => Color::Green,
-                3 => Color::Cyan,
-                2 => Color::Blue,
-                1 => Color::Purple,
-                _ => Color::Black,
-            };
-            let style = if self.task.priority >= 0 {
-                color.bold()
-            } else {
-                color.bold().dimmed()
-            };
-            body.push_str(
-                &style.paint(format!("P{}", self.task.priority)).to_string(),
-            );
-            body.push(' ');
-        }
-        if let Some(due_date) = self.task.due_date {
-            let style = match calculate_urgency(self.context.now, due_date) {
-                Urgency::Urgent => Color::Red.bold(),
-                Urgency::Moderate => Color::Yellow.bold(),
-                Urgency::Meh => Color::White.bold().dimmed(),
-            };
-            let desc = ::time_format::display_relative_time(
-                self.context.now.with_timezone(&Local),
-                due_date.with_timezone(&Local),
-            );
-            body.push_str(&style.paint(format!("Due {}", desc)).to_string());
-            body.push(' ');
-            if let Some(budget) = self.task.budget {
-                let target_progress =
-                    calculate_progress(self.context.now, due_date, budget);
-                if (0..=100).contains(&target_progress) {
-                    body.push_str(
-                        &Color::White
-                            .bold()
-                            .paint("Target progress")
-                            .to_string(),
-                    );
-                    body.push(' ');
-                    let style = if target_progress < 50 {
-                        Color::White.bold().dimmed()
-                    } else if target_progress < 80 {
-                        Color::Yellow.bold()
-                    } else {
-                        Color::Red.bold()
-                    };
-                    body.push_str(
-                        &style
-                            .paint(format!("{}%", target_progress))
-                            .to_string(),
-                    );
-                    body.push(' ');
-                }
-            }
-        }
-        // If the task has deps, show a lock icon, followed by the number of
-        // incomplete deps and the number of total deps, as a fraction. E.g.
-        // if the task has 3 deps, 2 of which are incomplete, show "🔓 2/3".
-        let (incomplete, total) = self.task.deps_stats;
-        if total > 0 {
-            body.push_str(
-                &Color::Red
-                    .paint(format!("🔒{}/{}", incomplete, total))
-                    .to_string(),
-            );
-            body.push(' ');
-        }
-        // If the task has adeps, show an unlock icon, followed by the number of
-        // unlockable adeps and the number of total adeps, as a fraction. E.g.
-        // if the task would unlock two adeps when it is completed, out of three
-        // total adeps, show "🔓2/3".
-        //
-        // If none of the adeps are unlockable, the first number is 0.
-        //
-        // If the task has no adeps, show nothing.
-        let (unlockable, total) = self.task.adeps_stats;
-        if total > 0 {
-            body.push_str(
-                &Color::White
-                    .paint(format!("🔓{unlockable}/{total}"))
-                    .to_string(),
-            );
-            body.push(' ');
-        }
-        body.push_str(self.task.desc);
-        write!(
-            f,
-            "{}",
-            textwrap::fill(
-                &body,
-                textwrap::Options::new(self.context.width)
-                    .initial_indent(&start)
-                    .break_words(false)
-                    .subsequent_indent(&" ".repeat(
-                        self.context.max_index_digits
-                            + SELECTOR_OFFSET
-                            + if self.task.log_date.is_some() {
-                                LOG_DATE_OFFSET
-                            } else {
-                                0
-                            }
-                    )),
-            )
-        )
+        let start = get_initial_indent(self.task, self.context);
+        let body = get_body(self.task, self.context);
+        let subsequent_indent = get_subsequent_indent(self.task, self.context);
+        f.write_str(&textwrap::fill(
+            &body,
+            textwrap::Options::new(self.context.width)
+                .initial_indent(&start)
+                .break_words(false)
+                .subsequent_indent(&subsequent_indent),
+        ))
     }
 }
 
