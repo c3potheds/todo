@@ -7,6 +7,7 @@ mod edit;
 mod find;
 mod get;
 mod log;
+mod snoozed;
 mod merge;
 mod new;
 mod path;
@@ -83,6 +84,9 @@ mod rm_test;
 
 #[cfg(test)]
 mod snooze_test;
+
+#[cfg(test)]
+mod snoozed_test;
 
 #[cfg(test)]
 mod split_test;

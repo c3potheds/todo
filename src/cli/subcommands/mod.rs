@@ -10,6 +10,7 @@ mod get;
 mod merge;
 mod new;
 mod path;
+mod snoozed;
 mod prefix;
 mod priority;
 mod punt;
@@ -44,6 +45,7 @@ pub use self::snooze::Snooze;
 pub use self::split::Split;
 pub use self::top::Top;
 pub use self::unblock::Unblock;
+pub use self::snoozed::Snoozed;
 pub use self::unsnooze::Unsnooze;
 pub use super::Key;
 
@@ -103,6 +105,9 @@ mod rm_test;
 
 #[cfg(test)]
 mod snooze_test;
+
+#[cfg(test)]
+mod snoozed_test;
 
 #[cfg(test)]
 mod split_test;
