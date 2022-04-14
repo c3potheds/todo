@@ -1,19 +1,12 @@
-use app::util::format_task;
-use app::util::format_task_brief;
-use app::util::lookup_tasks;
-use chrono::DateTime;
-use chrono::Utc;
-use cli::Check;
-use model::CheckError;
-use model::CheckOptions;
-use model::ForceChecked;
-use model::TaskId;
-use model::TaskSet;
-use model::TodoList;
-use printing::Action;
-use printing::PrintableError;
-use printing::PrintableWarning;
-use printing::TodoPrinter;
+use crate::{
+    app::util::{format_task, format_task_brief, lookup_tasks},
+    cli::Check,
+    model::{
+        CheckError, CheckOptions, ForceChecked, TaskId, TaskSet, TodoList,
+    },
+    printing::{Action, PrintableError, PrintableWarning, TodoPrinter},
+};
+use chrono::{DateTime, Utc};
 
 enum Reason {
     BlockedBy(Vec<TaskId>),

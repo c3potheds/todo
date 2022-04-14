@@ -1,8 +1,8 @@
-use app::testing::Fixture;
-use cli::Key;
-use printing::PrintableTask;
-use printing::PrintableWarning;
-use printing::Status::*;
+use crate::{
+    app::testing::Fixture,
+    cli::Key,
+    printing::{PrintableTask, PrintableWarning, Status::*},
+};
 
 #[test]
 fn top_empty() {

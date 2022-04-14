@@ -1,6 +1,6 @@
-use cli::Snoozed;
-use cli::testing::expect_parses_into;
 use cli::testing::expect_error;
+use cli::testing::expect_parses_into;
+use cli::Snoozed;
 use cli::SubCommand;
 
 #[test]

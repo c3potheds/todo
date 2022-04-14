@@ -1,34 +1,15 @@
-use app::block;
-use app::budget;
-use app::chain;
-use app::check;
-use app::due;
-use app::edit;
-use app::find;
-use app::get;
-use app::log;
-use app::merge;
-use app::new;
-use app::path;
-use app::prefix;
-use app::priority;
-use app::punt;
-use app::put;
-use app::restore;
-use app::rm;
-use app::snooze;
-use app::snoozed;
-use app::split;
-use app::status;
-use app::top;
-use app::unblock;
-use app::unsnooze;
-use cli::Options;
-use cli::SubCommand;
-use clock::Clock;
-use model::TodoList;
-use printing::TodoPrinter;
-use text_editing::TextEditor;
+use crate::{
+    app::{
+        block, budget, chain, check, due, edit, find, get, log, merge, new,
+        path, prefix, priority, punt, put, restore, rm, snooze, snoozed, split,
+        status, top, unblock, unsnooze,
+    },
+    cli::{Options, SubCommand},
+    clock::Clock,
+    model::TodoList,
+    printing::TodoPrinter,
+    text_editing::TextEditor,
+};
 
 fn status_options(options: Options) -> status::Status {
     status::Status {

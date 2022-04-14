@@ -1,9 +1,9 @@
-use app::testing::Fixture;
-use printing::Action::*;
-use printing::BriefPrintableTask;
-use printing::PrintableError;
-use printing::PrintableTask;
-use printing::Status::*;
+use crate::{
+    app::testing::Fixture,
+    printing::{
+        Action::*, BriefPrintableTask, PrintableError, PrintableTask, Status::*,
+    },
+};
 
 #[test]
 fn chain_one() {

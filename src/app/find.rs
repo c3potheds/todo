@@ -1,8 +1,9 @@
-use app::util::format_task;
-use cli::Find;
-use model::TaskStatus;
-use model::TodoList;
-use printing::TodoPrinter;
+use crate::{
+    app::util::format_task,
+    cli::Find,
+    model::{TaskStatus, TodoList},
+    printing::TodoPrinter,
+};
 
 pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Find) {
     list.all_tasks()

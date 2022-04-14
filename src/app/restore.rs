@@ -1,17 +1,11 @@
-use app::util::format_task;
-use app::util::format_task_brief;
-use app::util::format_tasks_brief;
-use app::util::lookup_tasks;
-use cli::Restore;
-use model::ForceRestored;
-use model::RestoreError;
-use model::TaskId;
-use model::TaskSet;
-use model::TodoList;
-use printing::Action;
-use printing::PrintableError;
-use printing::PrintableWarning;
-use printing::TodoPrinter;
+use crate::{
+    app::util::{
+        format_task, format_task_brief, format_tasks_brief, lookup_tasks,
+    },
+    cli::Restore,
+    model::{ForceRestored, RestoreError, TaskId, TaskSet, TodoList},
+    printing::{Action, PrintableError, PrintableWarning, TodoPrinter},
+};
 use std::collections::HashSet;
 
 enum Reason {

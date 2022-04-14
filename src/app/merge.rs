@@ -1,16 +1,10 @@
-use app::util::format_task;
-use app::util::format_tasks_brief;
-use app::util::lookup_tasks;
-use chrono::DateTime;
-use chrono::Utc;
-use cli::Merge;
-use model::DurationInSeconds;
-use model::NewOptions;
-use model::TaskSet;
-use model::TodoList;
-use printing::Action;
-use printing::PrintableError;
-use printing::TodoPrinter;
+use crate::{
+    app::util::{format_task, format_tasks_brief, lookup_tasks},
+    cli::Merge,
+    model::{DurationInSeconds, NewOptions, TaskSet, TodoList},
+    printing::{Action, PrintableError, TodoPrinter},
+};
+use chrono::{DateTime, Utc};
 use std::borrow::Cow;
 
 pub fn run(

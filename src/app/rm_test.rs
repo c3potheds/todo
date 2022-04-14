@@ -1,7 +1,7 @@
-use app::testing::*;
-use printing::Action::*;
-use printing::PrintableTask;
-use printing::Status::*;
+use crate::{
+    app::testing::Fixture,
+    printing::{Action::*, PrintableTask, Status::*},
+};
 
 #[test]
 fn rm_nonexistent_task() {

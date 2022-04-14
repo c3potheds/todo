@@ -1,7 +1,7 @@
-use app::testing::Fixture;
-use printing::Action::*;
-use printing::PrintableTask;
-use printing::Status::*;
+use crate::{
+    app::testing::Fixture,
+    printing::{Action::*, PrintableTask, Status::*},
+};
 
 #[test]
 fn get_incomplete_task() {

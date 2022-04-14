@@ -1,14 +1,12 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use super::util::*;
+use crate::{
+    app::{testing::ymdhms, util::*},
+    cli::Key,
+    model::{CheckOptions, NewOptions, TodoList},
+    printing::{Action::*, PrintableTask, Status::*},
+};
 use chrono::Duration;
-use cli::Key;
-use model::CheckOptions;
-use model::NewOptions;
-use model::TodoList;
-use printing::Action::*;
-use printing::PrintableTask;
-use printing::Status::*;
 
 #[test]
 fn format_task_basic() {
@@ -243,7 +241,7 @@ fn format_incomplete_task_does_not_show_deps() {
 
 #[test]
 fn format_complete_task_with_punctuality_early() {
-    let now = ::app::testing::ymdhms(2022, 04, 13, 09, 00, 00);
+    let now = ymdhms(2022, 04, 13, 09, 00, 00);
     let mut list = TodoList::default();
     let a = list.add(
         NewOptions::new()
@@ -260,7 +258,7 @@ fn format_complete_task_with_punctuality_early() {
 
 #[test]
 fn format_complete_task_with_punctuality_late() {
-    let now = ::app::testing::ymdhms(2022, 04, 13, 09, 00, 00);
+    let now = ymdhms(2022, 04, 13, 09, 00, 00);
     let mut list = TodoList::default();
     let a = list.add(
         NewOptions::new()

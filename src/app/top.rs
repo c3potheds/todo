@@ -1,12 +1,9 @@
-use app::util::format_task;
-use app::util::lookup_task;
-use app::util::should_include_done;
-use cli::Top;
-use model::TaskSet;
-use model::TaskStatus;
-use model::TodoList;
-use printing::PrintableWarning;
-use printing::TodoPrinter;
+use crate::{
+    app::util::{format_task, lookup_task, should_include_done},
+    cli::Top,
+    model::{TaskSet, TaskStatus, TodoList},
+    printing::{PrintableWarning, TodoPrinter},
+};
 
 pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Top) {
     // Handle the case where no tasks are specified. In this case, we want to

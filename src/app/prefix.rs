@@ -1,9 +1,9 @@
-use app::util::format_prefix;
-use app::util::format_task;
-use app::util::lookup_tasks;
-use cli::Prefix;
-use model::TodoList;
-use printing::TodoPrinter;
+use crate::{
+    app::util::{format_prefix, format_task, lookup_tasks},
+    cli::Prefix,
+    model::TodoList,
+    printing::TodoPrinter,
+};
 use std::borrow::Cow;
 
 pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Prefix) {

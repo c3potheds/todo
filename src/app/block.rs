@@ -1,14 +1,11 @@
-use app::util::format_task;
-use app::util::format_task_brief;
-use app::util::lookup_tasks;
-use app::util::should_include_done;
-use cli::Block;
-use model::TaskId;
-use model::TaskSet;
-use model::TodoList;
-use printing::Action;
-use printing::PrintableError;
-use printing::TodoPrinter;
+use crate::{
+    app::util::{
+        format_task, format_task_brief, lookup_tasks, should_include_done,
+    },
+    cli::Block,
+    model::{TaskId, TaskSet, TodoList},
+    printing::{Action, PrintableError, TodoPrinter},
+};
 
 fn print_block_error(
     printer: &mut impl TodoPrinter,

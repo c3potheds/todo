@@ -1,6 +1,7 @@
-use app::testing::Fixture;
-use printing::PrintableTask;
-use printing::Status::*;
+use crate::{
+    app::testing::Fixture,
+    printing::{PrintableTask, Status::*},
+};
 
 #[test]
 fn no_tasks_snoozed() {

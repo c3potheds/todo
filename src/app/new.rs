@@ -1,27 +1,17 @@
 extern crate humantime;
 
-use app::util::format_prefix;
-use app::util::format_task;
-use app::util::format_task_brief;
-use app::util::format_tasks_brief;
-use app::util::lookup_tasks;
-use app::util::parse_budget_or_print_error;
-use app::util::parse_due_date_or_print_error;
-use app::util::parse_snooze_date_or_print_error;
-use chrono::DateTime;
-use chrono::Utc;
-use cli::New;
-use model::CheckError;
-use model::CheckOptions;
-use model::NewOptions;
-use model::TaskSet;
-use model::TodoList;
-use printing::Action;
-use printing::PrintableError;
-use printing::TodoPrinter;
-use std::borrow::Cow;
-use std::collections::HashSet;
-use std::iter::FromIterator;
+use crate::{
+    app::util::{
+        format_prefix, format_task, format_task_brief, format_tasks_brief,
+        lookup_tasks, parse_budget_or_print_error,
+        parse_due_date_or_print_error, parse_snooze_date_or_print_error,
+    },
+    cli::New,
+    model::{CheckError, CheckOptions, NewOptions, TaskSet, TodoList},
+    printing::{Action, PrintableError, TodoPrinter},
+};
+use chrono::{DateTime, Utc};
+use std::{borrow::Cow, collections::HashSet, iter::FromIterator};
 
 pub fn run(
     list: &mut TodoList,

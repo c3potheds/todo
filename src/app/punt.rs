@@ -1,12 +1,9 @@
-use app::util::format_task;
-use app::util::format_task_brief;
-use app::util::lookup_tasks;
-use cli::Punt;
-use model::PuntError;
-use model::TodoList;
-use printing::Action;
-use printing::PrintableWarning;
-use printing::TodoPrinter;
+use crate::{
+    app::util::{format_task, format_task_brief, lookup_tasks},
+    cli::Punt,
+    model::{PuntError, TodoList},
+    printing::{Action, PrintableWarning, TodoPrinter},
+};
 
 pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Punt) {
     lookup_tasks(list, &cmd.keys)

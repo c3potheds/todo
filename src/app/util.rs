@@ -1,18 +1,11 @@
-use chrono::DateTime;
-use chrono::Duration;
-use chrono::Local;
-use chrono::Utc;
-use cli::Key;
-use model::DurationInSeconds;
-use model::TaskId;
-use model::TaskSet;
-use model::TaskStatus;
-use model::TodoList;
-use printing::BriefPrintableTask;
-use printing::PrintableError;
-use printing::PrintableTask;
-use printing::Status;
-use printing::TodoPrinter;
+use crate::{
+    cli::Key,
+    model::{DurationInSeconds, TaskId, TaskSet, TaskStatus, TodoList},
+    printing::{
+        BriefPrintableTask, PrintableError, PrintableTask, Status, TodoPrinter,
+    },
+};
+use chrono::{DateTime, Duration, Local, Utc};
 use std::convert::TryFrom;
 
 fn to_printing_status(status: TaskStatus) -> Status {

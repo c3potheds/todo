@@ -1,11 +1,11 @@
-use app::testing::Fixture;
-use cli::Key;
-use printing::Action::*;
-use printing::BriefPrintableTask;
-use printing::PrintableError;
-use printing::PrintableTask;
-use printing::PrintableWarning;
-use printing::Status::*;
+use crate::{
+    app::testing::Fixture,
+    cli::Key,
+    printing::{
+        Action::*, BriefPrintableTask, PrintableError, PrintableTask,
+        PrintableWarning, Status::*,
+    },
+};
 
 #[test]
 fn unblock_task_from_direct_dependency() {

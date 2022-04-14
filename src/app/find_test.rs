@@ -1,6 +1,7 @@
-use app::testing::Fixture;
-use printing::PrintableTask;
-use printing::Status::*;
+use crate::{
+    app::testing::Fixture,
+    printing::{PrintableTask, Status::*},
+};
 
 #[test]
 fn find_with_exact_match() {

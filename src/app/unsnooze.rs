@@ -1,15 +1,11 @@
-use app::util::format_task;
-use app::util::format_task_brief;
-use app::util::format_tasks_brief;
-use app::util::lookup_tasks;
-use cli::Unsnooze;
-use model::TaskId;
-use model::TaskSet;
-use model::TodoList;
-use model::UnsnoozeWarning;
-use printing::Action;
-use printing::PrintableWarning;
-use printing::TodoPrinter;
+use crate::{
+    app::util::{
+        format_task, format_task_brief, format_tasks_brief, lookup_tasks,
+    },
+    cli::Unsnooze,
+    model::{TaskId, TaskSet, TodoList, UnsnoozeWarning},
+    printing::{Action, PrintableWarning, TodoPrinter},
+};
 
 pub fn run(
     list: &mut TodoList,

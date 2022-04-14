@@ -1,14 +1,12 @@
-use app::util::format_task;
-use app::util::lookup_tasks;
-use cli::Edit;
+use crate::{
+    app::util::{format_task, lookup_tasks},
+    cli::Edit,
+    model::{TaskId, TaskSet, TodoList},
+    printing::{PrintableError, TodoPrinter},
+    text_editing::TextEditor,
+};
 use itertools::Itertools;
-use model::TaskId;
-use model::TaskSet;
-use model::TodoList;
-use printing::PrintableError;
-use printing::TodoPrinter;
 use std::borrow::Cow;
-use text_editing::TextEditor;
 
 fn format_tasks_for_text_editor(list: &TodoList, ids: &TaskSet) -> String {
     ids.iter_sorted(list)

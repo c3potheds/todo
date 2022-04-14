@@ -1,8 +1,5 @@
-use app::util::format_task;
-use chrono::DateTime;
-use chrono::Utc;
-use model::TodoList;
-use printing::TodoPrinter;
+use crate::{app::util::format_task, model::TodoList, printing::TodoPrinter};
+use chrono::{DateTime, Utc};
 
 pub fn run(
     list: &TodoList,

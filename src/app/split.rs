@@ -1,13 +1,9 @@
-use app::util::format_prefix;
-use app::util::format_task;
-use app::util::lookup_tasks;
-use cli::Split;
-use model::NewOptions;
-use model::TaskId;
-use model::TaskSet;
-use model::TodoList;
-use printing::Action;
-use printing::TodoPrinter;
+use crate::{
+    app::util::{format_prefix, format_task, lookup_tasks},
+    cli::Split,
+    model::{NewOptions, TaskId, TaskSet, TodoList},
+    printing::{Action, TodoPrinter},
+};
 use std::borrow::Cow;
 
 struct SplitResult {

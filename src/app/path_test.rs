@@ -1,10 +1,11 @@
-use app::testing::Fixture;
-use cli::Key;
-use printing::Action::*;
-use printing::BriefPrintableTask;
-use printing::PrintableTask;
-use printing::PrintableWarning;
-use printing::Status::*;
+use crate::{
+    app::testing::Fixture,
+    cli::Key,
+    printing::{
+        Action::*, BriefPrintableTask, PrintableTask, PrintableWarning,
+        Status::*,
+    },
+};
 
 #[test]
 fn path_between_tasks_with_no_path() {

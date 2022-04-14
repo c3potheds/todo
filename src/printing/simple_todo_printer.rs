@@ -126,15 +126,14 @@ fn fmt_due_date(
 }
 
 fn fmt_punctuality(punctuality: Duration, out: &mut String) {
-    let (style, suffix, abs_punctuality) = if punctuality > chrono::Duration::zero() {
-        (Color::Red.bold(), "late", punctuality)
-    } else {
-        (Color::Green.bold(), "early", -punctuality)
-    };
+    let (style, suffix, abs_punctuality) =
+        if punctuality > chrono::Duration::zero() {
+            (Color::Red.bold(), "late", punctuality)
+        } else {
+            (Color::Green.bold(), "early", -punctuality)
+        };
     let desc = ::time_format::format_duration_laconic(abs_punctuality);
-    out.push_str(
-        &style.paint(format!("Done {} {}", desc, suffix)).to_string(),
-    );
+    out.push_str(&style.paint(format!("Done {} {}", desc, suffix)).to_string());
     out.push(' ');
 }
 

@@ -1,10 +1,9 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use app::testing::ymdhms;
-use app::testing::Fixture;
-use printing::PrintableError;
-use printing::PrintableTask;
-use printing::Status::*;
+use crate::{
+    app::testing::{ymdhms, Fixture},
+    printing::{PrintableError, PrintableTask, Status::*},
+};
 
 #[test]
 fn show_tasks_with_due_date() {

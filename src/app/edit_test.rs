@@ -1,8 +1,8 @@
-use app::testing::Fixture;
-use printing::PrintableError;
-use printing::PrintableTask;
-use printing::Status::*;
-use text_editing::FakeTextEditor;
+use crate::{
+    app::testing::Fixture,
+    printing::{PrintableError, PrintableTask, Status::*},
+    text_editing::FakeTextEditor,
+};
 
 #[test]
 fn edit_one_task() {

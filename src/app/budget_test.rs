@@ -1,12 +1,10 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use app::testing::ymdhms;
-use app::testing::Fixture;
+use crate::{
+    app::testing::{ymdhms, Fixture},
+    printing::{Action::*, PrintableError, PrintableTask, Status::*},
+};
 use chrono::Duration;
-use printing::Action::*;
-use printing::PrintableError;
-use printing::PrintableTask;
-use printing::Status::*;
 
 #[test]
 fn budget_one_task() {
@@ -169,7 +167,7 @@ fn budget_include_complete_affected_deps() {
         .validate()
         .printed_task(
             &PrintableTask::new("a", 0, Complete)
-                .punctuality(-chrono::Duration::hours(10))
+                .punctuality(-chrono::Duration::hours(10)),
         )
         .printed_task(
             &PrintableTask::new("b", 1, Incomplete)

@@ -1,10 +1,9 @@
-use app::util::format_task;
-use app::util::lookup_tasks;
-use app::util::should_include_done;
-use cli::Get;
-use model::TodoList;
-use printing::Action;
-use printing::TodoPrinter;
+use crate::{
+    app::util::{format_task, lookup_tasks, should_include_done},
+    cli::Get,
+    model::TodoList,
+    printing::{Action, TodoPrinter},
+};
 
 pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Get) {
     let requested_tasks = lookup_tasks(list, &cmd.keys);

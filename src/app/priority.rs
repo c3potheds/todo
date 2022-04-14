@@ -1,11 +1,9 @@
-use app::util::format_task;
-use app::util::lookup_tasks;
-use cli::Priority;
-use model::TaskId;
-use model::TaskSet;
-use model::TaskStatus;
-use model::TodoList;
-use printing::TodoPrinter;
+use crate::{
+    app::util::{format_task, lookup_tasks},
+    cli::Priority,
+    model::{TaskId, TaskSet, TaskStatus, TodoList},
+    printing::TodoPrinter,
+};
 
 fn set_priority(
     list: &mut TodoList,

@@ -1,9 +1,9 @@
-use app::util::format_task;
-use chrono::Datelike;
-use chrono::Local;
-use model::TodoList;
-use printing::LogDate;
-use printing::TodoPrinter;
+use crate::{
+    app::util::format_task,
+    model::TodoList,
+    printing::{LogDate, TodoPrinter},
+};
+use chrono::{Datelike, Local};
 
 pub fn run(list: &TodoList, printer: &mut impl TodoPrinter) {
     let mut most_recent_shown = None;

@@ -1,12 +1,11 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use app::testing::ymdhms;
-use app::testing::Fixture;
-use printing::Action::*;
-use printing::BriefPrintableTask;
-use printing::PrintableError;
-use printing::PrintableTask;
-use printing::Status::*;
+use crate::{
+    app::testing::{ymdhms, Fixture},
+    printing::{
+        Action::*, BriefPrintableTask, PrintableError, PrintableTask, Status::*,
+    },
+};
 
 #[test]
 fn merge_two_tasks() {

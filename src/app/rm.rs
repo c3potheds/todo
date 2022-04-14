@@ -1,12 +1,9 @@
-use app::util::format_task;
-use app::util::lookup_tasks;
-use cli::Rm;
-use model::TaskSet;
-use model::TodoList;
-use printing::Action;
-use printing::PrintableTask;
-use printing::Status;
-use printing::TodoPrinter;
+use crate::{
+    app::util::{format_task, lookup_tasks},
+    cli::Rm,
+    model::{TaskSet, TodoList},
+    printing::{Action, PrintableTask, Status, TodoPrinter},
+};
 
 pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: Rm) {
     lookup_tasks(list, &cmd.keys)

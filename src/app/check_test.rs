@@ -1,10 +1,10 @@
-use app::testing::Fixture;
-use printing::Action::*;
-use printing::BriefPrintableTask;
-use printing::PrintableError;
-use printing::PrintableTask;
-use printing::PrintableWarning;
-use printing::Status::*;
+use crate::{
+    app::testing::Fixture,
+    printing::{
+        Action::*, BriefPrintableTask, PrintableError, PrintableTask,
+        PrintableWarning, Status::*,
+    },
+};
 
 #[test]
 fn check_one_task() {

@@ -1,14 +1,11 @@
-use app::util::format_task;
-use app::util::format_task_brief;
-use app::util::format_tasks_brief;
-use app::util::lookup_task;
-use cli::Path;
-use model::TaskId;
-use model::TaskSet;
-use model::TodoList;
-use printing::Action;
-use printing::PrintableWarning;
-use printing::TodoPrinter;
+use crate::{
+    app::util::{
+        format_task, format_task_brief, format_tasks_brief, lookup_task,
+    },
+    cli::Path,
+    model::{TaskId, TaskSet, TodoList},
+    printing::{Action, PrintableWarning, TodoPrinter},
+};
 
 struct NoPathFound(TaskId, TaskId);
 

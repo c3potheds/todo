@@ -1,15 +1,11 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use chrono::DateTime;
-use chrono::Local;
-use chrono::TimeZone;
-use chrono::Utc;
-use cli::Options;
-use clock::FakeClock;
-use model::TodoList;
-use printing::FakePrinter;
+use crate::{
+    cli::Options, clock::FakeClock, model::TodoList, printing::FakePrinter,
+    text_editing::FakeTextEditor,
+};
+use chrono::{DateTime, Local, TimeZone, Utc};
 use structopt::StructOpt;
-use text_editing::FakeTextEditor;
 
 pub fn ymdhms(
     yr: i32,
