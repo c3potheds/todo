@@ -7,6 +7,7 @@ extern crate thiserror;
 extern crate clock;
 extern crate long_output;
 extern crate model;
+extern crate text_editing;
 extern crate todo;
 
 use clock::Clock;
@@ -14,6 +15,8 @@ use clock::SystemClock;
 use std::fs::File;
 use std::io::BufWriter;
 use structopt::StructOpt;
+use text_editing::ScrawlTextEditor;
+use text_editing::FakeTextEditor;
 use thiserror::Error;
 use todo::app;
 use todo::cli::Options;
@@ -21,7 +24,6 @@ use todo::config;
 use todo::printing::PrintingContext;
 use todo::printing::ScriptingTodoPrinter;
 use todo::printing::SimpleTodoPrinter;
-use todo::text_editing::ScrawlTextEditor;
 
 #[derive(Debug, Error)]
 enum TodoError {
@@ -109,7 +111,7 @@ fn main() -> TodoResult {
         app::todo(
             &mut model,
             &mut ScriptingTodoPrinter,
-            &todo::text_editing::FakeTextEditor::no_user_output(),
+            &FakeTextEditor::no_user_output(),
             &SystemClock,
             options,
         );

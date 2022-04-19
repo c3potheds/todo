@@ -59,3 +59,6 @@ impl TextEditor for FakeTextEditor<'_> {
         }
     }
 }
+
+#[cfg(test)]
+mod test;

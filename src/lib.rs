@@ -11,16 +11,13 @@ extern crate thiserror;
 extern crate clock;
 extern crate long_output;
 extern crate model;
+extern crate text_editing;
 
 pub mod app;
 pub mod cli;
 pub mod config;
 pub mod printing;
-pub mod text_editing;
 pub mod time_format;
-
-#[cfg(test)]
-mod text_editing_test;
 
 #[cfg(test)]
 mod time_format_test;

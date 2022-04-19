@@ -1,4 +1,4 @@
-use text_editing::*;
+use crate::*;
 
 #[test]
 fn fake_text_editor_prints_user_output() {
