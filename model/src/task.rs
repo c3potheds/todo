@@ -1,6 +1,6 @@
+use crate::DurationInSeconds;
 use chrono::DateTime;
 use chrono::Utc;
-use model::DurationInSeconds;
 use std::borrow::Cow;
 
 fn default_creation_time() -> DateTime<Utc> {

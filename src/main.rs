@@ -4,6 +4,7 @@ extern crate structopt;
 extern crate term_size;
 extern crate thiserror;
 extern crate todo;
+extern crate model;
 
 use std::fs::File;
 use std::io::BufWriter;
@@ -15,7 +16,6 @@ use todo::clock::Clock;
 use todo::clock::SystemClock;
 use todo::config;
 use todo::long_output;
-use todo::model;
 use todo::printing::PrintingContext;
 use todo::printing::ScriptingTodoPrinter;
 use todo::printing::SimpleTodoPrinter;

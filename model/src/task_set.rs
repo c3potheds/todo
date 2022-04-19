@@ -1,6 +1,6 @@
-use model::TaskId;
-use model::TaskStatus;
-use model::TodoList;
+use crate::TaskId;
+use crate::TaskStatus;
+use crate::TodoList;
 use std::collections::BTreeSet;
 use std::collections::HashSet;
 use std::iter::FromIterator;

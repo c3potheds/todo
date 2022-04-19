@@ -3,18 +3,18 @@ extern crate serde;
 
 extern crate ansi_term;
 extern crate chrono;
-extern crate daggy;
 extern crate itertools;
 extern crate structopt;
 extern crate textwrap;
 extern crate thiserror;
+
+extern crate model;
 
 pub mod app;
 pub mod cli;
 pub mod clock;
 pub mod config;
 pub mod long_output;
-pub mod model;
 pub mod printing;
 pub mod text_editing;
 pub mod time_format;

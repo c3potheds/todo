@@ -1,4 +1,4 @@
-use model::TodoList;
+use crate::TodoList;
 use std::io::Write;
 use thiserror::Error;
 
