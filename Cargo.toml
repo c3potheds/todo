@@ -8,16 +8,12 @@ split-debuginfo = "unpacked"
 
 [dependencies]
 ansi_term = "0.12"
-atty = "0.2"
 chrono = { version = "0.4", features = ["serde"] }
-directories = "4.0"
 humantime = "2.1"
 itertools = "0.10"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 structopt = { version = "0.3", default-features = false }
-term_size = "0.3"
-thiserror = "1.0.30"
 textwrap = "0.15.0"
 
 clock = { path = "./clock" }
@@ -34,6 +30,7 @@ members = [
     "config",
     "lookup_key",
     "long_output",
+    "main",
     "model",
     "text_editing",
     "time_format",
