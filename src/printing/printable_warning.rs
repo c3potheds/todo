@@ -4,7 +4,7 @@ use super::BriefPrintableTask;
 use ansi_term::Color;
 use chrono::DateTime;
 use chrono::Utc;
-use cli::Key;
+use lookup_key::Key;
 use std::fmt;
 use std::fmt::Display;
 use std::fmt::Formatter;

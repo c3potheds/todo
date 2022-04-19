@@ -1,4 +1,4 @@
-pub use super::Key;
+use super::Key;
 use structopt::StructOpt;
 
 /// Punts tasks to the end of the list.

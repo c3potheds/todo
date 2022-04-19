@@ -1,7 +1,7 @@
 extern crate humantime;
 
 use crate::{
-    cli::Key,
+    lookup_key::Key,
     model::{DurationInSeconds, TaskId, TaskSet, TaskStatus, TodoList},
     printing::{
         BriefPrintableTask, PrintableError, PrintableTask, Status, TodoPrinter,

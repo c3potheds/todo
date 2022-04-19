@@ -1,4 +1,4 @@
-pub use super::Key;
+use super::Key;
 use structopt::StructOpt;
 
 /// Assigns or queries due dates.

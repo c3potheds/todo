@@ -1,4 +1,4 @@
-pub use super::Key;
+use super::Key;
 use structopt::StructOpt;
 
 /// Shows top-level tasks, i.e. tasks with no antidependencies.

@@ -10,7 +10,7 @@ use super::PrintableWarning;
 use super::Status::*;
 use super::TodoPrinter;
 use app::testing::ymdhms;
-use cli::Key;
+use lookup_key::Key;
 
 #[test]
 fn validate_task() {

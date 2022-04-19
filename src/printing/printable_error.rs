@@ -2,7 +2,7 @@ use super::format_util::format_keys;
 use super::format_util::format_numbers;
 use super::BriefPrintableTask;
 use ansi_term::Color;
-use cli::Key;
+use lookup_key::Key;
 use std::fmt;
 use std::fmt::Display;
 use std::fmt::Formatter;

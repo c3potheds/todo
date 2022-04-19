@@ -1,4 +1,3 @@
-pub use super::Key;
 use structopt::StructOpt;
 
 /// Query or modify options.

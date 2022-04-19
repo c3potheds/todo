@@ -1,6 +1,6 @@
 use crate::{
     app::testing::Fixture,
-    cli::Key,
+    lookup_key::Key,
     printing::{
         Action::*, BriefPrintableTask, PrintableError, PrintableTask,
         PrintableWarning, Status::*,

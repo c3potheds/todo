@@ -1,4 +1,4 @@
-pub use super::Key;
+use super::Key;
 use structopt::StructOpt;
 
 /// Chain tasks in a blocking sequence.

@@ -1,7 +1,7 @@
 use super::BriefPrintableTask;
 use super::PrintableWarning::*;
 use super::Status::*;
-use cli::Key::*;
+use lookup_key::Key::*;
 
 #[test]
 fn display_no_match_found_warning() {

@@ -27,3 +27,6 @@ impl FromStr for Key {
         Ok(Key::ByName(s.to_string()))
     }
 }
+
+#[cfg(test)]
+mod test;

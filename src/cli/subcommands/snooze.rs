@@ -1,4 +1,4 @@
-pub use super::Key;
+use super::Key;
 use structopt::StructOpt;
 
 /// Makes tasks temporarily "snoozed" until the given amount of time passes.

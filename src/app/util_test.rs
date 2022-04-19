@@ -2,7 +2,7 @@
 
 use crate::{
     app::{testing::ymdhms, util::*},
-    cli::Key,
+    lookup_key::Key,
     model::{CheckOptions, NewOptions, TodoList},
     printing::{Action::*, PrintableTask, Status::*},
 };

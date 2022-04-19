@@ -1,7 +1,7 @@
 #![allow(clippy::zero_prefixed_literal)]
 
 use app::testing::ymdhms;
-use cli::Key;
+use lookup_key::Key;
 use printing::BriefPrintableTask;
 use printing::PrintableError;
 use printing::PrintableTask;

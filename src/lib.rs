@@ -7,6 +7,7 @@ extern crate thiserror;
 
 extern crate clock;
 extern crate config;
+extern crate lookup_key;
 extern crate long_output;
 extern crate model;
 extern crate text_editing;

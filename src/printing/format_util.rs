@@ -3,7 +3,7 @@ use std::fmt;
 use super::BriefPrintableTask;
 use super::Status;
 use ansi_term::Color;
-use cli::Key;
+use lookup_key::Key;
 
 pub fn format_key(key: &Key) -> impl fmt::Display + '_ {
     struct FormatKey<'a>(&'a Key);

@@ -47,7 +47,7 @@ pub use self::split::Split;
 pub use self::top::Top;
 pub use self::unblock::Unblock;
 pub use self::unsnooze::Unsnooze;
-pub use super::Key;
+use super::Key;
 
 #[cfg(test)]
 mod block_test;

@@ -1,5 +1,5 @@
-use cli::Key;
-use cli::Key::*;
+use crate::Key;
+use crate::Key::*;
 use std::str::FromStr;
 
 #[test]

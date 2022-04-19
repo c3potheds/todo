@@ -22,6 +22,7 @@ textwrap = "0.15.0"
 
 clock = { path = "./clock" }
 config = { path = "./config" }
+lookup_key = { path = "./lookup_key" }
 long_output = { path = "./long_output" }
 model = { path = "./model" }
 text_editing = { path = "./text_editing" }
@@ -31,6 +32,7 @@ time_format = { path = "./time_format" }
 members = [
     "clock",
     "config",
+    "lookup_key",
     "long_output",
     "model",
     "text_editing",

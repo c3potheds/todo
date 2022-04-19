@@ -1,4 +1,3 @@
-pub use super::Key;
 use structopt::StructOpt;
 
 /// Search for tasks with descriptions that contain the given search terms.
