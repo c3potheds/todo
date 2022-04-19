@@ -9,18 +9,15 @@ extern crate textwrap;
 extern crate thiserror;
 
 extern crate clock;
+extern crate long_output;
 extern crate model;
 
 pub mod app;
 pub mod cli;
 pub mod config;
-pub mod long_output;
 pub mod printing;
 pub mod text_editing;
 pub mod time_format;
-
-#[cfg(test)]
-mod long_output_test;
 
 #[cfg(test)]
 mod text_editing_test;

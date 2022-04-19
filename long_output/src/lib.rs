@@ -146,3 +146,6 @@ impl Drop for Less {
         self.process.wait().ok();
     }
 }
+
+#[cfg(test)]
+mod test;

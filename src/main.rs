@@ -5,6 +5,7 @@ extern crate term_size;
 extern crate thiserror;
 
 extern crate clock;
+extern crate long_output;
 extern crate model;
 extern crate todo;
 
@@ -17,7 +18,6 @@ use thiserror::Error;
 use todo::app;
 use todo::cli::Options;
 use todo::config;
-use todo::long_output;
 use todo::printing::PrintingContext;
 use todo::printing::ScriptingTodoPrinter;
 use todo::printing::SimpleTodoPrinter;

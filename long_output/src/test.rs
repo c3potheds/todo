@@ -1,12 +1,13 @@
-use super::long_output;
 use std::io::Write;
+
+use crate::*;
 
 #[test]
 fn prints_to_primary_for_short_output() {
     let mut primary = Vec::new();
     let mut alternate = Vec::new();
     {
-        let mut out = long_output::max_lines(10)
+        let mut out = max_lines(10)
             .primary(&mut primary)
             .alternate(|| &mut alternate);
         out.write_all("a\n".as_bytes()).unwrap();
@@ -22,7 +23,7 @@ fn prints_to_secondary_for_long_output() {
     let mut primary = Vec::new();
     let mut alternate = Vec::new();
     {
-        let mut out = long_output::max_lines(4)
+        let mut out = max_lines(4)
             .primary(&mut primary)
             .alternate(|| &mut alternate);
         out.write_all("a\n".as_bytes()).unwrap();
