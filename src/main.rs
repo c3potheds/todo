@@ -3,17 +3,19 @@ extern crate directories;
 extern crate structopt;
 extern crate term_size;
 extern crate thiserror;
-extern crate todo;
-extern crate model;
 
+extern crate clock;
+extern crate model;
+extern crate todo;
+
+use clock::Clock;
+use clock::SystemClock;
 use std::fs::File;
 use std::io::BufWriter;
 use structopt::StructOpt;
 use thiserror::Error;
 use todo::app;
 use todo::cli::Options;
-use todo::clock::Clock;
-use todo::clock::SystemClock;
 use todo::config;
 use todo::long_output;
 use todo::printing::PrintingContext;

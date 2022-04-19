@@ -8,11 +8,11 @@ extern crate structopt;
 extern crate textwrap;
 extern crate thiserror;
 
+extern crate clock;
 extern crate model;
 
 pub mod app;
 pub mod cli;
-pub mod clock;
 pub mod config;
 pub mod long_output;
 pub mod printing;
