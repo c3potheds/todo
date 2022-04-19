@@ -21,10 +21,18 @@ thiserror = "1.0.30"
 textwrap = "0.15.0"
 
 clock = { path = "./clock" }
+config = { path = "./config" }
 long_output = { path = "./long_output" }
 model = { path = "./model" }
 text_editing = { path = "./text_editing" }
 time_format = { path = "./time_format" }
 
 [workspace]
-members = ["clock", "long_output", "model", "text_editing", "time_format"]
+members = [
+    "clock",
+    "config",
+    "long_output",
+    "model",
+    "text_editing",
+    "time_format",
+]
