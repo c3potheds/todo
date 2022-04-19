@@ -378,3 +378,6 @@ pub fn display_relative_time<Tz: TimeZone>(
         format!("in {}", format_duration_laconic(duration))
     }
 }
+
+#[cfg(test)]
+mod test;

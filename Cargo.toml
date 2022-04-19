@@ -24,6 +24,7 @@ clock = { path = "./clock" }
 long_output = { path = "./long_output" }
 model = { path = "./model" }
 text_editing = { path = "./text_editing" }
+time_format = { path = "./time_format" }
 
 [workspace]
-members = ["clock", "long_output", "model", "text_editing"]
+members = ["clock", "long_output", "model", "text_editing", "time_format"]

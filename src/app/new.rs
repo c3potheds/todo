@@ -1,5 +1,3 @@
-extern crate humantime;
-
 use crate::{
     app::util::{
         format_prefix, format_task, format_task_brief, format_tasks_brief,

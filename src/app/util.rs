@@ -1,3 +1,5 @@
+extern crate humantime;
+
 use crate::{
     cli::Key,
     model::{DurationInSeconds, TaskId, TaskSet, TaskStatus, TodoList},

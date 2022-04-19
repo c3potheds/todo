@@ -1,8 +1,8 @@
 #![allow(clippy::zero_prefixed_literal)]
 
+use crate::*;
 use chrono::Local;
 use chrono::TimeZone;
-use time_format::*;
 
 #[test]
 fn in_five_minutes_abbreviated() {

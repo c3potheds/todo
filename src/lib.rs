@@ -12,12 +12,9 @@ extern crate clock;
 extern crate long_output;
 extern crate model;
 extern crate text_editing;
+extern crate time_format;
 
 pub mod app;
 pub mod cli;
 pub mod config;
 pub mod printing;
-pub mod time_format;
-
-#[cfg(test)]
-mod time_format_test;
