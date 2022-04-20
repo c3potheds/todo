@@ -1,6 +1,7 @@
-use super::Options;
-use super::SubCommand;
-use structopt::StructOpt;
+use {
+    crate::{Options, SubCommand},
+    structopt::StructOpt,
+};
 
 pub fn expect_parses_into<'a, S: Into<&'a str>>(args: S, expected: SubCommand) {
     let s = args.into();

@@ -1,6 +1,4 @@
-use super::super::testing::expect_parses_into;
-use super::super::Config;
-use super::super::SubCommand;
+use crate::{testing::expect_parses_into, Config, SubCommand};
 
 #[test]
 fn just_show_config() {

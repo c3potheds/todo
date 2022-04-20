@@ -1,5 +1,4 @@
-use super::Key;
-use structopt::StructOpt;
+use {lookup_key::Key, structopt::StructOpt};
 
 /// Punts tasks to the end of the list.
 ///

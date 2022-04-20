@@ -1,8 +1,10 @@
-use super::super::testing::expect_error;
-use super::super::testing::expect_parses_into;
-use super::super::Key::*;
-use super::super::SubCommand;
-use super::super::Unsnooze;
+use {
+    crate::{
+        testing::{expect_error, expect_parses_into},
+        SubCommand, Unsnooze,
+    },
+    lookup_key::Key::*,
+};
 
 #[test]
 fn unsnooze_no_keys_is_error() {

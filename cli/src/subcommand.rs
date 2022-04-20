@@ -1,4 +1,4 @@
-pub use super::subcommands::*;
+pub use crate::subcommands::*;
 use structopt::StructOpt;
 
 #[derive(Debug, PartialEq, StructOpt)]

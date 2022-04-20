@@ -1,8 +1,10 @@
-use super::super::testing::expect_error;
-use super::super::testing::expect_parses_into;
-use super::super::Budget;
-use super::super::Key::*;
-use super::super::SubCommand;
+use {
+    crate::{
+        testing::{expect_error, expect_parses_into},
+        Budget, SubCommand,
+    },
+    lookup_key::Key::*,
+};
 
 #[test]
 fn missing_key_or_budget() {

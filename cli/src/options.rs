@@ -1,6 +1,4 @@
-use structopt::StructOpt;
-
-use super::SubCommand;
+use {crate::SubCommand, structopt::StructOpt};
 
 /// Maintains and manipulates your to-do list.
 ///

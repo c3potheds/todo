@@ -1,7 +1,7 @@
-use super::super::testing::expect_parses_into;
-use super::super::Key::*;
-use super::super::Priority;
-use super::super::SubCommand;
+use {
+    crate::{testing::expect_parses_into, Priority, SubCommand},
+    lookup_key::Key::*,
+};
 
 #[test]
 fn priority_query_all() {

@@ -1,5 +1,4 @@
-use super::Key;
-use structopt::StructOpt;
+use {lookup_key::Key, structopt::StructOpt};
 
 /// Creates new tasks in the to-do list.
 ///

@@ -1,7 +1,7 @@
-use super::super::testing::expect_error;
-use super::super::testing::expect_parses_into;
-use super::super::SubCommand;
-use super::Snoozed;
+use crate::{
+    testing::{expect_error, expect_parses_into},
+    Snoozed, SubCommand,
+};
 
 #[test]
 fn snoozed_extraneous() {

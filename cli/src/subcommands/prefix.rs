@@ -1,5 +1,4 @@
-use super::Key;
-use structopt::StructOpt;
+use {lookup_key::Key, structopt::StructOpt};
 
 /// Add a prefix to the given task descriptions.
 #[derive(Debug, PartialEq, StructOpt)]

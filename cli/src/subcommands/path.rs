@@ -1,5 +1,4 @@
-use super::Key;
-use structopt::StructOpt;
+use {lookup_key::Key, structopt::StructOpt};
 
 /// Show the dependency paths between two tasks.
 ///

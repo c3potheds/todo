@@ -1,7 +1,7 @@
-use super::super::testing::expect_parses_into;
-use super::super::Due;
-use super::super::Key::*;
-use super::super::SubCommand;
+use {
+    crate::{testing::expect_parses_into, Due, SubCommand},
+    lookup_key::Key::*,
+};
 
 #[test]
 fn due_no_keys_no_date() {

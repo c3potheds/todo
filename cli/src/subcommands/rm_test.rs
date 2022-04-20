@@ -1,8 +1,10 @@
-use super::super::testing::expect_error;
-use super::super::testing::expect_parses_into;
-use super::super::Key::*;
-use super::super::SubCommand;
-use super::Rm;
+use {
+    crate::{
+        testing::{expect_error, expect_parses_into},
+        Rm, SubCommand,
+    },
+    lookup_key::Key::*,
+};
 
 #[test]
 fn rm_no_keys() {

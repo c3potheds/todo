@@ -1,5 +1,4 @@
-use super::Key;
-use structopt::StructOpt;
+use {lookup_key::Key, structopt::StructOpt};
 
 /// Edit the description of tasks.
 ///

@@ -1,8 +1,10 @@
-use super::super::testing::expect_error;
-use super::super::testing::expect_parses_into;
-use super::super::Key::*;
-use super::super::Snooze;
-use super::super::SubCommand;
+use {
+    crate::{
+        testing::{expect_error, expect_parses_into},
+        Snooze, SubCommand,
+    },
+    lookup_key::Key::*,
+};
 
 #[test]
 fn snooze_missing_args() {

@@ -1,7 +1,7 @@
-use super::super::testing::expect_parses_into;
-use super::super::Key::*;
-use super::super::SubCommand;
-use super::super::Top;
+use {
+    crate::{testing::expect_parses_into, SubCommand, Top},
+    lookup_key::Key::*,
+};
 
 #[test]
 fn top() {

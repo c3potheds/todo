@@ -1,9 +1,11 @@
-use super::super::subcommands::put::Prepositions;
-use super::super::testing::expect_error;
-use super::super::testing::expect_parses_into;
-use super::super::Key::*;
-use super::super::Put;
-use super::super::SubCommand;
+use {
+    crate::{
+        subcommands::put::Prepositions,
+        testing::{expect_error, expect_parses_into},
+        Put, SubCommand,
+    },
+    lookup_key::Key::*,
+};
 
 #[test]
 fn punt_missing_keys_or_prepositions() {

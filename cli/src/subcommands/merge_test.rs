@@ -1,8 +1,10 @@
-use super::super::testing::expect_error;
-use super::super::testing::expect_parses_into;
-use super::super::Key::*;
-use super::super::Merge;
-use super::super::SubCommand;
+use {
+    crate::{
+        testing::{expect_error, expect_parses_into},
+        Merge, SubCommand,
+    },
+    lookup_key::Key::*,
+};
 
 #[test]
 fn merge_requires_at_least_two_and_into() {
