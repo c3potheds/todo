@@ -1,6 +1,5 @@
-use std::io::Write;
-
 use crate::*;
+use std::io::Write;
 
 #[test]
 fn prints_to_primary_for_short_output() {

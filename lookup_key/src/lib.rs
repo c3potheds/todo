@@ -1,5 +1,4 @@
-use std::num::ParseIntError;
-use std::str::FromStr;
+use std::{num::ParseIntError, str::FromStr};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Key {

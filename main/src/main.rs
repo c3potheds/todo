@@ -1,15 +1,12 @@
-use cli::Options;
-use clock::Clock;
-use clock::SystemClock;
-use printing::PrintingContext;
-use printing::ScriptingTodoPrinter;
-use printing::SimpleTodoPrinter;
-use std::fs::File;
-use std::io::BufWriter;
-use structopt::StructOpt;
-use text_editing::FakeTextEditor;
-use text_editing::ScrawlTextEditor;
-use thiserror::Error;
+use {
+    cli::Options,
+    clock::{Clock, SystemClock},
+    printing::{PrintingContext, ScriptingTodoPrinter, SimpleTodoPrinter},
+    std::{fs::File, io::BufWriter},
+    structopt::StructOpt,
+    text_editing::{FakeTextEditor, ScrawlTextEditor},
+    thiserror::Error,
+};
 
 #[derive(Debug, Error)]
 enum TodoError {

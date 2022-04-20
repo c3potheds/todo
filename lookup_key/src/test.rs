@@ -1,6 +1,7 @@
-use crate::Key;
-use crate::Key::*;
-use std::str::FromStr;
+use {
+    crate::{Key, Key::*},
+    std::str::FromStr,
+};
 
 #[test]
 fn parse_key_from_number() {
