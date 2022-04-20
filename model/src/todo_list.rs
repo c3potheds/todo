@@ -1,20 +1,14 @@
-use crate::layering::remove_first_occurrence_from_vec;
-use crate::layering::Layering;
-use crate::DurationInSeconds;
-use crate::NewOptions;
-use crate::Task;
-use crate::TaskId;
-use crate::TaskSet;
-use crate::TaskStatus;
-use chrono::DateTime;
-use chrono::Duration;
-use chrono::Utc;
-use daggy::stable_dag::StableDag;
-use daggy::Walker;
-use serde::{Deserialize, Serialize};
-use std::borrow::Cow;
-use std::collections::HashSet;
-use thiserror::Error;
+use {
+    crate::{
+        layering::{remove_first_occurrence_from_vec, Layering},
+        DurationInSeconds, NewOptions, Task, TaskId, TaskSet, TaskStatus,
+    },
+    chrono::{DateTime, Duration, Utc},
+    daggy::{stable_dag::StableDag, Walker},
+    serde::{Deserialize, Serialize},
+    std::{borrow::Cow, collections::HashSet},
+    thiserror::Error,
+};
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub struct TodoList<'ser> {

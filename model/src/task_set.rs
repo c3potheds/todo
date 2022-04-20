@@ -1,9 +1,10 @@
-use crate::TaskId;
-use crate::TaskStatus;
-use crate::TodoList;
-use std::collections::BTreeSet;
-use std::collections::HashSet;
-use std::iter::FromIterator;
+use {
+    crate::{TaskId, TaskStatus, TodoList},
+    std::{
+        collections::{BTreeSet, HashSet},
+        iter::FromIterator,
+    },
+};
 
 #[derive(Debug, PartialEq, Clone, Default)]
 pub struct TaskSet {

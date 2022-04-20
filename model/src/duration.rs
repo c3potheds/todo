@@ -1,5 +1,7 @@
-use chrono::Duration;
-use serde::{Deserialize, Serialize};
+use {
+    chrono::Duration,
+    serde::{Deserialize, Serialize},
+};
 
 #[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize, Default)]
 pub struct DurationInSeconds(pub u32);

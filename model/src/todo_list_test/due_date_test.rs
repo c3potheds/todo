@@ -1,8 +1,9 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use super::*;
-use chrono::TimeZone;
-use chrono::Utc;
+use {
+    super::*,
+    chrono::{TimeZone, Utc},
+};
 
 #[test]
 fn set_due_date_simple() {

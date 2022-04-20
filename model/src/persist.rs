@@ -1,6 +1,4 @@
-use crate::TodoList;
-use std::io::Write;
-use thiserror::Error;
+use {crate::TodoList, std::io::Write, thiserror::Error};
 
 #[derive(Debug, Error)]
 pub enum LoadError {

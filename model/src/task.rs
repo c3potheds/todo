@@ -1,8 +1,9 @@
-use crate::DurationInSeconds;
-use chrono::DateTime;
-use chrono::Utc;
-use serde::{Deserialize, Serialize};
-use std::borrow::Cow;
+use {
+    crate::DurationInSeconds,
+    chrono::{DateTime, Utc},
+    serde::{Deserialize, Serialize},
+    std::borrow::Cow,
+};
 
 fn default_creation_time() -> DateTime<Utc> {
     Utc::now()

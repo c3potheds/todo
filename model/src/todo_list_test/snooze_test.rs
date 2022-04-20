@@ -1,8 +1,9 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use super::*;
-use chrono::TimeZone;
-use chrono::Utc;
+use {
+    super::*,
+    chrono::{TimeZone, Utc},
+};
 
 #[test]
 fn start_date_defaults_to_creation_time() {
