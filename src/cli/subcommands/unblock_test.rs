@@ -1,8 +1,8 @@
-use cli::testing::expect_error;
-use cli::testing::expect_parses_into;
-use cli::Key::*;
-use cli::SubCommand;
-use cli::Unblock;
+use super::super::testing::expect_error;
+use super::super::testing::expect_parses_into;
+use super::super::Key::*;
+use super::super::SubCommand;
+use super::super::Unblock;
 
 #[test]
 fn unblock_no_keys() {

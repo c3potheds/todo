@@ -1,4 +1,4 @@
-use cli::Key;
+use super::Key;
 use structopt::StructOpt;
 
 /// Assign a time budget to the given tasks.

@@ -1,7 +1,7 @@
-use cli::testing::expect_error;
-use cli::testing::expect_parses_into;
-use cli::Find;
-use cli::SubCommand;
+use super::super::testing::expect_error;
+use super::super::testing::expect_parses_into;
+use super::super::Find;
+use super::super::SubCommand;
 
 #[test]
 fn find_missing_terms() {

@@ -1,5 +1,5 @@
-use cli::Options;
-use cli::SubCommand;
+use crate::cli::Options;
+use crate::cli::SubCommand;
 use structopt::StructOpt;
 
 pub fn expect_parses_into<'a, S: Into<&'a str>>(args: S, expected: SubCommand) {

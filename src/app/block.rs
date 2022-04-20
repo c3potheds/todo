@@ -1,10 +1,10 @@
-use crate::{
-    app::util::{
+use model::{TaskId, TaskSet, TodoList};
+use printing::{Action, PrintableError, TodoPrinter};
+use {
+    super::util::{
         format_task, format_task_brief, lookup_tasks, should_include_done,
     },
-    cli::Block,
-    model::{TaskId, TaskSet, TodoList},
-    printing::{Action, PrintableError, TodoPrinter},
+    crate::cli::Block,
 };
 
 fn print_block_error(

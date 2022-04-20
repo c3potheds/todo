@@ -1,15 +1,15 @@
-use crate::{
-    app::util::{
+use chrono::{DateTime, Utc};
+use std::{borrow::Cow, collections::HashSet, iter::FromIterator};
+use {
+    super::util::{
         format_prefix, format_task, format_task_brief, format_tasks_brief,
         lookup_tasks, parse_budget_or_print_error,
         parse_due_date_or_print_error, parse_snooze_date_or_print_error,
     },
-    cli::New,
+    crate::cli::New,
     model::{CheckError, CheckOptions, NewOptions, TaskSet, TodoList},
     printing::{Action, PrintableError, TodoPrinter},
 };
-use chrono::{DateTime, Utc};
-use std::{borrow::Cow, collections::HashSet, iter::FromIterator};
 
 pub fn run(
     list: &mut TodoList,

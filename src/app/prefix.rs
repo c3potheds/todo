@@ -1,10 +1,10 @@
-use crate::{
-    app::util::{format_prefix, format_task, lookup_tasks},
-    cli::Prefix,
+use std::borrow::Cow;
+use {
+    super::util::{format_prefix, format_task, lookup_tasks},
+    crate::cli::Prefix,
     model::TodoList,
     printing::TodoPrinter,
 };
-use std::borrow::Cow;
 
 pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Prefix) {
     let prefix = cmd.prefix.join(" ");

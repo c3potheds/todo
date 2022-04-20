@@ -1,5 +1,3 @@
-extern crate scrawl;
-
 #[derive(Debug)]
 pub struct Error();
 

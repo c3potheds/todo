@@ -1,7 +1,7 @@
-use cli::testing::expect_parses_into;
-use cli::Due;
-use cli::Key::*;
-use cli::SubCommand;
+use super::super::testing::expect_parses_into;
+use super::super::Due;
+use super::super::Key::*;
+use super::super::SubCommand;
 
 #[test]
 fn due_no_keys_no_date() {

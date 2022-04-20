@@ -1,7 +1,7 @@
-use cli::testing::expect_error;
-use cli::testing::expect_parses_into;
-use cli::Snoozed;
-use cli::SubCommand;
+use super::super::testing::expect_error;
+use super::super::testing::expect_parses_into;
+use super::super::SubCommand;
+use super::Snoozed;
 
 #[test]
 fn snoozed_extraneous() {

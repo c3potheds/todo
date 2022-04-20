@@ -1,5 +1,3 @@
-extern crate humantime;
-
 use chrono::DateTime;
 use chrono::Datelike;
 use chrono::TimeZone;

@@ -1,8 +1,8 @@
-use crate::{
-    app::util::{
+use {
+    super::util::{
         format_task, format_task_brief, lookup_tasks, should_include_done,
     },
-    cli::Unblock,
+    crate::cli::Unblock,
     model::{TaskId, TaskSet, TodoList},
     printing::{Action, PrintableError, PrintableWarning, TodoPrinter},
 };

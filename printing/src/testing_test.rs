@@ -9,8 +9,8 @@ use super::PrintableTask;
 use super::PrintableWarning;
 use super::Status::*;
 use super::TodoPrinter;
-use testing::ymdhms;
 use lookup_key::Key;
+use testing::ymdhms;
 
 #[test]
 fn validate_task() {

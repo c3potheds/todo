@@ -1,8 +1,4 @@
-#[macro_use]
-extern crate serde;
-extern crate serde_json;
-extern crate thiserror;
-
+use serde::{Deserialize, Serialize};
 use std::io::Read;
 use thiserror::Error;
 

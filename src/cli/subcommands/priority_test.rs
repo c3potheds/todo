@@ -1,7 +1,7 @@
-use cli::testing::expect_parses_into;
-use cli::Key::*;
-use cli::Priority;
-use cli::SubCommand;
+use super::super::testing::expect_parses_into;
+use super::super::Key::*;
+use super::super::Priority;
+use super::super::SubCommand;
 
 #[test]
 fn priority_query_all() {

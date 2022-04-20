@@ -7,9 +7,9 @@ use super::PrintingContext;
 use super::SimpleTodoPrinter;
 use super::Status::*;
 use super::TodoPrinter;
-use testing::ymdhms;
 use chrono::DateTime;
 use chrono::Utc;
+use testing::ymdhms;
 
 fn make_printing_context() -> PrintingContext {
     PrintingContext {

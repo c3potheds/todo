@@ -1,13 +1,13 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use crate::{
-    app::util::*,
+use chrono::Duration;
+use {
+    super::util::*,
     lookup_key::Key,
     model::{CheckOptions, NewOptions, TodoList},
     printing::{Action::*, PrintableTask, Status::*},
     testing::ymdhms,
 };
-use chrono::Duration;
 
 #[test]
 fn format_task_basic() {

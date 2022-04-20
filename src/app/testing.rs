@@ -1,11 +1,11 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use crate::{
-    cli::Options, clock::FakeClock, model::TodoList, printing::FakePrinter,
-    text_editing::FakeTextEditor,
-};
 use chrono::{TimeZone, Utc};
 use structopt::StructOpt;
+use {
+    crate::cli::Options, clock::FakeClock, model::TodoList,
+    printing::FakePrinter, text_editing::FakeTextEditor,
+};
 
 pub struct Fixture<'a> {
     pub list: TodoList<'a>,

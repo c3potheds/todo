@@ -1,10 +1,12 @@
-use crate::{
-    app::util::{format_task, lookup_tasks, parse_due_date_or_print_error},
-    cli::Due,
+use chrono::{DateTime, Utc};
+use ::{
     model::{TaskId, TaskSet, TaskStatus, TodoList},
     printing::{PrintableError, TodoPrinter},
 };
-use chrono::{DateTime, Utc};
+use {
+    super::util::{format_task, lookup_tasks, parse_due_date_or_print_error},
+    crate::cli::Due,
+};
 
 fn show_all_tasks_with_due_dates(
     list: &TodoList,

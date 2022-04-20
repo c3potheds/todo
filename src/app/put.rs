@@ -1,12 +1,12 @@
-use crate::{
-    app::util::{
+use std::collections::HashSet;
+use {
+    super::util::{
         format_task, format_task_brief, lookup_tasks, should_include_done,
     },
-    cli::Put,
+    crate::cli::Put,
     model::{TaskId, TaskSet, TodoList},
     printing::{Action, PrintableError, TodoPrinter},
 };
-use std::collections::HashSet;
 
 fn print_block_error(
     printer: &mut impl TodoPrinter,

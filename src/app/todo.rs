@@ -1,10 +1,10 @@
-use crate::{
-    app::{
+use {
+    super::{
         block, budget, chain, check, due, edit, find, get, log, merge, new,
         path, prefix, priority, punt, put, restore, rm, snooze, snoozed, split,
         status, top, unblock, unsnooze,
     },
-    cli::{Options, SubCommand},
+    crate::cli::{Options, SubCommand},
     clock::Clock,
     model::TodoList,
     printing::TodoPrinter,

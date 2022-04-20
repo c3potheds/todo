@@ -1,9 +1,9 @@
-use crate::{
-    app::util::format_task,
+use chrono::{DateTime, Utc};
+use {
+    super::util::format_task,
     model::{TaskStatus, TodoList},
     printing::{Action, TodoPrinter},
 };
-use chrono::{DateTime, Utc};
 
 pub struct Status {
     pub include_blocked: bool,

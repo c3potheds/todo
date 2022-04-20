@@ -1,9 +1,9 @@
-use cli::subcommands::put::Prepositions;
-use cli::testing::expect_error;
-use cli::testing::expect_parses_into;
-use cli::Key::*;
-use cli::Put;
-use cli::SubCommand;
+use super::super::subcommands::put::Prepositions;
+use super::super::testing::expect_error;
+use super::super::testing::expect_parses_into;
+use super::super::Key::*;
+use super::super::Put;
+use super::super::SubCommand;
 
 #[test]
 fn punt_missing_keys_or_prepositions() {

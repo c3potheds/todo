@@ -1,8 +1,8 @@
-use cli::testing::expect_error;
-use cli::testing::expect_parses_into;
-use cli::Chain;
-use cli::Key::*;
-use cli::SubCommand;
+use super::super::testing::expect_error;
+use super::super::testing::expect_parses_into;
+use super::super::Chain;
+use super::super::Key::*;
+use super::super::SubCommand;
 
 #[test]
 fn chain_missing_keys() {

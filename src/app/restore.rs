@@ -1,12 +1,12 @@
-use crate::{
-    app::util::{
+use std::collections::HashSet;
+use {
+    super::util::{
         format_task, format_task_brief, format_tasks_brief, lookup_tasks,
     },
-    cli::Restore,
+    crate::cli::Restore,
     model::{ForceRestored, RestoreError, TaskId, TaskSet, TodoList},
     printing::{Action, PrintableError, PrintableWarning, TodoPrinter},
 };
-use std::collections::HashSet;
 
 enum Reason {
     BlockingComplete(TaskSet),

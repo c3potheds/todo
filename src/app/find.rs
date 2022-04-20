@@ -1,6 +1,5 @@
-use crate::{
-    app::util::format_task,
-    cli::Find,
+use {super::util::format_task, crate::cli::Find};
+use {
     model::{TaskStatus, TodoList},
     printing::TodoPrinter,
 };

@@ -1,6 +1,6 @@
-use crate::{
-    app::util::{format_task, lookup_tasks},
-    cli::Rm,
+use {
+    super::util::{format_task, lookup_tasks},
+    crate::cli::Rm,
     model::{TaskSet, TodoList},
     printing::{Action, PrintableTask, Status, TodoPrinter},
 };

@@ -1,5 +1,5 @@
-use crate::{
-    app::testing::Fixture,
+use {
+    super::testing::Fixture,
     lookup_key::Key,
     printing::{
         Action::*, BriefPrintableTask, PrintableError, PrintableTask,

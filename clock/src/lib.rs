@@ -1,5 +1,3 @@
-extern crate chrono;
-
 use chrono::DateTime;
 use chrono::Utc;
 

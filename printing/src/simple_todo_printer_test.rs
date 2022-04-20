@@ -8,9 +8,9 @@ use crate::PrintingContext;
 use crate::SimpleTodoPrinter;
 use crate::Status::*;
 use crate::TodoPrinter;
-use testing::ymdhms;
 use lookup_key::Key;
 use std::io::Write;
+use testing::ymdhms;
 
 fn create_printer_to_vec() -> SimpleTodoPrinter<Vec<u8>> {
     SimpleTodoPrinter {

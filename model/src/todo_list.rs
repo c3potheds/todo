@@ -11,6 +11,7 @@ use chrono::Duration;
 use chrono::Utc;
 use daggy::stable_dag::StableDag;
 use daggy::Walker;
+use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::collections::HashSet;
 use thiserror::Error;

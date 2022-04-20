@@ -1,8 +1,8 @@
-use crate::{
-    app::util::{
+use {
+    super::util::{
         format_task, format_task_brief, format_tasks_brief, lookup_tasks,
     },
-    cli::Unsnooze,
+    crate::cli::Unsnooze,
     model::{TaskId, TaskSet, TodoList, UnsnoozeWarning},
     printing::{Action, PrintableWarning, TodoPrinter},
 };

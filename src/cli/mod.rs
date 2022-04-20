@@ -2,10 +2,10 @@ mod options;
 mod subcommand;
 mod subcommands;
 
-use lookup_key::Key;
 pub use self::options::Options;
 pub use self::subcommand::SubCommand;
 pub use self::subcommands::*;
+use lookup_key::Key;
 
 #[cfg(test)]
 pub mod testing;

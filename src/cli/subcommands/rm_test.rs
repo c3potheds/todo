@@ -1,8 +1,8 @@
-use cli::testing::expect_error;
-use cli::testing::expect_parses_into;
-use cli::Key::*;
-use cli::Rm;
-use cli::SubCommand;
+use super::super::testing::expect_error;
+use super::super::testing::expect_parses_into;
+use super::super::Key::*;
+use super::super::SubCommand;
+use super::Rm;
 
 #[test]
 fn rm_no_keys() {

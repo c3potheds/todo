@@ -1,5 +1,5 @@
-use crate::{
-    app::testing::Fixture,
+use {
+    super::testing::Fixture,
     printing::{PrintableTask, Status::*},
 };
 

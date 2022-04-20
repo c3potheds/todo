@@ -1,6 +1,6 @@
-use crate::{
-    app::util::{format_task, format_task_brief, lookup_tasks},
-    cli::Punt,
+use {
+    super::util::{format_task, format_task_brief, lookup_tasks},
+    crate::cli::Punt,
     model::{PuntError, TodoList},
     printing::{Action, PrintableWarning, TodoPrinter},
 };

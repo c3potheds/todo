@@ -1,16 +1,3 @@
-extern crate atty;
-extern crate directories;
-extern crate structopt;
-extern crate term_size;
-extern crate thiserror;
-
-extern crate clock;
-extern crate config;
-extern crate long_output;
-extern crate model;
-extern crate text_editing;
-extern crate todo;
-
 use clock::Clock;
 use clock::SystemClock;
 use printing::PrintingContext;

@@ -1,6 +1,6 @@
-use cli::testing::expect_parses_into;
-use cli::Config;
-use cli::SubCommand;
+use super::super::testing::expect_parses_into;
+use super::super::Config;
+use super::super::SubCommand;
 
 #[test]
 fn just_show_config() {

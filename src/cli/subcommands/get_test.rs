@@ -1,8 +1,8 @@
-use cli::testing::expect_error;
-use cli::testing::expect_parses_into;
-use cli::Get;
-use cli::Key::*;
-use cli::SubCommand;
+use super::super::testing::expect_error;
+use super::super::testing::expect_parses_into;
+use super::super::Key::*;
+use super::super::SubCommand;
+use super::Get;
 
 #[test]
 fn get_missing_keys() {

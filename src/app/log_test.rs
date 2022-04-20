@@ -1,10 +1,10 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use crate::{
-    app::testing::Fixture,
+use chrono::{Local, TimeZone, Utc};
+use {
+    super::testing::Fixture,
     printing::{LogDate::*, PrintableTask, Status::*},
 };
-use chrono::{Local, TimeZone, Utc};
 
 #[test]
 fn log_with_no_tasks_completed() {
