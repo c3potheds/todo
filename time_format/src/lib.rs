@@ -1,6 +1,4 @@
-use chrono::DateTime;
-use chrono::Datelike;
-use chrono::TimeZone;
+use chrono::{DateTime, Datelike, TimeZone};
 
 #[derive(Debug, PartialEq)]
 pub struct ParseTimeError;
