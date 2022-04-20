@@ -1,20 +1,19 @@
 [package]
-name = "main"
+name = "app"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-atty = "0.2"
-directories = "4.0"
+chrono = { version = "0.4", features = ["serde"] }
+humantime = "2.1"
+itertools = "0.10"
 structopt = { version = "0.3", default-features = false }
-term_size = "0.3"
-thiserror = "1.0.30"
 
-app = {path = "../app" }
 cli = { path = "../cli" }
 clock = { path = "../clock" }
-config = { path = "../config" }
-long_output = { path = "../long_output" }
+lookup_key = { path = "../lookup_key" }
 model = { path = "../model" }
 printing = { path = "../printing" }
+testing = { path = "../testing" }
 text_editing = { path = "../text_editing" }
+time_format = { path = "../time_format" }

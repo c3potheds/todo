@@ -28,7 +28,7 @@ impl<'a> Fixture<'a> {
         let mut printer = FakePrinter::default();
         let options = Options::from_iter_safe(s.split(' '))
             .expect("Could not parse args");
-        crate::app::todo(
+        crate::todo(
             &mut self.list,
             &mut printer,
             &self.text_editor,

@@ -10,7 +10,6 @@ use structopt::StructOpt;
 use text_editing::FakeTextEditor;
 use text_editing::ScrawlTextEditor;
 use thiserror::Error;
-use todo::app;
 
 #[derive(Debug, Error)]
 enum TodoError {
