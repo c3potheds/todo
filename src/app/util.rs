@@ -26,13 +26,19 @@ pub fn format_prefix(prefix: &str, desc: &str) -> String {
     }
 }
 
-impl<'a> PrintableTask<'a> {
+struct WrappedPrintableTask<'a>(PrintableTask<'a>);
+
+fn wrap(task: PrintableTask) -> WrappedPrintableTask {
+    WrappedPrintableTask(task)
+}
+
+impl<'a> WrappedPrintableTask<'a> {
     fn add_deps_if_necessary(
         self,
         list: &TodoList,
         id: TaskId,
         status: TaskStatus,
-    ) -> PrintableTask<'a> {
+    ) -> WrappedPrintableTask<'a> {
         if status != TaskStatus::Blocked {
             return self;
         }
@@ -46,7 +52,7 @@ impl<'a> PrintableTask<'a> {
             .iter_unsorted()
             .filter(|&dep| list.status(dep) == Some(TaskStatus::Incomplete))
             .count();
-        self.deps_stats(incomplete, deps.len())
+        wrap(self.0.deps_stats(incomplete, deps.len()))
     }
 
     fn add_adeps_if_necessary(
@@ -54,7 +60,7 @@ impl<'a> PrintableTask<'a> {
         list: &TodoList,
         id: TaskId,
         status: TaskStatus,
-    ) -> PrintableTask<'a> {
+    ) -> WrappedPrintableTask<'a> {
         if status != TaskStatus::Incomplete {
             return self;
         }
@@ -74,7 +80,11 @@ impl<'a> PrintableTask<'a> {
                     .all(|dep| list.status(dep) == Some(TaskStatus::Complete))
             })
             .count();
-        self.adeps_stats(unlockable, adeps.len())
+        wrap(self.0.adeps_stats(unlockable, adeps.len()))
+    }
+
+    fn unwrap(self) -> PrintableTask<'a> {
+        self.0
     }
 }
 
@@ -114,9 +124,10 @@ pub fn format_task<'ser, 'list>(
             if task.start_date > task.creation_time {
                 result = result.start_date(task.start_date);
             }
-            result
+            wrap(result)
                 .add_deps_if_necessary(list, id, status)
                 .add_adeps_if_necessary(list, id, status)
+                .unwrap()
         }
         _ => panic!("Failed to get task info for id {:?}", id),
     }

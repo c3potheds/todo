@@ -4,22 +4,8 @@ use crate::{
     cli::Options, clock::FakeClock, model::TodoList, printing::FakePrinter,
     text_editing::FakeTextEditor,
 };
-use chrono::{DateTime, Local, TimeZone, Utc};
+use chrono::{TimeZone, Utc};
 use structopt::StructOpt;
-
-pub fn ymdhms(
-    yr: i32,
-    mon: u32,
-    day: u32,
-    hr: u32,
-    min: u32,
-    sec: u32,
-) -> DateTime<Utc> {
-    Local
-        .ymd(yr, mon, day)
-        .and_hms(hr, min, sec)
-        .with_timezone(&Utc)
-}
 
 pub struct Fixture<'a> {
     pub list: TodoList<'a>,

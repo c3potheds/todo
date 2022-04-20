@@ -1,11 +1,12 @@
 #![allow(clippy::zero_prefixed_literal)]
 
 use crate::{
-    app::testing::{ymdhms, Fixture},
+    app::testing::Fixture,
     printing::{
         Action::*, BriefPrintableTask, PrintableTask, PrintableWarning,
         Status::*,
     },
+    testing::ymdhms,
 };
 
 #[test]

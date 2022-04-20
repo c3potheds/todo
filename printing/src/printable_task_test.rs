@@ -7,7 +7,7 @@ use super::PrintingContext;
 use super::SimpleTodoPrinter;
 use super::Status::*;
 use super::TodoPrinter;
-use app::testing::ymdhms;
+use testing::ymdhms;
 use chrono::DateTime;
 use chrono::Utc;
 

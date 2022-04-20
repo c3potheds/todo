@@ -13,6 +13,9 @@ extern crate todo;
 
 use clock::Clock;
 use clock::SystemClock;
+use printing::PrintingContext;
+use printing::ScriptingTodoPrinter;
+use printing::SimpleTodoPrinter;
 use std::fs::File;
 use std::io::BufWriter;
 use structopt::StructOpt;
@@ -21,9 +24,6 @@ use text_editing::ScrawlTextEditor;
 use thiserror::Error;
 use todo::app;
 use todo::cli::Options;
-use todo::printing::PrintingContext;
-use todo::printing::ScriptingTodoPrinter;
-use todo::printing::SimpleTodoPrinter;
 
 #[derive(Debug, Error)]
 enum TodoError {

@@ -1,15 +1,15 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use app::testing::ymdhms;
+use crate::BriefPrintableTask;
+use crate::PrintableError;
+use crate::PrintableTask;
+use crate::PrintableWarning;
+use crate::PrintingContext;
+use crate::SimpleTodoPrinter;
+use crate::Status::*;
+use crate::TodoPrinter;
+use testing::ymdhms;
 use lookup_key::Key;
-use printing::BriefPrintableTask;
-use printing::PrintableError;
-use printing::PrintableTask;
-use printing::PrintableWarning;
-use printing::PrintingContext;
-use printing::SimpleTodoPrinter;
-use printing::Status::*;
-use printing::TodoPrinter;
 use std::io::Write;
 
 fn create_printer_to_vec() -> SimpleTodoPrinter<Vec<u8>> {

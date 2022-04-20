@@ -9,7 +9,7 @@ use super::PrintableTask;
 use super::PrintableWarning;
 use super::Status::*;
 use super::TodoPrinter;
-use app::testing::ymdhms;
+use testing::ymdhms;
 use lookup_key::Key;
 
 #[test]

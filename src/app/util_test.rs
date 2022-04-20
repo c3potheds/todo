@@ -1,10 +1,11 @@
 #![allow(clippy::zero_prefixed_literal)]
 
 use crate::{
-    app::{testing::ymdhms, util::*},
+    app::util::*,
     lookup_key::Key,
     model::{CheckOptions, NewOptions, TodoList},
     printing::{Action::*, PrintableTask, Status::*},
+    testing::ymdhms,
 };
 use chrono::Duration;
 
@@ -47,7 +48,7 @@ fn format_task_with_zero_priority() {
 #[test]
 fn format_task_with_budget() {
     let mut list = TodoList::default();
-    let now = ::app::testing::ymdhms(2021, 04, 30, 09, 00, 00);
+    let now = ymdhms(2021, 04, 30, 09, 00, 00);
     let due = now + Duration::hours(5);
     let a = list.add(
         NewOptions::new()

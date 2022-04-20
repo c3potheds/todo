@@ -21,8 +21,10 @@ config = { path = "./config" }
 lookup_key = { path = "./lookup_key" }
 long_output = { path = "./long_output" }
 model = { path = "./model" }
+printing = { path = "./printing" }
 text_editing = { path = "./text_editing" }
 time_format = { path = "./time_format" }
+testing = { path = "./testing" }
 
 [workspace]
 members = [
@@ -32,6 +34,8 @@ members = [
     "long_output",
     "main",
     "model",
+    "printing",
+    "testing",
     "text_editing",
     "time_format",
 ]
