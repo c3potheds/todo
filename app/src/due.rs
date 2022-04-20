@@ -1,11 +1,9 @@
-use chrono::{DateTime, Utc};
-use ::{
-    model::{TaskId, TaskSet, TaskStatus, TodoList},
-    printing::{PrintableError, TodoPrinter},
-};
 use {
     super::util::{format_task, lookup_tasks, parse_due_date_or_print_error},
+    chrono::{DateTime, Utc},
     cli::Due,
+    model::{TaskId, TaskSet, TaskStatus, TodoList},
+    printing::{PrintableError, TodoPrinter},
 };
 
 fn show_all_tasks_with_due_dates(

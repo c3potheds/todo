@@ -1,11 +1,11 @@
-use model::{TaskSet, TodoList};
-use printing::{Action, TodoPrinter};
 use {
     super::util::{
         format_task, lookup_tasks, parse_budget_or_print_error,
         should_include_done,
     },
     cli::Budget,
+    model::{TaskSet, TodoList},
+    printing::{Action, TodoPrinter},
 };
 
 pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Budget) {

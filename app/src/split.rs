@@ -1,9 +1,9 @@
-use std::borrow::Cow;
 use {
     super::util::{format_prefix, format_task, lookup_tasks},
     cli::Split,
     model::{NewOptions, TaskId, TaskSet, TodoList},
     printing::{Action, TodoPrinter},
+    std::borrow::Cow,
 };
 
 struct SplitResult {

@@ -1,8 +1,8 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use chrono::{Local, TimeZone, Utc};
 use {
     super::testing::Fixture,
+    chrono::{Local, TimeZone, Utc},
     printing::{LogDate::*, PrintableTask, Status::*},
 };
 

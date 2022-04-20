@@ -1,13 +1,11 @@
-use itertools::Itertools;
-use std::borrow::Cow;
-use ::{
-    model::{TaskId, TaskSet, TodoList},
-    printing::{PrintableError, TodoPrinter},
-    text_editing::TextEditor,
-};
 use {
     super::util::{format_task, lookup_tasks},
     cli::Edit,
+    itertools::Itertools,
+    model::{TaskId, TaskSet, TodoList},
+    printing::{PrintableError, TodoPrinter},
+    std::borrow::Cow,
+    text_editing::TextEditor,
 };
 
 fn format_tasks_for_text_editor(list: &TodoList, ids: &TaskSet) -> String {

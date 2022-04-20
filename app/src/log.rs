@@ -1,6 +1,6 @@
-use chrono::{Datelike, Local};
 use {
     super::util::format_task,
+    chrono::{Datelike, Local},
     model::TodoList,
     printing::{LogDate, TodoPrinter},
 };

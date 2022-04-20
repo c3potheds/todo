@@ -1,5 +1,5 @@
-use super::testing::Fixture;
-use ::{
+use {
+    super::testing::Fixture,
     printing::{PrintableError, PrintableTask, Status::*},
     text_editing::FakeTextEditor,
 };

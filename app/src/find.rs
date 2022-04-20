@@ -1,5 +1,6 @@
-use {super::util::format_task, cli::Find};
 use {
+    super::util::format_task,
+    cli::Find,
     model::{TaskStatus, TodoList},
     printing::TodoPrinter,
 };

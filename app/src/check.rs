@@ -1,11 +1,11 @@
-use chrono::{DateTime, Utc};
-use model::{
-    CheckError, CheckOptions, ForceChecked, TaskId, TaskSet, TodoList,
-};
-use printing::{Action, PrintableError, PrintableWarning, TodoPrinter};
 use {
     super::util::{format_task, format_task_brief, lookup_tasks},
+    chrono::{DateTime, Utc},
     cli::Check,
+    model::{
+        CheckError, CheckOptions, ForceChecked, TaskId, TaskSet, TodoList,
+    },
+    printing::{Action, PrintableError, PrintableWarning, TodoPrinter},
 };
 
 enum Reason {

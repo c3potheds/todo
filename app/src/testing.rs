@@ -1,9 +1,12 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use chrono::{TimeZone, Utc};
-use structopt::StructOpt;
 use {
-    cli::Options, clock::FakeClock, model::TodoList, printing::FakePrinter,
+    chrono::{TimeZone, Utc},
+    cli::Options,
+    clock::FakeClock,
+    model::TodoList,
+    printing::FakePrinter,
+    structopt::StructOpt,
     text_editing::FakeTextEditor,
 };
 

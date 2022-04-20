@@ -1,8 +1,10 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use super::testing::Fixture;
-use printing::{PrintableError, PrintableTask, Status::*};
-use testing::ymdhms;
+use {
+    super::testing::Fixture,
+    printing::{PrintableError, PrintableTask, Status::*},
+    testing::ymdhms,
+};
 
 #[test]
 fn show_tasks_with_due_date() {

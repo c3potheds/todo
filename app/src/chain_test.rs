@@ -1,6 +1,8 @@
-use super::testing::Fixture;
-use printing::{
-    Action::*, BriefPrintableTask, PrintableError, PrintableTask, Status::*,
+use {
+    super::testing::Fixture,
+    printing::{
+        Action::*, BriefPrintableTask, PrintableError, PrintableTask, Status::*,
+    },
 };
 
 #[test]

@@ -1,5 +1,9 @@
-use chrono::{DateTime, Utc};
-use {super::util::format_task, model::TodoList, printing::TodoPrinter};
+use {
+    super::util::format_task,
+    chrono::{DateTime, Utc},
+    model::TodoList,
+    printing::TodoPrinter,
+};
 
 pub fn run(
     list: &TodoList,

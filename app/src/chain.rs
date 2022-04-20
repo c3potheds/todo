@@ -1,11 +1,11 @@
-use model::{BlockError, TaskSet, TodoList};
-use printing::{Action, PrintableError, TodoPrinter};
-use std::collections::HashMap;
 use {
     super::util::{
         format_task, format_task_brief, lookup_task, should_include_done,
     },
     cli::Chain,
+    model::{BlockError, TaskSet, TodoList},
+    printing::{Action, PrintableError, TodoPrinter},
+    std::collections::HashMap,
 };
 
 pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Chain) {

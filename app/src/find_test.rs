@@ -1,5 +1,7 @@
-use super::testing::Fixture;
-use ::printing::{PrintableTask, Status::*};
+use {
+    super::testing::Fixture,
+    printing::{PrintableTask, Status::*},
+};
 
 #[test]
 fn find_with_exact_match() {

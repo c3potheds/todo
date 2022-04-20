@@ -1,6 +1,6 @@
-use chrono::{DateTime, Utc};
 use {
     super::util::format_task,
+    chrono::{DateTime, Utc},
     model::{TaskStatus, TodoList},
     printing::{Action, TodoPrinter},
 };

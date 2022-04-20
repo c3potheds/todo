@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 use {
     super::util::{
         format_task, format_task_brief, format_tasks_brief, lookup_tasks,
@@ -6,6 +5,7 @@ use {
     cli::Restore,
     model::{ForceRestored, RestoreError, TaskId, TaskSet, TodoList},
     printing::{Action, PrintableError, PrintableWarning, TodoPrinter},
+    std::collections::HashSet,
 };
 
 enum Reason {

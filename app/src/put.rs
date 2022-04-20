@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 use {
     super::util::{
         format_task, format_task_brief, lookup_tasks, should_include_done,
@@ -6,6 +5,7 @@ use {
     cli::Put,
     model::{TaskId, TaskSet, TodoList},
     printing::{Action, PrintableError, TodoPrinter},
+    std::collections::HashSet,
 };
 
 fn print_block_error(

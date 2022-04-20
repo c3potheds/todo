@@ -1,9 +1,11 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use super::testing::Fixture;
-use chrono::Duration;
-use printing::{Action::*, PrintableError, PrintableTask, Status::*};
-use testing::ymdhms;
+use {
+    super::testing::Fixture,
+    chrono::Duration,
+    printing::{Action::*, PrintableError, PrintableTask, Status::*},
+    testing::ymdhms,
+};
 
 #[test]
 fn budget_one_task() {

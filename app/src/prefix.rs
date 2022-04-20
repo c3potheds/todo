@@ -1,9 +1,9 @@
-use std::borrow::Cow;
 use {
     super::util::{format_prefix, format_task, lookup_tasks},
     cli::Prefix,
     model::TodoList,
     printing::TodoPrinter,
+    std::borrow::Cow,
 };
 
 pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Prefix) {

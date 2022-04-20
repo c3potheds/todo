@@ -1,8 +1,8 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use chrono::Duration;
 use {
     super::util::*,
+    chrono::Duration,
     lookup_key::Key,
     model::{CheckOptions, NewOptions, TodoList},
     printing::{Action::*, PrintableTask, Status::*},

@@ -1,10 +1,12 @@
-use chrono::{DateTime, Duration, Local, Utc};
-use lookup_key::Key;
-use model::{DurationInSeconds, TaskId, TaskSet, TaskStatus, TodoList};
-use printing::{
-    BriefPrintableTask, PrintableError, PrintableTask, Status, TodoPrinter,
+use {
+    chrono::{DateTime, Duration, Local, Utc},
+    lookup_key::Key,
+    model::{DurationInSeconds, TaskId, TaskSet, TaskStatus, TodoList},
+    printing::{
+        BriefPrintableTask, PrintableError, PrintableTask, Status, TodoPrinter,
+    },
+    std::convert::TryFrom,
 };
-use std::convert::TryFrom;
 
 fn to_printing_status(status: TaskStatus) -> Status {
     match status {
