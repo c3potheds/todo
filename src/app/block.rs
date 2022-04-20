@@ -4,7 +4,7 @@ use {
     super::util::{
         format_task, format_task_brief, lookup_tasks, should_include_done,
     },
-    crate::cli::Block,
+    cli::Block,
 };
 
 fn print_block_error(

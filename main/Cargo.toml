@@ -10,6 +10,7 @@ structopt = { version = "0.3", default-features = false }
 term_size = "0.3"
 thiserror = "1.0.30"
 
+cli = { path = "../cli" }
 clock = { path = "../clock" }
 config = { path = "../config" }
 long_output = { path = "../long_output" }

@@ -5,7 +5,7 @@ use model::{
 use printing::{Action, PrintableError, PrintableWarning, TodoPrinter};
 use {
     super::util::{format_task, format_task_brief, lookup_tasks},
-    crate::cli::Check,
+    cli::Check,
 };
 
 enum Reason {

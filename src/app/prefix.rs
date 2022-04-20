@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 use {
     super::util::{format_prefix, format_task, lookup_tasks},
-    crate::cli::Prefix,
+    cli::Prefix,
     model::TodoList,
     printing::TodoPrinter,
 };

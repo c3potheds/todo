@@ -4,7 +4,7 @@ use {
         format_task, format_task_brief, lookup_tasks,
         parse_snooze_date_or_print_error,
     },
-    crate::cli::Snooze,
+    cli::Snooze,
     model::{SnoozeWarning, TaskSet, TodoList},
     printing::{Action, PrintableWarning, TodoPrinter},
 };

@@ -7,7 +7,7 @@ use ::{
 };
 use {
     super::util::{format_task, lookup_tasks},
-    crate::cli::Edit,
+    cli::Edit,
 };
 
 fn format_tasks_for_text_editor(list: &TodoList, ids: &TaskSet) -> String {

@@ -1,3 +1,4 @@
+use cli::Options;
 use clock::Clock;
 use clock::SystemClock;
 use printing::PrintingContext;
@@ -10,7 +11,6 @@ use text_editing::FakeTextEditor;
 use text_editing::ScrawlTextEditor;
 use thiserror::Error;
 use todo::app;
-use todo::cli::Options;
 
 #[derive(Debug, Error)]
 enum TodoError {

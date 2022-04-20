@@ -5,7 +5,7 @@ use {
     super::util::{
         format_task, format_task_brief, lookup_task, should_include_done,
     },
-    crate::cli::Chain,
+    cli::Chain,
 };
 
 pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Chain) {

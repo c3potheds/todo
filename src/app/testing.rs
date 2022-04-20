@@ -3,8 +3,8 @@
 use chrono::{TimeZone, Utc};
 use structopt::StructOpt;
 use {
-    crate::cli::Options, clock::FakeClock, model::TodoList,
-    printing::FakePrinter, text_editing::FakeTextEditor,
+    cli::Options, clock::FakeClock, model::TodoList, printing::FakePrinter,
+    text_editing::FakeTextEditor,
 };
 
 pub struct Fixture<'a> {

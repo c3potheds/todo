@@ -6,7 +6,7 @@ use {
         lookup_tasks, parse_budget_or_print_error,
         parse_due_date_or_print_error, parse_snooze_date_or_print_error,
     },
-    crate::cli::New,
+    cli::New,
     model::{CheckError, CheckOptions, NewOptions, TaskSet, TodoList},
     printing::{Action, PrintableError, TodoPrinter},
 };

@@ -3,7 +3,7 @@ use {
     super::util::{
         format_task, format_task_brief, format_tasks_brief, lookup_tasks,
     },
-    crate::cli::Restore,
+    cli::Restore,
     model::{ForceRestored, RestoreError, TaskId, TaskSet, TodoList},
     printing::{Action, PrintableError, PrintableWarning, TodoPrinter},
 };

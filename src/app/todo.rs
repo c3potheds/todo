@@ -4,7 +4,7 @@ use {
         path, prefix, priority, punt, put, restore, rm, snooze, snoozed, split,
         status, top, unblock, unsnooze,
     },
-    crate::cli::{Options, SubCommand},
+    cli::{Options, SubCommand},
     clock::Clock,
     model::TodoList,
     printing::TodoPrinter,

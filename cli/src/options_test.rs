@@ -1,6 +1,6 @@
-use crate::cli::testing::expect_parses_into;
-use crate::cli::Options;
-use crate::cli::SubCommand;
+use super::testing::expect_parses_into;
+use super::Options;
+use super::SubCommand;
 use structopt::StructOpt;
 
 fn parse<I>(args: I) -> Options

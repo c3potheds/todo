@@ -1,6 +1,6 @@
 use {
     super::util::{format_task, lookup_tasks},
-    crate::cli::Rm,
+    cli::Rm,
     model::{TaskSet, TodoList},
     printing::{Action, PrintableTask, Status, TodoPrinter},
 };

@@ -5,7 +5,7 @@ use {
         format_task, lookup_tasks, parse_budget_or_print_error,
         should_include_done,
     },
-    crate::cli::Budget,
+    cli::Budget,
 };
 
 pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Budget) {

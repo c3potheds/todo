@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use std::borrow::Cow;
 use {
     super::util::{format_task, format_tasks_brief, lookup_tasks},
-    crate::cli::Merge,
+    cli::Merge,
     model::{DurationInSeconds, NewOptions, TaskSet, TodoList},
     printing::{Action, PrintableError, TodoPrinter},
 };

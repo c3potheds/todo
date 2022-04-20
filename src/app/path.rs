@@ -2,7 +2,7 @@ use {
     super::util::{
         format_task, format_task_brief, format_tasks_brief, lookup_task,
     },
-    crate::cli::Path,
+    cli::Path,
     model::{TaskId, TaskSet, TodoList},
     printing::{Action, PrintableWarning, TodoPrinter},
 };

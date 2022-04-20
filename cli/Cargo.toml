@@ -1,0 +1,9 @@
+[package]
+name = "cli"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+structopt = { version = "0.3", default-features = false }
+
+lookup_key = { path = "../lookup_key" }

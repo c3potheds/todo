@@ -1,6 +1,6 @@
 use {
     super::util::{format_task, lookup_tasks, should_include_done},
-    crate::cli::Get,
+    cli::Get,
     model::TodoList,
     printing::{Action, TodoPrinter},
 };

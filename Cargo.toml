@@ -17,6 +17,7 @@ serde_json = "1.0"
 structopt = { version = "0.3", default-features = false }
 textwrap = "0.15.0"
 
+cli = { path = "./cli" }
 clock = { path = "./clock" }
 config = { path = "./config" }
 lookup_key = { path = "./lookup_key" }
@@ -29,6 +30,7 @@ testing = { path = "./testing" }
 
 [workspace]
 members = [
+    "cli",
     "clock",
     "config",
     "lookup_key",
