@@ -18,6 +18,7 @@ fn budget_one_task() {
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
                 .due_date(in_2_days)
+                .budget(Duration::days(1))
                 .action(Select),
         )
         .end();
@@ -29,9 +30,21 @@ fn budget_multiple_tasks() {
     fix.test("todo new a b c d e");
     fix.test("todo budget a c e --is 2 days")
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Select))
-        .printed_task(&PrintableTask::new("c", 3, Incomplete).action(Select))
-        .printed_task(&PrintableTask::new("e", 5, Incomplete).action(Select))
+        .printed_task(
+            &PrintableTask::new("a", 1, Incomplete)
+                .budget(Duration::days(2))
+                .action(Select),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 3, Incomplete)
+                .budget(Duration::days(2))
+                .action(Select),
+        )
+        .printed_task(
+            &PrintableTask::new("e", 5, Incomplete)
+                .budget(Duration::days(2))
+                .action(Select),
+        )
         .end();
 }
 
@@ -45,26 +58,31 @@ fn budget_chain_alters_due_dates() {
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
                 .due_date(ymdhms(2021, 04, 29, 19, 59, 59))
+                .budget(Duration::hours(1))
                 .action(Select),
         )
         .printed_task(
             &PrintableTask::new("b", 2, Blocked)
                 .due_date(ymdhms(2021, 04, 29, 20, 59, 59))
+                .budget(Duration::hours(1))
                 .action(Select),
         )
         .printed_task(
             &PrintableTask::new("c", 3, Blocked)
                 .due_date(ymdhms(2021, 04, 29, 21, 59, 59))
+                .budget(Duration::hours(1))
                 .action(Select),
         )
         .printed_task(
             &PrintableTask::new("d", 4, Blocked)
                 .due_date(ymdhms(2021, 04, 29, 22, 59, 59))
+                .budget(Duration::hours(1))
                 .action(Select),
         )
         .printed_task(
             &PrintableTask::new("e", 5, Blocked)
                 .due_date(ymdhms(2021, 04, 29, 23, 59, 59))
+                .budget(Duration::hours(1))
                 .action(Select),
         )
         .end();
@@ -88,6 +106,7 @@ fn budget_shows_affected_tasks() {
         .printed_task(
             &PrintableTask::new("c", 3, Blocked)
                 .due_date(ymdhms(2021, 04, 29, 20, 00, 00))
+                .budget(Duration::hours(2))
                 .action(Select),
         )
         .end();
@@ -108,6 +127,7 @@ fn budget_does_not_show_unaffected_tasks() {
         .printed_task(
             &PrintableTask::new("c", 3, Blocked)
                 .due_date(ymdhms(2021, 04, 29, 20, 00, 00))
+                .budget(Duration::hours(2))
                 .action(Select),
         )
         .end();
@@ -153,6 +173,7 @@ fn budget_does_not_include_complete_affected_deps() {
         .printed_task(
             &PrintableTask::new("c", 2, Blocked)
                 .due_date(ymdhms(2021, 04, 30, 23, 59, 59))
+                .budget(Duration::hours(1))
                 .action(Select),
         )
         .end();
@@ -172,11 +193,12 @@ fn budget_include_complete_affected_deps() {
         )
         .printed_task(
             &PrintableTask::new("b", 1, Incomplete)
-                .due_date(ymdhms(2021, 04, 30, 22, 59, 59)),
+                .due_date(ymdhms(2021, 04, 30, 22, 59, 59))
         )
         .printed_task(
             &PrintableTask::new("c", 2, Blocked)
                 .due_date(ymdhms(2021, 04, 30, 23, 59, 59))
+                .budget(Duration::hours(1))
                 .action(Select),
         )
         .end();
@@ -188,10 +210,6 @@ fn budget_of_zero() {
     fix.test("todo new a --budget 1 hour");
     fix.test("todo budget a --is 0")
         .validate()
-        .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
-                .budget(Duration::hours(1))
-                .action(Select),
-        )
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Select))
         .end();
 }

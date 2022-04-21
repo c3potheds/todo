@@ -3,7 +3,7 @@ use {
         Action, LogDate, PrintableError, PrintableTask, PrintableWarning,
         Status, TodoPrinter,
     },
-    chrono::{DateTime, Local, Utc},
+    chrono::{DateTime, Duration, Local, Utc},
 };
 
 #[derive(Debug)]
@@ -16,6 +16,7 @@ struct PrintedTaskInfo {
     priority: i32,
     due_date: Option<DateTime<Utc>>,
     start_date: Option<DateTime<Utc>>,
+    budget: Option<Duration>,
 }
 
 #[derive(Debug)]
@@ -40,6 +41,7 @@ enum Expect<'a> {
     Priority(i32),
     DueDate(DateTime<Utc>),
     StartDate(DateTime<Utc>),
+    Budget(Duration),
 }
 
 impl<'a> Expect<'a> {
@@ -129,6 +131,15 @@ impl<'a> Expect<'a> {
                     panic!("Missing required start date: {:?}", expected);
                 }
             },
+            Expect::Budget(expected) => {
+                let actual = info.budget;
+                if actual != Some(*expected) {
+                    panic!(
+                        "Unexpected budget: {:?} (Expected {:?})",
+                        actual, expected
+                    );
+                }
+            }
         }
     }
 }
@@ -161,6 +172,9 @@ impl<'a> Validation<'a> {
         }
         if let Some(start_date) = task.start_date {
             expectations.push(Expect::StartDate(start_date));
+        }
+        if let Some(budget) = task.budget {
+            expectations.push(Expect::Budget(budget));
         }
         self.printed_task_impl(&expectations)
     }
@@ -232,6 +246,7 @@ impl TodoPrinter for FakePrinter {
             priority: task.priority,
             due_date: task.due_date,
             start_date: task.start_date,
+            budget: task.budget,
         }));
     }
 
