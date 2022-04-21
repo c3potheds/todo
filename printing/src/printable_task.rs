@@ -1,10 +1,11 @@
-use ansi_term::Color;
-use chrono::DateTime;
-use chrono::Duration;
-use chrono::Utc;
-use std::fmt;
-use std::fmt::Display;
-use std::fmt::Formatter;
+use {
+    ansi_term::Color,
+    chrono::{DateTime, Duration, Utc},
+    std::{
+        fmt,
+        fmt::{Display, Formatter},
+    },
+};
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Status {

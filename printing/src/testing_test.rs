@@ -1,16 +1,13 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use super::Action::*;
-use super::BriefPrintableTask;
-use super::FakePrinter;
-use super::LogDate::*;
-use super::PrintableError;
-use super::PrintableTask;
-use super::PrintableWarning;
-use super::Status::*;
-use super::TodoPrinter;
-use lookup_key::Key;
-use testing::ymdhms;
+use {
+    crate::{
+        Action::*, BriefPrintableTask, FakePrinter, LogDate::*, PrintableError,
+        PrintableTask, PrintableWarning, Status::*, TodoPrinter,
+    },
+    lookup_key::Key,
+    testing::ymdhms,
+};
 
 #[test]
 fn validate_task() {

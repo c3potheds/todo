@@ -1,17 +1,16 @@
-use super::format_util::format_number;
-use super::PrintableError;
-use super::PrintableTask;
-use super::PrintableWarning;
-use super::TodoPrinter;
-use ansi_term::Color;
-use chrono::DateTime;
-use chrono::Duration;
-use chrono::Local;
-use chrono::Utc;
-use std::fmt;
-use std::fmt::Display;
-use std::fmt::Formatter;
-use std::io::Write;
+use {
+    crate::{
+        format_util::format_number, PrintableError, PrintableTask,
+        PrintableWarning, TodoPrinter,
+    },
+    ansi_term::Color,
+    chrono::{DateTime, Duration, Local, Utc},
+    std::{
+        fmt,
+        fmt::{Display, Formatter},
+        io::Write,
+    },
+};
 
 pub struct PrintingContext {
     /// The number of digits that task numbers may have, including a minus sign.

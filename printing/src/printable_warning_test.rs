@@ -1,7 +1,7 @@
-use super::BriefPrintableTask;
-use super::PrintableWarning::*;
-use super::Status::*;
-use lookup_key::Key::*;
+use {
+    crate::{BriefPrintableTask, PrintableWarning::*, Status::*},
+    lookup_key::Key::*,
+};
 
 #[test]
 fn display_no_match_found_warning() {

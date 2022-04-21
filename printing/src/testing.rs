@@ -1,13 +1,10 @@
-use super::Action;
-use super::LogDate;
-use super::PrintableError;
-use super::PrintableTask;
-use super::PrintableWarning;
-use super::Status;
-use super::TodoPrinter;
-use chrono::DateTime;
-use chrono::Local;
-use chrono::Utc;
+use {
+    crate::{
+        Action, LogDate, PrintableError, PrintableTask, PrintableWarning,
+        Status, TodoPrinter,
+    },
+    chrono::{DateTime, Local, Utc},
+};
 
 #[derive(Debug)]
 struct PrintedTaskInfo {

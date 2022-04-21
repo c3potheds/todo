@@ -1,9 +1,9 @@
-use std::fmt;
-
-use super::BriefPrintableTask;
-use super::Status;
-use ansi_term::Color;
-use lookup_key::Key;
+use {
+    crate::{BriefPrintableTask, Status},
+    ansi_term::Color,
+    lookup_key::Key,
+    std::fmt,
+};
 
 pub fn format_key(key: &Key) -> impl fmt::Display + '_ {
     struct FormatKey<'a>(&'a Key);

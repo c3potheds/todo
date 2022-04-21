@@ -1,13 +1,16 @@
-use super::format_util::format_key;
-use super::format_util::format_numbers;
-use super::BriefPrintableTask;
-use ansi_term::Color;
-use chrono::DateTime;
-use chrono::Utc;
-use lookup_key::Key;
-use std::fmt;
-use std::fmt::Display;
-use std::fmt::Formatter;
+use {
+    crate::{
+        format_util::{format_key, format_numbers},
+        BriefPrintableTask,
+    },
+    ansi_term::Color,
+    chrono::{DateTime, Utc},
+    lookup_key::Key,
+    std::{
+        fmt,
+        fmt::{Display, Formatter},
+    },
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum PrintableWarning {

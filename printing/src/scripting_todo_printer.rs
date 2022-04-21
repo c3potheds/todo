@@ -1,8 +1,7 @@
-use super::PrintableError;
-use super::PrintableTask;
-use super::PrintableWarning;
-use super::TodoPrinter;
-use std::io::Write;
+use {
+    crate::{PrintableError, PrintableTask, PrintableWarning, TodoPrinter},
+    std::io::Write,
+};
 
 pub struct ScriptingTodoPrinter;
 

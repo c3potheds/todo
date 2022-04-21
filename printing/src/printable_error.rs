@@ -1,11 +1,15 @@
-use super::format_util::format_keys;
-use super::format_util::format_numbers;
-use super::BriefPrintableTask;
-use ansi_term::Color;
-use lookup_key::Key;
-use std::fmt;
-use std::fmt::Display;
-use std::fmt::Formatter;
+use {
+    crate::{
+        format_util::{format_keys, format_numbers},
+        BriefPrintableTask,
+    },
+    ansi_term::Color,
+    lookup_key::Key,
+    std::{
+        fmt,
+        fmt::{Display, Formatter},
+    },
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum PrintableError {

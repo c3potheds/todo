@@ -1,15 +1,13 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use super::Action::*;
-use super::LogDate::*;
-use super::PrintableTask;
-use super::PrintingContext;
-use super::SimpleTodoPrinter;
-use super::Status::*;
-use super::TodoPrinter;
-use chrono::DateTime;
-use chrono::Utc;
-use testing::ymdhms;
+use {
+    crate::{
+        Action::*, LogDate::*, PrintableTask, PrintingContext,
+        SimpleTodoPrinter, Status::*, TodoPrinter,
+    },
+    chrono::{DateTime, Utc},
+    testing::ymdhms,
+};
 
 fn make_printing_context() -> PrintingContext {
     PrintingContext {
