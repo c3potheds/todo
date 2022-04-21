@@ -1,7 +1,7 @@
 use {
     super::util::{format_prefix, format_task, lookup_tasks},
     cli::Split,
-    model::{NewOptions, TaskId, TaskSet, TodoList},
+    model::{DurationInSeconds, NewOptions, TaskId, TaskSet, TodoList},
     printing::{Action, TodoPrinter},
     std::borrow::Cow,
 };
@@ -23,20 +23,26 @@ impl SplitResult {
 fn split(
     list: &mut TodoList,
     id: TaskId,
-    into: impl Iterator<Item = String>,
+    into: Vec<String>,
     chain: bool,
 ) -> SplitResult {
     let deps: Vec<_> = list.deps(id).iter_sorted(list).collect();
     let adeps: Vec<_> = list.adeps(id).iter_sorted(list).collect();
+    let num_shards: u32 = into.len().try_into().unwrap();
     let shards = into
+        .iter()
         .map(|desc| {
             let task = list.get(id).unwrap();
             let options = NewOptions {
-                desc: Cow::Owned(desc),
+                desc: Cow::Owned(desc.clone()),
                 now: task.creation_time,
                 priority: task.priority,
                 due_date: task.due_date,
-                budget: task.budget,
+                budget: if chain {
+                    DurationInSeconds(task.budget.0 / num_shards)
+                } else {
+                    task.budget
+                },
                 start_date: task.start_date,
             };
             list.add(options)
@@ -79,7 +85,10 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: Split) {
             so_far.combine(split(
                 list,
                 id,
-                cmd.into.iter().map(|desc| format_prefix(&prefix, desc)),
+                cmd.into
+                    .iter()
+                    .map(|desc| format_prefix(&prefix, desc))
+                    .collect(),
                 cmd.chain,
             ))
         },

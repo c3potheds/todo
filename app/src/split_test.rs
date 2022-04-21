@@ -1,5 +1,7 @@
 #![allow(clippy::zero_prefixed_literal)]
 
+use chrono::Duration;
+
 use {
     super::testing::Fixture,
     printing::{Action::*, PrintableTask, Status::*},
@@ -86,6 +88,54 @@ fn split_snoozed_task() {
             &PrintableTask::new("y", 2, Blocked)
                 .action(Select)
                 .start_date(ymdhms(2021, 05, 31, 00, 00, 00)),
+        )
+        .end();
+}
+
+#[test]
+fn chained_split_task_with_budget_distributes_budget() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a --budget 3 hours");
+    fix.test("todo split a --into x y z --chain")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("x", 1, Incomplete)
+                .action(Select)
+                .budget(Duration::hours(1)),
+        )
+        .printed_task(
+            &PrintableTask::new("y", 2, Blocked)
+                .action(Select)
+                .budget(Duration::hours(1)),
+        )
+        .printed_task(
+            &PrintableTask::new("z", 3, Blocked)
+                .action(Select)
+                .budget(Duration::hours(1)),
+        )
+        .end();
+}
+
+#[test]
+fn split_task_with_budget_keeps_budget() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a --budget 3 hours");
+    fix.test("todo split a --into x y z")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("x", 1, Incomplete)
+                .action(Select)
+                .budget(Duration::hours(3)),
+        )
+        .printed_task(
+            &PrintableTask::new("y", 2, Incomplete)
+                .action(Select)
+                .budget(Duration::hours(3)),
+        )
+        .printed_task(
+            &PrintableTask::new("z", 3, Incomplete)
+                .action(Select)
+                .budget(Duration::hours(3)),
         )
         .end();
 }
