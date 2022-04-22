@@ -59,4 +59,9 @@ pub struct Split {
     /// Add a prefix to the descriptions.
     #[structopt(long, short = "P", min_values = 1)]
     pub prefix: Vec<String>,
+
+    /// If passed, keeps the original task, but blocks it on the new tasks.
+    /// The budget of the original task will be transferred to the new tasks.
+    #[structopt(long, short = "k")]
+    pub keep: bool,
 }

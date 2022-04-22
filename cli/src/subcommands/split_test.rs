@@ -101,3 +101,42 @@ fn split_with_multiple_prefixes() {
         }),
     );
 }
+
+#[test]
+fn split_no_keep() {
+    expect_parses_into(
+        "todo split 1 --into a b",
+        SubCommand::Split(Split {
+            keys: vec![ByNumber(1)],
+            into: vec!["a".to_string(), "b".to_string()],
+            keep: false,
+            ..Default::default()
+        }),
+    );
+}
+
+#[test]
+fn split_keep() {
+    expect_parses_into(
+        "todo split 1 --into a b --keep",
+        SubCommand::Split(Split {
+            keys: vec![ByNumber(1)],
+            into: vec!["a".to_string(), "b".to_string()],
+            keep: true,
+            ..Default::default()
+        }),
+    );
+}
+
+#[test]
+fn split_keep_short() {
+    expect_parses_into(
+        "todo split 2 --into x y -k",
+        SubCommand::Split(Split {
+            keys: vec![ByNumber(2)],
+            into: vec!["x".to_string(), "y".to_string()],
+            keep: true,
+            ..Default::default()
+        }),
+    );
+}

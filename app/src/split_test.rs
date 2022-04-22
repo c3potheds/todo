@@ -14,9 +14,9 @@ fn split_one_into_three() {
     fix.test("todo new a");
     fix.test("todo split a --into a1 a2 a3")
         .validate()
-        .printed_task(&PrintableTask::new("a1", 1, Incomplete).action(Select))
-        .printed_task(&PrintableTask::new("a2", 2, Incomplete).action(Select))
-        .printed_task(&PrintableTask::new("a3", 3, Incomplete).action(Select))
+        .printed_task(&PrintableTask::new("a1", 1, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("a2", 2, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("a3", 3, Incomplete).action(New))
         .end();
 }
 
@@ -26,9 +26,9 @@ fn split_chained() {
     fix.test("todo new a");
     fix.test("todo split a --into a1 a2 a3 --chain")
         .validate()
-        .printed_task(&PrintableTask::new("a1", 1, Incomplete).action(Select))
-        .printed_task(&PrintableTask::new("a2", 2, Blocked).action(Select))
-        .printed_task(&PrintableTask::new("a3", 3, Blocked).action(Select))
+        .printed_task(&PrintableTask::new("a1", 1, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("a2", 2, Blocked).action(New))
+        .printed_task(&PrintableTask::new("a3", 3, Blocked).action(New))
         .end();
 }
 
@@ -39,9 +39,9 @@ fn split_preserves_dependency_structure() {
     fix.test("todo split b --into b1 b2 b3")
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("b1", 2, Blocked).action(Select))
-        .printed_task(&PrintableTask::new("b2", 3, Blocked).action(Select))
-        .printed_task(&PrintableTask::new("b3", 4, Blocked).action(Select))
+        .printed_task(&PrintableTask::new("b1", 2, Blocked).action(New))
+        .printed_task(&PrintableTask::new("b2", 3, Blocked).action(New))
+        .printed_task(&PrintableTask::new("b3", 4, Blocked).action(New))
         .printed_task(&PrintableTask::new("c", 5, Blocked))
         .end();
 }
@@ -52,8 +52,8 @@ fn split_with_prefix() {
     fix.test("todo new a");
     fix.test("todo split a --into x y -P a")
         .validate()
-        .printed_task(&PrintableTask::new("a x", 1, Incomplete).action(Select))
-        .printed_task(&PrintableTask::new("a y", 2, Incomplete).action(Select))
+        .printed_task(&PrintableTask::new("a x", 1, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("a y", 2, Incomplete).action(New))
         .end();
 }
 
@@ -63,12 +63,8 @@ fn split_with_multiple_prefixes() {
     fix.test("todo new a");
     fix.test("todo split a --into x y -P a -P b")
         .validate()
-        .printed_task(
-            &PrintableTask::new("a b x", 1, Incomplete).action(Select),
-        )
-        .printed_task(
-            &PrintableTask::new("a b y", 2, Incomplete).action(Select),
-        )
+        .printed_task(&PrintableTask::new("a b x", 1, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("a b y", 2, Incomplete).action(New))
         .end();
 }
 
@@ -81,12 +77,12 @@ fn split_snoozed_task() {
         .validate()
         .printed_task(
             &PrintableTask::new("x", 1, Blocked)
-                .action(Select)
+                .action(New)
                 .start_date(ymdhms(2021, 05, 31, 00, 00, 00)),
         )
         .printed_task(
             &PrintableTask::new("y", 2, Blocked)
-                .action(Select)
+                .action(New)
                 .start_date(ymdhms(2021, 05, 31, 00, 00, 00)),
         )
         .end();
@@ -100,17 +96,17 @@ fn chained_split_task_with_budget_distributes_budget() {
         .validate()
         .printed_task(
             &PrintableTask::new("x", 1, Incomplete)
-                .action(Select)
+                .action(New)
                 .budget(Duration::hours(1)),
         )
         .printed_task(
             &PrintableTask::new("y", 2, Blocked)
-                .action(Select)
+                .action(New)
                 .budget(Duration::hours(1)),
         )
         .printed_task(
             &PrintableTask::new("z", 3, Blocked)
-                .action(Select)
+                .action(New)
                 .budget(Duration::hours(1)),
         )
         .end();
@@ -124,18 +120,94 @@ fn split_task_with_budget_keeps_budget() {
         .validate()
         .printed_task(
             &PrintableTask::new("x", 1, Incomplete)
-                .action(Select)
+                .action(New)
                 .budget(Duration::hours(3)),
         )
         .printed_task(
             &PrintableTask::new("y", 2, Incomplete)
-                .action(Select)
+                .action(New)
                 .budget(Duration::hours(3)),
         )
         .printed_task(
             &PrintableTask::new("z", 3, Incomplete)
-                .action(Select)
+                .action(New)
                 .budget(Duration::hours(3)),
         )
+        .end();
+}
+
+#[test]
+fn split_task_keep() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a");
+    fix.test("todo split a --into x y z --keep")
+        .validate()
+        .printed_task(&PrintableTask::new("x", 1, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("y", 2, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("z", 3, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("a", 4, Blocked).action(Select))
+        .end();
+}
+
+#[test]
+fn split_task_keep_chained() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a");
+    fix.test("todo split a --into x y z --keep --chain")
+        .validate()
+        .printed_task(&PrintableTask::new("x", 1, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("y", 2, Blocked).action(New))
+        .printed_task(&PrintableTask::new("z", 3, Blocked).action(New))
+        .printed_task(&PrintableTask::new("a", 4, Blocked).action(Select))
+        .end();
+}
+
+#[test]
+fn split_task_keep_with_budget() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a --budget 3 hours");
+    fix.test("todo split a --into x y z --keep")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("x", 1, Incomplete)
+                .action(New)
+                .budget(Duration::hours(3)),
+        )
+        .printed_task(
+            &PrintableTask::new("y", 2, Incomplete)
+                .action(New)
+                .budget(Duration::hours(3)),
+        )
+        .printed_task(
+            &PrintableTask::new("z", 3, Incomplete)
+                .action(New)
+                .budget(Duration::hours(3)),
+        )
+        .printed_task(&PrintableTask::new("a", 4, Blocked).action(Select))
+        .end();
+}
+
+#[test]
+fn split_task_chain_keep_with_budget() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a --budget 3 hours");
+    fix.test("todo split a --into x y z --keep --chain")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("x", 1, Incomplete)
+                .action(New)
+                .budget(Duration::hours(1)),
+        )
+        .printed_task(
+            &PrintableTask::new("y", 2, Blocked)
+                .action(New)
+                .budget(Duration::hours(1)),
+        )
+        .printed_task(
+            &PrintableTask::new("z", 3, Blocked)
+                .action(New)
+                .budget(Duration::hours(1)),
+        )
+        .printed_task(&PrintableTask::new("a", 4, Blocked).action(Select))
         .end();
 }
