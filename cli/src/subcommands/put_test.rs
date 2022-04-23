@@ -11,7 +11,7 @@ use {
 fn punt_missing_keys_or_prepositions() {
     expect_error("todo put");
     // TODO(cli.put.preposition-arggroup): Require either --before or --after.
-    // Blocked on representing a clap::ArgGroup in structopt.
+    // Blocked on representing a clap::ArgGroup in a clap Parser.
     // expect_error("todo put a");
     expect_error("todo put a --after");
     expect_error("todo put a --before");

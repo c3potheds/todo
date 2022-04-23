@@ -1,4 +1,4 @@
-use {lookup_key::Key, structopt::StructOpt};
+use {clap::Parser, lookup_key::Key};
 
 /// Assign a time budget to the given tasks.
 ///
@@ -18,15 +18,15 @@ use {lookup_key::Key, structopt::StructOpt};
 ///
 /// A description of "0" effectively removes the time budget, allowing
 /// dependencies to have due dates up to the given task's due date.
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, PartialEq, Parser)]
 pub struct Budget {
     /// The tasks to assign a budget to.
-    #[structopt(required = true, min_values = 1)]
+    #[clap(required = true, min_values = 1)]
     pub keys: Vec<Key>,
     /// The description of the budgeted duration.
-    #[structopt(long, alias = "is", required = true)]
+    #[clap(long, alias = "is", required = true, min_values = 1)]
     pub budget: Vec<String>,
     /// Show completed affected tasks.
-    #[structopt(long, short = "d")]
+    #[clap(long, short = 'd')]
     pub include_done: bool,
 }

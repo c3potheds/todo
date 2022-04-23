@@ -111,7 +111,7 @@ fn put_before_and_after() {
     fix.test("todo new a b c --chain");
     fix.test("todo new d e f --chain");
     fix.test("todo new g");
-    fix.test("todo put g -b b -a e")
+    fix.test("todo put g -B b -A e")
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete))
         .printed_task(&PrintableTask::new("e", 3, Blocked))

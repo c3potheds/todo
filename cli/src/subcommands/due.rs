@@ -1,4 +1,4 @@
-use {lookup_key::Key, structopt::StructOpt};
+use {clap::Parser, lookup_key::Key};
 
 /// Assigns or queries due dates.
 ///
@@ -34,11 +34,8 @@ use {lookup_key::Key, structopt::StructOpt};
 /// dependencies whose due dates changed) will be printed.
 ///
 ///   todo due "buy christmas presents" --on dec 24
-#[derive(Debug, PartialEq, StructOpt, Default)]
-#[structopt(
-    setting = structopt::clap::AppSettings::AllowNegativeNumbers,
-    verbatim_doc_comment,
-)]
+#[derive(Debug, PartialEq, Parser, Default)]
+#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Due {
     /// Tasks to query or assign the due date.
     pub keys: Vec<Key>,
@@ -46,11 +43,11 @@ pub struct Due {
     ///
     /// This is a human-readable description of a date or time, like "1 day" or
     /// "5pm".
-    #[structopt(long, alias = "in", alias = "on")]
+    #[clap(long, alias = "in", alias = "on", min_values = 1)]
     pub due: Vec<String>,
     /// Remove the explicit due date. If the implicit due date is inherited from
     /// an antidependency, it is retained.
-    #[structopt(long)]
+    #[clap(long)]
     pub none: bool,
     /// Show completed tasks in queries.
     ///
@@ -58,6 +55,6 @@ pub struct Due {
     /// affects the printed results when querying the source of a task's due
     /// date, querying all tasks with due dates, or querying all tasks due
     /// earlier than a given date.
-    #[structopt(long, short = "d")]
+    #[clap(long, short = 'd')]
     pub include_done: bool,
 }

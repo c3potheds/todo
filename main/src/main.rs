@@ -1,9 +1,9 @@
 use {
+    clap::Parser,
     cli::Options,
     clock::{Clock, SystemClock},
     printing::{PrintingContext, ScriptingTodoPrinter, SimpleTodoPrinter},
     std::{fs::File, io::BufWriter},
-    structopt::StructOpt,
     text_editing::{FakeTextEditor, ScrawlTextEditor},
     thiserror::Error,
 };
@@ -15,7 +15,7 @@ enum TodoError {
     #[error("IO error")]
     Io(#[from] std::io::Error),
     #[error("Command line parsing error")]
-    CommandLineParsing(#[from] structopt::clap::Error),
+    CommandLineParsing(#[from] clap::Error),
     #[error("Load error")]
     Load(#[from] model::LoadError),
     #[error("Save error")]
@@ -39,7 +39,7 @@ fn log10(n: usize) -> usize {
 }
 
 fn main() -> TodoResult {
-    let options = Options::from_args();
+    let options = Options::parse();
     let project_dirs = directories::ProjectDirs::from("", "", "todo")
         .ok_or(TodoError::NoDataDirectory)?;
 

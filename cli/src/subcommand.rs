@@ -1,7 +1,7 @@
 pub use crate::subcommands::*;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, PartialEq, Parser)]
 pub enum SubCommand {
     Block(Block),
     Budget(Budget),
@@ -20,7 +20,7 @@ pub enum SubCommand {
     /// are associated with non-positive integers (with the most-recently
     /// completed task having number 0, and others having negative numbers) that
     /// can be used as task key arguments in commands.
-    #[structopt(verbatim_doc_comment)]
+    #[clap(verbatim_doc_comment)]
     Log,
 
     Merge(Merge),

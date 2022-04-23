@@ -1,4 +1,4 @@
-use {lookup_key::Key, structopt::StructOpt};
+use {clap::Parser, lookup_key::Key};
 
 /// Block tasks on other tasks.
 ///
@@ -21,21 +21,18 @@ use {lookup_key::Key, structopt::StructOpt};
 ///
 /// You can undo this command with the 'unblock' command, run
 /// 'todo help unblock' for more info.
-#[derive(Debug, PartialEq, StructOpt)]
-#[structopt(
-    setting = structopt::clap::AppSettings::AllowNegativeNumbers,
-    verbatim_doc_comment,
-)]
+#[derive(Debug, PartialEq, Parser)]
+#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Block {
     /// Tasks to block.
-    #[structopt(required = true, min_values = 1)]
+    #[clap(required = true, min_values = 1)]
     pub keys: Vec<Key>,
 
     /// Tasks to block on.
-    #[structopt(long, required = true, min_values = 1)]
+    #[clap(long, required = true, min_values = 1)]
     pub on: Vec<Key>,
 
     /// Include complete affected deps in result.
-    #[structopt(long, short = "d")]
+    #[clap(long, short = 'd')]
     pub include_done: bool,
 }

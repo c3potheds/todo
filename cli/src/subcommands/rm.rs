@@ -1,4 +1,4 @@
-use {lookup_key::Key, structopt::StructOpt};
+use {clap::Parser, lookup_key::Key};
 
 /// Removes tasks from the list permanently.
 ///
@@ -21,13 +21,10 @@ use {lookup_key::Key, structopt::StructOpt};
 ///
 /// Removal of tasks cannot be undone! You must manually re-create the task
 /// if you want to undo it.
-#[derive(Debug, PartialEq, StructOpt)]
-#[structopt(
-    setting = structopt::clap::AppSettings::AllowNegativeNumbers,
-    verbatim_doc_comment,
-)]
+#[derive(Debug, PartialEq, Parser)]
+#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Rm {
     /// Tasks to remove.
-    #[structopt(required = true, min_values = 1)]
+    #[clap(required = true, min_values = 1)]
     pub keys: Vec<Key>,
 }

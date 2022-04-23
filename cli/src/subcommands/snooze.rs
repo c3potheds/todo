@@ -1,4 +1,4 @@
-use {lookup_key::Key, structopt::StructOpt};
+use {clap::Parser, lookup_key::Key};
 
 /// Makes tasks temporarily "snoozed" until the given amount of time passes.
 ///
@@ -20,17 +20,14 @@ use {lookup_key::Key, structopt::StructOpt};
 /// to a day-level precision, the unsnooze time will snap to the beginning of
 /// that day. If the 'until' argument is the name of a month, the task will
 /// unsnooze at the beginning of that month.
-#[derive(Debug, PartialEq, StructOpt)]
-#[structopt(
-    setting = structopt::clap::AppSettings::AllowNegativeNumbers,
-    verbatim_doc_comment,
-)]
+#[derive(Debug, PartialEq, Parser)]
+#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Snooze {
     /// Tasks to snooze.
-    #[structopt(required = true, min_values = 1)]
+    #[clap(required = true, min_values = 1)]
     pub keys: Vec<Key>,
 
     /// Description of how long to snooze.
-    #[structopt(long, min_values = 1)]
+    #[clap(long, min_values = 1)]
     pub until: Vec<String>,
 }

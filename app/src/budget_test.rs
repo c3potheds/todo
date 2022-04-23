@@ -193,7 +193,7 @@ fn budget_include_complete_affected_deps() {
         )
         .printed_task(
             &PrintableTask::new("b", 1, Incomplete)
-                .due_date(ymdhms(2021, 04, 30, 22, 59, 59))
+                .due_date(ymdhms(2021, 04, 30, 22, 59, 59)),
         )
         .printed_task(
             &PrintableTask::new("c", 2, Blocked)

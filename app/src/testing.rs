@@ -2,11 +2,11 @@
 
 use {
     chrono::{TimeZone, Utc},
+    clap::Parser,
     cli::Options,
     clock::FakeClock,
     model::TodoList,
     printing::FakePrinter,
-    structopt::StructOpt,
     text_editing::FakeTextEditor,
 };
 
@@ -29,7 +29,7 @@ impl<'a> Default for Fixture<'a> {
 impl<'a> Fixture<'a> {
     pub fn test(&mut self, s: &str) -> FakePrinter {
         let mut printer = FakePrinter::default();
-        let options = Options::from_iter_safe(s.split(' '))
+        let options = Options::try_parse_from(s.split(' '))
             .expect("Could not parse args");
         crate::todo(
             &mut self.list,

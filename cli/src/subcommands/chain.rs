@@ -1,4 +1,4 @@
-use {lookup_key::Key, structopt::StructOpt};
+use {clap::Parser, lookup_key::Key};
 
 /// Chain tasks in a blocking sequence.
 ///
@@ -8,16 +8,13 @@ use {lookup_key::Key, structopt::StructOpt};
 ///   todo chain a b c
 ///
 /// ... then 'a' will block 'b' and 'b' will block 'c'.
-#[derive(Debug, PartialEq, StructOpt)]
-#[structopt(
-    setting = structopt::clap::AppSettings::AllowNegativeNumbers,
-    verbatim_doc_comment,
-)]
+#[derive(Debug, PartialEq, Parser)]
+#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Chain {
     /// Tasks to arrange in a blocking sequence.
-    #[structopt(required = true, min_values = 1)]
+    #[clap(required = true, min_values = 1)]
     pub keys: Vec<Key>,
     /// Show complete affected tasks.
-    #[structopt(long, short = "d")]
+    #[clap(long, short = 'd')]
     pub include_done: bool,
 }

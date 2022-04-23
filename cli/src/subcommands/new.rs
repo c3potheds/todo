@@ -1,44 +1,41 @@
-use {lookup_key::Key, structopt::StructOpt};
+use {clap::Parser, lookup_key::Key};
 
 /// Creates new tasks in the to-do list.
 ///
 /// Each positional string will become the description of a new task in the
 /// to-do list. By default, all new tasks are in the incomplete state, showing
 /// up in the default list that you see when you invoke a raw 'todo' command.
-#[derive(Debug, PartialEq, StructOpt, Default)]
-#[structopt(
-    setting = structopt::clap::AppSettings::AllowNegativeNumbers,
-    verbatim_doc_comment,
-)]
+#[derive(Debug, PartialEq, Parser, Default)]
+#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct New {
     /// Descriptions for the new tasks, as raw strings.
     ///
     /// The description will be printed next to the task number when showing
     /// the task. You can use the description as a 'key' argument in commands
     /// that select existing tasks.
-    #[structopt(verbatim_doc_comment, required = true, min_values = 1)]
+    #[clap(verbatim_doc_comment, required = true, min_values = 1)]
     pub desc: Vec<String>,
 
     /// Block new tasks on these tasks.
-    #[structopt(long, short = "p", value_name = "keys", min_values = 1)]
+    #[clap(long, short = 'p', value_name = "keys", min_values = 1)]
     pub blocked_by: Vec<Key>,
 
     /// Block these tasks on new tasks.
-    #[structopt(long, short = "b", value_name = "keys", min_values = 1)]
+    #[clap(long, short = 'b', value_name = "keys", min_values = 1)]
     pub blocking: Vec<Key>,
 
     /// Put the new tasks before these tasks.
     ///
     /// This blocks the given "before" tasks on the new tasks, and block the new
     /// tasks on the deps of the "before" tasks.
-    #[structopt(long, value_name = "keys", min_values = 1)]
+    #[clap(long, value_name = "keys", min_values = 1)]
     pub before: Vec<Key>,
 
     /// Put the new tasks after these tasks.
     ///
     /// This blocks the new tasks on the given "after" tasks, and block the
     /// adeps of the "after" tasks on the new tasks.
-    #[structopt(long, value_name = "keys", min_values = 1)]
+    #[clap(long, value_name = "keys", min_values = 1)]
     pub after: Vec<Key>,
 
     /// Put the new tasks in a blocking sequence.
@@ -52,7 +49,7 @@ pub struct New {
     /// This allows you to write out step-by-step plans for a project in one
     /// command, but keep only one step in focus in the default 'todo' list at
     /// a time.
-    #[structopt(long, verbatim_doc_comment)]
+    #[clap(long, verbatim_doc_comment)]
     pub chain: bool,
 
     /// Assign a priority to the new tasks.
@@ -70,7 +67,7 @@ pub struct New {
     /// reordered if you assign a priority! Dependencies whose implicit
     /// priority, and therefore ordering, are updated by assigning the new tasks
     /// this priority will be printed in the console output.
-    #[structopt(long)]
+    #[clap(long)]
     pub priority: Option<i32>,
 
     /// Assign a due date to the new tasks.
@@ -91,7 +88,7 @@ pub struct New {
     /// be reordered if you assign a due date! Dependencies whose implicit due
     /// date, and therefore ordering, are updated by assigning the new tasks
     /// this due date will be printed in the console output.
-    #[structopt(long, min_values = 1)]
+    #[clap(long, min_values = 1)]
     pub due: Vec<String>,
 
     /// Allocate a time budget for the new tasks.
@@ -105,7 +102,7 @@ pub struct New {
     ///
     /// A budget has no effect unless the task also has an implicit or explicit
     /// due date.
-    #[structopt(long, min_values = 1)]
+    #[clap(long, min_values = 1)]
     pub budget: Vec<String>,
 
     /// Attach a prefix to each of the new task's descriptions.
@@ -115,7 +112,7 @@ pub struct New {
     ///
     /// Multiple prefixes can be specified; they will be added in sequence (each
     /// separated by a space).
-    #[structopt(long, short = "P", min_values = 1)]
+    #[clap(long, short = 'P', min_values = 1)]
     pub prefix: Vec<String>,
 
     /// Snooze the new tasks for a given amount of time.
@@ -129,7 +126,7 @@ pub struct New {
     /// the 'snooze' subcommand, if you give a description of a day or month,
     /// the task will be unsnoozed at the start of that time interval, unlike
     /// due dates, which snap to the end of the time interval.
-    #[structopt(long, short = "s", min_values = 1)]
+    #[clap(long, short = 's', min_values = 1)]
     pub snooze: Vec<String>,
 
     /// Complete the new tasks.
@@ -137,6 +134,6 @@ pub struct New {
     /// You can use this to mark a task as complete when you create it. This is
     /// useful if you want to write down an accomplishment that you've already
     /// done, so that it shows up in the completed task list.
-    #[structopt(long, short = "d")]
+    #[clap(long, short = 'd')]
     pub done: bool,
 }

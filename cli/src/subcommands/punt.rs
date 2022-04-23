@@ -1,4 +1,4 @@
-use {lookup_key::Key, structopt::StructOpt};
+use {clap::Parser, lookup_key::Key};
 
 /// Punts tasks to the end of the list.
 ///
@@ -10,13 +10,10 @@ use {lookup_key::Key, structopt::StructOpt};
 /// habitually focus on the first ones in the list, but want to put off a
 /// task for later without blocking it on anything. You can send it to the
 /// end of the list with the 'punt' command.
-#[derive(Debug, PartialEq, StructOpt)]
-#[structopt(
-    setting = structopt::clap::AppSettings::AllowNegativeNumbers,
-    verbatim_doc_comment,
-)]
+#[derive(Debug, PartialEq, Parser)]
+#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Punt {
     /// Tasks to punt.
-    #[structopt(required = true, min_values = 1)]
+    #[clap(required = true, min_values = 1)]
     pub keys: Vec<Key>,
 }

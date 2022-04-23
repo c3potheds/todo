@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-structopt = { version = "0.3", default-features = false }
+clap = { version = "3.1", features = ["derive"] }
 
 lookup_key = { path = "../lookup_key" }

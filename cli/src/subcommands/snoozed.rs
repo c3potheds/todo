@@ -1,6 +1,6 @@
-use structopt::StructOpt;
+use clap::Parser;
 
 /// Shows snoozed tasks.
-#[derive(Debug, PartialEq, StructOpt)]
-#[structopt(verbatim_doc_comment)]
+#[derive(Debug, PartialEq, Parser)]
+#[clap(verbatim_doc_comment)]
 pub struct Snoozed {}

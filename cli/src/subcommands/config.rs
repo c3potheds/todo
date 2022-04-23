@@ -1,4 +1,4 @@
-use structopt::StructOpt;
+use clap::Parser;
 
 /// Query or modify options.
 ///
@@ -7,17 +7,14 @@ use structopt::StructOpt;
 /// 'key' and 'value' are provided, then the config value is mutated and printed
 /// if successful. If '--reset' is passed, the config value is restored to the
 /// default.
-#[derive(Debug, PartialEq, StructOpt)]
-#[structopt(
-    setting = structopt::clap::AppSettings::AllowNegativeNumbers,
-    verbatim_doc_comment,
-)]
+#[derive(Debug, PartialEq, Parser)]
+#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Config {
     /// The key to change. Must be a valid config key
     pub key: Option<String>,
     /// If provided, sets the config value for the given key.
     pub value: Vec<String>,
     /// If passed, resets the config value to the default.
-    #[structopt(long)]
+    #[clap(long)]
     pub reset: bool,
 }

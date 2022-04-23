@@ -1,4 +1,4 @@
-use {lookup_key::Key, structopt::StructOpt};
+use {clap::Parser, lookup_key::Key};
 
 /// Marks tasks as complete.
 ///
@@ -13,16 +13,16 @@ use {lookup_key::Key, structopt::StructOpt};
 ///
 /// You can undo this operation with the 'restore' command, run
 /// 'todo help restore' for more info.
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, PartialEq, Parser)]
 pub struct Check {
     /// Tasks to mark as complete.
-    #[structopt(required = true, min_values = 1)]
+    #[clap(required = true, min_values = 1)]
     pub keys: Vec<Key>,
     /// If passed, all incomplete dependencies will also be completed.
     ///
     /// If this is not passed, it is an error to 'check' (complete) a blocked
     /// task. When you "force"-check a task, it will be guaranteed to be
     /// complete at the end of the operation.
-    #[structopt(long)]
+    #[clap(long)]
     pub force: bool,
 }

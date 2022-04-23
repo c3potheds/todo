@@ -1,4 +1,4 @@
-use {crate::SubCommand, structopt::StructOpt};
+use {crate::SubCommand, clap::Parser};
 
 /// Maintains and manipulates your to-do list.
 ///
@@ -94,26 +94,26 @@ use {crate::SubCommand, structopt::StructOpt};
 ///
 /// There are many other things you can do with this app. To read more, try
 /// using 'todo help' with one of the subcommands, listed below.
-#[derive(Debug, StructOpt)]
-#[structopt(
+#[derive(Debug, Parser)]
+#[clap(
     name = "todo",
     author = "Simeon Anfinrud",
     version = "0.1",
     verbatim_doc_comment
 )]
 pub struct Options {
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     pub cmd: Option<SubCommand>,
 
     /// Show blocked tasks in the status.
-    #[structopt(long, short = "b")]
+    #[clap(long, short = 'b')]
     pub include_blocked: bool,
 
     /// Show complete tasks in the status.
-    #[structopt(long, short = "d")]
+    #[clap(long, short = 'd')]
     pub include_done: bool,
 
     /// Show all tasks in the status.
-    #[structopt(long, short = "a")]
+    #[clap(long, short = 'a')]
     pub include_all: bool,
 }

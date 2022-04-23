@@ -1,4 +1,4 @@
-use {lookup_key::Key, structopt::StructOpt};
+use {clap::Parser, lookup_key::Key};
 
 /// Assign or query priority levels.
 ///
@@ -27,18 +27,15 @@ use {lookup_key::Key, structopt::StructOpt};
 /// And if both task keys and a priority are supplied, matching tasks will
 /// have their priority set to the given level, and all affected tasks will
 /// be printed.
-#[derive(Debug, PartialEq, StructOpt, Default)]
-#[structopt(
-    setting = structopt::clap::AppSettings::AllowNegativeNumbers,
-    verbatim_doc_comment,
-)]
+#[derive(Debug, PartialEq, Parser, Default)]
+#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Priority {
     /// Tasks to assign a priority to.
     pub keys: Vec<Key>,
     /// The priority level for the tasks.
-    #[structopt(long = "is", short = "P")]
+    #[clap(long = "is", short = 'P')]
     pub priority: Option<i32>,
     /// Show complete tasks in the result.
-    #[structopt(long, short = "d")]
+    #[clap(long, short = 'd')]
     pub include_done: bool,
 }

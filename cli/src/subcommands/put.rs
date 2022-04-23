@@ -1,12 +1,12 @@
-use {lookup_key::Key, structopt::StructOpt};
+use {clap::Parser, lookup_key::Key};
 
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, PartialEq, Parser)]
 pub struct Prepositions {
     /// Put the selected tasks before these tasks.
-    #[structopt(long, short = "b", min_values = 1)]
+    #[clap(long, short = 'B', min_values = 1)]
     pub before: Vec<Key>,
     /// Put the selected tasks after these tasks.
-    #[structopt(long, short = "a", min_values = 1)]
+    #[clap(long, short = 'A', min_values = 1)]
     pub after: Vec<Key>,
 }
 
@@ -29,18 +29,15 @@ pub struct Prepositions {
 /// If you put task "t" after b, the result is:
 ///
 ///   a <- b <- t <- c
-#[derive(Debug, PartialEq, StructOpt)]
-#[structopt(
-    setting = structopt::clap::AppSettings::AllowNegativeNumbers,
-    verbatim_doc_comment,
-)]
+#[derive(Debug, PartialEq, Parser)]
+#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Put {
     /// Selected task keys.
-    #[structopt(required = true, min_values = 1)]
+    #[clap(required = true, min_values = 1)]
     pub keys: Vec<Key>,
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub preposition: Prepositions,
     /// Include affected complete tasks in the result.
-    #[structopt(long, short = "d")]
+    #[clap(long, short = 'd')]
     pub include_done: bool,
 }

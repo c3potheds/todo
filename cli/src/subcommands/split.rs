@@ -1,4 +1,4 @@
-use {lookup_key::Key, structopt::StructOpt};
+use {clap::Parser, lookup_key::Key};
 
 /// Turns a single task into multiple tasks.
 ///
@@ -38,30 +38,27 @@ use {lookup_key::Key, structopt::StructOpt};
 /// ... which results in:
 ///
 ///  a <- b1 <- b2 <- b3 <- c
-#[derive(Debug, PartialEq, StructOpt, Default)]
-#[structopt(
-    setting = structopt::clap::AppSettings::AllowNegativeNumbers,
-    verbatim_doc_comment,
-)]
+#[derive(Debug, PartialEq, Parser, Default)]
+#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Split {
     /// Tasks to split.
-    #[structopt(required = true, min_values = 1)]
+    #[clap(required = true, min_values = 1)]
     pub keys: Vec<Key>,
 
     /// Descriptions for new tasks.
-    #[structopt(long, required = true, min_values = 1)]
+    #[clap(long, required = true, min_values = 1)]
     pub into: Vec<String>,
 
     /// If passed, the results of the split will be put in a dependency chain.
-    #[structopt(long)]
+    #[clap(long)]
     pub chain: bool,
 
     /// Add a prefix to the descriptions.
-    #[structopt(long, short = "P", min_values = 1)]
+    #[clap(long, short = 'P', min_values = 1)]
     pub prefix: Vec<String>,
 
     /// If passed, keeps the original task, but blocks it on the new tasks.
     /// The budget of the original task will be transferred to the new tasks.
-    #[structopt(long, short = "k")]
+    #[clap(long, short = 'k')]
     pub keep: bool,
 }

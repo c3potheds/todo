@@ -1,4 +1,4 @@
-use {lookup_key::Key, structopt::StructOpt};
+use {clap::Parser, lookup_key::Key};
 
 /// Merges two or more tasks into one.
 ///
@@ -8,16 +8,13 @@ use {lookup_key::Key, structopt::StructOpt};
 /// the constituents.
 ///
 /// This is the opposite of 'split'.
-#[derive(Debug, PartialEq, StructOpt)]
-#[structopt(
-    setting = structopt::clap::AppSettings::AllowNegativeNumbers,
-    verbatim_doc_comment,
-)]
+#[derive(Debug, PartialEq, Parser)]
+#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Merge {
     /// Tasks to merge.
-    #[structopt(required = true, min_values = 2)]
+    #[clap(required = true, min_values = 2)]
     pub keys: Vec<Key>,
     /// Description of new task to merge into.
-    #[structopt(long)]
+    #[clap(long)]
     pub into: String,
 }

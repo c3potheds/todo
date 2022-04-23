@@ -1,6 +1,6 @@
 use {
     crate::{testing::expect_parses_into, Options, SubCommand},
-    structopt::StructOpt,
+    clap::Parser,
 };
 
 fn parse<I>(args: I) -> Options
@@ -8,7 +8,7 @@ where
     I: IntoIterator,
     I::Item: Into<std::ffi::OsString> + Clone,
 {
-    Options::from_iter_safe(args).expect("Could not parse args")
+    Options::try_parse_from(args).expect("Could not parse args")
 }
 
 #[test]
