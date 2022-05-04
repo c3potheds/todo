@@ -317,3 +317,51 @@ fn new_blocking_negative_range() {
         }),
     )
 }
+
+#[test]
+fn new_single_tag() {
+    expect_parses_into(
+        "todo new a --tag",
+        SubCommand::New(New {
+            desc: vec!["a".to_string()],
+            tag: true,
+            ..Default::default()
+        }),
+    )
+}
+
+#[test]
+fn new_multiple_tags() {
+    expect_parses_into(
+        "todo new a b --tag",
+        SubCommand::New(New {
+            desc: vec!["a".to_string(), "b".to_string()],
+            tag: true,
+            ..Default::default()
+        }),
+    )
+}
+
+#[test]
+fn new_single_tag_short() {
+    expect_parses_into(
+        "todo new a -t",
+        SubCommand::New(New {
+            desc: vec!["a".to_string()],
+            tag: true,
+            ..Default::default()
+        }),
+    )
+}
+
+#[test]
+fn new_multiple_tags_short() {
+    expect_parses_into(
+        "todo new a b -t",
+        SubCommand::New(New {
+            desc: vec!["a".to_string(), "b".to_string()],
+            tag: true,
+            ..Default::default()
+        }),
+    )
+}

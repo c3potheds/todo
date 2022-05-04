@@ -136,4 +136,12 @@ pub struct New {
     /// done, so that it shows up in the completed task list.
     #[clap(long, short = 'd')]
     pub done: bool,
+
+    /// Mark new tasks as tags.
+    /// 
+    /// Tags are color-coded to be easy to differentiate, and any tasks that
+    /// (directly or indirectly) block tags will have the tag description added
+    /// to their descriptions.
+    #[clap(long, short = 't')]
+    pub tag: bool,
 }
