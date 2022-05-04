@@ -1,7 +1,8 @@
 use {
     super::testing::Fixture,
     printing::{
-        Action::*, BriefPrintableTask, PrintableError, PrintableTask, Status::*,
+        Action::*, BriefPrintableTask, Plicit::*, PrintableError,
+        PrintableTask, Status::*,
     },
 };
 
@@ -97,10 +98,16 @@ fn block_updates_implicit_priority_of_deps() {
     fix.test("todo new c --priority 1");
     fix.test("todo block c --on b")
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).priority(1))
-        .printed_task(&PrintableTask::new("b", 2, Blocked).priority(1))
         .printed_task(
-            &PrintableTask::new("c", 3, Blocked).action(Lock).priority(1),
+            &PrintableTask::new("a", 1, Incomplete).priority(Implicit(1)),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 2, Blocked).priority(Implicit(1)),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 3, Blocked)
+                .action(Lock)
+                .priority(Explicit(1)),
         )
         .end();
 }
@@ -112,9 +119,13 @@ fn block_does_not_print_priority_updates_for_unaffected_deps() {
     fix.test("todo new c --priority 1");
     fix.test("todo block c --on b")
         .validate()
-        .printed_task(&PrintableTask::new("b", 2, Blocked).priority(1))
         .printed_task(
-            &PrintableTask::new("c", 3, Blocked).action(Lock).priority(1),
+            &PrintableTask::new("b", 2, Blocked).priority(Explicit(1)),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 3, Blocked)
+                .action(Lock)
+                .priority(Explicit(1)),
         )
         .end();
 }
@@ -127,9 +138,13 @@ fn block_excludes_complete_affected_tasks() {
     fix.test("todo check a");
     fix.test("todo block c --on b")
         .validate()
-        .printed_task(&PrintableTask::new("b", 1, Incomplete).priority(1))
         .printed_task(
-            &PrintableTask::new("c", 2, Blocked).action(Lock).priority(1),
+            &PrintableTask::new("b", 1, Incomplete).priority(Implicit(1)),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 2, Blocked)
+                .action(Lock)
+                .priority(Explicit(1)),
         )
         .end();
 }
@@ -142,10 +157,16 @@ fn block_include_done() {
     fix.test("todo check a");
     fix.test("todo block c --on b -d")
         .validate()
-        .printed_task(&PrintableTask::new("a", 0, Complete).priority(1))
-        .printed_task(&PrintableTask::new("b", 1, Incomplete).priority(1))
         .printed_task(
-            &PrintableTask::new("c", 2, Blocked).action(Lock).priority(1),
+            &PrintableTask::new("a", 0, Complete).priority(Implicit(1)),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 1, Incomplete).priority(Implicit(1)),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 2, Blocked)
+                .action(Lock)
+                .priority(Explicit(1)),
         )
         .end();
 }

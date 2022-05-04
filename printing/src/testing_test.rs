@@ -2,8 +2,9 @@
 
 use {
     crate::{
-        Action::*, BriefPrintableTask, FakePrinter, LogDate::*, PrintableError,
-        PrintableTask, PrintableWarning, Status::*, TodoPrinter,
+        Action::*, BriefPrintableTask, FakePrinter, LogDate::*, Plicit::*,
+        PrintableError, PrintableTask, PrintableWarning, Status::*,
+        TodoPrinter,
     },
     lookup_key::Key,
     testing::ymdhms,
@@ -206,7 +207,9 @@ fn fail_validation_on_missing_priority_exact() {
     printer.print_task(&PrintableTask::new("a", 1, Incomplete));
     printer
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).priority(1))
+        .printed_task(
+            &PrintableTask::new("a", 1, Incomplete).priority(Explicit(1)),
+        )
         .end();
 }
 
@@ -214,10 +217,42 @@ fn fail_validation_on_missing_priority_exact() {
 #[should_panic(expected = "Unexpected priority")]
 fn fail_validation_on_extraneous_priority() {
     let mut printer = FakePrinter::default();
-    printer.print_task(&PrintableTask::new("a", 1, Incomplete).priority(1));
+    printer.print_task(
+        &PrintableTask::new("a", 1, Incomplete).priority(Implicit(1)),
+    );
     printer
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .end();
+}
+
+#[test]
+#[should_panic(expected = "Unexpected priority")]
+fn fail_validation_on_priority_with_wrong_plicit() {
+    let mut printer = FakePrinter::default();
+    printer.print_task(
+        &PrintableTask::new("a", 1, Incomplete).priority(Implicit(1)),
+    );
+    printer
+        .validate()
+        .printed_task(
+            &PrintableTask::new("a", 1, Incomplete).priority(Explicit(1)),
+        )
+        .end();
+}
+
+#[test]
+#[should_panic(expected = "Unexpected priority")]
+fn fail_validation_on_priority_with_wrong_value() {
+    let mut printer = FakePrinter::default();
+    printer.print_task(
+        &PrintableTask::new("a", 1, Incomplete).priority(Explicit(1)),
+    );
+    printer
+        .validate()
+        .printed_task(
+            &PrintableTask::new("a", 1, Incomplete).priority(Explicit(2)),
+        )
         .end();
 }
 

@@ -1,7 +1,7 @@
 use {
     crate::{
-        Action, LogDate, PrintableError, PrintableTask, PrintableWarning,
-        Status, TodoPrinter,
+        Action, LogDate, Plicit, PrintableError, PrintableTask,
+        PrintableWarning, Status, TodoPrinter,
     },
     chrono::{DateTime, Duration, Local, Utc},
 };
@@ -13,8 +13,8 @@ struct PrintedTaskInfo {
     status: Status,
     action: Action,
     log_date: Option<LogDate>,
-    priority: i32,
-    due_date: Option<DateTime<Utc>>,
+    priority: Option<Plicit<i32>>,
+    due_date: Option<Plicit<DateTime<Utc>>>,
     start_date: Option<DateTime<Utc>>,
     budget: Option<Duration>,
 }
@@ -38,8 +38,8 @@ enum Expect<'a> {
     Status(Status),
     Action(Action),
     LogDate(LogDate),
-    Priority(i32),
-    DueDate(DateTime<Utc>),
+    Priority(Option<Plicit<i32>>),
+    DueDate(Plicit<DateTime<Utc>>),
     StartDate(DateTime<Utc>),
     Budget(Duration),
 }
@@ -93,8 +93,8 @@ impl<'a> Expect<'a> {
                 }
             },
             Expect::Priority(expected) => {
-                let actual = info.priority;
-                if actual != *expected {
+                let actual = &info.priority;
+                if actual != expected {
                     panic!(
                         "Unexpected priority: {:?} (Expected {:?})",
                         actual, expected
@@ -108,8 +108,8 @@ impl<'a> Expect<'a> {
                             "Unexpected due date: {:?} (Expected {:?})",
                             // Display timestamps in local timezone to avoid
                             // confusion in tests, which use local time.
-                            actual.with_timezone(&Local),
-                            expected.with_timezone(&Local)
+                            actual.clone().map(|d| d.with_timezone(&Local)),
+                            expected.clone().map(|d| d.with_timezone(&Local))
                         );
                     }
                 }
@@ -166,8 +166,8 @@ impl<'a> Validation<'a> {
         if let Some(log_date) = &task.log_date {
             expectations.push(Expect::LogDate(log_date.clone()));
         }
-        expectations.push(Expect::Priority(task.priority));
-        if let Some(due_date) = task.due_date {
+        expectations.push(Expect::Priority(task.priority.clone()));
+        if let Some(due_date) = task.due_date.clone() {
             expectations.push(Expect::DueDate(due_date));
         }
         if let Some(start_date) = task.start_date {
@@ -243,8 +243,8 @@ impl TodoPrinter for FakePrinter {
             status: task.status,
             action: task.action,
             log_date: task.log_date.clone(),
-            priority: task.priority,
-            due_date: task.due_date,
+            priority: task.priority.clone(),
+            due_date: task.due_date.clone(),
             start_date: task.start_date,
             budget: task.budget,
         }));

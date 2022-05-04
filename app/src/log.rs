@@ -5,7 +5,7 @@ use {
     printing::{LogDate, TodoPrinter},
 };
 
-pub fn run(list: &TodoList, printer: &mut impl TodoPrinter) {
+pub fn run<'a>(list: &TodoList, printer: &mut impl TodoPrinter) {
     let mut most_recent_shown = None;
     list.complete_tasks().for_each(|id| {
         let mut formatted_task = format_task(list, id);

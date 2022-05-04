@@ -3,7 +3,8 @@
 use {
     super::testing::Fixture,
     printing::{
-        Action::*, BriefPrintableTask, PrintableError, PrintableTask, Status::*,
+        Action::*, BriefPrintableTask, Plicit::*, PrintableError,
+        PrintableTask, Status::*,
     },
     testing::ymdhms,
 };
@@ -75,7 +76,7 @@ fn merged_task_has_min_due_date_of_sources() {
         .printed_task(
             &PrintableTask::new("abc", 1, Incomplete)
                 .action(Select)
-                .due_date(in_10_min),
+                .due_date(Explicit(in_10_min)),
         )
         .end();
 }
@@ -92,7 +93,7 @@ fn merged_task_has_max_priority_of_sources() {
         .printed_task(
             &PrintableTask::new("abcd", 1, Incomplete)
                 .action(Select)
-                .priority(2),
+                .priority(Explicit(2)),
         )
         .end();
 }

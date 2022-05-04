@@ -2,7 +2,7 @@
 
 use {
     crate::{
-        Action::*, LogDate::*, PrintableTask, PrintingContext,
+        Action::*, LogDate::*, Plicit::*, PrintableTask, PrintingContext,
         SimpleTodoPrinter, Status::*, TodoPrinter,
     },
     chrono::{DateTime, Utc},
@@ -197,8 +197,21 @@ fn invisible_log_date() {
 }
 
 #[test]
-fn show_priority_on_task() {
-    let fmt = print_task(&PrintableTask::new("a", 1, Incomplete).priority(1));
+fn show_implicit_priority_on_task() {
+    let fmt = print_task(
+        &PrintableTask::new("a", 1, Incomplete).priority(Implicit(1)),
+    );
+    assert_eq!(
+        fmt,
+        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;3;35mP1\u{1b}[0m a\n"
+    );
+}
+
+#[test]
+fn show_explicit_priority_on_task() {
+    let fmt = print_task(
+        &PrintableTask::new("a", 1, Incomplete).priority(Explicit(1)),
+    );
     assert_eq!(
         fmt,
         "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;35mP1\u{1b}[0m a\n"
@@ -206,10 +219,22 @@ fn show_priority_on_task() {
 }
 
 #[test]
-fn show_meh_due_date_on_task() {
+fn show_implicit_meh_due_date_on_task() {
     let now = ymdhms(2021, 04, 15, 10, 00, 00);
     let task = PrintableTask::new("a", 1, Incomplete)
-        .due_date(now + chrono::Duration::days(2));
+        .due_date(Implicit(now + chrono::Duration::days(2)));
+    let fmt = print_task_with_context(now_context(now), &task);
+    assert_eq!(
+        fmt,
+        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;2;3;37mDue in 2 days\u{1b}[0m a\n"
+    );
+}
+
+#[test]
+fn show_explicit_meh_due_date_on_task() {
+    let now = ymdhms(2021, 04, 15, 10, 00, 00);
+    let task = PrintableTask::new("a", 1, Incomplete)
+        .due_date(Explicit(now + chrono::Duration::days(2)));
     let fmt = print_task_with_context(now_context(now), &task);
     assert_eq!(
         fmt,
@@ -218,10 +243,22 @@ fn show_meh_due_date_on_task() {
 }
 
 #[test]
-fn show_moderate_due_date_on_task() {
+fn show_implicit_moderate_due_date_on_task() {
     let now = ymdhms(2021, 04, 15, 10, 00, 00);
     let task = PrintableTask::new("a", 1, Incomplete)
-        .due_date(now + chrono::Duration::hours(9));
+        .due_date(Implicit(now + chrono::Duration::hours(9)));
+    let fmt = print_task_with_context(now_context(now), &task);
+    assert_eq!(
+        fmt,
+        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;3;33mDue in 9 hours\u{1b}[0m a\n"
+    );
+}
+
+#[test]
+fn show_explicit_moderate_due_date_on_task() {
+    let now = ymdhms(2021, 04, 15, 10, 00, 00);
+    let task = PrintableTask::new("a", 1, Incomplete)
+        .due_date(Explicit(now + chrono::Duration::hours(9)));
     let fmt = print_task_with_context(now_context(now), &task);
     assert_eq!(
         fmt,
@@ -230,10 +267,22 @@ fn show_moderate_due_date_on_task() {
 }
 
 #[test]
-fn show_urgent_due_date_on_task() {
+fn show_implicit_urgent_due_date_on_task() {
     let now = ymdhms(2021, 04, 15, 10, 00, 00);
     let task = PrintableTask::new("a", 1, Incomplete)
-        .due_date(now - chrono::Duration::days(1));
+        .due_date(Implicit(now - chrono::Duration::days(1)));
+    let fmt = print_task_with_context(now_context(now), &task);
+    assert_eq!(
+        fmt,
+        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[1;3;31mDue 1 day ago\u{1b}[0m a\n"
+    );
+}
+
+#[test]
+fn show_explicit_urgent_due_date_on_task() {
+    let now = ymdhms(2021, 04, 15, 10, 00, 00);
+    let task = PrintableTask::new("a", 1, Incomplete)
+        .due_date(Explicit(now - chrono::Duration::days(1)));
     let fmt = print_task_with_context(now_context(now), &task);
     assert_eq!(
         fmt,
@@ -245,15 +294,15 @@ fn show_urgent_due_date_on_task() {
 fn show_priority_and_due_date_together() {
     let now = ymdhms(2021, 04, 15, 10, 00, 00);
     let task = PrintableTask::new("a", 1, Incomplete)
-        .priority(1)
-        .due_date(now - chrono::Duration::days(1));
+        .priority(Implicit(1))
+        .due_date(Implicit(now - chrono::Duration::days(1)));
     let fmt = print_task_with_context(now_context(now), &task);
     assert_eq!(
         fmt,
         concat!(
             "      \u{1b}[33m1)\u{1b}[0m ",
-            "\u{1b}[1;35mP1\u{1b}[0m ",
-            "\u{1b}[1;31mDue 1 day ago\u{1b}[0m ",
+            "\u{1b}[1;3;35mP1\u{1b}[0m ",
+            "\u{1b}[1;3;31mDue 1 day ago\u{1b}[0m ",
             "a\n"
         ),
     );
@@ -337,7 +386,7 @@ fn show_adeps_stats() {
 fn show_adeps_stats_and_priority() {
     let fmt = print_task(
         &PrintableTask::new("a", 1, Incomplete)
-            .priority(1)
+            .priority(Explicit(1))
             .adeps_stats(2, 4),
     );
     assert_eq!(
@@ -356,7 +405,7 @@ fn show_due_date_and_adeps_stats() {
     let fmt = print_task_with_context(
         now_context(now),
         &PrintableTask::new("a", 1, Incomplete)
-            .due_date(now - chrono::Duration::days(1))
+            .due_date(Explicit(now - chrono::Duration::days(1)))
             .adeps_stats(12, 20),
     );
     assert_eq!(
@@ -400,7 +449,7 @@ fn show_deps_and_adeps_stats() {
 fn show_deps_and_adeps_stats_and_priority() {
     let fmt = print_task(
         &PrintableTask::new("a", 1, Incomplete)
-            .priority(1)
+            .priority(Explicit(1))
             .deps_stats(2, 4)
             .adeps_stats(5, 6),
     );
@@ -421,7 +470,7 @@ fn show_due_date_and_deps_stats() {
     let fmt = print_task_with_context(
         now_context(now),
         &PrintableTask::new("a", 1, Incomplete)
-            .due_date(now - chrono::Duration::days(1))
+            .due_date(Explicit(now - chrono::Duration::days(1)))
             .deps_stats(12, 20),
     );
     assert_eq!(

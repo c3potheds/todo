@@ -2,8 +2,8 @@ use {
     super::testing::Fixture,
     lookup_key::Key,
     printing::{
-        Action::*, BriefPrintableTask, PrintableError, PrintableTask,
-        PrintableWarning, Status::*,
+        Action::*, BriefPrintableTask, Plicit::*, PrintableError,
+        PrintableTask, PrintableWarning, Status::*,
     },
 };
 
@@ -121,11 +121,15 @@ fn unblock_updates_priority() {
         .printed_task(
             &PrintableTask::new("c", 1, Incomplete)
                 .action(Unlock)
-                .priority(2),
+                .priority(Explicit(2)),
         )
         // a and b have their priorities reset to 1.
-        .printed_task(&PrintableTask::new("a", 2, Incomplete).priority(1))
-        .printed_task(&PrintableTask::new("b", 3, Blocked).priority(1))
+        .printed_task(
+            &PrintableTask::new("a", 2, Incomplete).priority(Explicit(1)),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 3, Blocked).priority(Explicit(1)),
+        )
         .end();
 }
 
@@ -140,9 +144,11 @@ fn unblock_does_not_show_unaffected_priority() {
         .printed_task(
             &PrintableTask::new("c", 2, Incomplete)
                 .action(Unlock)
-                .priority(1),
+                .priority(Explicit(1)),
         )
-        .printed_task(&PrintableTask::new("b", 3, Blocked).priority(1))
+        .printed_task(
+            &PrintableTask::new("b", 3, Blocked).priority(Explicit(1)),
+        )
         .end();
 }
 
@@ -156,7 +162,7 @@ fn unblock_excludes_affected_complete_tasks() {
         .validate()
         .printed_task(
             &PrintableTask::new("c", 1, Incomplete)
-                .priority(1)
+                .priority(Explicit(1))
                 .action(Unlock),
         )
         .printed_task(&PrintableTask::new("b", 2, Incomplete))
@@ -174,7 +180,7 @@ fn unblock_include_done() {
         .printed_task(&PrintableTask::new("a", 0, Complete))
         .printed_task(
             &PrintableTask::new("c", 1, Incomplete)
-                .priority(1)
+                .priority(Explicit(1))
                 .action(Unlock),
         )
         .printed_task(&PrintableTask::new("b", 2, Incomplete))

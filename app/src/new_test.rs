@@ -3,7 +3,8 @@
 use {
     super::testing::Fixture,
     printing::{
-        Action::*, BriefPrintableTask, PrintableError, PrintableTask, Status::*,
+        Action::*, BriefPrintableTask, Plicit::*, PrintableError,
+        PrintableTask, Status::*,
     },
     testing::ymdhms,
 };
@@ -261,7 +262,7 @@ fn new_with_priority() {
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
                 .action(New)
-                .priority(1),
+                .priority(Explicit(1)),
         )
         .end();
 }
@@ -275,7 +276,7 @@ fn new_task_with_priority_inserted_before_unprioritized_tasks() {
         .printed_task(
             &PrintableTask::new("c", 1, Incomplete)
                 .action(New)
-                .priority(1),
+                .priority(Explicit(1)),
         )
         .end();
 }
@@ -289,7 +290,7 @@ fn new_task_with_negative_priority_inserted_after_unprioritized_tasks() {
         .printed_task(
             &PrintableTask::new("c", 3, Incomplete)
                 .action(New)
-                .priority(-1),
+                .priority(Explicit(-1)),
         )
         .end();
 }
@@ -304,7 +305,7 @@ fn new_task_with_priority_inserted_in_sorted_order() {
         .printed_task(
             &PrintableTask::new("c", 2, Incomplete)
                 .action(New)
-                .priority(2),
+                .priority(Explicit(2)),
         )
         .end();
 }
@@ -318,7 +319,7 @@ fn new_with_due_date() {
         .validate()
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
-                .due_date(in_5_hours)
+                .due_date(Explicit(in_5_hours))
                 .action(New),
         )
         .end();
@@ -345,13 +346,18 @@ fn new_with_due_date_shows_affected_deps() {
     fix.test("todo new d -p c --due 2 days")
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete).due_date(in_2_days),
+            &PrintableTask::new("a", 1, Incomplete)
+                .due_date(Implicit(in_2_days)),
         )
-        .printed_task(&PrintableTask::new("b", 2, Blocked).due_date(in_2_days))
-        .printed_task(&PrintableTask::new("c", 3, Blocked).due_date(in_2_days))
+        .printed_task(
+            &PrintableTask::new("b", 2, Blocked).due_date(Implicit(in_2_days)),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 3, Blocked).due_date(Implicit(in_2_days)),
+        )
         .printed_task(
             &PrintableTask::new("d", 4, Blocked)
-                .due_date(in_2_days)
+                .due_date(Explicit(in_2_days))
                 .action(New),
         )
         .end();
@@ -367,11 +373,12 @@ fn new_with_budget_shows_affected_deps() {
     fix.test("todo new b -p a --due today --budget 5 hours")
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete).due_date(before_7),
+            &PrintableTask::new("a", 1, Incomplete)
+                .due_date(Implicit(before_7)),
         )
         .printed_task(
             &PrintableTask::new("b", 2, Blocked)
-                .due_date(end_of_day)
+                .due_date(Explicit(end_of_day))
                 .action(New),
         )
         .end();

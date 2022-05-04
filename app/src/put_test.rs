@@ -1,7 +1,8 @@
 use {
     super::testing::Fixture,
     printing::{
-        Action::*, BriefPrintableTask, PrintableError, PrintableTask, Status::*,
+        Action::*, BriefPrintableTask, Plicit::*, PrintableError,
+        PrintableTask, Status::*,
     },
 };
 
@@ -146,10 +147,16 @@ fn put_before_prints_updated_priority() {
     fix.test("todo new c --priority 1");
     fix.test("todo put c --before d")
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).priority(1))
-        .printed_task(&PrintableTask::new("b", 2, Blocked).priority(1))
         .printed_task(
-            &PrintableTask::new("c", 3, Blocked).priority(1).action(Lock),
+            &PrintableTask::new("a", 1, Incomplete).priority(Implicit(1)),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 2, Blocked).priority(Implicit(1)),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 3, Blocked)
+                .priority(Explicit(1))
+                .action(Lock),
         )
         .printed_task(&PrintableTask::new("d", 4, Blocked).action(Lock))
         .end();
@@ -162,10 +169,16 @@ fn put_after_prints_updated_priority() {
     fix.test("todo new c --priority 1");
     fix.test("todo put c --after b")
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).priority(1))
-        .printed_task(&PrintableTask::new("b", 2, Blocked).priority(1))
         .printed_task(
-            &PrintableTask::new("c", 3, Blocked).priority(1).action(Lock),
+            &PrintableTask::new("a", 1, Incomplete).priority(Implicit(1)),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 2, Blocked).priority(Implicit(1)),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 3, Blocked)
+                .priority(Explicit(1))
+                .action(Lock),
         )
         .printed_task(&PrintableTask::new("d", 4, Blocked).action(Lock))
         .end();
@@ -179,9 +192,13 @@ fn put_excludes_complete_affected_tasks() {
     fix.test("todo new c --priority 1");
     fix.test("todo put c --after b")
         .validate()
-        .printed_task(&PrintableTask::new("b", 1, Incomplete).priority(1))
         .printed_task(
-            &PrintableTask::new("c", 2, Blocked).priority(1).action(Lock),
+            &PrintableTask::new("b", 1, Incomplete).priority(Implicit(1)),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 2, Blocked)
+                .priority(Explicit(1))
+                .action(Lock),
         )
         .end();
 }
@@ -194,10 +211,16 @@ fn put_include_done() {
     fix.test("todo new c --priority 1");
     fix.test("todo put c --after b -d")
         .validate()
-        .printed_task(&PrintableTask::new("a", 0, Complete).priority(1))
-        .printed_task(&PrintableTask::new("b", 1, Incomplete).priority(1))
         .printed_task(
-            &PrintableTask::new("c", 2, Blocked).priority(1).action(Lock),
+            &PrintableTask::new("a", 0, Complete).priority(Implicit(1)),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 1, Incomplete).priority(Implicit(1)),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 2, Blocked)
+                .priority(Explicit(1))
+                .action(Lock),
         )
         .end();
 }

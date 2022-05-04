@@ -1,7 +1,8 @@
 use {
     super::testing::Fixture,
     printing::{
-        Action::*, BriefPrintableTask, PrintableError, PrintableTask, Status::*,
+        Action::*, BriefPrintableTask, Plicit::*, PrintableError,
+        PrintableTask, Status::*,
     },
 };
 
@@ -44,10 +45,16 @@ fn chain_shows_affected_deps() {
     fix.test("todo new c --priority 1");
     fix.test("todo chain b c")
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).priority(1))
-        .printed_task(&PrintableTask::new("b", 2, Blocked).priority(1))
         .printed_task(
-            &PrintableTask::new("c", 3, Blocked).priority(1).action(Lock),
+            &PrintableTask::new("a", 1, Incomplete).priority(Implicit(1)),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 2, Blocked).priority(Implicit(1)),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 3, Blocked)
+                .priority(Explicit(1))
+                .action(Lock),
         )
         .end();
 }
@@ -60,9 +67,13 @@ fn chain_excludes_complete_affected_deps() {
     fix.test("todo check a");
     fix.test("todo chain b c")
         .validate()
-        .printed_task(&PrintableTask::new("b", 1, Incomplete).priority(1))
         .printed_task(
-            &PrintableTask::new("c", 2, Blocked).priority(1).action(Lock),
+            &PrintableTask::new("b", 1, Incomplete).priority(Implicit(1)),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 2, Blocked)
+                .priority(Explicit(1))
+                .action(Lock),
         )
         .end();
 }

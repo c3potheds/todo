@@ -108,7 +108,7 @@ fn edit_with_text_editor(
         })
         .collect::<TaskSet>()
         .iter_sorted(list)
-        .for_each(|id| printer.print_task(&format_task(list, id)))
+        .for_each(|id| printer.print_task(&format_task(list, id)));
 }
 
 pub fn run(

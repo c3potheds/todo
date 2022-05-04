@@ -89,15 +89,30 @@ impl Display for LogDate {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
+pub enum Plicit<T> {
+    Implicit(T),
+    Explicit(T),
+}
+
+impl<T> Plicit<T> {
+    pub fn map<R, F: FnOnce(T) -> R>(self, f: F) -> Plicit<R> {
+        match self {
+            Plicit::Implicit(t) => Plicit::Implicit(f(t)),
+            Plicit::Explicit(t) => Plicit::Explicit(f(t)),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub struct PrintableTask<'a> {
     pub desc: &'a str,
     pub number: i32,
     pub status: Status,
     pub action: Action,
     pub log_date: Option<LogDate>,
-    pub priority: i32,
-    pub due_date: Option<DateTime<Utc>>,
+    pub priority: Option<Plicit<i32>>,
+    pub due_date: Option<Plicit<DateTime<Utc>>>,
     pub punctuality: Option<Duration>,
     pub budget: Option<Duration>,
     pub start_date: Option<DateTime<Utc>>,
@@ -113,7 +128,7 @@ impl<'a> PrintableTask<'a> {
             status,
             action: Action::None,
             log_date: None,
-            priority: 0,
+            priority: None,
             due_date: None,
             punctuality: None,
             budget: None,
@@ -133,12 +148,12 @@ impl<'a> PrintableTask<'a> {
         self
     }
 
-    pub fn priority(mut self, priority: i32) -> Self {
-        self.priority = priority;
+    pub fn priority(mut self, priority: Plicit<i32>) -> Self {
+        self.priority = Some(priority);
         self
     }
 
-    pub fn due_date(mut self, due_date: DateTime<Utc>) -> Self {
+    pub fn due_date(mut self, due_date: Plicit<DateTime<Utc>>) -> Self {
         self.due_date = Some(due_date);
         self
     }

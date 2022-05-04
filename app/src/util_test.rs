@@ -5,7 +5,7 @@ use {
     chrono::Duration,
     lookup_key::Key,
     model::{CheckOptions, NewOptions, TodoList},
-    printing::{Action::*, PrintableTask, Status::*},
+    printing::{Action::*, Plicit::*, PrintableTask, Status::*},
     testing::ymdhms,
 };
 
@@ -32,7 +32,7 @@ fn format_task_with_priority() {
     let mut list = TodoList::default();
     let a = list.add(NewOptions::new().desc("a").priority(1));
     let actual = format_task(&list, a);
-    let expected = PrintableTask::new("a", 1, Incomplete).priority(1);
+    let expected = PrintableTask::new("a", 1, Incomplete).priority(Explicit(1));
     assert_eq!(actual, expected);
 }
 
@@ -58,7 +58,7 @@ fn format_task_with_budget() {
     );
     let actual = format_task(&list, a);
     let expected = PrintableTask::new("a", 1, Incomplete)
-        .due_date(due)
+        .due_date(Explicit(due))
         .budget(Duration::hours(10));
     assert_eq!(actual, expected);
 }

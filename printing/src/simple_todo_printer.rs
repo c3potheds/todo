@@ -1,6 +1,6 @@
 use {
     crate::{
-        format_util::format_number, PrintableError, PrintableTask,
+        format_util::format_number, Plicit, PrintableError, PrintableTask,
         PrintableWarning, TodoPrinter,
     },
     ansi_term::Color,
@@ -87,7 +87,11 @@ fn fmt_snooze_date(snooze_duration: Duration, out: &mut String) {
     }
 }
 
-fn fmt_priority(priority: i32, out: &mut String) {
+fn fmt_priority(priority: &Plicit<i32>, out: &mut String) {
+    let (priority, implicit) = match priority {
+        Plicit::Explicit(priority) => (*priority, false),
+        Plicit::Implicit(priority) => (*priority, true),
+    };
     let color = match priority.abs() {
         6..=i32::MAX => Color::Red,
         5 => Color::Yellow,
@@ -97,25 +101,35 @@ fn fmt_priority(priority: i32, out: &mut String) {
         1 => Color::Purple,
         _ => Color::Black,
     };
-    let style = if priority >= 0 {
+    let mut style = if priority >= 0 {
         color.bold()
     } else {
         color.bold().dimmed()
     };
+    if implicit {
+        style = style.italic();
+    }
     out.push_str(&style.paint(format!("P{}", priority)).to_string());
     out.push(' ');
 }
 
 fn fmt_due_date(
-    due_date: DateTime<Utc>,
+    due_date: &Plicit<DateTime<Utc>>,
     context: &PrintingContext,
     out: &mut String,
 ) {
-    let style = match calculate_urgency(context.now, due_date) {
+    let (due_date, implicit) = match due_date {
+        Plicit::Explicit(due_date) => (*due_date, false),
+        Plicit::Implicit(due_date) => (*due_date, true),
+    };
+    let mut style = match calculate_urgency(context.now, due_date) {
         Urgency::Urgent => Color::Red.bold(),
         Urgency::Moderate => Color::Yellow.bold(),
         Urgency::Meh => Color::White.bold().dimmed(),
     };
+    if implicit {
+        style = style.italic();
+    }
     let desc = ::time_format::display_relative_time(
         context.now.with_timezone(&Local),
         due_date.with_timezone(&Local),
@@ -168,8 +182,8 @@ fn get_body(task: &PrintableTask, context: &PrintingContext) -> String {
     if let Some(start_date) = task.start_date {
         fmt_snooze_date(start_date - context.now, &mut body);
     }
-    if task.priority != 0 {
-        fmt_priority(task.priority, &mut body);
+    if let Some(priority) = &task.priority {
+        fmt_priority(priority, &mut body);
     }
     let (incomplete, total) = task.deps_stats;
     if total > 0 {
@@ -179,7 +193,7 @@ fn get_body(task: &PrintableTask, context: &PrintingContext) -> String {
     if total > 0 {
         fmt_unlocks(unlockable, total, &mut body);
     }
-    if let Some(due_date) = task.due_date {
+    if let Some(due_date) = &task.due_date {
         fmt_due_date(due_date, context, &mut body);
     }
     if let Some(punctuality) = task.punctuality {
@@ -219,7 +233,7 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
 }
 
 impl<Out: Write> TodoPrinter for SimpleTodoPrinter<Out> {
-    fn print_task(&mut self, task: &PrintableTask) {
+    fn print_task<'a>(&mut self, task: &PrintableTask<'a>) {
         writeln!(
             self.out,
             "{}",

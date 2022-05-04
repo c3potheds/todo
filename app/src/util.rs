@@ -3,7 +3,8 @@ use {
     lookup_key::Key,
     model::{DurationInSeconds, TaskId, TaskSet, TaskStatus, TodoList},
     printing::{
-        BriefPrintableTask, PrintableError, PrintableTask, Status, TodoPrinter,
+        BriefPrintableTask, Plicit, PrintableError, PrintableTask, Status,
+        TodoPrinter,
     },
     std::convert::TryFrom,
 };
@@ -105,15 +106,28 @@ pub fn format_task<'ser, 'list>(
             Some(implicit_due_date),
         ) => {
             let mut result =
-                PrintableTask::new(&task.desc, pos, to_printing_status(status))
-                    .priority(implicit_priority);
+                PrintableTask::new(&task.desc, pos, to_printing_status(status));
+            if implicit_priority != 0 {
+                result =
+                    result.priority(if implicit_priority == task.priority {
+                        Plicit::Explicit(task.priority)
+                    } else {
+                        Plicit::Implicit(implicit_priority)
+                    });
+            }
             result = match (status, implicit_due_date, task.completion_time) {
                 (
                     TaskStatus::Complete,
                     Some(due_date),
                     Some(completion_time),
                 ) => result.punctuality(completion_time - due_date),
-                (_, Some(due_date), _) => result.due_date(due_date),
+                (_, Some(due_date), _) => {
+                    result.due_date(if task.due_date == Some(due_date) {
+                        Plicit::Explicit(due_date)
+                    } else {
+                        Plicit::Implicit(due_date)
+                    })
+                }
                 _ => result,
             };
             if task.budget.0 > 0 {
