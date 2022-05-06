@@ -7,12 +7,22 @@ use {
 };
 
 #[test]
-fn merge_requires_at_least_two_and_into() {
+fn merge_requires_at_least_one_and_into() {
     expect_error("todo merge");
     expect_error("todo merge 1");
     expect_error("todo merge 1 2");
     expect_error("todo merge --into aa");
-    expect_error("todo merge 1 --into aa");
+}
+
+#[test]
+fn merge_one() {
+    expect_parses_into(
+        "todo merge 1 --into aa",
+        SubCommand::Merge(Merge {
+            keys: vec![ByNumber(1)],
+            into: "aa".to_string(),
+        }),
+    );
 }
 
 #[test]

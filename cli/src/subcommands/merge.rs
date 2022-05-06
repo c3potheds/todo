@@ -12,7 +12,7 @@ use {clap::Parser, lookup_key::Key};
 #[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Merge {
     /// Tasks to merge.
-    #[clap(required = true, min_values = 2)]
+    #[clap(required = true, min_values = 1)]
     pub keys: Vec<Key>,
     /// Description of new task to merge into.
     #[clap(long)]
