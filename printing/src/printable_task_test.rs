@@ -42,6 +42,13 @@ fn print_task(task: &PrintableTask) -> String {
     let context = make_printing_context();
     print_task_with_context(context, task)
 }
+
+#[test]
+fn fmt_blank_task() {
+    let fmt = print_task(&PrintableTask::new("", 1, Incomplete));
+    assert_eq!(fmt, "      \u{1b}[33m1)\u{1b}[0m\n");
+}
+
 #[test]
 fn fmt_incomplete_task() {
     let fmt = print_task(&PrintableTask::new("a", 1, Incomplete));

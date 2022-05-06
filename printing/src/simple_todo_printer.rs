@@ -221,6 +221,9 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let start = get_initial_indent(self.task, self.context);
         let body = get_body(self.task, self.context);
+        if body.is_empty() {
+            return f.write_str(start.trim_end());
+        }
         let subsequent_indent = get_subsequent_indent(self.task, self.context);
         f.write_str(&textwrap::fill(
             &body,
