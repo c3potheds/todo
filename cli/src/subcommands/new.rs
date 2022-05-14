@@ -138,7 +138,7 @@ pub struct New {
     pub done: bool,
 
     /// Mark new tasks as tags.
-    /// 
+    ///
     /// Tags are color-coded to be easy to differentiate, and any tasks that
     /// (directly or indirectly) block tags will have the tag description added
     /// to their descriptions.
