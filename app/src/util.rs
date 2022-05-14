@@ -136,6 +136,13 @@ pub fn format_task<'ser, 'list>(
             if task.start_date > task.creation_time {
                 result = result.start_date(task.start_date);
             }
+            if task.tag {
+                result = result.as_tag();
+            }
+            for tag_id in &task.implicit_tags {
+                let tag_desc = &list.get(*tag_id).unwrap().desc;
+                result = result.tag(tag_desc.as_ref());
+            }
             wrap(result)
                 .add_deps_if_necessary(list, id, status)
                 .add_adeps_if_necessary(list, id, status)
