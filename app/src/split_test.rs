@@ -211,3 +211,40 @@ fn split_task_chain_keep_with_budget() {
         .printed_task(&PrintableTask::new("a", 4, Blocked).action(Select))
         .end();
 }
+
+#[test]
+fn split_tag_default() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a --tag");
+    fix.test("todo split a --into x y z")
+        .validate()
+        .printed_task(&PrintableTask::new("x", 1, Incomplete).action(New).as_tag())
+        .printed_task(&PrintableTask::new("y", 2, Incomplete).action(New).as_tag())
+        .printed_task(&PrintableTask::new("z", 3, Incomplete).action(New).as_tag())
+        .end();
+}
+
+#[test]
+fn split_tag_into_non_tags() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a --tag");
+    fix.test("todo split a --into x y z --tag false")
+        .validate()
+        .printed_task(&PrintableTask::new("x", 1, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("y", 2, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("z", 3, Incomplete).action(New))
+        .end();
+}
+
+#[test]
+fn split_tag_keep() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a --tag");
+    fix.test("todo split a --into x y z --keep")
+        .validate()
+        .printed_task(&PrintableTask::new("x", 1, Incomplete).action(New).tag("a"))
+        .printed_task(&PrintableTask::new("y", 2, Incomplete).action(New).tag("a"))
+        .printed_task(&PrintableTask::new("z", 3, Incomplete).action(New).tag("a"))
+        .printed_task(&PrintableTask::new("a", 4, Blocked).action(Select).as_tag())
+        .end();
+}
