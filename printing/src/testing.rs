@@ -17,6 +17,8 @@ struct PrintedTaskInfo {
     due_date: Option<Plicit<DateTime<Utc>>>,
     start_date: Option<DateTime<Utc>>,
     budget: Option<Duration>,
+    is_explicit_tag: bool,
+    implicit_tags: Vec<String>,
 }
 
 #[derive(Debug)]
@@ -42,6 +44,8 @@ enum Expect<'a> {
     DueDate(Plicit<DateTime<Utc>>),
     StartDate(DateTime<Utc>),
     Budget(Duration),
+    IsTag(bool),
+    Tags(&'a Vec<&'a str>),
 }
 
 impl<'a> Expect<'a> {
@@ -140,6 +144,45 @@ impl<'a> Expect<'a> {
                     );
                 }
             }
+            Expect::IsTag(true) => {
+                if !info.is_explicit_tag {
+                    panic!("Task is unexpectedly not a tag: {:?}", info);
+                }
+            }
+            Expect::IsTag(false) => {
+                if info.is_explicit_tag {
+                    panic!("Task is unexpectedly a tag: {:?}", info);
+                }
+            }
+            Expect::Tags(expected) => {
+                let actual = info
+                    .implicit_tags
+                    .iter()
+                    .map(|s| s.as_str())
+                    .collect::<Vec<_>>();
+                let extraneous_tags = actual
+                    .iter()
+                    .copied()
+                    .filter(|tag| !expected.contains(tag))
+                    .collect::<Vec<_>>();
+                let missing_tags = expected
+                    .iter()
+                    .copied()
+                    .filter(|tag| !actual.contains(tag))
+                    .collect::<Vec<_>>();
+                if !missing_tags.is_empty() {
+                    panic!(
+                        "Missing tags: {:?} (Expected {:?})",
+                        missing_tags, expected
+                    );
+                }
+                if !extraneous_tags.is_empty() {
+                    panic!(
+                        "Extraneous tags: {:?} (Expected {:?})",
+                        extraneous_tags, expected
+                    );
+                }
+            }
         }
     }
 }
@@ -156,12 +199,14 @@ impl<'a> Validation<'a> {
         self.record.drain(0..1).next().unwrap()
     }
 
-    pub fn printed_task(self, task: &PrintableTask<'a>) -> Validation<'a> {
+    pub fn printed_task(self, task: &'a PrintableTask<'a>) -> Validation<'a> {
         let mut expectations = vec![
             Expect::Desc(task.desc),
             Expect::Number(task.number),
             Expect::Status(task.status),
             Expect::Action(task.action),
+            Expect::IsTag(task.is_explicit_tag),
+            Expect::Tags(&task.implicit_tags),
         ];
         if let Some(log_date) = &task.log_date {
             expectations.push(Expect::LogDate(log_date.clone()));
@@ -247,6 +292,12 @@ impl TodoPrinter for FakePrinter {
             due_date: task.due_date.clone(),
             start_date: task.start_date,
             budget: task.budget,
+            is_explicit_tag: task.is_explicit_tag,
+            implicit_tags: task
+                .implicit_tags
+                .iter()
+                .map(|tag| tag.to_string())
+                .collect(),
         }));
     }
 

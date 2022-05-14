@@ -286,3 +286,47 @@ fn fail_validation_on_incorrect_start_date() {
         )
         .end()
 }
+
+#[test]
+#[should_panic(expected = "Missing tags")]
+fn fail_validation_on_missing_tag() {
+    let mut printer = FakePrinter::default();
+    printer.print_task(&PrintableTask::new("a", 1, Incomplete));
+    printer
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).tag("x"))
+        .end()
+}
+
+#[test]
+#[should_panic(expected = "Extraneous tags")]
+fn fail_validation_on_extraneous_tag() {
+    let mut printer = FakePrinter::default();
+    printer.print_task(&PrintableTask::new("a", 1, Incomplete).tag("x"));
+    printer
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .end()
+}
+
+#[test]
+#[should_panic(expected = "Task is unexpectedly not a tag")]
+fn fail_validation_task_is_tag() {
+    let mut printer = FakePrinter::default();
+    printer.print_task(&PrintableTask::new("a", 1, Incomplete));
+    printer
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).as_tag())
+        .end()
+}
+
+#[test]
+#[should_panic(expected = "Task is unexpectedly a tag")]
+fn fail_validation_task_is_not_tag() {
+    let mut printer = FakePrinter::default();
+    printer.print_task(&PrintableTask::new("a", 1, Incomplete).as_tag());
+    printer
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .end()
+}

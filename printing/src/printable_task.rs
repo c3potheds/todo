@@ -9,10 +9,16 @@ use {
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Status {
-    Complete,
     Incomplete,
+    Complete,
     Blocked,
     Removed,
+}
+
+impl Default for Status {
+    fn default() -> Self {
+        Status::Incomplete
+    }
 }
 
 #[derive(Debug, PartialEq, Copy, Clone)]
@@ -28,6 +34,12 @@ pub enum Action {
     Punt,
     Snooze,
     Unsnooze,
+}
+
+impl Default for Action {
+    fn default() -> Self {
+        Action::None
+    }
 }
 
 impl Display for Action {
@@ -104,7 +116,7 @@ impl<T> Plicit<T> {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Default, PartialEq, Clone)]
 pub struct PrintableTask<'a> {
     pub desc: &'a str,
     pub number: i32,
@@ -118,6 +130,8 @@ pub struct PrintableTask<'a> {
     pub start_date: Option<DateTime<Utc>>,
     pub deps_stats: (usize, usize),
     pub adeps_stats: (usize, usize),
+    pub is_explicit_tag: bool,
+    pub implicit_tags: Vec<&'a str>,
 }
 
 impl<'a> PrintableTask<'a> {
@@ -126,15 +140,7 @@ impl<'a> PrintableTask<'a> {
             desc,
             number,
             status,
-            action: Action::None,
-            log_date: None,
-            priority: None,
-            due_date: None,
-            punctuality: None,
-            budget: None,
-            start_date: None,
-            deps_stats: (0, 0),
-            adeps_stats: (0, 0),
+            ..Default::default()
         }
     }
 
@@ -180,6 +186,16 @@ impl<'a> PrintableTask<'a> {
 
     pub fn adeps_stats(mut self, immediate: usize, total: usize) -> Self {
         self.adeps_stats = (immediate, total);
+        self
+    }
+
+    pub fn as_tag(mut self) -> Self {
+        self.is_explicit_tag = true;
+        self
+    }
+
+    pub fn tag(mut self, tag: &'a str) -> Self {
+        self.implicit_tags.push(tag);
         self
     }
 }

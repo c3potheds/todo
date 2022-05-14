@@ -3,7 +3,7 @@ use {
         format_util::format_number, Plicit, PrintableError, PrintableTask,
         PrintableWarning, TodoPrinter,
     },
-    ansi_term::Color,
+    ansi_term::{Color, Style},
     chrono::{DateTime, Duration, Local, Utc},
     std::{
         fmt,
@@ -177,6 +177,40 @@ fn fmt_unlocks(unlockable: usize, total: usize, out: &mut String) {
     out.push(' ');
 }
 
+// Allocate a color for a tag with the given name. The color is
+// deterministically allocated based on the hash of the tag name, from a pool of
+// neutral colors (light and dark variants of blue, cyan, and purple).
+fn allocate_tag_color(tag_name: &str) -> Style {
+    let neutral_colors: [Style; 6] = [
+        Color::Blue.normal(),
+        Color::Cyan.normal(),
+        Color::Purple.normal(),
+        Color::Blue.dimmed(),
+        Color::Cyan.dimmed(),
+        Color::Purple.dimmed(),
+    ];
+    use std::collections::hash_map::DefaultHasher;
+    use std::hash::{Hash, Hasher};
+    let mut hasher = DefaultHasher::new();
+    tag_name.hash(&mut hasher);
+    let hash: usize = hasher.finish() as usize;
+    let index = hash % neutral_colors.len();
+    neutral_colors[index]
+}
+
+fn fmt_tag(tag: Plicit<&str>, out: &mut String) {
+    let (tag, implicit) = match tag {
+        Plicit::Explicit(tag) => (tag, false),
+        Plicit::Implicit(tag) => (tag, true),
+    };
+    let mut style = allocate_tag_color(tag);
+    if implicit {
+        style = style.italic();
+    }
+    out.push_str(&style.paint(tag).to_string());
+    out.push(' ');
+}
+
 fn get_body(task: &PrintableTask, context: &PrintingContext) -> String {
     let mut body = String::new();
     if let Some(start_date) = task.start_date {
@@ -199,7 +233,14 @@ fn get_body(task: &PrintableTask, context: &PrintingContext) -> String {
     if let Some(punctuality) = task.punctuality {
         fmt_punctuality(punctuality, &mut body);
     }
-    body.push_str(task.desc);
+    for tag in &task.implicit_tags {
+        fmt_tag(Plicit::Implicit(tag), &mut body);
+    }
+    if task.is_explicit_tag {
+        fmt_tag(Plicit::Explicit(task.desc), &mut body);
+    } else {
+        body.push_str(task.desc);
+    }
     body
 }
 
