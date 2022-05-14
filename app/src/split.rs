@@ -50,6 +50,7 @@ fn split(
                     task.budget
                 },
                 start_date: task.start_date,
+                tag: false,
             };
             list.add(options)
         })

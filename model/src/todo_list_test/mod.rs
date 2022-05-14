@@ -21,4 +21,5 @@ mod set_desc_test;
 mod snooze_test;
 mod stats_test;
 mod status_test;
+mod tag_test;
 mod unblock_test;

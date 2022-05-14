@@ -57,6 +57,7 @@ pub fn run(
                 due_date,
                 budget,
                 start_date: snooze_date,
+                tag: cmd.tag,
             });
             to_print.insert(id);
             id
