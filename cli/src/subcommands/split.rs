@@ -61,4 +61,12 @@ pub struct Split {
     /// The budget of the original task will be transferred to the new tasks.
     #[clap(long, short = 'k')]
     pub keep: bool,
+
+    /// If passed with the value "true", then the new tasks will be marked as
+    /// tags. If passed with "false", then the new tasks will not be marked as
+    /// tags. If not passed, then the new tasks will be marked as tags if the
+    /// original task was marked as a tag and --keep was not passed, otherwise
+    /// they will not be marked as tags.
+    #[clap(long, short = 't')]
+    pub tag: Option<bool>,
 }
