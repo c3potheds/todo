@@ -22,6 +22,6 @@ pub struct Merge {
     /// tag. If not passed, the new task will be marked as a tag if all of the
     /// original tasks were marked as tags, otherwise it will not be marked as
     /// a tag.
-    #[clap(long, short='t')]
+    #[clap(long, short = 't')]
     pub tag: Option<bool>,
 }
