@@ -140,8 +140,9 @@ pub fn format_task<'ser, 'list>(
                 result = result.as_tag();
             }
             for tag_id in &task.implicit_tags {
-                let tag_desc = &list.get(*tag_id).unwrap().desc;
-                result = result.tag(tag_desc.as_ref());
+                if let Some(tag_data) = list.get(*tag_id) {
+                    result = result.tag(&tag_data.desc);
+                }
             }
             wrap(result)
                 .add_deps_if_necessary(list, id, status)
