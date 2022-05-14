@@ -602,3 +602,82 @@ fn new_transitively_block_completed_task() {
         .printed_task(&PrintableTask::new("c", 3, Blocked))
         .end();
 }
+
+#[test]
+fn new_as_tag() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a --tag")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("a", 1, Incomplete).action(New).as_tag(),
+        )
+        .end();
+}
+
+#[test]
+fn new_multiple_as_tag() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --tag")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("a", 1, Incomplete).action(New).as_tag(),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 2, Incomplete).action(New).as_tag(),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 3, Incomplete).action(New).as_tag(),
+        )
+        .end();
+}
+
+#[test]
+fn new_blocking_tag() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a --tag");
+    fix.test("todo new b -b a")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("b", 1, Incomplete).action(New).tag("a"),
+        )
+        .printed_task(&PrintableTask::new("a", 2, Blocked).as_tag())
+        .end();
+}
+
+#[test]
+fn new_tag_blocking_tag() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a --tag");
+    fix.test("todo new b -b a --tag")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("b", 1, Incomplete)
+                .action(New)
+                .tag("a")
+                .as_tag(),
+        )
+        .printed_task(&PrintableTask::new("a", 2, Blocked).as_tag())
+        .end();
+}
+
+#[test]
+fn new_tag_chain() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --chain --tag")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("a", 1, Incomplete)
+                .action(New)
+                .tag("c")
+                .tag("b")
+                .as_tag(),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 2, Blocked)
+                .action(New)
+                .tag("c")
+                .as_tag(),
+        )
+        .printed_task(&PrintableTask::new("c", 3, Blocked).action(New).as_tag())
+        .end();
+}
