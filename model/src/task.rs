@@ -1,5 +1,5 @@
 use {
-    crate::DurationInSeconds,
+    crate::{DurationInSeconds, TaskId},
     chrono::{DateTime, Utc},
     serde::{Deserialize, Serialize},
     std::borrow::Cow,
@@ -31,6 +31,14 @@ pub struct Task<'ser> {
     pub budget: DurationInSeconds,
     #[serde(default = "default_creation_time")]
     pub start_date: DateTime<Utc>,
+    // If |tag| is true, then this is a tag. Any tasks that block a tag will
+    // show the name of the tag in the UI. This includes all transitive deps of
+    // the tag.
+    #[serde(default)]
+    pub tag: bool,
+    // Cache of all the tags that depend on this task.
+    #[serde(default)]
+    pub implicit_tags: Vec<TaskId>,
 }
 
 pub struct NewOptions<'ser> {
@@ -40,6 +48,7 @@ pub struct NewOptions<'ser> {
     pub due_date: Option<DateTime<Utc>>,
     pub budget: DurationInSeconds,
     pub start_date: DateTime<Utc>,
+    pub tag: bool,
 }
 
 impl<'ser> NewOptions<'ser> {
@@ -53,6 +62,7 @@ impl<'ser> NewOptions<'ser> {
             due_date: None,
             budget: DurationInSeconds::default(),
             start_date: now,
+            tag: false,
         }
     }
 
@@ -85,6 +95,11 @@ impl<'ser> NewOptions<'ser> {
         self.start_date = start_date;
         self
     }
+
+    pub fn as_tag(mut self) -> Self {
+        self.tag = true;
+        self
+    }
 }
 
 impl<'ser, S: Into<Cow<'ser, str>>> From<S> for NewOptions<'ser> {
@@ -97,6 +112,7 @@ impl<'ser, S: Into<Cow<'ser, str>>> From<S> for NewOptions<'ser> {
             due_date: None,
             budget: DurationInSeconds::default(),
             start_date: now,
+            tag: false,
         }
     }
 }
@@ -116,6 +132,8 @@ impl<'ser> Task<'ser> {
             implicit_due_date: options.due_date,
             budget: options.budget,
             start_date: options.start_date,
+            tag: options.tag,
+            implicit_tags: vec![],
         }
     }
 }

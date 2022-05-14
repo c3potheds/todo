@@ -78,6 +78,7 @@ pub fn run(
         due_date,
         budget,
         start_date,
+        tag: false,
     });
     deps.iter_sorted(list).for_each(|dep| {
         // This shouldn't panic if we correctly detected cycles above.
