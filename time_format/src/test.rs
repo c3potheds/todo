@@ -230,6 +230,78 @@ fn month_without_day_this_month() {
 }
 
 #[test]
+fn month_with_year_snap_to_end() {
+    let now = Local.ymd(2022, 05, 15).and_hms(12, 00, 00);
+    let expected = Local.ymd(2024, 06, 30).and_hms(23, 59, 59);
+    let actual = parse_time(Local, now, "2024 june", Snap::ToEnd).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn month_with_year_snap_to_start() {
+    let now = Local.ymd(2022, 05, 15).and_hms(12, 00, 00);
+    let expected = Local.ymd(2024, 06, 01).and_hms(00, 00, 00);
+    let actual = parse_time(Local, now, "2024 june", Snap::ToStart).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn february_with_year_non_leap_year_snap_to_end() {
+    let now = Local.ymd(2022, 05, 15).and_hms(12, 00, 00);
+    let expected = Local.ymd(2023, 02, 28).and_hms(23, 59, 59);
+    let actual = parse_time(Local, now, "2023 feb", Snap::ToEnd).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn february_with_year_leap_year_snap_to_end() {
+    let now = Local.ymd(2022, 05, 15).and_hms(12, 00, 00);
+    let expected = Local.ymd(2024, 02, 29).and_hms(23, 59, 59);
+    let actual = parse_time(Local, now, "2024 feb", Snap::ToEnd).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn february_with_year_non_leap_year_snap_to_start() {
+    let now = Local.ymd(2022, 05, 15).and_hms(12, 00, 00);
+    let expected = Local.ymd(2023, 02, 01).and_hms(00, 00, 00);
+    let actual = parse_time(Local, now, "2023 feb", Snap::ToStart).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn february_with_year_leap_year_snap_to_start() {
+    let now = Local.ymd(2022, 05, 15).and_hms(12, 00, 00);
+    let expected = Local.ymd(2024, 02, 01).and_hms(00, 00, 00);
+    let actual = parse_time(Local, now, "2024 feb", Snap::ToStart).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn standalone_year_snap_to_end() {
+    let now = Local.ymd(2022, 05, 15).and_hms(12, 00, 00);
+    let expected = Local.ymd(2024, 12, 31).and_hms(23, 59, 59);
+    let actual = parse_time(Local, now, "2024", Snap::ToEnd).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn standalone_year_snap_to_start() {
+    let now = Local.ymd(2022, 05, 15).and_hms(12, 00, 00);
+    let expected = Local.ymd(2024, 01, 01).and_hms(00, 00, 00);
+    let actual = parse_time(Local, now, "2024", Snap::ToStart).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn year_month_day_snap_to_start() {
+    let now = Local.ymd(2022, 05, 15).and_hms(12, 00, 00);
+    let expected = Local.ymd(2023, 08, 10).and_hms(00, 00, 00);
+    let actual = parse_time(Local, now, "2023 august 10", Snap::ToStart).unwrap();
+    assert_eq!(actual, expected);
+}
+
+#[test]
 fn start_in_1_day() {
     let now = Local.ymd(2021, 05, 21).and_hms(11, 00, 00);
     let expected = Local.ymd(2021, 05, 22).and_hms(00, 00, 00);

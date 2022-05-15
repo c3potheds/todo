@@ -249,6 +249,58 @@ pub enum Snap {
     ToEnd,
 }
 
+fn parse_month_day<'a, Tz: TimeZone>(
+    now: DateTime<Tz>,
+    chunk: &str,
+    chunks: &mut impl Iterator<Item = &'a str>,
+    snap: Snap,
+) -> Result<DateTime<Tz>, ParseTimeError> {
+    chunk
+        .parse::<chrono::Month>()
+        .map_err(|_| ParseTimeError)
+        .and_then(|month| match chunks.next() {
+            Some(chunk) => {
+                chunk.parse::<u32>().map_err(|_| ParseTimeError).map(|day| {
+                    let datetime = end_of_month_after(now.clone(), month)
+                        .with_day(day)
+                        .unwrap();
+                    match snap {
+                        Snap::ToStart => start_of_day(datetime),
+                        Snap::ToEnd => datetime,
+                    }
+                })
+            }
+            None => Ok(match snap {
+                Snap::ToStart => start_of_month_after(now.clone(), month),
+                Snap::ToEnd => end_of_month_after(now.clone(), month),
+            }),
+        })
+}
+
+fn parse_year_month_day<'a, Tz: TimeZone>(
+    tz: Tz,
+    chunk: &str,
+    chunks: &mut impl Iterator<Item = &'a str>,
+    snap: Snap,
+) -> Result<DateTime<Tz>, ParseTimeError> {
+    #![allow(clippy::zero_prefixed_literal)]
+    // Year must be formatted as YYYY.
+    let year = chunk.parse::<i32>().map_err(|_| ParseTimeError)?;
+    match chunks.next() {
+        Some(chunk) => parse_month_day(
+            tz.ymd(year, 01, 01).and_hms(00, 00, 00),
+            chunk,
+            chunks,
+            snap,
+        )
+        .map(|datetime| datetime.with_year(year).unwrap()),
+        None => Ok(match snap {
+            Snap::ToStart => tz.ymd(year, 01, 01).and_hms(00, 00, 00),
+            Snap::ToEnd => tz.ymd(year, 12, 31).and_hms(23, 59, 59),
+        }),
+    }
+}
+
 pub fn parse_time<Tz: TimeZone>(
     tz: Tz,
     now: DateTime<Tz>,
@@ -304,32 +356,17 @@ pub fn parse_time<Tz: TimeZone>(
                     .map(|datetime| datetime - chrono::Duration::days(7)),
                     _ => Err(ParseTimeError),
                 },
-                Some(chunk) => chunk
-                    .parse::<chrono::Month>()
-                    .map_err(|_| ParseTimeError)
-                    .and_then(|month| match chunks.next() {
-                        Some(chunk) => chunk
-                            .parse::<u32>()
-                            .map_err(|_| ParseTimeError)
-                            .map(|day| {
-                                let datetime =
-                                    end_of_month_after(now.clone(), month)
-                                        .with_day(day)
-                                        .unwrap();
-                                match snap {
-                                    Snap::ToStart => start_of_day(datetime),
-                                    Snap::ToEnd => datetime,
-                                }
-                            }),
-                        None => Ok(match snap {
-                            Snap::ToStart => {
-                                start_of_month_after(now.clone(), month)
-                            }
-                            Snap::ToEnd => {
-                                end_of_month_after(now.clone(), month)
-                            }
-                        }),
-                    }),
+                Some(chunk) => {
+                    parse_month_day(now.clone(), chunk, &mut chunks, snap)
+                        .or_else(|_| {
+                            parse_year_month_day(
+                                tz.clone(),
+                                chunk,
+                                &mut chunks,
+                                snap,
+                            )
+                        })
+                }
                 _ => Err(ParseTimeError),
             }
         })
