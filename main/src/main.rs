@@ -44,11 +44,23 @@ fn main() -> TodoResult {
         .ok_or(TodoError::NoDataDirectory)?;
 
     let mut config_path = project_dirs.config_dir().to_path_buf();
+
+    // If the directory does not exist, create it.
+    if !config_path.exists() {
+        std::fs::create_dir_all(&config_path)?;
+    }
+
     config_path.push("config.json");
     let config = File::open(&config_path)
         .map_or_else(|_| Ok(config::Config::default()), config::load)?;
 
     let mut data_path = project_dirs.data_dir().to_path_buf();
+
+    // If the directory does not exist, create it.
+    if !data_path.exists() {
+        std::fs::create_dir_all(&data_path)?;
+    }
+
     data_path.push("data.json");
 
     let read_file_result = std::fs::read_to_string(&data_path);
