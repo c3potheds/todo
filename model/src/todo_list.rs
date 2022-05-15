@@ -47,6 +47,29 @@ impl<'ser> TodoList<'ser> {
             .min()
     }
 
+    fn calculate_implicit_tags(&self, id: TaskId) -> Vec<TaskId> {
+        self.adeps(id)
+            .iter_sorted(self)
+            .map(|adep| {
+                let mut tags = Vec::new();
+                if let Some(adep_data) = self.get(adep) {
+                    tags.extend(&adep_data.implicit_tags);
+                    if adep_data.tag && !tags.contains(&adep) {
+                        tags.push(adep);
+                    }
+                }
+                tags
+            })
+            .fold(Vec::new(), |mut so_far, adep_tags| {
+                for &tag in &adep_tags {
+                    if !so_far.contains(&tag) {
+                        so_far.push(tag);
+                    }
+                }
+                so_far
+            })
+    }
+
     fn put_in_incomplete_layer(&mut self, id: TaskId, depth: usize) -> usize {
         let pos = self.incomplete.bisect_layer(&id, depth, |&a, &b| {
             use std::cmp::Ordering;
@@ -150,12 +173,17 @@ impl<'ser> TodoList<'ser> {
     // Returns a TaskSet of affected tasks.
     pub fn update_implicits(&mut self, id: TaskId) -> TaskSet {
         let mut changed = false;
-        let (old_priority, old_due_date) = {
+        let (old_priority, old_due_date, old_tags) = {
             let task = self.get(id).unwrap();
-            (task.implicit_priority, task.implicit_due_date)
+            (
+                task.implicit_priority,
+                task.implicit_due_date,
+                task.implicit_tags.clone(),
+            )
         };
         let new_priority = self.calculate_implicit_priority(id);
         let new_due_date = self.calculate_implicit_due_date(id);
+        let new_tags = self.calculate_implicit_tags(id);
         {
             if let Some(mut task) = self.tasks.node_weight_mut(id.0) {
                 if old_priority != new_priority {
@@ -164,6 +192,10 @@ impl<'ser> TodoList<'ser> {
                 }
                 if old_due_date != new_due_date {
                     task.implicit_due_date = new_due_date;
+                    changed = true;
+                }
+                if old_tags != new_tags {
+                    task.implicit_tags = new_tags;
                     changed = true;
                 }
             }
@@ -651,6 +683,23 @@ impl<'ser> TodoList<'ser> {
                     })
                     .chain(std::iter::once(id))
                     .collect()
+            }
+            None => TaskSet::default(),
+        }
+    }
+
+    pub fn set_tag(&mut self, id: TaskId, tag: bool) -> TaskSet {
+        match self.tasks.node_weight_mut(id.0) {
+            Some(task) => {
+                if task.tag == tag {
+                    return TaskSet::default();
+                }
+                task.tag = tag;
+                self.deps(id)
+                    .iter_sorted(self)
+                    .fold(TaskSet::of(id), |so_far, dep| {
+                        so_far | self.update_implicits(dep)
+                    })
             }
             None => TaskSet::default(),
         }

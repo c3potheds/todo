@@ -8,7 +8,7 @@ use {clap::Parser, lookup_key::Key};
 /// the constituents.
 ///
 /// This is the opposite of 'split'.
-#[derive(Debug, PartialEq, Parser)]
+#[derive(Debug, Default, PartialEq, Parser)]
 #[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Merge {
     /// Tasks to merge.
@@ -17,4 +17,11 @@ pub struct Merge {
     /// Description of new task to merge into.
     #[clap(long)]
     pub into: String,
+    /// If passed with a value of "true", the new task will be marked as a tag.
+    /// If passed with a value of "false", the new task will not be marked as a
+    /// tag. If not passed, the new task will be marked as a tag if all of the
+    /// original tasks were marked as tags, otherwise it will not be marked as
+    /// a tag.
+    #[clap(long, short = 't')]
+    pub tag: Option<bool>,
 }

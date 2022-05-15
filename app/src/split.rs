@@ -31,7 +31,12 @@ fn split(
     into: Vec<String>,
     chain: bool,
     keep: bool,
+    tag: Option<bool>,
 ) -> SplitResult {
+    let original_is_tag = match list.get(id) {
+        Some(task) => task.tag,
+        None => false,
+    };
     let deps: Vec<_> = list.deps(id).iter_sorted(list).collect();
     let adeps: Vec<_> = list.adeps(id).iter_sorted(list).collect();
     let num_shards: u32 = into.len().try_into().unwrap();
@@ -50,6 +55,10 @@ fn split(
                     task.budget
                 },
                 start_date: task.start_date,
+                tag: match tag {
+                    Some(value) => value,
+                    None => !keep && original_is_tag,
+                },
             };
             list.add(options)
         })
@@ -103,6 +112,7 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: Split) {
                     .collect(),
                 cmd.chain,
                 cmd.keep,
+                cmd.tag,
             ))
         },
     );

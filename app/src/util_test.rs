@@ -275,6 +275,48 @@ fn format_complete_task_with_punctuality_late() {
 }
 
 #[test]
+fn format_tag() {
+    let mut list = TodoList::default();
+    let a = list.add(NewOptions::new().desc("a").as_tag());
+    let actual = format_task(&list, a);
+    let expected = PrintableTask::new("a", 1, Incomplete).as_tag();
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn format_task_with_implicit_tags() {
+    let mut list = TodoList::default();
+    let a = list.add(NewOptions::new().desc("a").as_tag());
+    let b = list.add(NewOptions::new().desc("b").as_tag());
+    let c = list.add("c");
+    list.block(a).on(c).unwrap();
+    list.block(b).on(c).unwrap();
+    let actual = format_task(&list, c);
+    let expected = PrintableTask::new("c", 1, Incomplete)
+        .adeps_stats(2, 2)
+        .tag("a")
+        .tag("b");
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn format_tag_with_implicit_tags() {
+    let mut list = TodoList::default();
+    let a = list.add(NewOptions::new().desc("a").as_tag());
+    let b = list.add(NewOptions::new().desc("b").as_tag());
+    let c = list.add(NewOptions::new().desc("c").as_tag());
+    list.block(a).on(c).unwrap();
+    list.block(b).on(c).unwrap();
+    let actual = format_task(&list, c);
+    let expected = PrintableTask::new("c", 1, Incomplete)
+        .adeps_stats(2, 2)
+        .tag("a")
+        .tag("b")
+        .as_tag();
+    assert_eq!(actual, expected);
+}
+
+#[test]
 fn lookup_by_number() {
     let mut list = TodoList::default();
     let a = list.add("a");

@@ -18,4 +18,6 @@ fn deserialize_task_with_missing_creation_time() {
     assert_eq!(task.due_date, None);
     assert_eq!(task.implicit_due_date, None);
     assert_eq!(task.budget, DurationInSeconds::default());
+    assert!(!task.tag);
+    assert_eq!(task.implicit_tags, vec![]);
 }

@@ -71,6 +71,12 @@ pub fn run(
         .map(|id| list.get(id).unwrap().start_date)
         .max()
         .unwrap_or(now);
+    let tag = match cmd.tag {
+        Some(value) => value,
+        None => tasks_to_merge
+            .iter_unsorted()
+            .all(|id| list.get(id).map_or_else(|| true, |data| data.tag)),
+    };
     let merged = list.add(NewOptions {
         desc: Cow::Owned(cmd.into.to_string()),
         now,
@@ -78,6 +84,7 @@ pub fn run(
         due_date,
         budget,
         start_date,
+        tag,
     });
     deps.iter_sorted(list).for_each(|dep| {
         // This shouldn't panic if we correctly detected cycles above.

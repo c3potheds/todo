@@ -140,3 +140,55 @@ fn split_keep_short() {
         }),
     );
 }
+
+#[test]
+fn split_tag_long_true() {
+    expect_parses_into(
+        "todo split 1 --into a b --tag true",
+        SubCommand::Split(Split {
+            keys: vec![ByNumber(1)],
+            into: vec!["a".to_string(), "b".to_string()],
+            tag: Some(true),
+            ..Default::default()
+        }),
+    )
+}
+
+#[test]
+fn split_tag_short_true() {
+    expect_parses_into(
+        "todo split 1 --into a b -t true",
+        SubCommand::Split(Split {
+            keys: vec![ByNumber(1)],
+            into: vec!["a".to_string(), "b".to_string()],
+            tag: Some(true),
+            ..Default::default()
+        }),
+    )
+}
+
+#[test]
+fn split_tag_long_false() {
+    expect_parses_into(
+        "todo split 1 --into a b --tag false",
+        SubCommand::Split(Split {
+            keys: vec![ByNumber(1)],
+            into: vec!["a".to_string(), "b".to_string()],
+            tag: Some(false),
+            ..Default::default()
+        }),
+    )
+}
+
+#[test]
+fn split_tag_short_false() {
+    expect_parses_into(
+        "todo split 1 --into a b -t false",
+        SubCommand::Split(Split {
+            keys: vec![ByNumber(1)],
+            into: vec!["a".to_string(), "b".to_string()],
+            tag: Some(false),
+            ..Default::default()
+        }),
+    )
+}

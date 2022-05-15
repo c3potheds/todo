@@ -3,7 +3,7 @@ use {
         format_util::format_number, Plicit, PrintableError, PrintableTask,
         PrintableWarning, TodoPrinter,
     },
-    ansi_term::Color,
+    ansi_term::{Color, Style},
     chrono::{DateTime, Duration, Local, Utc},
     std::{
         fmt,
@@ -177,6 +177,49 @@ fn fmt_unlocks(unlockable: usize, total: usize, out: &mut String) {
     out.push(' ');
 }
 
+// Allocate a color for a tag with the given name. The color is
+// deterministically allocated based on the hash of the tag name, from a pool of
+// neutral colors (excluding black), and underlined to help distinguish tags
+// from task descriptions.
+fn allocate_tag_color(tag_name: &str) -> Style {
+    let neutral_colors = [
+        Color::Fixed(1).normal(),
+        Color::Fixed(2).normal(),
+        Color::Fixed(3).normal(),
+        Color::Fixed(4).normal(),
+        Color::Fixed(5).normal(),
+        Color::Fixed(6).normal(),
+        Color::Fixed(7).normal(),
+        Color::Fixed(9).normal(),
+        Color::Fixed(10).normal(),
+        Color::Fixed(11).normal(),
+        Color::Fixed(12).normal(),
+        Color::Fixed(13).normal(),
+        Color::Fixed(14).normal(),
+        Color::Fixed(15).normal(),
+    ];
+    use std::collections::hash_map::DefaultHasher;
+    use std::hash::{Hash, Hasher};
+    let mut hasher = DefaultHasher::new();
+    tag_name.hash(&mut hasher);
+    let hash: usize = hasher.finish() as usize;
+    let index = hash % neutral_colors.len();
+    neutral_colors[index].underline()
+}
+
+fn fmt_tag(tag: Plicit<&str>, out: &mut String) {
+    let (tag, implicit) = match tag {
+        Plicit::Explicit(tag) => (tag, false),
+        Plicit::Implicit(tag) => (tag, true),
+    };
+    let mut style = allocate_tag_color(tag);
+    if implicit {
+        style = style.italic();
+    }
+    out.push_str(&style.paint(tag).to_string());
+    out.push(' ');
+}
+
 fn get_body(task: &PrintableTask, context: &PrintingContext) -> String {
     let mut body = String::new();
     if let Some(start_date) = task.start_date {
@@ -199,7 +242,14 @@ fn get_body(task: &PrintableTask, context: &PrintingContext) -> String {
     if let Some(punctuality) = task.punctuality {
         fmt_punctuality(punctuality, &mut body);
     }
-    body.push_str(task.desc);
+    for tag in &task.implicit_tags {
+        fmt_tag(Plicit::Implicit(tag), &mut body);
+    }
+    if task.is_explicit_tag {
+        fmt_tag(Plicit::Explicit(task.desc), &mut body);
+    } else {
+        body.push_str(task.desc);
+    }
     body
 }
 
