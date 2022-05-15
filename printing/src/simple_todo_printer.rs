@@ -179,15 +179,24 @@ fn fmt_unlocks(unlockable: usize, total: usize, out: &mut String) {
 
 // Allocate a color for a tag with the given name. The color is
 // deterministically allocated based on the hash of the tag name, from a pool of
-// neutral colors (light and dark variants of blue, cyan, and purple).
+// neutral colors (excluding black), and underlined to help distinguish tags
+// from task descriptions.
 fn allocate_tag_color(tag_name: &str) -> Style {
-    let neutral_colors: [Style; 6] = [
-        Color::Blue.normal(),
-        Color::Cyan.normal(),
-        Color::Purple.normal(),
-        Color::Blue.dimmed(),
-        Color::Cyan.dimmed(),
-        Color::Purple.dimmed(),
+    let neutral_colors = [
+        Color::Fixed(1).normal(),
+        Color::Fixed(2).normal(),
+        Color::Fixed(3).normal(),
+        Color::Fixed(4).normal(),
+        Color::Fixed(5).normal(),
+        Color::Fixed(6).normal(),
+        Color::Fixed(7).normal(),
+        Color::Fixed(9).normal(),
+        Color::Fixed(10).normal(),
+        Color::Fixed(11).normal(),
+        Color::Fixed(12).normal(),
+        Color::Fixed(13).normal(),
+        Color::Fixed(14).normal(),
+        Color::Fixed(15).normal(),
     ];
     use std::collections::hash_map::DefaultHasher;
     use std::hash::{Hash, Hasher};
@@ -195,7 +204,7 @@ fn allocate_tag_color(tag_name: &str) -> Style {
     tag_name.hash(&mut hasher);
     let hash: usize = hasher.finish() as usize;
     let index = hash % neutral_colors.len();
-    neutral_colors[index]
+    neutral_colors[index].underline()
 }
 
 fn fmt_tag(tag: Plicit<&str>, out: &mut String) {

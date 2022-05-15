@@ -566,8 +566,8 @@ fn show_implicit_tags() {
         fmt,
         concat!(
             "      \u{1b}[33m1)\u{1b}[0m ",
-            "\u{1b}[2;3;34mx\u{1b}[0m ",
-            "\u{1b}[2;3;34my\u{1b}[0m ",
+            "\u{1b}[3;4;38;5;11mx\u{1b}[0m ",
+            "\u{1b}[3;4;38;5;15my\u{1b}[0m ",
             "a\n"
         )
     );
@@ -576,7 +576,7 @@ fn show_implicit_tags() {
 #[test]
 fn explicit_tag() {
     let fmt = print_task(&PrintableTask::new("a", 1, Incomplete).as_tag());
-    assert_eq!(fmt, "      \u{1b}[33m1)\u{1b}[0m \u{1b}[2;34ma\u{1b}[0m\n",);
+    assert_eq!(fmt, "      \u{1b}[33m1)\u{1b}[0m \u{1b}[4;38;5;2ma\u{1b}[0m\n",);
 }
 
 #[test]
@@ -591,9 +591,9 @@ fn explicit_tag_with_implicit_tags() {
         fmt,
         concat!(
             "      \u{1b}[33m1)\u{1b}[0m ",
-            "\u{1b}[2;3;34mx\u{1b}[0m ",
-            "\u{1b}[2;3;34my\u{1b}[0m ",
-            "\u{1b}[2;34ma\u{1b}[0m\n",
+            "\u{1b}[3;4;38;5;11mx\u{1b}[0m ",
+            "\u{1b}[3;4;38;5;15my\u{1b}[0m ",
+            "\u{1b}[4;38;5;2ma\u{1b}[0m\n",
         )
     );
 }
@@ -612,9 +612,9 @@ fn explicit_tag_with_implicit_tags_and_punctuality() {
         concat!(
             "      \u{1b}[32m0)\u{1b}[0m ",
             "\u{1b}[1;31mDone 1 day late\u{1b}[0m ",
-            "\u{1b}[2;3;34mx\u{1b}[0m ",
-            "\u{1b}[2;3;34my\u{1b}[0m ",
-            "\u{1b}[2;34ma\u{1b}[0m\n",
+            "\u{1b}[3;4;38;5;11mx\u{1b}[0m ",
+            "\u{1b}[3;4;38;5;15my\u{1b}[0m ",
+            "\u{1b}[4;38;5;2ma\u{1b}[0m\n",
         )
     );
 }
