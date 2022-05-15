@@ -175,3 +175,72 @@ fn merge_snoozed_tasks() {
         )
         .end();
 }
+
+#[test]
+fn merge_tags_default() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --tag");
+    fix.test("todo merge a b c --into abc")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("abc", 1, Incomplete)
+                .action(Select)
+                .as_tag(),
+        )
+        .end();
+}
+
+#[test]
+fn merge_tags_into_tag() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --tag");
+    fix.test("todo merge a b c --into abc --tag true")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("abc", 1, Incomplete)
+                .action(Select)
+                .as_tag(),
+        )
+        .end();
+}
+
+#[test]
+fn merge_tasks_into_tag() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c");
+    fix.test("todo merge a b c --into abc --tag true")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("abc", 1, Incomplete)
+                .action(Select)
+                .as_tag(),
+        )
+        .end();
+}
+
+#[test]
+fn merge_tags_into_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --tag");
+    fix.test("todo merge a b c --into abc --tag false")
+        .validate()
+        .printed_task(&PrintableTask::new("abc", 1, Incomplete).action(Select))
+        .end();
+}
+
+#[test]
+fn show_tags_for_merged_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --tag");
+    fix.test("todo block c --on a b");
+    fix.test("todo merge a b --into ab")
+        .validate()
+        .printed_task(
+            &PrintableTask::new("ab", 1, Incomplete)
+                .action(Select)
+                .as_tag()
+                .tag("c"),
+        )
+        .printed_task(&PrintableTask::new("c", 2, Blocked).as_tag())
+        .end();
+}
