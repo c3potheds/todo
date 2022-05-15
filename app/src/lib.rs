@@ -20,6 +20,7 @@ mod snooze;
 mod snoozed;
 mod split;
 mod status;
+mod tag;
 pub mod todo;
 mod top;
 mod unblock;
@@ -93,6 +94,9 @@ mod split_test;
 
 #[cfg(test)]
 mod status_test;
+
+#[cfg(test)]
+mod tag_test;
 
 #[cfg(test)]
 mod top_test;

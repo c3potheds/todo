@@ -2,7 +2,7 @@ use {
     super::{
         block, budget, chain, check, due, edit, find, get, log, merge, new,
         path, prefix, priority, punt, put, restore, rm, snooze, snoozed, split,
-        status, top, unblock, unsnooze,
+        status, tag, top, unblock, unsnooze,
     },
     cli::{Options, SubCommand},
     clock::Clock,
@@ -50,6 +50,7 @@ pub fn todo(
         Some(Snooze(cmd)) => snooze::run(list, printer, now, &cmd),
         Some(Snoozed(_)) => snoozed::run(list, printer, now),
         Some(Split(cmd)) => split::run(list, printer, cmd),
+        Some(Tag(cmd)) => tag::run(list, printer, &cmd),
         Some(Top(cmd)) => top::run(list, printer, &cmd),
         Some(Unblock(cmd)) => unblock::run(list, printer, &cmd),
         Some(Unsnooze(cmd)) => unsnooze::run(list, printer, &cmd),

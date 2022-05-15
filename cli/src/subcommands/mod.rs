@@ -19,6 +19,7 @@ mod rm;
 mod snooze;
 mod snoozed;
 mod split;
+mod tag;
 mod top;
 mod unblock;
 mod unsnooze;
@@ -44,6 +45,7 @@ pub use self::rm::Rm;
 pub use self::snooze::Snooze;
 pub use self::snoozed::Snoozed;
 pub use self::split::Split;
+pub use self::tag::Tag;
 pub use self::top::Top;
 pub use self::unblock::Unblock;
 pub use self::unsnooze::Unsnooze;
@@ -110,6 +112,9 @@ mod snoozed_test;
 
 #[cfg(test)]
 mod split_test;
+
+#[cfg(test)]
+mod tag_test;
 
 #[cfg(test)]
 mod top_test;
