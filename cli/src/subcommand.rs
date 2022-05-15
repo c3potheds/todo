@@ -35,6 +35,7 @@ pub enum SubCommand {
     Snooze(Snooze),
     Snoozed(Snoozed),
     Split(Split),
+    Tag(Tag),
     Top(Top),
     Unblock(Unblock),
     Unsnooze(Unsnooze),
