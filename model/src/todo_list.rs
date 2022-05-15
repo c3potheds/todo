@@ -688,6 +688,23 @@ impl<'ser> TodoList<'ser> {
         }
     }
 
+    pub fn set_tag(&mut self, id: TaskId, tag: bool) -> TaskSet {
+        match self.tasks.node_weight_mut(id.0) {
+            Some(task) => {
+                if task.tag == tag {
+                    return TaskSet::default();
+                }
+                task.tag = tag;
+                self.deps(id)
+                    .iter_sorted(self)
+                    .fold(TaskSet::of(id), |so_far, dep| {
+                        so_far | self.update_implicits(dep)
+                    })
+            }
+            None => TaskSet::default(),
+        }
+    }
+
     pub fn position(&self, id: TaskId) -> Option<i32> {
         self.incomplete
             .position(&id)
