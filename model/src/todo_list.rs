@@ -26,7 +26,7 @@ impl<'ser> TodoList<'ser> {
             .chain(
                 self.adeps(id)
                     .into_iter_unsorted()
-                    .map(|adep| self.calculate_implicit_priority(adep)),
+                    .map(|adep| self.get(adep).unwrap().implicit_priority),
             )
             .max()
             .unwrap_or(0)
@@ -37,12 +37,16 @@ impl<'ser> TodoList<'ser> {
             .into_iter()
             .flat_map(|task| task.due_date.into_iter())
             .chain(self.adeps(id).into_iter_unsorted().flat_map(|adep| {
-                self.calculate_implicit_due_date(adep).map(|due_date| {
-                    due_date
-                        - Duration::seconds(
-                            self.get(adep).unwrap().budget.0 as i64,
-                        )
-                })
+                self.get(adep)
+                    .unwrap()
+                    .implicit_due_date
+                    .map(|due_date| {
+                        due_date
+                            - Duration::seconds(
+                                self.get(adep).unwrap().budget.0 as i64,
+                            )
+                    })
+                    .into_iter()
             }))
             .min()
     }
