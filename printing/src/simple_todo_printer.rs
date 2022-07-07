@@ -204,7 +204,7 @@ fn allocate_tag_color(tag_name: &str) -> Style {
     tag_name.hash(&mut hasher);
     let hash: usize = hasher.finish() as usize;
     let index = hash % neutral_colors.len();
-    neutral_colors[index].underline()
+    neutral_colors[index]
 }
 
 fn fmt_tag(tag: Plicit<&str>, out: &mut String) {
