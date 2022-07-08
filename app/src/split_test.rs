@@ -218,9 +218,15 @@ fn split_tag_default() {
     fix.test("todo new a --tag");
     fix.test("todo split a --into x y z")
         .validate()
-        .printed_task(&PrintableTask::new("x", 1, Incomplete).action(New).as_tag())
-        .printed_task(&PrintableTask::new("y", 2, Incomplete).action(New).as_tag())
-        .printed_task(&PrintableTask::new("z", 3, Incomplete).action(New).as_tag())
+        .printed_task(
+            &PrintableTask::new("x", 1, Incomplete).action(New).as_tag(),
+        )
+        .printed_task(
+            &PrintableTask::new("y", 2, Incomplete).action(New).as_tag(),
+        )
+        .printed_task(
+            &PrintableTask::new("z", 3, Incomplete).action(New).as_tag(),
+        )
         .end();
 }
 
@@ -242,9 +248,17 @@ fn split_tag_keep() {
     fix.test("todo new a --tag");
     fix.test("todo split a --into x y z --keep")
         .validate()
-        .printed_task(&PrintableTask::new("x", 1, Incomplete).action(New).tag("a"))
-        .printed_task(&PrintableTask::new("y", 2, Incomplete).action(New).tag("a"))
-        .printed_task(&PrintableTask::new("z", 3, Incomplete).action(New).tag("a"))
-        .printed_task(&PrintableTask::new("a", 4, Blocked).action(Select).as_tag())
+        .printed_task(
+            &PrintableTask::new("x", 1, Incomplete).action(New).tag("a"),
+        )
+        .printed_task(
+            &PrintableTask::new("y", 2, Incomplete).action(New).tag("a"),
+        )
+        .printed_task(
+            &PrintableTask::new("z", 3, Incomplete).action(New).tag("a"),
+        )
+        .printed_task(
+            &PrintableTask::new("a", 4, Blocked).action(Select).as_tag(),
+        )
         .end();
 }

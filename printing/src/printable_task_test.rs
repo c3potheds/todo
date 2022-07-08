@@ -576,7 +576,10 @@ fn show_implicit_tags() {
 #[test]
 fn explicit_tag() {
     let fmt = print_task(&PrintableTask::new("a", 1, Incomplete).as_tag());
-    assert_eq!(fmt, "      \u{1b}[33m1)\u{1b}[0m \u{1b}[38;5;2ma\u{1b}[0m\n",);
+    assert_eq!(
+        fmt,
+        "      \u{1b}[33m1)\u{1b}[0m \u{1b}[38;5;2ma\u{1b}[0m\n",
+    );
 }
 
 #[test]
