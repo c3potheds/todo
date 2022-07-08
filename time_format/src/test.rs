@@ -297,7 +297,8 @@ fn standalone_year_snap_to_start() {
 fn year_month_day_snap_to_start() {
     let now = Local.ymd(2022, 05, 15).and_hms(12, 00, 00);
     let expected = Local.ymd(2023, 08, 10).and_hms(00, 00, 00);
-    let actual = parse_time(Local, now, "2023 august 10", Snap::ToStart).unwrap();
+    let actual =
+        parse_time(Local, now, "2023 august 10", Snap::ToStart).unwrap();
     assert_eq!(actual, expected);
 }
 
