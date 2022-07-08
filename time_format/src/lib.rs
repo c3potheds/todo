@@ -383,7 +383,7 @@ pub fn format_duration_laconic(duration: chrono::Duration) -> String {
     let formatted = humantime::format_duration(duration.to_std().unwrap());
     match format!("{}", formatted).split(' ').next() {
         Some(chunk) => {
-            let len = chunk.chars().take_while(|c| c.is_digit(10)).count();
+            let len = chunk.chars().take_while(|c| c.is_ascii_digit()).count();
             let n = &chunk[0..len];
             let unit = match (n.parse::<i32>().unwrap(), &chunk[len..]) {
                 (1, "s") => "second",
