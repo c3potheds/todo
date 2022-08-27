@@ -3,11 +3,23 @@
 use {
     super::testing::Fixture,
     printing::{
-        Action::*, BriefPrintableTask, PrintableTask, PrintableWarning,
-        Status::*,
+        Action::*, BriefPrintableTask, PrintableError, PrintableTask,
+        PrintableWarning, Status::*,
     },
     testing::ymdhms,
 };
+
+#[test]
+fn snooze_no_date() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a");
+    fix.test("todo snooze a")
+        .validate()
+        .printed_error(&PrintableError::EmptyDate {
+            flag: Some("--until".to_string()),
+        })
+        .end();
+}
 
 #[test]
 fn snooze_one_task() {
