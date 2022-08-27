@@ -38,6 +38,9 @@ pub enum PrintableError {
     NoMatchForKeys {
         keys: Vec<Key>,
     },
+    EmptyDate {
+        flag: Option<String>,
+    },
     CannotParseDueDate {
         cannot_parse: String,
     },
@@ -107,6 +110,12 @@ impl Display for PrintableError {
                         "No match for keys {}",
                         format_keys(keys),
                     )
+                }
+                PrintableError::EmptyDate{ flag } => {
+                    match flag {
+                        Some(flag) => format!("Empty date for flag {}", Color::White.bold().paint(flag)),
+                        None => "Empty date".to_string(),
+                    }
                 }
                 PrintableError::CannotParseDueDate { cannot_parse } => {
                     format!(

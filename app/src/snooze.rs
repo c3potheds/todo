@@ -6,7 +6,7 @@ use {
     chrono::{DateTime, Utc},
     cli::Snooze,
     model::{SnoozeWarning, TaskSet, TodoList},
-    printing::{Action, PrintableWarning, TodoPrinter},
+    printing::{Action, PrintableError, PrintableWarning, TodoPrinter},
 };
 
 pub fn run(
@@ -18,7 +18,12 @@ pub fn run(
     let snooze_date =
         match parse_snooze_date_or_print_error(now, &cmd.until, printer) {
             Ok(Some(snooze_date)) => snooze_date,
-            Ok(None) => panic!("Need a nonempty snooze date"),
+            Ok(None) => {
+                printer.print_error(&PrintableError::EmptyDate {
+                    flag: Some("--until".to_string()),
+                });
+                return;
+            }
             Err(()) => {
                 return;
             }
