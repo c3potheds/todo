@@ -28,14 +28,14 @@ pub struct New {
     ///
     /// This blocks the given "before" tasks on the new tasks, and block the new
     /// tasks on the deps of the "before" tasks.
-    #[clap(long, value_name = "keys", min_values = 1)]
+    #[clap(long, short = 'B', value_name = "keys", min_values = 1)]
     pub before: Vec<Key>,
 
     /// Put the new tasks after these tasks.
     ///
     /// This blocks the new tasks on the given "after" tasks, and block the
     /// adeps of the "after" tasks on the new tasks.
-    #[clap(long, value_name = "keys", min_values = 1)]
+    #[clap(long, short = 'A', value_name = "keys", min_values = 1)]
     pub after: Vec<Key>,
 
     /// Put the new tasks in a blocking sequence.

@@ -35,9 +35,39 @@ fn put_one_before() {
 }
 
 #[test]
+fn put_one_before_short() {
+    expect_parses_into(
+        "todo put a -B b",
+        SubCommand::Put(Put {
+            keys: vec![ByName("a".to_string())],
+            preposition: Prepositions {
+                before: vec![ByName("b".to_string())],
+                after: vec![],
+            },
+            include_done: false,
+        }),
+    );
+}
+
+#[test]
 fn put_one_after() {
     expect_parses_into(
         "todo put a --after b",
+        SubCommand::Put(Put {
+            keys: vec![ByName("a".to_string())],
+            preposition: Prepositions {
+                before: vec![],
+                after: vec![ByName("b".to_string())],
+            },
+            include_done: false,
+        }),
+    );
+}
+
+#[test]
+fn put_one_after_short() {
+    expect_parses_into(
+        "todo put a -A b",
         SubCommand::Put(Put {
             keys: vec![ByName("a".to_string())],
             preposition: Prepositions {
