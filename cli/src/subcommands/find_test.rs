@@ -15,6 +15,7 @@ fn find_with_single_string() {
         SubCommand::Find(Find {
             terms: vec!["hello".to_string()],
             include_done: false,
+            ..Default::default()
         }),
     );
 }
@@ -26,6 +27,7 @@ fn find_include_done_long() {
         SubCommand::Find(Find {
             terms: vec!["yo".to_string()],
             include_done: true,
+            ..Default::default()
         }),
     );
 }
@@ -37,6 +39,7 @@ fn find_include_done_short() {
         SubCommand::Find(Find {
             terms: vec!["blah".to_string()],
             include_done: true,
+            ..Default::default()
         }),
     );
 }
@@ -48,6 +51,7 @@ fn find_with_multiple_strings() {
         SubCommand::Find(Find {
             terms: vec!["hello".to_string(), "goodbye".to_string()],
             include_done: false,
+            ..Default::default()
         }),
     );
 }
