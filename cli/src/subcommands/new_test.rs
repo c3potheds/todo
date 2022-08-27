@@ -127,6 +127,19 @@ fn new_before_after() {
 }
 
 #[test]
+fn new_before_after_short() {
+    expect_parses_into(
+        "todo new c -B a -A b",
+        SubCommand::New(New {
+            desc: vec!["c".to_string()],
+            before: vec![ByName("a".to_string())],
+            after: vec![ByName("b".to_string())],
+            ..Default::default()
+        }),
+    );
+}
+
+#[test]
 fn new_one_with_priority() {
     expect_parses_into(
         "todo new a --priority 1",
