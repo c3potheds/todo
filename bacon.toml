@@ -24,7 +24,12 @@ need_stdout = false
 watch = ["tests", "benches", "examples"]
 
 [jobs.test]
-command = ["cargo", "nextest", "run", "--color", "always"]
+command = [
+    "cargo", "nextest", "run",
+    "--color", "always",
+    "--failure-output", "immediate-final",
+    "--status-level", "none",
+]
 need_stdout = true
 watch = ["tests"]
 
