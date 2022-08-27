@@ -1,11 +1,36 @@
 use {
-    super::util::format_task,
+    super::util::{format_task, lookup_tasks},
     cli::Find,
-    model::{TaskStatus, TodoList},
+    lookup_key::Key,
+    model::{TaskSet, TaskStatus, TodoList},
     printing::TodoPrinter,
 };
 
+fn find_with_tag(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Find) {
+    let keys = cmd
+        .terms
+        .iter()
+        .map(|term| Key::ByName(term.to_string()))
+        .collect::<Vec<_>>();
+    lookup_tasks(list, keys.iter())
+        .iter_sorted(list)
+        .fold(TaskSet::default(), |so_far, id| {
+            so_far | list.transitive_deps(id) | TaskSet::of(id)
+        })
+        .iter_sorted(list)
+        .filter(|&id| {
+            cmd.include_done || list.status(id) != Some(TaskStatus::Complete)
+        })
+        .for_each(|id| {
+            printer.print_task(&format_task(list, id));
+        });
+}
+
 pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Find) {
+    if cmd.tag {
+        find_with_tag(list, printer, cmd);
+        return;
+    }
     list.all_tasks()
         .filter(|&id| {
             let task = list.get(id).unwrap();

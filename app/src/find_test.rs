@@ -74,3 +74,47 @@ fn find_case_insensitive() {
         .printed_task(&PrintableTask::new("aaa", 2, Incomplete))
         .end();
 }
+
+#[test]
+fn find_includes_matches_with_tag() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c d e f");
+    fix.test("todo new g -p a b c --tag");
+    // Because a, b, and c are tagged with 'g', they show up in 'find' results.
+    fix.test("todo find g -t")
+        .validate()
+        .printed_task(&PrintableTask::new("a", 4, Incomplete).tag("g"))
+        .printed_task(&PrintableTask::new("b", 5, Incomplete).tag("g"))
+        .printed_task(&PrintableTask::new("c", 6, Incomplete).tag("g"))
+        .printed_task(&PrintableTask::new("g", 7, Blocked).as_tag())
+        .end();
+}
+
+#[test]
+fn find_includes_matches_with_tag_excludes_complete() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c d e f -d");
+    fix.test("todo new g -p a b c --tag");
+    // Although a, b, and c are tagged with 'g', they are complete, so they do
+    // not show up in 'find' results by default.
+    fix.test("todo find g -t")
+        .validate()
+        .printed_task(&PrintableTask::new("g", 1, Incomplete).as_tag())
+        .end();
+}
+
+#[test]
+fn find_includes_matches_with_tag_include_complete() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c d e f -d");
+    fix.test("todo new g -p a b c --tag");
+    // Since the '-d' flag is used, a, b, and c show up even though they are
+    // complete.
+    fix.test("todo find g -d -t")
+        .validate()
+        .printed_task(&PrintableTask::new("a", -5, Complete).tag("g"))
+        .printed_task(&PrintableTask::new("b", -4, Complete).tag("g"))
+        .printed_task(&PrintableTask::new("c", -3, Complete).tag("g"))
+        .printed_task(&PrintableTask::new("g", 1, Incomplete).as_tag())
+        .end();
+}
