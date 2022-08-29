@@ -21,7 +21,7 @@ use {clap::Parser, lookup_key::Key};
 ///
 /// Removal of tasks cannot be undone! You must manually re-create the task
 /// if you want to undo it.
-#[derive(Debug, PartialEq, Eq, Parser)]
+#[derive(Debug, PartialEq, Parser)]
 #[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Rm {
     /// Tasks to remove.

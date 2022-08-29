@@ -12,7 +12,7 @@ use {
     },
 };
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum PrintableWarning {
     NoMatchFoundForKey {
         requested_key: Key,

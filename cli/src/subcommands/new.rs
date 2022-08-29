@@ -5,7 +5,7 @@ use {clap::Parser, lookup_key::Key};
 /// Each positional string will become the description of a new task in the
 /// to-do list. By default, all new tasks are in the incomplete state, showing
 /// up in the default list that you see when you invoke a raw 'todo' command.
-#[derive(Debug, PartialEq, Eq, Parser, Default)]
+#[derive(Debug, PartialEq, Parser, Default)]
 #[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct New {
     /// Descriptions for the new tasks, as raw strings.

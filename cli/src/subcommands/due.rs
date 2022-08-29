@@ -34,7 +34,7 @@ use {clap::Parser, lookup_key::Key};
 /// dependencies whose due dates changed) will be printed.
 ///
 ///   todo due "buy christmas presents" --on dec 24
-#[derive(Debug, PartialEq, Eq, Parser, Default)]
+#[derive(Debug, PartialEq, Parser, Default)]
 #[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Due {
     /// Tasks to query or assign the due date.

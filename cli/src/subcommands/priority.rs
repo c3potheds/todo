@@ -27,7 +27,7 @@ use {clap::Parser, lookup_key::Key};
 /// And if both task keys and a priority are supplied, matching tasks will
 /// have their priority set to the given level, and all affected tasks will
 /// be printed.
-#[derive(Debug, PartialEq, Eq, Parser, Default)]
+#[derive(Debug, PartialEq, Parser, Default)]
 #[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Priority {
     /// Tasks to assign a priority to.

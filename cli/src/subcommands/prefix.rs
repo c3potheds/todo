@@ -1,7 +1,7 @@
 use {clap::Parser, lookup_key::Key};
 
 /// Add a prefix to the given task descriptions.
-#[derive(Debug, PartialEq, Eq, Parser)]
+#[derive(Debug, PartialEq, Parser)]
 #[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Prefix {
     /// Tasks to add a prefix to.

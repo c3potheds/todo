@@ -5,7 +5,7 @@ use clap::Parser;
 /// The tasks, as always, will be ordered by their canonical numbering.
 /// The results include incomplete tasks and blocked tasks, and can include
 /// complete tasks if you pass the --include-done flag.
-#[derive(Debug, Default, PartialEq, Eq, Parser)]
+#[derive(Debug, Default, PartialEq, Parser)]
 #[clap(verbatim_doc_comment)]
 pub struct Find {
     /// Search terms, which can be a substring of any task description.

@@ -21,7 +21,7 @@ use {clap::Parser, lookup_key::Key};
 ///
 /// You can undo this command with the 'unblock' command, run
 /// 'todo help unblock' for more info.
-#[derive(Debug, PartialEq, Eq, Parser)]
+#[derive(Debug, PartialEq, Parser)]
 #[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Block {
     /// Tasks to block.

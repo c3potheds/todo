@@ -38,7 +38,7 @@ use {clap::Parser, lookup_key::Key};
 /// ... which results in:
 ///
 ///  a <- b1 <- b2 <- b3 <- c
-#[derive(Debug, PartialEq, Eq, Parser, Default)]
+#[derive(Debug, PartialEq, Parser, Default)]
 #[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Split {
     /// Tasks to split.

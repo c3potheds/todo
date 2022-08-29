@@ -74,10 +74,15 @@ fn get_initial_indent(
 
 fn fmt_snooze_date(snooze_duration: Duration, out: &mut String) {
     if snooze_duration > chrono::Duration::zero() {
-        out.push_str(&Color::Purple.bold().paint(format!(
-            "Snoozed for {}",
-            ::time_format::format_duration_laconic(snooze_duration)
-        )));
+        out.push_str(
+            &Color::Purple
+                .bold()
+                .paint(format!(
+                    "Snoozed for {}",
+                    ::time_format::format_duration_laconic(snooze_duration)
+                ))
+                .to_string(),
+        );
         out.push(' ');
     }
 }
@@ -104,7 +109,7 @@ fn fmt_priority(priority: &Plicit<i32>, out: &mut String) {
     if implicit {
         style = style.italic();
     }
-    out.push_str(&style.paint(format!("P{}", priority)));
+    out.push_str(&style.paint(format!("P{}", priority)).to_string());
     out.push(' ');
 }
 
@@ -129,7 +134,7 @@ fn fmt_due_date(
         context.now.with_timezone(&Local),
         due_date.with_timezone(&Local),
     );
-    out.push_str(&style.paint(format!("Due {}", desc)));
+    out.push_str(&style.paint(format!("Due {}", desc)).to_string());
     out.push(' ');
 }
 
@@ -141,7 +146,7 @@ fn fmt_punctuality(punctuality: Duration, out: &mut String) {
             (Color::Green.bold(), "early", -punctuality)
         };
     let desc = ::time_format::format_duration_laconic(abs_punctuality);
-    out.push_str(&style.paint(format!("Done {} {}", desc, suffix)));
+    out.push_str(&style.paint(format!("Done {} {}", desc, suffix)).to_string());
     out.push(' ');
 }
 
@@ -149,7 +154,11 @@ fn fmt_punctuality(punctuality: Duration, out: &mut String) {
 // deps and the number of total deps, as a fraction. E.g. if the task has 3
 // deps, 2 of which are incomplete, show "🔓 2/3".
 fn fmt_locks(incomplete: usize, total: usize, out: &mut String) {
-    out.push_str(&Color::Red.paint(format!("🔒{}/{}", incomplete, total)));
+    out.push_str(
+        &Color::Red
+            .paint(format!("🔒{}/{}", incomplete, total))
+            .to_string(),
+    );
     out.push(' ');
 }
 
@@ -160,7 +169,11 @@ fn fmt_locks(incomplete: usize, total: usize, out: &mut String) {
 //
 // If none of the adeps are unlockable, the first number is 0.
 fn fmt_unlocks(unlockable: usize, total: usize, out: &mut String) {
-    out.push_str(&Color::White.paint(format!("🔓{unlockable}/{total}")));
+    out.push_str(
+        &Color::White
+            .paint(format!("🔓{unlockable}/{total}"))
+            .to_string(),
+    );
     out.push(' ');
 }
 
@@ -203,7 +216,7 @@ fn fmt_tag(tag: Plicit<&str>, out: &mut String) {
     if implicit {
         style = style.italic();
     }
-    out.push_str(&style.paint(tag));
+    out.push_str(&style.paint(tag).to_string());
     out.push(' ');
 }
 

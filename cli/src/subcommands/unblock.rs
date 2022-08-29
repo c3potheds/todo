@@ -5,7 +5,7 @@ use {clap::Parser, lookup_key::Key};
 /// This is the "undo" operation for the 'block' command. If no --from argument
 /// is provided, then the given tasks will be unblocked from all of their direct
 /// dependencies.
-#[derive(Debug, PartialEq, Eq, Parser)]
+#[derive(Debug, PartialEq, Parser)]
 #[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Unblock {
     /// Tasks to unblock.

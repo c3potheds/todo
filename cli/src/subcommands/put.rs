@@ -1,6 +1,6 @@
 use {clap::Parser, lookup_key::Key};
 
-#[derive(Debug, PartialEq, Eq, Parser)]
+#[derive(Debug, PartialEq, Parser)]
 pub struct Prepositions {
     /// Put the selected tasks before these tasks.
     #[clap(long, short = 'B', min_values = 1)]
@@ -29,7 +29,7 @@ pub struct Prepositions {
 /// If you put task "t" after b, the result is:
 ///
 ///   a <- b <- t <- c
-#[derive(Debug, PartialEq, Eq, Parser)]
+#[derive(Debug, PartialEq, Parser)]
 #[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Put {
     /// Selected task keys.

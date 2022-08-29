@@ -10,7 +10,7 @@ use {clap::Parser, lookup_key::Key};
 /// habitually focus on the first ones in the list, but want to put off a
 /// task for later without blocking it on anything. You can send it to the
 /// end of the list with the 'punt' command.
-#[derive(Debug, PartialEq, Eq, Parser)]
+#[derive(Debug, PartialEq, Parser)]
 #[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Punt {
     /// Tasks to punt.

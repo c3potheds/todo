@@ -27,7 +27,7 @@ use {clap::Parser, lookup_key::Key};
 /// This is also useful for seeing what tasks may be unlocked if you
 /// complete a certain task. You can use this to get a "big picture" view
 /// of how a task fits into the larger plan.
-#[derive(Debug, PartialEq, Eq, Parser)]
+#[derive(Debug, PartialEq, Parser)]
 #[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Get {
     /// Tasks to explore.

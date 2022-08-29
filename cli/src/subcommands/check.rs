@@ -13,7 +13,7 @@ use {clap::Parser, lookup_key::Key};
 ///
 /// You can undo this operation with the 'restore' command, run
 /// 'todo help restore' for more info.
-#[derive(Debug, PartialEq, Eq, Parser)]
+#[derive(Debug, PartialEq, Parser)]
 pub struct Check {
     /// Tasks to mark as complete.
     #[clap(required = true, min_values = 1)]

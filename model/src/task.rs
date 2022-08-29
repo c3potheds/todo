@@ -11,7 +11,7 @@ fn default_creation_time() -> DateTime<Utc> {
 
 // NOTE: all new fields need to be Options or be marked #[serde(default)] to
 // allow backwards compatibility.
-#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct Task<'ser> {
     #[serde(borrow)]
     pub desc: Cow<'ser, str>,

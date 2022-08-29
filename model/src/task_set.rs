@@ -6,7 +6,7 @@ use {
     },
 };
 
-#[derive(Debug, PartialEq, Eq, Clone, Default)]
+#[derive(Debug, PartialEq, Clone, Default)]
 pub struct TaskSet {
     ids: HashSet<TaskId>,
 }
