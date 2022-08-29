@@ -4,7 +4,7 @@ use {
     thiserror::Error,
 };
 
-#[derive(Default, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Default, Debug, PartialEq, Deserialize, Serialize)]
 struct ConfigModel {
     paginator_cmd: Option<Vec<String>>,
     text_editor_cmd: Option<String>,
