@@ -1,7 +1,7 @@
 pub use crate::subcommands::*;
 use clap::Parser;
 
-#[derive(Debug, PartialEq, Parser)]
+#[derive(Debug, PartialEq, Eq, Parser)]
 pub enum SubCommand {
     Block(Block),
     Budget(Budget),

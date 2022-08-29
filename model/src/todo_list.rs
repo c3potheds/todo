@@ -285,13 +285,13 @@ impl<'ser> TodoList<'ser> {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ForceChecked {
     pub completed: TaskSet,
     pub unblocked: TaskSet,
 }
 
-#[derive(Debug, PartialEq, Error)]
+#[derive(Debug, PartialEq, Eq, Error)]
 pub enum CheckError {
     #[error("task is already complete")]
     TaskIsAlreadyComplete,
@@ -408,13 +408,13 @@ impl<'ser> TodoList<'ser> {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ForceRestored {
     pub restored: TaskSet,
     pub blocked: TaskSet,
 }
 
-#[derive(Debug, PartialEq, Error)]
+#[derive(Debug, PartialEq, Eq, Error)]
 pub enum RestoreError {
     #[error("task is already incomplete")]
     TaskIsAlreadyIncomplete,
@@ -814,7 +814,7 @@ impl<'ser> TodoList<'ser> {
     }
 }
 
-#[derive(Debug, PartialEq, Error)]
+#[derive(Debug, PartialEq, Eq, Error)]
 pub enum SnoozeWarning {
     #[error("task is complete")]
     TaskIsComplete,
@@ -857,7 +857,7 @@ impl<'ser> TodoList<'ser> {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum UnsnoozeWarning {
     TaskIsComplete,
     TaskIsBlocked,

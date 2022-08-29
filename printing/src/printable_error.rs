@@ -11,7 +11,7 @@ use {
     },
 };
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PrintableError {
     CannotCheckBecauseBlocked {
         cannot_check: BriefPrintableTask,

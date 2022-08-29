@@ -1,3 +1,7 @@
+// Note: the to_string() methods on ANSIGenericString appear to be necessary
+// because dereferencing it directly doesn't insert the ANSI color codes.
+#![allow(clippy::unnecessary_to_owned)]
+
 use {
     crate::{
         format_util::format_number, Plicit, PrintableError, PrintableTask,

@@ -20,7 +20,7 @@ use {clap::Parser, lookup_key::Key};
 /// to a day-level precision, the unsnooze time will snap to the beginning of
 /// that day. If the 'until' argument is the name of a month, the task will
 /// unsnooze at the beginning of that month.
-#[derive(Debug, PartialEq, Parser)]
+#[derive(Debug, PartialEq, Eq, Parser)]
 #[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Snooze {
     /// Tasks to snooze.

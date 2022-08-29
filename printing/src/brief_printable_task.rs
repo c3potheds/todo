@@ -11,7 +11,7 @@ use {
 /// When formatted, the representation will use ANSI colors to display the
 /// task number (its position in the list) with a color corresponding to its
 /// status.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BriefPrintableTask {
     pub number: i32,
     pub status: Status,
