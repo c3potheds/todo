@@ -18,7 +18,7 @@ use {clap::Parser, lookup_key::Key};
 ///
 /// A description of "0" effectively removes the time budget, allowing
 /// dependencies to have due dates up to the given task's due date.
-#[derive(Debug, PartialEq, Parser)]
+#[derive(Debug, PartialEq, Eq, Parser)]
 pub struct Budget {
     /// The tasks to assign a budget to.
     #[clap(required = true, min_values = 1)]

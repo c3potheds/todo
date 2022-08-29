@@ -5,7 +5,7 @@ use {clap::Parser, lookup_key::Key};
 /// One can represent "categories" for tasks by blocking a task representing
 /// a category on the tasks that should be in that category. When running
 /// this command, you can see all "uncategorized" tasks.
-#[derive(Debug, PartialEq, Parser, Default)]
+#[derive(Debug, PartialEq, Eq, Parser, Default)]
 #[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Top {
     /// Tasks to find the top level underneath. If none are specified, shows the

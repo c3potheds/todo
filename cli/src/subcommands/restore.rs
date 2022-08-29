@@ -9,7 +9,7 @@ use {clap::Parser, lookup_key::Key};
 /// on it. The complete blocked tasks must be restored first, just as
 /// incomplete blocking tasks must be completed before the task they block
 /// is completed.
-#[derive(Debug, PartialEq, Parser)]
+#[derive(Debug, PartialEq, Eq, Parser)]
 #[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Restore {
     /// Tasks to restore, marking as incomplete.
