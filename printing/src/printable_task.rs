@@ -7,7 +7,7 @@ use {
     },
 };
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Status {
     Incomplete,
     Complete,
@@ -21,7 +21,7 @@ impl Default for Status {
     }
 }
 
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum Action {
     None,
     New,
@@ -62,7 +62,7 @@ impl Display for Action {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum LogDate {
     Invisible,
     YearMonthDay(u16, u8, u8),
@@ -101,7 +101,7 @@ impl Display for LogDate {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Plicit<T> {
     Implicit(T),
     Explicit(T),
@@ -116,7 +116,7 @@ impl<T> Plicit<T> {
     }
 }
 
-#[derive(Debug, Default, PartialEq, Clone)]
+#[derive(Debug, Default, PartialEq, Eq, Clone)]
 pub struct PrintableTask<'a> {
     pub desc: &'a str,
     pub number: i32,

@@ -8,7 +8,7 @@ use {clap::Parser, lookup_key::Key};
 ///   todo chain a b c
 ///
 /// ... then 'a' will block 'b' and 'b' will block 'c'.
-#[derive(Debug, PartialEq, Parser)]
+#[derive(Debug, PartialEq, Eq, Parser)]
 #[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Chain {
     /// Tasks to arrange in a blocking sequence.

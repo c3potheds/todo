@@ -10,7 +10,7 @@ use {clap::Parser, lookup_key::Key};
 ///
 /// If no keys are passed, and the --unmark flag is not passed, then this
 /// subcommand will print all tags.
-#[derive(Debug, Default, PartialEq, Parser)]
+#[derive(Debug, Default, PartialEq, Eq, Parser)]
 #[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Tag {
     /// Tasks to mark as tags. If none are given and --unmark is not passed,

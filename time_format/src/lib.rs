@@ -1,6 +1,6 @@
 use chrono::{DateTime, Datelike, TimeZone};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ParseTimeError;
 
 enum Midi {
@@ -154,7 +154,7 @@ fn parse_time_of_day<Tz: TimeZone>(
                     .ymd(now.year(), now.month(), now.day())
                     .and_hms(hour as u32, minute as u32, 00);
                 if target < now {
-                    target = target + chrono::Duration::days(1);
+                    target += chrono::Duration::days(1);
                 }
                 Ok(target)
             }
@@ -233,7 +233,7 @@ fn parse_day_of_week<Tz: TimeZone>(
         .map(|weekday| {
             let mut fast_forwarded = now + chrono::Duration::days(1);
             while fast_forwarded.weekday() != weekday {
-                fast_forwarded = fast_forwarded + chrono::Duration::days(1);
+                fast_forwarded += chrono::Duration::days(1);
             }
             match snap {
                 Snap::ToStart => start_of_day(fast_forwarded),

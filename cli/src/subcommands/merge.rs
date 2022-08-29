@@ -8,7 +8,7 @@ use {clap::Parser, lookup_key::Key};
 /// the constituents.
 ///
 /// This is the opposite of 'split'.
-#[derive(Debug, Default, PartialEq, Parser)]
+#[derive(Debug, Default, PartialEq, Eq, Parser)]
 #[clap(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Merge {
     /// Tasks to merge.
