@@ -99,6 +99,7 @@ use {crate::SubCommand, clap::Parser};
     name = "todo",
     author = "Simeon Anfinrud",
     version = "0.1",
+    propagate_version = true,
     verbatim_doc_comment
 )]
 pub struct Options {
