@@ -64,7 +64,7 @@ fn main() -> TodoResult {
     data_path.push("data.json");
 
     let read_file_result = std::fs::read_to_string(&data_path);
-    let mut model = match &read_file_result {
+    let mut list = match &read_file_result {
         Ok(s) => model::load(s)?,
         Err(_) => model::TodoList::default(),
     };
@@ -88,15 +88,15 @@ fn main() -> TodoResult {
             context: PrintingContext {
                 max_index_digits: std::cmp::max(
                     // Add one for the minus sign for complete tasks.
-                    log10(model.num_complete_tasks()) + 1,
-                    log10(model.num_incomplete_tasks()),
+                    log10(list.num_complete_tasks()) + 1,
+                    log10(list.num_incomplete_tasks()),
                 ),
                 width: term_width,
                 now: SystemClock.now(),
             },
         };
         app::todo(
-            &mut model,
+            &mut list,
             &mut printer,
             &ScrawlTextEditor(&config.text_editor_cmd),
             &SystemClock,
@@ -104,7 +104,7 @@ fn main() -> TodoResult {
         );
     } else {
         app::todo(
-            &mut model,
+            &mut list,
             &mut ScriptingTodoPrinter,
             &FakeTextEditor::no_user_output(),
             &SystemClock,
@@ -113,7 +113,7 @@ fn main() -> TodoResult {
     }
     let file = File::create(&data_path)?;
     let writer = BufWriter::new(file);
-    model::save(writer, &model)?;
+    model::save(writer, &list)?;
     Ok(())
 }
 
