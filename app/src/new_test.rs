@@ -408,28 +408,6 @@ fn new_with_unintelligible_time_budget() {
 }
 
 #[test]
-fn new_with_prefix() {
-    let mut fix = Fixture::default();
-    fix.test("todo new a b c --prefix x")
-        .validate()
-        .printed_task(&PrintableTask::new("x a", 1, Incomplete).action(New))
-        .printed_task(&PrintableTask::new("x b", 2, Incomplete).action(New))
-        .printed_task(&PrintableTask::new("x c", 3, Incomplete).action(New))
-        .end();
-}
-
-#[test]
-fn new_with_multiple_prefixes() {
-    let mut fix = Fixture::default();
-    fix.test("todo new a b c -P x -P y")
-        .validate()
-        .printed_task(&PrintableTask::new("x y a", 1, Incomplete).action(New))
-        .printed_task(&PrintableTask::new("x y b", 2, Incomplete).action(New))
-        .printed_task(&PrintableTask::new("x y c", 3, Incomplete).action(New))
-        .end();
-}
-
-#[test]
 fn new_invalid_snooze_date() {
     let mut fix = Fixture::default();
     fix.test("todo new a --snooze blah")

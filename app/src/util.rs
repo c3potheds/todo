@@ -17,14 +17,6 @@ fn to_printing_status(status: TaskStatus) -> Status {
     }
 }
 
-pub fn format_prefix(prefix: &str, desc: &str) -> String {
-    if prefix.is_empty() {
-        desc.to_string()
-    } else {
-        format!("{} {}", prefix, desc)
-    }
-}
-
 struct WrappedPrintableTask<'a>(PrintableTask<'a>);
 
 fn wrap(task: PrintableTask) -> WrappedPrintableTask {

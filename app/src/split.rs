@@ -1,7 +1,7 @@
 use chrono::Duration;
 
 use {
-    super::util::{format_prefix, format_task, lookup_tasks},
+    super::util::{format_task, lookup_tasks},
     cli::Split,
     model::{DurationInSeconds, NewOptions, TaskId, TaskSet, TodoList},
     printing::{Action, TodoPrinter},
@@ -99,7 +99,6 @@ fn split(
 }
 
 pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: Split) {
-    let prefix = cmd.prefix.join(" ");
     let result = lookup_tasks(list, &cmd.keys).iter_sorted(list).fold(
         SplitResult::default(),
         |so_far, id| {
@@ -108,7 +107,7 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: Split) {
                 id,
                 cmd.into
                     .iter()
-                    .map(|desc| format_prefix(&prefix, desc))
+                    .map(|desc| desc.clone())
                     .collect(),
                 cmd.chain,
                 cmd.keep,
