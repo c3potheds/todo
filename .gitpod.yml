@@ -6,4 +6,4 @@ tasks:
   - init: |
       cargo install cargo-nextest bacon bat
       cargo build
-    command: cargo watch -x nexttest run
+    command: bacon test
