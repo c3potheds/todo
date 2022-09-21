@@ -28,7 +28,7 @@ command = [
     "cargo", "nextest", "run",
     "--color", "always",
     "--failure-output", "immediate-final",
-    "--status-level", "none",
+    "--status-level", "fail",
 ]
 need_stdout = true
 watch = ["tests"]
