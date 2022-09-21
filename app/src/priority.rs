@@ -7,7 +7,7 @@ use {
 
 fn set_priority(
     list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+    printer: &mut dyn TodoPrinter,
     tasks: TaskSet,
     priority: i32,
     include_done: bool,
@@ -38,7 +38,7 @@ fn source_of_priority(list: &TodoList, id: TaskId) -> TaskSet {
 
 fn show_source_of_priority_for_tasks(
     list: &TodoList,
-    printer: &mut impl TodoPrinter,
+    printer: &mut dyn TodoPrinter,
     tasks: TaskSet,
     include_done: bool,
 ) {
@@ -56,7 +56,7 @@ fn show_source_of_priority_for_tasks(
 
 fn show_all_tasks_with_priority(
     list: &TodoList,
-    printer: &mut impl TodoPrinter,
+    printer: &mut dyn TodoPrinter,
     priority: i32,
     include_done: bool,
 ) {
@@ -73,11 +73,7 @@ fn show_all_tasks_with_priority(
         })
 }
 
-pub fn run(
-    list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
-    cmd: &Priority,
-) {
+pub fn run(list: &mut TodoList, printer: &mut dyn TodoPrinter, cmd: &Priority) {
     let tasks = if cmd.keys.is_empty() {
         None
     } else {

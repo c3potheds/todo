@@ -5,7 +5,7 @@ use {
     printing::{PrintableWarning, TodoPrinter},
 };
 
-pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Top) {
+pub fn run(list: &TodoList, printer: &mut dyn TodoPrinter, cmd: &Top) {
     // Handle the case where no tasks are specified. In this case, we want to
     // print all tasks that do not have any antidependencies (including complete
     // tasks iff '--include_done' is passed).)

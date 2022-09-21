@@ -88,7 +88,7 @@ fn restore(
     })
 }
 
-pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Restore) {
+pub fn run(list: &mut TodoList, printer: &mut dyn TodoPrinter, cmd: &Restore) {
     let tasks_to_restore =
         lookup_tasks(list, &cmd.keys).iter_sorted(list).collect();
     let result = if cmd.force {

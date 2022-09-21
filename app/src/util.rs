@@ -217,7 +217,7 @@ pub fn should_include_done(
 pub fn parse_due_date_or_print_error(
     now: DateTime<Utc>,
     due_date_vec: &[String],
-    printer: &mut impl TodoPrinter,
+    printer: &mut dyn TodoPrinter,
 ) -> Result<Option<DateTime<Utc>>, ()> {
     if due_date_vec.is_empty() {
         return Ok(None);
@@ -241,7 +241,7 @@ pub fn parse_due_date_or_print_error(
 
 pub fn parse_budget_or_print_error(
     budget_vec: &[String],
-    printer: &mut impl TodoPrinter,
+    printer: &mut dyn TodoPrinter,
 ) -> Result<DurationInSeconds, ()> {
     let budget_string = budget_vec.join(" ");
     if budget_string == "0" || budget_string.is_empty() {
@@ -272,7 +272,7 @@ pub fn parse_budget_or_print_error(
 pub fn parse_snooze_date_or_print_error(
     now: DateTime<Utc>,
     snooze_date_vec: &[String],
-    printer: &mut impl TodoPrinter,
+    printer: &mut dyn TodoPrinter,
 ) -> Result<Option<DateTime<Utc>>, ()> {
     let date_string = snooze_date_vec.join(" ");
     if date_string.is_empty() || date_string.is_empty() {

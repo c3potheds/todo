@@ -9,7 +9,7 @@ use {
 
 struct NoPathFound(TaskId, TaskId);
 
-pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Path) {
+pub fn run(list: &TodoList, printer: &mut dyn TodoPrinter, cmd: &Path) {
     let tasks = cmd
         .keys
         .iter()

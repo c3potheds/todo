@@ -6,7 +6,7 @@ use {
     printing::TodoPrinter,
 };
 
-fn find_with_tag(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Find) {
+fn find_with_tag(list: &TodoList, printer: &mut dyn TodoPrinter, cmd: &Find) {
     let keys = cmd
         .terms
         .iter()
@@ -26,7 +26,7 @@ fn find_with_tag(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Find) {
         });
 }
 
-pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Find) {
+pub fn run(list: &TodoList, printer: &mut dyn TodoPrinter, cmd: &Find) {
     if cmd.tag {
         find_with_tag(list, printer, cmd);
         return;

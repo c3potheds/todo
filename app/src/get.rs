@@ -5,7 +5,7 @@ use {
     printing::{Action, TodoPrinter},
 };
 
-pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Get) {
+pub fn run(list: &TodoList, printer: &mut dyn TodoPrinter, cmd: &Get) {
     let requested_tasks = lookup_tasks(list, &cmd.keys);
     let include_done = should_include_done(
         cmd.include_done,

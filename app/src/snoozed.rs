@@ -5,11 +5,7 @@ use {
     printing::TodoPrinter,
 };
 
-pub fn run(
-    list: &TodoList,
-    printer: &mut impl TodoPrinter,
-    now: DateTime<Utc>,
-) {
+pub fn run(list: &TodoList, printer: &mut dyn TodoPrinter, now: DateTime<Utc>) {
     list.all_tasks()
         .filter(|&id| {
             list.get(id)

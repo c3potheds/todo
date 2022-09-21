@@ -12,7 +12,7 @@ pub struct Status {
 
 pub fn run(
     list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+    printer: &mut dyn TodoPrinter,
     now: DateTime<Utc>,
     cmd: &Status,
 ) {

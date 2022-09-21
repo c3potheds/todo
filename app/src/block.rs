@@ -8,7 +8,7 @@ use {
 };
 
 fn print_block_error(
-    printer: &mut impl TodoPrinter,
+    printer: &mut dyn TodoPrinter,
     list: &TodoList,
     blocked: TaskId,
     blocking: TaskId,
@@ -19,7 +19,7 @@ fn print_block_error(
     });
 }
 
-pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Block) {
+pub fn run(list: &mut TodoList, printer: &mut dyn TodoPrinter, cmd: &Block) {
     let tasks_to_block = lookup_tasks(list, &cmd.keys);
     let tasks_to_block_on = lookup_tasks(list, &cmd.on);
     let include_done = should_include_done(

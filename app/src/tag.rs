@@ -7,7 +7,7 @@ use {
 
 fn print_all_tags(
     list: &TodoList,
-    printer: &mut impl TodoPrinter,
+    printer: &mut dyn TodoPrinter,
     include_done: bool,
 ) {
     list.all_tasks()
@@ -37,7 +37,7 @@ fn mark_tasks(
         })
 }
 
-pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Tag) {
+pub fn run(list: &mut TodoList, printer: &mut dyn TodoPrinter, cmd: &Tag) {
     if cmd.keys.is_empty() && cmd.unmark.is_empty() {
         print_all_tags(list, printer, cmd.include_done);
         return;

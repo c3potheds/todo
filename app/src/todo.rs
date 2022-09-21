@@ -20,8 +20,8 @@ fn status_options(options: Options) -> status::Status {
 
 pub fn todo(
     list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
-    text_editor: &impl TextEditor,
+    printer: &mut dyn TodoPrinter,
+    text_editor: &dyn TextEditor,
     clock: &impl Clock,
     options: Options,
 ) {

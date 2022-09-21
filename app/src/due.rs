@@ -8,7 +8,7 @@ use {
 
 fn show_all_tasks_with_due_dates(
     list: &TodoList,
-    printer: &mut impl TodoPrinter,
+    printer: &mut dyn TodoPrinter,
     earlier_than: Option<DateTime<Utc>>,
     include_done: bool,
 ) {
@@ -46,7 +46,7 @@ fn source_of_due_date(list: &TodoList, id: TaskId) -> TaskSet {
 
 fn show_source_of_due_dates_for_tasks(
     list: &TodoList,
-    printer: &mut impl TodoPrinter,
+    printer: &mut dyn TodoPrinter,
     tasks: TaskSet,
 ) {
     tasks
@@ -60,7 +60,7 @@ fn show_source_of_due_dates_for_tasks(
 
 fn set_due_dates(
     list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+    printer: &mut dyn TodoPrinter,
     tasks: TaskSet,
     due_date: Option<DateTime<Utc>>,
     include_done: bool,
@@ -81,7 +81,7 @@ fn set_due_dates(
 
 fn show_tasks_without_due_date(
     list: &TodoList,
-    printer: &mut impl TodoPrinter,
+    printer: &mut dyn TodoPrinter,
     include_done: bool,
 ) {
     list.all_tasks()
@@ -96,7 +96,7 @@ fn show_tasks_without_due_date(
 
 pub fn run(
     list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+    printer: &mut dyn TodoPrinter,
     now: DateTime<Utc>,
     cmd: &Due,
 ) {

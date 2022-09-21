@@ -8,7 +8,7 @@ use {
 };
 
 fn print_unblock_warning(
-    printer: &mut impl TodoPrinter,
+    printer: &mut dyn TodoPrinter,
     list: &TodoList,
     blocking: TaskId,
     blocked: TaskId,
@@ -23,7 +23,7 @@ fn print_unblock_warning(
 
 fn unblock_from_given(
     list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+    printer: &mut dyn TodoPrinter,
     tasks_to_unblock: &TaskSet,
     tasks_to_unblock_from: &TaskSet,
 ) -> TaskSet {
@@ -56,7 +56,7 @@ fn unblock_from_all(
         })
 }
 
-pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Unblock) {
+pub fn run(list: &mut TodoList, printer: &mut dyn TodoPrinter, cmd: &Unblock) {
     let tasks_to_unblock = lookup_tasks(list, &cmd.keys);
     let tasks_to_unblock_from = lookup_tasks(list, &cmd.from);
     let include_done = should_include_done(

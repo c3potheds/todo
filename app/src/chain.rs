@@ -8,7 +8,7 @@ use {
     std::collections::HashMap,
 };
 
-pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Chain) {
+pub fn run(list: &mut TodoList, printer: &mut dyn TodoPrinter, cmd: &Chain) {
     let tasks = cmd
         .keys
         .iter()

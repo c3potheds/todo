@@ -69,48 +69,50 @@ fn main() -> TodoResult {
         Err(_) => model::TodoList::default(),
     };
 
-    if atty::is(atty::Stream::Stdout) {
+    let (mut printer, editor) = if atty::is(atty::Stream::Stdout) {
         let (term_width, term_height) =
             term_size::dimensions_stdout().unwrap_or((80, 20));
-
-        let mut printer = SimpleTodoPrinter {
-            // Subtract 1 from the term height to leave room for the input prompt
-            // after the program finishes.
-            out: long_output::max_lines(term_height - 1)
-                .primary(std::io::stdout())
-                .alternate(|| {
-                    long_output::Less::new(
-                        &config.paginator_cmd[0],
-                        &config.paginator_cmd[1..],
-                    )
-                    .unwrap()
-                }),
-            context: PrintingContext {
-                max_index_digits: std::cmp::max(
-                    // Add one for the minus sign for complete tasks.
-                    log10(list.num_complete_tasks()) + 1,
-                    log10(list.num_incomplete_tasks()),
-                ),
-                width: term_width,
-                now: SystemClock.now(),
-            },
-        };
-        app::todo(
-            &mut list,
-            &mut printer,
-            &ScrawlTextEditor(&config.text_editor_cmd),
-            &SystemClock,
-            options,
-        );
+        (
+            Box::new(SimpleTodoPrinter {
+                // Subtract 1 from the term height to leave room for the input
+                // prompt after the program finishes.
+                out: long_output::max_lines(term_height - 1)
+                    .primary(std::io::stdout())
+                    .alternate(|| {
+                        long_output::Less::new(
+                            &config.paginator_cmd[0],
+                            &config.paginator_cmd[1..],
+                        )
+                        .unwrap()
+                    }),
+                context: PrintingContext {
+                    max_index_digits: std::cmp::max(
+                        // Add one for the minus sign for complete tasks.
+                        log10(list.num_complete_tasks()) + 1,
+                        log10(list.num_incomplete_tasks()),
+                    ),
+                    width: term_width,
+                    now: SystemClock.now(),
+                },
+            }) as Box<dyn printing::TodoPrinter>,
+            Box::new(ScrawlTextEditor(&config.text_editor_cmd))
+                as Box<dyn text_editing::TextEditor>,
+        )
     } else {
-        app::todo(
-            &mut list,
-            &mut ScriptingTodoPrinter,
-            &FakeTextEditor::no_user_output(),
-            &SystemClock,
-            options,
-        );
-    }
+        (
+            Box::new(ScriptingTodoPrinter) as Box<dyn printing::TodoPrinter>,
+            Box::new(FakeTextEditor::no_user_output())
+                as Box<dyn text_editing::TextEditor>,
+        )
+    };
+
+    app::todo(
+        &mut list,
+        printer.as_mut(),
+        editor.as_ref(),
+        &SystemClock,
+        options,
+    );
     let file = File::create(&data_path)?;
     let writer = BufWriter::new(file);
     model::save(writer, &list)?;

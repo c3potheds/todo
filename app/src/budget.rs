@@ -8,7 +8,7 @@ use {
     printing::{Action, TodoPrinter},
 };
 
-pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Budget) {
+pub fn run(list: &mut TodoList, printer: &mut dyn TodoPrinter, cmd: &Budget) {
     let budget = match parse_budget_or_print_error(&cmd.budget, printer) {
         Ok(budget) => budget,
         Err(_) => {

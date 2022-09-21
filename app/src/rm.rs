@@ -5,7 +5,7 @@ use {
     printing::{Action, PrintableTask, Status, TodoPrinter},
 };
 
-pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: Rm) {
+pub fn run(list: &mut TodoList, printer: &mut dyn TodoPrinter, cmd: Rm) {
     lookup_tasks(list, &cmd.keys)
         .iter_sorted(list)
         .map(|id| {

@@ -98,7 +98,7 @@ fn split(
     }
 }
 
-pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: Split) {
+pub fn run(list: &mut TodoList, printer: &mut dyn TodoPrinter, cmd: Split) {
     let prefix = cmd.prefix.join(" ");
     let result = lookup_tasks(list, &cmd.keys).iter_sorted(list).fold(
         SplitResult::default(),

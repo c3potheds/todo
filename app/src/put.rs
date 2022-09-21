@@ -9,7 +9,7 @@ use {
 };
 
 fn print_block_error(
-    printer: &mut impl TodoPrinter,
+    printer: &mut dyn TodoPrinter,
     list: &TodoList,
     blocked: TaskId,
     blocking: TaskId,
@@ -20,7 +20,7 @@ fn print_block_error(
     });
 }
 
-pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Put) {
+pub fn run(list: &mut TodoList, printer: &mut dyn TodoPrinter, cmd: &Put) {
     let tasks_to_put = lookup_tasks(list, &cmd.keys);
     let before = lookup_tasks(list, &cmd.preposition.before);
     let after = lookup_tasks(list, &cmd.preposition.after);

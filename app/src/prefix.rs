@@ -6,7 +6,7 @@ use {
     std::borrow::Cow,
 };
 
-pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Prefix) {
+pub fn run(list: &mut TodoList, printer: &mut dyn TodoPrinter, cmd: &Prefix) {
     let prefix = cmd.prefix.join(" ");
     lookup_tasks(list, &cmd.keys)
         .iter_sorted(list)

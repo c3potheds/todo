@@ -7,11 +7,7 @@ use {
     printing::{Action, PrintableWarning, TodoPrinter},
 };
 
-pub fn run(
-    list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
-    cmd: &Unsnooze,
-) {
+pub fn run(list: &mut TodoList, printer: &mut dyn TodoPrinter, cmd: &Unsnooze) {
     #[derive(Default)]
     struct UnsnoozeResult {
         tasks_to_print: TaskSet,

@@ -94,7 +94,7 @@ fn check(
 
 fn print_cannot_complete_error(
     list: &TodoList,
-    printer: &mut impl TodoPrinter,
+    printer: &mut dyn TodoPrinter,
     id: TaskId,
     reason: Reason,
 ) {
@@ -118,7 +118,7 @@ fn print_cannot_complete_error(
 
 pub fn run(
     list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+    printer: &mut dyn TodoPrinter,
     now: DateTime<Utc>,
     cmd: &Check,
 ) {

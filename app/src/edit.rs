@@ -21,7 +21,7 @@ fn format_tasks_for_text_editor(list: &TodoList, ids: &TaskSet) -> String {
 
 fn edit_with_description(
     list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+    printer: &mut dyn TodoPrinter,
     ids: &TaskSet,
     desc: &str,
 ) {
@@ -54,7 +54,7 @@ fn parse_line_from_text_editor(line: &str) -> Result<(i32, String), EditError> {
 
 fn update_desc(
     list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+    printer: &mut dyn TodoPrinter,
     ids: &TaskSet,
     pos: i32,
     desc: &str,
@@ -86,7 +86,7 @@ fn update_desc(
 
 fn edit_with_text_editor(
     list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+    printer: &mut dyn TodoPrinter,
     ids: &TaskSet,
     editor_output: &str,
 ) {
@@ -113,8 +113,8 @@ fn edit_with_text_editor(
 
 pub fn run(
     list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
-    text_editor: &impl TextEditor,
+    printer: &mut dyn TodoPrinter,
+    text_editor: &dyn TextEditor,
     cmd: &Edit,
 ) {
     let tasks_to_edit = lookup_tasks(list, &cmd.keys);
