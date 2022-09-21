@@ -105,16 +105,6 @@ pub struct New {
     #[clap(long, min_values = 1)]
     pub budget: Vec<String>,
 
-    /// Attach a prefix to each of the new task's descriptions.
-    ///
-    /// This can be used to label with "hashtags" to avoid repeated typing when
-    /// creating a long list of tasks.
-    ///
-    /// Multiple prefixes can be specified; they will be added in sequence (each
-    /// separated by a space).
-    #[clap(long, short = 'P', min_values = 1)]
-    pub prefix: Vec<String>,
-
     /// Snooze the new tasks for a given amount of time.
     ///
     /// A snoozed task is "blocked" for purposes of positioning and appearance

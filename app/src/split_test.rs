@@ -47,28 +47,6 @@ fn split_preserves_dependency_structure() {
 }
 
 #[test]
-fn split_with_prefix() {
-    let mut fix = Fixture::default();
-    fix.test("todo new a");
-    fix.test("todo split a --into x y -P a")
-        .validate()
-        .printed_task(&PrintableTask::new("a x", 1, Incomplete).action(New))
-        .printed_task(&PrintableTask::new("a y", 2, Incomplete).action(New))
-        .end();
-}
-
-#[test]
-fn split_with_multiple_prefixes() {
-    let mut fix = Fixture::default();
-    fix.test("todo new a");
-    fix.test("todo split a --into x y -P a -P b")
-        .validate()
-        .printed_task(&PrintableTask::new("a b x", 1, Incomplete).action(New))
-        .printed_task(&PrintableTask::new("a b y", 2, Incomplete).action(New))
-        .end();
-}
-
-#[test]
 fn split_snoozed_task() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 30, 09, 00, 00);

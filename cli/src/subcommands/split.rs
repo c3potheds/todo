@@ -53,10 +53,6 @@ pub struct Split {
     #[clap(long)]
     pub chain: bool,
 
-    /// Add a prefix to the descriptions.
-    #[clap(long, short = 'P', min_values = 1)]
-    pub prefix: Vec<String>,
-
     /// If passed, keeps the original task, but blocks it on the new tasks.
     /// The budget of the original task will be transferred to the new tasks.
     #[clap(long, short = 'k')]

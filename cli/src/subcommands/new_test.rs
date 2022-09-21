@@ -15,7 +15,6 @@ fn new_missing_keys() {
     expect_error("todo new a --after");
     expect_error("todo new a --due");
     expect_error("todo new a --budget");
-    expect_error("todo new a --prefix");
     expect_error("todo new a --snooze");
 }
 
@@ -194,54 +193,6 @@ fn new_with_budget() {
         SubCommand::New(New {
             desc: vec!["a".to_string()],
             budget: vec!["2".to_string(), "days".to_string()],
-            ..Default::default()
-        }),
-    );
-}
-
-#[test]
-fn new_with_prefix() {
-    expect_parses_into(
-        "todo new a b c --prefix x",
-        SubCommand::New(New {
-            desc: vec!["a".to_string(), "b".to_string(), "c".to_string()],
-            prefix: vec!["x".to_string()],
-            ..Default::default()
-        }),
-    );
-}
-
-#[test]
-fn new_with_prefix_short() {
-    expect_parses_into(
-        "todo new a b c -P x",
-        SubCommand::New(New {
-            desc: vec!["a".to_string(), "b".to_string(), "c".to_string()],
-            prefix: vec!["x".to_string()],
-            ..Default::default()
-        }),
-    );
-}
-
-#[test]
-fn new_multiple_prefixes() {
-    expect_parses_into(
-        "todo new a b c --prefix x --prefix y",
-        SubCommand::New(New {
-            desc: vec!["a".to_string(), "b".to_string(), "c".to_string()],
-            prefix: vec!["x".to_string(), "y".to_string()],
-            ..Default::default()
-        }),
-    );
-}
-
-#[test]
-fn new_multiple_prefixes_in_list() {
-    expect_parses_into(
-        "todo new a b c --prefix x y",
-        SubCommand::New(New {
-            desc: vec!["a".to_string(), "b".to_string(), "c".to_string()],
-            prefix: vec!["x".to_string(), "y".to_string()],
             ..Default::default()
         }),
     );

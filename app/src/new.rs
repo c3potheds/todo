@@ -1,6 +1,6 @@
 use {
     super::util::{
-        format_prefix, format_task, format_task_brief, format_tasks_brief,
+        format_task, format_task_brief, format_tasks_brief,
         lookup_tasks, parse_budget_or_print_error,
         parse_due_date_or_print_error, parse_snooze_date_or_print_error,
     },
@@ -45,13 +45,12 @@ pub fn run(
     let adeps = adeps | before | after_adeps;
     let priority = cmd.priority;
     let mut to_print = HashSet::new();
-    let prefix = cmd.prefix.join(" ");
     let new_tasks: TaskSet = cmd
         .desc
         .iter()
         .map(|desc| {
             let id = list.add(NewOptions {
-                desc: Cow::Owned(format_prefix(&prefix, desc)),
+                desc: Cow::Owned(desc.clone()),
                 now,
                 priority: priority.unwrap_or(0),
                 due_date,

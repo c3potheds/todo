@@ -1,8 +1,8 @@
 use {
     super::{
         block, budget, chain, check, due, edit, find, get, log, merge, new,
-        path, prefix, priority, punt, put, restore, rm, snooze, snoozed, split,
-        status, tag, top, unblock, unsnooze,
+        path, priority, punt, put, restore, rm, snooze, snoozed, split, status,
+        tag, top, unblock, unsnooze,
     },
     cli::{Options, SubCommand},
     clock::Clock,
@@ -41,7 +41,6 @@ pub fn todo(
         Some(Merge(cmd)) => merge::run(list, printer, now, &cmd),
         Some(Path(cmd)) => path::run(list, printer, &cmd),
         Some(New(cmd)) => new::run(list, printer, now, &cmd),
-        Some(Prefix(cmd)) => prefix::run(list, printer, &cmd),
         Some(Priority(cmd)) => priority::run(list, printer, &cmd),
         Some(Punt(cmd)) => punt::run(list, printer, &cmd),
         Some(Put(cmd)) => put::run(list, printer, &cmd),
