@@ -4,7 +4,6 @@ members = [
     "clock",
     "config",
     "lookup_key",
-    "long_output",
     "main",
     "model",
     "printing",

@@ -16,7 +16,7 @@ pub struct Config {
 }
 
 fn default_paginator_cmd() -> Vec<String> {
-    vec!["less".to_string(), "-rX".to_string()]
+    vec!["less".to_string(), "-rFX".to_string()]
 }
 
 fn default_text_editor_cmd() -> String {

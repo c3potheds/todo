@@ -38,6 +38,8 @@ fn log10(n: usize) -> usize {
     }
 }
 
+mod less;
+
 fn main() -> TodoResult {
     let options = Options::parse();
     let project_dirs = directories::ProjectDirs::from("", "", "todo")
@@ -69,22 +71,9 @@ fn main() -> TodoResult {
         Err(_) => model::TodoList::default(),
     };
 
-    if atty::is(atty::Stream::Stdout) {
-        let (term_width, term_height) =
-            term_size::dimensions_stdout().unwrap_or((80, 20));
-
+    if let Some((term_width, _)) = term_size::dimensions_stdout() {
         let mut printer = SimpleTodoPrinter {
-            // Subtract 1 from the term height to leave room for the input prompt
-            // after the program finishes.
-            out: long_output::max_lines(term_height - 1)
-                .primary(std::io::stdout())
-                .alternate(|| {
-                    long_output::Less::new(
-                        &config.paginator_cmd[0],
-                        &config.paginator_cmd[1..],
-                    )
-                    .unwrap()
-                }),
+            out: less::Less::new(&config.paginator_cmd)?,
             context: PrintingContext {
                 max_index_digits: std::cmp::max(
                     // Add one for the minus sign for complete tasks.
