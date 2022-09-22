@@ -7,3 +7,13 @@ tasks:
       cargo install cargo-nextest bacon bat
       cargo build
     command: bacon test
+
+vscode:
+  extensions:
+    - rust-lang.rust-analyzer
+    - GitHub.copilot
+    - withfig.fig
+    - serayuzgur.crates
+    - ryanluker.vscode-coverage-gutters
+    - bungcip.better-toml
+    - eamodio.gitlens
