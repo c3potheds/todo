@@ -5,7 +5,7 @@ use {
     printing::{PrintableWarning, TodoPrinter},
 };
 
-pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Top) {
+pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Top) -> bool {
     // Handle the case where no tasks are specified. In this case, we want to
     // print all tasks that do not have any antidependencies (including complete
     // tasks iff '--include_done' is passed).)
@@ -19,7 +19,7 @@ pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Top) {
             .for_each(|id| {
                 printer.print_task(&format_task(list, id));
             });
-        return;
+        return false;
     }
 
     // Handle the case where tasks are specified. If no matches are found, print
@@ -59,4 +59,5 @@ pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Top) {
         .for_each(|id| {
             printer.print_task(&format_task(list, id));
         });
+    false
 }

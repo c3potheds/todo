@@ -8,20 +8,30 @@ use {
     printing::{Action, TodoPrinter},
 };
 
-pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Budget) {
+pub fn run(
+    list: &mut TodoList,
+    printer: &mut impl TodoPrinter,
+    cmd: &Budget,
+) -> bool {
     let budget = match parse_budget_or_print_error(&cmd.budget, printer) {
         Ok(budget) => budget,
         Err(_) => {
-            return;
+            return false;
         }
     };
     let tasks = lookup_tasks(list, &cmd.keys);
     let include_done =
         should_include_done(cmd.include_done, list, tasks.iter_unsorted());
+    let mut mutated = false;
     tasks
         .iter_sorted(list)
         .fold(TaskSet::default(), |so_far, id| {
-            so_far | list.set_budget(id, budget)
+            let affected_by_id = list.set_budget(id, budget);
+            if affected_by_id.is_empty() {
+                return so_far;
+            }
+            mutated = true;
+            so_far | affected_by_id
         })
         .include_done(list, include_done)
         .iter_sorted(list)
@@ -34,4 +44,5 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Budget) {
                 },
             ))
         });
+    mutated
 }

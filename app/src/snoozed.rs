@@ -9,7 +9,7 @@ pub fn run(
     list: &TodoList,
     printer: &mut impl TodoPrinter,
     now: DateTime<Utc>,
-) {
+) -> bool {
     list.all_tasks()
         .filter(|&id| {
             list.get(id)
@@ -17,4 +17,5 @@ pub fn run(
                 .unwrap_or_else(|| false)
         })
         .for_each(|id| printer.print_task(&format_task(list, id)));
+    false
 }

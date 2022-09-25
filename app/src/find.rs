@@ -26,10 +26,14 @@ fn find_with_tag(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Find) {
         });
 }
 
-pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Find) {
+pub fn run(
+    list: &TodoList,
+    printer: &mut impl TodoPrinter,
+    cmd: &Find,
+) -> bool {
     if cmd.tag {
         find_with_tag(list, printer, cmd);
-        return;
+        return false;
     }
     list.all_tasks()
         .filter(|&id| {
@@ -42,5 +46,6 @@ pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Find) {
         .filter(|&id| {
             cmd.include_done || list.status(id) != Some(TaskStatus::Complete)
         })
-        .for_each(|id| printer.print_task(&format_task(list, id)))
+        .for_each(|id| printer.print_task(&format_task(list, id)));
+    false
 }

@@ -8,7 +8,11 @@ use {
     std::collections::HashMap,
 };
 
-pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Chain) {
+pub fn run(
+    list: &mut TodoList,
+    printer: &mut impl TodoPrinter,
+    cmd: &Chain,
+) -> bool {
     let tasks = cmd
         .keys
         .iter()
@@ -17,6 +21,7 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Chain) {
     let include_done =
         should_include_done(cmd.include_done, list, tasks.iter().copied());
     let mut actions = HashMap::new();
+    let mut mutated = false;
     use itertools::Itertools;
     tasks
         .iter()
@@ -25,6 +30,7 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Chain) {
         .fold(TaskSet::default(), |so_far, (a, b)| {
             match list.block(b).on(a) {
                 Ok(affected) => {
+                    mutated = true;
                     actions.insert(b, Action::Lock);
                     so_far | affected
                 }
@@ -48,4 +54,5 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Chain) {
                     .action(*actions.get(&id).unwrap_or(&Action::None)),
             );
         });
+    mutated
 }

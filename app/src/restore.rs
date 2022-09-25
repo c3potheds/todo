@@ -88,7 +88,11 @@ fn restore(
     })
 }
 
-pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Restore) {
+pub fn run(
+    list: &mut TodoList,
+    printer: &mut impl TodoPrinter,
+    cmd: &Restore,
+) -> bool {
     let tasks_to_restore =
         lookup_tasks(list, &cmd.keys).iter_sorted(list).collect();
     let result = if cmd.force {
@@ -124,4 +128,5 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Restore) {
             printer.print_task(&format_task(list, id).action(Action::Lock));
         }
     });
+    !result.restored.is_empty() || !result.blocked.is_empty()
 }

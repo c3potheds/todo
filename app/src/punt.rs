@@ -5,7 +5,12 @@ use {
     printing::{Action, PrintableWarning, TodoPrinter},
 };
 
-pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Punt) {
+pub fn run(
+    list: &mut TodoList,
+    printer: &mut impl TodoPrinter,
+    cmd: &Punt,
+) -> bool {
+    let mut mutated = false;
     lookup_tasks(list, &cmd.keys)
         .iter_sorted(list)
         .filter(|&id| match list.punt(id) {
@@ -17,11 +22,15 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Punt) {
                 );
                 false
             }
-            _ => true,
+            _ => {
+                mutated = true;
+                true
+            }
         })
         .collect::<Vec<_>>()
         .into_iter()
         .for_each(|id| {
             printer.print_task(&format_task(list, id).action(Action::Punt))
         });
+    mutated
 }

@@ -11,6 +11,7 @@ fn check_one_task() {
     let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo check 1")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 0, Complete).action(Check))
         .end();
@@ -21,6 +22,7 @@ fn check_by_name() {
     let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo check b")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("b", 0, Complete).action(Check))
         .end();
@@ -32,6 +34,7 @@ fn check_task_with_incomplete_dependencies() {
     fix.test("todo new a b");
     fix.test("todo block 2 --on 1");
     fix.test("todo check 2")
+        .modified(false)
         .validate()
         .printed_error(&PrintableError::CannotCheckBecauseBlocked {
             cannot_check: BriefPrintableTask::new(2, Blocked),
@@ -46,6 +49,7 @@ fn cannot_check_blocked_task() {
     fix.test("todo new a b");
     fix.test("todo block 1 --on 2");
     fix.test("todo check 2")
+        .modified(false)
         .validate()
         .printed_error(&PrintableError::CannotCheckBecauseBlocked {
             cannot_check: BriefPrintableTask::new(2, Blocked),
@@ -60,11 +64,13 @@ fn check_newly_unblocked_task() {
     fix.test("todo new a b");
     fix.test("todo block 1 --on 2");
     fix.test("todo check 1")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("b", 0, Complete).action(Check))
         .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Unlock))
         .end();
     fix.test("todo check 1")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 0, Complete).action(Check))
         .end();
@@ -76,12 +82,14 @@ fn check_newly_unblocked_task_with_multiple_dependencies() {
     fix.test("todo new a b c");
     fix.test("todo block 1 --on 2 3");
     fix.test("todo check 1 2")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("b", -1, Complete).action(Check))
         .printed_task(&PrintableTask::new("c", 0, Complete).action(Check))
         .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Unlock))
         .end();
     fix.test("todo check 1")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 0, Complete).action(Check))
         .end();
@@ -94,16 +102,19 @@ fn check_newly_unblocked_task_with_chained_dependencies() {
     fix.test("todo block 3 --on 2");
     fix.test("todo block 2 --on 1");
     fix.test("todo check 1")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 0, Complete).action(Check))
         .printed_task(&PrintableTask::new("b", 1, Incomplete).action(Unlock))
         .end();
     fix.test("todo check 1")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("b", 0, Complete).action(Check))
         .printed_task(&PrintableTask::new("c", 1, Incomplete).action(Unlock))
         .end();
     fix.test("todo check 1")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("c", 0, Complete).action(Check))
         .end();
@@ -115,6 +126,7 @@ fn check_does_not_show_adeps_that_are_not_unlocked() {
     fix.test("todo new a");
     fix.test("todo new b c -p 1 --chain");
     fix.test("todo check 1")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 0, Complete).action(Check))
         .printed_task(&PrintableTask::new("b", 1, Incomplete).action(Unlock))
@@ -128,6 +140,7 @@ fn check_same_task_twice_in_one_command() {
     let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo check 1 1")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 0, Complete).action(Check))
         .end();
@@ -139,6 +152,7 @@ fn check_complete_task() {
     fix.test("todo new a");
     fix.test("todo check a");
     fix.test("todo check a")
+        .modified(false)
         .validate()
         .printed_warning(&PrintableWarning::CannotCheckBecauseAlreadyComplete {
             cannot_check: BriefPrintableTask::new(0, Complete),
@@ -151,6 +165,7 @@ fn force_check_incomplete_task() {
     let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo check a --force")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 0, Complete).action(Check))
         .end();
@@ -161,6 +176,7 @@ fn force_check_blocked_task() {
     let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo check b --force")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", -1, Complete).action(Check))
         .printed_task(&PrintableTask::new("b", 0, Complete).action(Check))
@@ -172,6 +188,7 @@ fn force_check_transitively_blocked_task() {
     let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo check c --force")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", -2, Complete).action(Check))
         .printed_task(&PrintableTask::new("b", -1, Complete).action(Check))
@@ -186,6 +203,7 @@ fn force_check_task_with_complete_deps() {
     fix.test("todo new c -p a b");
     fix.test("todo check a");
     fix.test("todo check c --force")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("b", -1, Complete).action(Check))
         .printed_task(&PrintableTask::new("c", 0, Complete).action(Check))
@@ -198,6 +216,7 @@ fn force_check_complete_task() {
     fix.test("todo new a");
     fix.test("todo check a");
     fix.test("todo check a --force")
+        .modified(false)
         .validate()
         .printed_warning(&PrintableWarning::CannotCheckBecauseAlreadyComplete {
             cannot_check: BriefPrintableTask::new(0, Complete),
@@ -210,6 +229,7 @@ fn check_blocking_chain() {
     let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo check a b c")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", -2, Complete).action(Check))
         .printed_task(&PrintableTask::new("b", -1, Complete).action(Check))

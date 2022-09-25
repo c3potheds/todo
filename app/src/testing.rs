@@ -6,7 +6,7 @@ use {
     cli::Options,
     clock::FakeClock,
     model::TodoList,
-    printing::FakePrinter,
+    printing::{FakePrinter, Validation},
     text_editing::FakeTextEditor,
 };
 
@@ -26,18 +26,34 @@ impl<'a> Default for Fixture<'a> {
     }
 }
 
+pub struct Validator {
+    printer: FakePrinter,
+    mutated: bool,
+}
+
+impl Validator {
+    pub fn modified(self, expected: bool) -> Self {
+        assert_eq!(self.mutated, expected);
+        self
+    }
+
+    pub fn validate(&mut self) -> Validation<'_> {
+        self.printer.validate()
+    }
+}
+
 impl<'a> Fixture<'a> {
-    pub fn test(&mut self, s: &str) -> FakePrinter {
+    pub fn test(&mut self, s: &str) -> Validator {
         let mut printer = FakePrinter::default();
         let options = Options::try_parse_from(s.split(' '))
             .expect("Could not parse args");
-        crate::todo(
+        let mutated = crate::todo(
             &mut self.list,
             &mut printer,
             &self.text_editor,
             &self.clock,
             options,
         );
-        printer
+        Validator { printer, mutated }
     }
 }

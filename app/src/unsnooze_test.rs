@@ -15,6 +15,7 @@ fn unsnooze_snoozed_task() {
     fix.clock.now = ymdhms(2022, 02, 22, 10, 00, 00);
     fix.test("todo new a --snooze 1 hour");
     fix.test("todo unsnooze 1")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Unsnooze))
         .end();
@@ -27,6 +28,7 @@ fn unsnoozed_task_appears_at_end_of_incomplete_list() {
     fix.test("todo new a b c");
     fix.test("todo snooze a --until 1 hour");
     fix.test("todo unsnooze a")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 3, Incomplete).action(Unsnooze))
         .end();
@@ -38,6 +40,7 @@ fn unsnooze_task_that_is_not_snoozed_is_no_op() {
     fix.clock.now = ymdhms(2022, 02, 22, 10, 00, 00);
     fix.test("todo new a b c");
     fix.test("todo unsnooze b")
+        .modified(false)
         .validate()
         .printed_warning(&PrintableWarning::CannotUnsnoozeBecauseNotSnoozed(
             BriefPrintableTask::new(2, Incomplete),
@@ -52,6 +55,7 @@ fn show_warning_when_unsnoozing_complete_task() {
     fix.test("todo new a --snooze 1 hour");
     fix.test("todo check a");
     fix.test("todo unsnooze a")
+        .modified(false)
         .validate()
         .printed_warning(&PrintableWarning::CannotUnsnoozeBecauseComplete(
             BriefPrintableTask::new(0, Complete),
@@ -66,6 +70,7 @@ fn show_warning_when_unsnoozing_blocked_task() {
     fix.test("todo new a b --chain");
     fix.test("todo snooze b --until 1 hour");
     fix.test("todo unsnooze b")
+        .modified(false)
         .validate()
         .printed_warning(&PrintableWarning::CannotUnsnoozeBecauseBlocked {
             cannot_unsnooze: BriefPrintableTask::new(2, Blocked),

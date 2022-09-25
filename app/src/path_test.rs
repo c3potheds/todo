@@ -12,6 +12,7 @@ fn path_between_tasks_with_no_path() {
     let mut fix = Fixture::default();
     fix.test("todo new a b");
     fix.test("todo path a b")
+        .modified(false)
         .validate()
         .printed_warning(&PrintableWarning::NoPathFoundBetween(
             BriefPrintableTask::new(1, Incomplete),
@@ -25,6 +26,7 @@ fn path_between_tasks_with_direct_dependency() {
     let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo path a b")
+        .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Select))
         .printed_task(&PrintableTask::new("b", 2, Blocked).action(Select))
@@ -36,6 +38,7 @@ fn path_between_tasks_with_indirect_dependency() {
     let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo path a c")
+        .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Select))
         .printed_task(&PrintableTask::new("b", 2, Blocked))
@@ -48,6 +51,7 @@ fn warn_if_key_is_ambiguous() {
     let mut fix = Fixture::default();
     fix.test("todo new a a b b");
     fix.test("todo path a b")
+        .modified(false)
         .validate()
         .printed_warning(&PrintableWarning::AmbiguousKey {
             key: Key::ByName("a".to_string()),
@@ -74,6 +78,7 @@ fn warn_if_key_is_ambiguous() {
 fn warn_if_key_has_no_match() {
     let mut fix = Fixture::default();
     fix.test("todo path a b")
+        .modified(false)
         .validate()
         .printed_warning(&PrintableWarning::NoMatchFoundForKey {
             requested_key: Key::ByName("a".to_string()),
@@ -89,6 +94,7 @@ fn path_between_task_with_one_match() {
     let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo path a")
+        .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Select))
         .end();
@@ -99,6 +105,7 @@ fn path_between_tasks_of_same_name() {
     let mut fix = Fixture::default();
     fix.test("todo new a b a --chain");
     fix.test("todo path a")
+        .modified(false)
         .validate()
         .printed_warning(&PrintableWarning::AmbiguousKey {
             key: Key::ByName("a".to_string()),
@@ -118,6 +125,7 @@ fn path_between_three_tasks() {
     let mut fix = Fixture::default();
     fix.test("todo new a b c d e --chain");
     fix.test("todo path a c e")
+        .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Select))
         .printed_task(&PrintableTask::new("b", 2, Blocked))

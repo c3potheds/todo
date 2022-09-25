@@ -18,13 +18,15 @@ fn status_options(options: Options) -> status::Status {
     }
 }
 
+/// Runs the 'todo' command line application. Returns whether the list was
+/// modified; if so, the caller should save the list.
 pub fn todo(
     list: &mut TodoList,
     printer: &mut impl TodoPrinter,
     text_editor: &impl TextEditor,
     clock: &impl Clock,
     options: Options,
-) {
+) -> bool {
     use self::SubCommand::*;
     let now = clock.now();
     match options.cmd {
@@ -39,8 +41,8 @@ pub fn todo(
         Some(Get(cmd)) => get::run(list, printer, &cmd),
         Some(Log) => log::run(list, printer),
         Some(Merge(cmd)) => merge::run(list, printer, now, &cmd),
-        Some(Path(cmd)) => path::run(list, printer, &cmd),
         Some(New(cmd)) => new::run(list, printer, now, &cmd),
+        Some(Path(cmd)) => path::run(list, printer, &cmd),
         Some(Priority(cmd)) => priority::run(list, printer, &cmd),
         Some(Punt(cmd)) => punt::run(list, printer, &cmd),
         Some(Put(cmd)) => put::run(list, printer, &cmd),

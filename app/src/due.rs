@@ -64,11 +64,17 @@ fn set_due_dates(
     tasks: TaskSet,
     due_date: Option<DateTime<Utc>>,
     include_done: bool,
-) {
+) -> bool {
+    let mut mutated = false;
     tasks
         .iter_sorted(list)
         .fold(TaskSet::default(), |so_far, id| {
-            so_far | list.set_due_date(id, due_date)
+            let affected_by_id = list.set_due_date(id, due_date);
+            if affected_by_id.is_empty() {
+                return so_far;
+            }
+            mutated = true;
+            so_far | affected_by_id
         })
         .iter_sorted(list)
         .filter(|&id| {
@@ -77,6 +83,7 @@ fn set_due_dates(
         .for_each(|id| {
             printer.print_task(&format_task(list, id));
         });
+    mutated
 }
 
 fn show_tasks_without_due_date(
@@ -99,7 +106,7 @@ pub fn run(
     printer: &mut impl TodoPrinter,
     now: DateTime<Utc>,
     cmd: &Due,
-) {
+) -> bool {
     let tasks = if cmd.keys.is_empty() {
         None
     } else {
@@ -108,7 +115,7 @@ pub fn run(
     let due_date = match parse_due_date_or_print_error(now, &cmd.due, printer) {
         Ok(due_date) => due_date,
         Err(_) => {
-            return;
+            return false;
         }
     };
     match (tasks, due_date, cmd.none) {
@@ -122,23 +129,29 @@ pub fn run(
         (Some(tasks), _, true) => {
             set_due_dates(list, printer, tasks, None, cmd.include_done)
         }
-        (None, due_date, false) => show_all_tasks_with_due_dates(
-            list,
-            printer,
-            due_date,
-            cmd.include_done,
-        ),
+        (None, due_date, false) => {
+            show_all_tasks_with_due_dates(
+                list,
+                printer,
+                due_date,
+                cmd.include_done,
+            );
+            false
+        }
         (Some(tasks), None, false) => {
-            show_source_of_due_dates_for_tasks(list, printer, tasks)
+            show_source_of_due_dates_for_tasks(list, printer, tasks);
+            false
         }
         (None, Some(_), true) => {
             printer.print_error(&PrintableError::ConflictingArgs((
                 "due".to_string(),
                 "none".to_string(),
             )));
+            false
         }
         (None, None, true) => {
-            show_tasks_without_due_date(list, printer, cmd.include_done)
+            show_tasks_without_due_date(list, printer, cmd.include_done);
+            false
         }
     }
 }

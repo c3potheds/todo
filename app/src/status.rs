@@ -15,7 +15,7 @@ pub fn run(
     printer: &mut impl TodoPrinter,
     now: DateTime<Utc>,
     cmd: &Status,
-) {
+) -> bool {
     let unsnoozed_tasks = list.unsnooze_up_to(now);
     list.all_tasks()
         .filter(|&id| match list.status(id) {
@@ -32,5 +32,6 @@ pub fn run(
                     Action::None
                 },
             ))
-        })
+        });
+    !unsnoozed_tasks.is_empty()
 }

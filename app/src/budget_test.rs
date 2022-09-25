@@ -16,6 +16,7 @@ fn budget_one_task() {
     let in_2_days = ymdhms(2021, 05, 01, 23, 59, 59);
     fix.test("todo new a --due 2 days");
     fix.test("todo budget a --is 1 day")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
@@ -31,6 +32,7 @@ fn budget_multiple_tasks() {
     let mut fix = Fixture::default();
     fix.test("todo new a b c d e");
     fix.test("todo budget a c e --is 2 days")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
@@ -56,6 +58,7 @@ fn budget_chain_alters_due_dates() {
     fix.clock.now = ymdhms(2021, 04, 29, 12, 00, 00);
     fix.test("todo new a b c d e --chain --due today");
     fix.test("todo budget a b c d e --is 1 hour")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
@@ -96,6 +99,7 @@ fn budget_shows_affected_tasks() {
     fix.clock.now = ymdhms(2021, 04, 29, 15, 00, 00);
     fix.test("todo new a b c --chain --due 5 hours");
     fix.test("todo budget c --is 2 hours")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
@@ -121,6 +125,7 @@ fn budget_does_not_show_unaffected_tasks() {
     fix.test("todo new a b c --chain --due 5 hours");
     fix.test("todo due a --in 1 hour");
     fix.test("todo budget c --is 2 hours")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("b", 2, Blocked)
@@ -140,6 +145,7 @@ fn invalid_budget() {
     let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo budget a --is blah")
+        .modified(false)
         .validate()
         .printed_error(&PrintableError::CannotParseDuration {
             cannot_parse: "blah".to_string(),
@@ -152,6 +158,7 @@ fn too_long_budget() {
     let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo budget a --is 200 years")
+        .modified(false)
         .validate()
         .printed_error(&PrintableError::DurationIsTooLong {
             duration: 6311520000,
@@ -167,6 +174,7 @@ fn budget_does_not_include_complete_affected_deps() {
     fix.test("todo new a b c --chain --due today");
     fix.test("todo check a");
     fix.test("todo budget c --is 1 hour")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("b", 1, Incomplete)
@@ -188,6 +196,7 @@ fn budget_include_complete_affected_deps() {
     fix.test("todo new a b c --chain --due today");
     fix.test("todo check a");
     fix.test("todo budget c --is 1 hour -d")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 0, Complete)
@@ -211,6 +220,7 @@ fn budget_of_zero() {
     let mut fix = Fixture::default();
     fix.test("todo new a --budget 1 hour");
     fix.test("todo budget a --is 0")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Select))
         .end();

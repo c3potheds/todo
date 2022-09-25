@@ -13,6 +13,7 @@ fn split_one_into_three() {
     let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo split a --into a1 a2 a3")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a1", 1, Incomplete).action(New))
         .printed_task(&PrintableTask::new("a2", 2, Incomplete).action(New))
@@ -25,6 +26,7 @@ fn split_chained() {
     let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo split a --into a1 a2 a3 --chain")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a1", 1, Incomplete).action(New))
         .printed_task(&PrintableTask::new("a2", 2, Blocked).action(New))
@@ -37,6 +39,7 @@ fn split_preserves_dependency_structure() {
     let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo split b --into b1 b2 b3")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete))
         .printed_task(&PrintableTask::new("b1", 2, Blocked).action(New))
@@ -52,6 +55,7 @@ fn split_snoozed_task() {
     fix.clock.now = ymdhms(2021, 05, 30, 09, 00, 00);
     fix.test("todo new a --snooze 1 day");
     fix.test("todo split a --into x y")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("x", 1, Blocked)
@@ -71,6 +75,7 @@ fn chained_split_task_with_budget_distributes_budget() {
     let mut fix = Fixture::default();
     fix.test("todo new a --budget 3 hours");
     fix.test("todo split a --into x y z --chain")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("x", 1, Incomplete)
@@ -95,6 +100,7 @@ fn split_task_with_budget_keeps_budget() {
     let mut fix = Fixture::default();
     fix.test("todo new a --budget 3 hours");
     fix.test("todo split a --into x y z")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("x", 1, Incomplete)
@@ -119,6 +125,7 @@ fn split_task_keep() {
     let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo split a --into x y z --keep")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("x", 1, Incomplete).action(New))
         .printed_task(&PrintableTask::new("y", 2, Incomplete).action(New))
@@ -132,6 +139,7 @@ fn split_task_keep_chained() {
     let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo split a --into x y z --keep --chain")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("x", 1, Incomplete).action(New))
         .printed_task(&PrintableTask::new("y", 2, Blocked).action(New))
@@ -145,6 +153,7 @@ fn split_task_keep_with_budget() {
     let mut fix = Fixture::default();
     fix.test("todo new a --budget 3 hours");
     fix.test("todo split a --into x y z --keep")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("x", 1, Incomplete)
@@ -170,6 +179,7 @@ fn split_task_chain_keep_with_budget() {
     let mut fix = Fixture::default();
     fix.test("todo new a --budget 3 hours");
     fix.test("todo split a --into x y z --keep --chain")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("x", 1, Incomplete)
@@ -195,6 +205,7 @@ fn split_tag_default() {
     let mut fix = Fixture::default();
     fix.test("todo new a --tag");
     fix.test("todo split a --into x y z")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("x", 1, Incomplete).action(New).as_tag(),
@@ -213,6 +224,7 @@ fn split_tag_into_non_tags() {
     let mut fix = Fixture::default();
     fix.test("todo new a --tag");
     fix.test("todo split a --into x y z --tag false")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("x", 1, Incomplete).action(New))
         .printed_task(&PrintableTask::new("y", 2, Incomplete).action(New))
@@ -225,6 +237,7 @@ fn split_tag_keep() {
     let mut fix = Fixture::default();
     fix.test("todo new a --tag");
     fix.test("todo split a --into x y z --keep")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("x", 1, Incomplete).action(New).tag("a"),

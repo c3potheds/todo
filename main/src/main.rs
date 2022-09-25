@@ -71,7 +71,8 @@ fn main() -> TodoResult {
         Err(_) => model::TodoList::default(),
     };
 
-    if let Some((term_width, _)) = term_size::dimensions_stdout() {
+    let mutated = if let Some((term_width, _)) = term_size::dimensions_stdout()
+    {
         let mut printer = SimpleTodoPrinter {
             out: less::Less::new(&config.paginator_cmd)?,
             context: PrintingContext {
@@ -90,7 +91,7 @@ fn main() -> TodoResult {
             &ScrawlTextEditor(&config.text_editor_cmd),
             &SystemClock,
             options,
-        );
+        )
     } else {
         app::todo(
             &mut model,
@@ -98,11 +99,13 @@ fn main() -> TodoResult {
             &FakeTextEditor::no_user_output(),
             &SystemClock,
             options,
-        );
+        )
+    };
+    if mutated {
+        let file = File::create(&data_path)?;
+        let writer = BufWriter::new(file);
+        model::save(writer, &model)?;
     }
-    let file = File::create(&data_path)?;
-    let writer = BufWriter::new(file);
-    model::save(writer, &model)?;
     Ok(())
 }
 

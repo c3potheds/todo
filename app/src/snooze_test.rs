@@ -14,6 +14,7 @@ fn snooze_no_date() {
     let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo snooze a")
+        .modified(false)
         .validate()
         .printed_error(&PrintableError::EmptyDate {
             flag: Some("--until".to_string()),
@@ -27,6 +28,7 @@ fn snooze_one_task() {
     fix.clock.now = ymdhms(2021, 05, 27, 11, 00, 00);
     fix.test("todo new a b");
     fix.test("todo snooze a --until 1 day")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 2, Blocked)
@@ -42,6 +44,7 @@ fn snooze_multiple_tasks() {
     fix.clock.now = ymdhms(2021, 05, 27, 11, 00, 00);
     fix.test("todo new a b c d e");
     fix.test("todo snooze a c e --until saturday")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 3, Blocked)
@@ -67,6 +70,7 @@ fn snooze_snoozed_task() {
     fix.clock.now = ymdhms(2021, 05, 27, 11, 00, 00);
     fix.test("todo new a --snooze 2 hours");
     fix.test("todo snooze a --until 3 hours")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 1, Blocked)
@@ -83,6 +87,7 @@ fn cannot_snooze_completed_task() {
     fix.test("todo new a");
     fix.test("todo check a");
     fix.test("todo snooze a --until saturday")
+        .modified(false)
         .validate()
         .printed_warning(&PrintableWarning::CannotSnoozeBecauseComplete {
             cannot_snooze: BriefPrintableTask::new(0, Complete),
@@ -96,6 +101,7 @@ fn snooze_blocked_task_above_layer_1() {
     fix.clock.now = ymdhms(2021, 05, 27, 11, 00, 00);
     fix.test("todo new a b c --chain");
     fix.test("todo snooze c --until 1 day")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("c", 3, Blocked)

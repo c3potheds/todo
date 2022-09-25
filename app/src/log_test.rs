@@ -9,7 +9,7 @@ use {
 #[test]
 fn log_with_no_tasks_completed() {
     let mut fix = Fixture::default();
-    fix.test("todo log").validate().end();
+    fix.test("todo log").modified(false).validate().end();
 }
 
 #[test]
@@ -19,6 +19,7 @@ fn log_after_single_task_completed() {
     fix.test("todo new a b c");
     fix.test("todo check 2");
     fix.test("todo log")
+        .modified(false)
         .validate()
         .printed_task(
             &PrintableTask::new("b", 0, Complete)
@@ -34,6 +35,7 @@ fn log_after_multiple_tasks_completed() {
     fix.test("todo new a b c");
     fix.test("todo check 1 3");
     fix.test("todo log")
+        .modified(false)
         .validate()
         .printed_task(
             &PrintableTask::new("c", 0, Complete)
@@ -62,6 +64,7 @@ fn log_shows_date_when_it_changes() {
         .with_timezone(&Utc);
     fix.test("todo check c d");
     fix.test("todo log")
+        .modified(false)
         .validate()
         .printed_task(
             &PrintableTask::new("d", 0, Complete)
