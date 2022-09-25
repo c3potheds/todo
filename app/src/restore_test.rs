@@ -11,6 +11,7 @@ fn restore_incomplete_task() {
     let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo restore 1")
+        .modified(false)
         .validate()
         .printed_warning(
             &PrintableWarning::CannotRestoreBecauseAlreadyIncomplete {
@@ -26,6 +27,7 @@ fn restore_complete_task() {
     fix.test("todo new a");
     fix.test("todo check 1");
     fix.test("todo restore 0")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Uncheck))
         .end();
@@ -38,6 +40,7 @@ fn restore_task_with_negative_number() {
     fix.test("todo check 1");
     fix.test("todo check 1");
     fix.test("todo restore -1")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 2, Incomplete).action(Uncheck))
         .end();
@@ -49,6 +52,7 @@ fn restore_same_task_with_multiple_keys() {
     fix.test("todo new a b");
     fix.test("todo check 1");
     fix.test("todo restore 0 0")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 2, Incomplete).action(Uncheck))
         .end();
@@ -61,6 +65,7 @@ fn restore_task_with_incomplete_antidependency() {
     fix.test("todo block b --on a");
     fix.test("todo check 1");
     fix.test("todo restore 0")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Uncheck))
         .printed_task(&PrintableTask::new("b", 2, Blocked).action(Lock))
@@ -75,6 +80,7 @@ fn restore_task_with_complete_antidependency() {
     fix.test("todo check 1");
     fix.test("todo check 1");
     fix.test("todo restore -1")
+        .modified(false)
         .validate()
         .printed_error(
             &PrintableError::CannotRestoreBecauseAntidependencyIsComplete {
@@ -93,6 +99,7 @@ fn restore_by_name() {
     fix.test("todo new a b");
     fix.test("todo check a");
     fix.test("todo restore a")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 2, Incomplete).action(Uncheck))
         .end();
@@ -104,6 +111,7 @@ fn force_restore_complete_task() {
     fix.test("todo new a");
     fix.test("todo check a");
     fix.test("todo restore a --force")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Uncheck))
         .end();
@@ -114,6 +122,7 @@ fn force_restore_incomplete_task() {
     let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo restore a --force")
+        .modified(false)
         .validate()
         .printed_warning(
             &PrintableWarning::CannotRestoreBecauseAlreadyIncomplete {
@@ -129,6 +138,7 @@ fn force_restore_task_with_complete_adeps() {
     fix.test("todo new a b --chain");
     fix.test("todo check a b");
     fix.test("todo restore a --force")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Uncheck))
         .printed_task(&PrintableTask::new("b", 2, Blocked).action(Uncheck))
@@ -141,6 +151,7 @@ fn force_restore_task_with_complete_adeps_with_complete_adeps() {
     fix.test("todo new a b c --chain");
     fix.test("todo check a b c");
     fix.test("todo restore a --force")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Uncheck))
         .printed_task(&PrintableTask::new("b", 2, Blocked).action(Uncheck))
@@ -154,6 +165,7 @@ fn force_restore_task_with_complete_and_incomplete_adeps() {
     fix.test("todo new a b c d --chain");
     fix.test("todo check a b c");
     fix.test("todo restore a --force")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Uncheck))
         .printed_task(&PrintableTask::new("b", 2, Blocked).action(Uncheck))
@@ -168,6 +180,7 @@ fn restore_chain() {
     fix.test("todo new a b --chain");
     fix.test("todo check a b");
     fix.test("todo restore a b")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Uncheck))
         .printed_task(&PrintableTask::new("b", 2, Blocked).action(Uncheck))

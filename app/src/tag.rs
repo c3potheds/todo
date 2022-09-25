@@ -37,13 +37,18 @@ fn mark_tasks(
         })
 }
 
-pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Tag) {
+pub fn run(
+    list: &mut TodoList,
+    printer: &mut impl TodoPrinter,
+    cmd: &Tag,
+) -> bool {
     if cmd.keys.is_empty() && cmd.unmark.is_empty() {
         print_all_tags(list, printer, cmd.include_done);
-        return;
+        return false;
     }
     let tasks_to_mark = lookup_tasks(list, &cmd.keys);
     let tasks_to_unmark = lookup_tasks(list, &cmd.unmark);
+    let mut mutated = false;
     (mark_tasks(list, &tasks_to_mark, true)
         | mark_tasks(list, &tasks_to_unmark, false))
     .include_done(list, cmd.include_done)
@@ -52,10 +57,12 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Tag) {
         let task = format_task(list, id);
         printer.print_task(&task.action(
             if tasks_to_mark.contains(id) || tasks_to_unmark.contains(id) {
+                mutated = true;
                 Action::Select
             } else {
                 Action::None
             },
         ));
     });
+    mutated
 }

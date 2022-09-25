@@ -6,7 +6,7 @@ use {
 #[test]
 fn tag_show_no_tags() {
     let mut fix = Fixture::default();
-    fix.test("todo tag").validate().end();
+    fix.test("todo tag").modified(false).validate().end();
 }
 
 #[test]
@@ -15,6 +15,7 @@ fn tag_show_all_tags() {
     fix.test("todo new a b c --tag");
     fix.test("todo new d e f");
     fix.test("todo tag")
+        .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete).as_tag())
         .printed_task(&PrintableTask::new("b", 2, Incomplete).as_tag())
@@ -27,6 +28,7 @@ fn tag_show_blocked_tags() {
     let mut fix = Fixture::default();
     fix.test("todo new a b c --tag --chain");
     fix.test("todo tag")
+        .modified(false)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
@@ -45,6 +47,7 @@ fn tag_does_not_show_complete_tags_by_default() {
     fix.test("todo new a b c --tag");
     fix.test("todo check a");
     fix.test("todo tag")
+        .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("b", 1, Incomplete).as_tag())
         .printed_task(&PrintableTask::new("c", 2, Incomplete).as_tag())
@@ -57,6 +60,7 @@ fn tag_show_complete_tags() {
     fix.test("todo new a b c --tag");
     fix.test("todo check a");
     fix.test("todo tag --include-done")
+        .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("a", 0, Complete).as_tag())
         .printed_task(&PrintableTask::new("b", 1, Incomplete).as_tag())
@@ -69,6 +73,7 @@ fn tag_mark_single() {
     let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo tag a")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
@@ -83,6 +88,7 @@ fn tag_mark_multiple() {
     let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo tag a b")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
@@ -102,6 +108,7 @@ fn tag_mark_already_tag() {
     let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo tag a")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
@@ -117,6 +124,7 @@ fn tag_prints_affected_deps_when_marking() {
     let mut fix = Fixture::default();
     fix.test("todo new a b c --chain");
     fix.test("todo tag c")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete).tag("c"))
         .printed_task(&PrintableTask::new("b", 2, Blocked).tag("c"))
@@ -141,6 +149,7 @@ fn tag_unmark_multiple() {
     let mut fix = Fixture::default();
     fix.test("todo new a b c --tag");
     fix.test("todo tag -u a b")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Select))
         .printed_task(&PrintableTask::new("b", 2, Incomplete).action(Select))
@@ -151,7 +160,7 @@ fn tag_unmark_multiple() {
 fn tag_unmark_already_unmarked() {
     let mut fix = Fixture::default();
     fix.test("todo new a");
-    fix.test("todo tag -u a").validate().end();
+    fix.test("todo tag -u a").modified(false).validate().end();
 }
 
 #[test]
@@ -160,6 +169,7 @@ fn tag_mark_and_unmark() {
     fix.test("todo new a");
     fix.test("todo new b --tag");
     fix.test("todo tag a -u b")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
@@ -176,6 +186,7 @@ fn tag_does_not_show_complete_deps_by_default_when_marking() {
     fix.test("todo new a b c --chain");
     fix.test("todo check a");
     fix.test("todo tag c")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("b", 1, Incomplete).tag("c"))
         .printed_task(
@@ -190,6 +201,7 @@ fn tag_show_complete_deps_when_marking() {
     fix.test("todo new a b c --chain");
     fix.test("todo check a");
     fix.test("todo tag c --include-done")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 0, Complete).tag("c"))
         .printed_task(&PrintableTask::new("b", 1, Incomplete).tag("c"))
@@ -206,6 +218,7 @@ fn tag_does_not_show_complete_deps_by_default_when_unmarking() {
     fix.test("todo tag c");
     fix.test("todo check a");
     fix.test("todo tag -u c")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("b", 1, Incomplete))
         .printed_task(&PrintableTask::new("c", 2, Blocked).action(Select))
@@ -219,6 +232,7 @@ fn tag_show_complete_deps_when_unmarking() {
     fix.test("todo tag c");
     fix.test("todo check a");
     fix.test("todo tag -u c -d")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 0, Complete))
         .printed_task(&PrintableTask::new("b", 1, Incomplete))

@@ -11,6 +11,7 @@ fn put_one_after_one() {
     let mut fix = Fixture::default();
     fix.test("todo new a b");
     fix.test("todo put a --after b")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("b", 1, Incomplete))
         .printed_task(&PrintableTask::new("a", 2, Blocked).action(Lock))
@@ -22,6 +23,7 @@ fn put_three_after_one() {
     let mut fix = Fixture::default();
     fix.test("todo new a b c d");
     fix.test("todo put a b c --after d")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("d", 1, Incomplete))
         .printed_task(&PrintableTask::new("a", 2, Blocked).action(Lock))
@@ -35,6 +37,7 @@ fn put_one_after_three() {
     let mut fix = Fixture::default();
     fix.test("todo new a b c d");
     fix.test("todo put a --after b c d")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("b", 1, Incomplete))
         .printed_task(&PrintableTask::new("c", 2, Incomplete))
@@ -49,6 +52,7 @@ fn put_after_task_with_adeps() {
     fix.test("todo new a b --chain");
     fix.test("todo new c");
     fix.test("todo put c --after a")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete))
         .printed_task(&PrintableTask::new("c", 2, Blocked).action(Lock))
@@ -61,6 +65,7 @@ fn put_one_before_one() {
     let mut fix = Fixture::default();
     fix.test("todo new a b");
     fix.test("todo put b --before a")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("b", 1, Incomplete))
         .printed_task(&PrintableTask::new("a", 2, Blocked).action(Lock))
@@ -72,6 +77,7 @@ fn put_three_before_one() {
     let mut fix = Fixture::default();
     fix.test("todo new a b c d");
     fix.test("todo put b c d --before a")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("b", 1, Incomplete))
         .printed_task(&PrintableTask::new("c", 2, Incomplete))
@@ -85,6 +91,7 @@ fn put_one_before_three() {
     let mut fix = Fixture::default();
     fix.test("todo new a b c d");
     fix.test("todo put d --before a b c")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("d", 1, Incomplete))
         .printed_task(&PrintableTask::new("a", 2, Blocked).action(Lock))
@@ -99,6 +106,7 @@ fn put_before_task_with_deps() {
     fix.test("todo new a b --chain");
     fix.test("todo new c");
     fix.test("todo put c --before b")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete))
         .printed_task(&PrintableTask::new("c", 2, Blocked).action(Lock))
@@ -113,6 +121,7 @@ fn put_before_and_after() {
     fix.test("todo new d e f --chain");
     fix.test("todo new g");
     fix.test("todo put g -B b -A e")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete))
         .printed_task(&PrintableTask::new("e", 3, Blocked))
@@ -127,6 +136,7 @@ fn put_causing_cycle() {
     let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo put a --after b")
+        .modified(false)
         .validate()
         .printed_error(&PrintableError::CannotBlockBecauseWouldCauseCycle {
             cannot_block: BriefPrintableTask::new(1, Incomplete),
@@ -134,6 +144,7 @@ fn put_causing_cycle() {
         })
         .end();
     fix.test("todo -a")
+        .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete))
         .printed_task(&PrintableTask::new("b", 2, Blocked))
@@ -146,6 +157,7 @@ fn put_before_prints_updated_priority() {
     fix.test("todo new a b d --chain");
     fix.test("todo new c --priority 1");
     fix.test("todo put c --before d")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete).priority(Implicit(1)),
@@ -168,6 +180,7 @@ fn put_after_prints_updated_priority() {
     fix.test("todo new a b d --chain");
     fix.test("todo new c --priority 1");
     fix.test("todo put c --after b")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete).priority(Implicit(1)),
@@ -191,6 +204,7 @@ fn put_excludes_complete_affected_tasks() {
     fix.test("todo check a");
     fix.test("todo new c --priority 1");
     fix.test("todo put c --after b")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("b", 1, Incomplete).priority(Implicit(1)),
@@ -210,6 +224,7 @@ fn put_include_done() {
     fix.test("todo check a");
     fix.test("todo new c --priority 1");
     fix.test("todo put c --after b -d")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 0, Complete).priority(Implicit(1)),

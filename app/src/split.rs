@@ -98,23 +98,25 @@ fn split(
     }
 }
 
-pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: Split) {
+pub fn run(
+    list: &mut TodoList,
+    printer: &mut impl TodoPrinter,
+    cmd: Split,
+) -> bool {
     let result = lookup_tasks(list, &cmd.keys).iter_sorted(list).fold(
         SplitResult::default(),
         |so_far, id| {
             so_far.combine(split(
                 list,
                 id,
-                cmd.into
-                    .iter()
-                    .map(|desc| desc.clone())
-                    .collect(),
+                cmd.into.to_vec(),
                 cmd.chain,
                 cmd.keep,
                 cmd.tag,
             ))
         },
     );
+    let mutated = !result.to_print.is_empty();
     result.to_print.iter_sorted(list).for_each(|id| {
         printer.print_task(&format_task(list, id).action(
             if result.shards.contains(id) {
@@ -126,4 +128,5 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: Split) {
             },
         ));
     });
+    mutated
 }

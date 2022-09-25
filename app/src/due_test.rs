@@ -14,6 +14,7 @@ fn show_tasks_with_due_date() {
     fix.test("todo new a b c --due 1 day");
     fix.test("todo new d e f");
     fix.test("todo due")
+        .modified(false)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
@@ -41,6 +42,7 @@ fn show_tasks_with_due_date_includes_blocked() {
     fix.test("todo new c -p b --due 2 days");
     fix.test("todo new d e f");
     fix.test("todo due")
+        .modified(false)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
@@ -66,6 +68,7 @@ fn show_tasks_with_due_date_excludes_complete() {
     fix.test("todo new d e f");
     fix.test("todo check a");
     fix.test("todo due")
+        .modified(false)
         .validate()
         .printed_task(
             &PrintableTask::new("b", 1, Incomplete)
@@ -88,6 +91,7 @@ fn show_tasks_with_due_date_include_done() {
     fix.test("todo new d e f");
     fix.test("todo check a");
     fix.test("todo due --include-done")
+        .modified(false)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 0, Complete)
@@ -115,6 +119,7 @@ fn show_tasks_with_due_date_earlier_than_given_date() {
     fix.test("todo new d e f");
     fix.test("todo new g --due 6 hours");
     fix.test("todo due --in 1 day")
+        .modified(false)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
@@ -139,6 +144,7 @@ fn show_tasks_with_due_date_earlier_than_given_date_include_done() {
     fix.test("todo new g --due 6 hours");
     fix.test("todo check g");
     fix.test("todo due --in 1 day -d")
+        .modified(false)
         .validate()
         .printed_task(
             &PrintableTask::new("g", 0, Complete)
@@ -161,6 +167,7 @@ fn show_source_of_implicit_due_date() {
     fix.test("todo new c -p b --due 2 days");
     fix.test("todo new d e f --due today");
     fix.test("todo due a")
+        .modified(false)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 4, Incomplete)
@@ -185,6 +192,7 @@ fn set_due_date() {
     fix.test("todo new c -p b --due 2 days");
     fix.test("todo new d e f");
     fix.test("todo due d e --on thursday")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("d", 2, Incomplete)
@@ -205,6 +213,7 @@ fn set_due_date_excludes_complete_tasks() {
     fix.test("todo new a b --chain");
     fix.test("todo check a");
     fix.test("todo due b --on thursday")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("b", 1, Incomplete)
@@ -222,6 +231,7 @@ fn set_due_date_include_done() {
     fix.test("todo new a b --chain");
     fix.test("todo check a");
     fix.test("todo due b --on thursday --include-done")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 0, Complete)
@@ -244,6 +254,7 @@ fn set_due_date_prints_affected_tasks() {
     fix.test("todo new c -p b --due 2 days");
     fix.test("todo new d e f");
     fix.test("todo due c --in 1 hour")
+        .modified(true)
         .validate()
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
@@ -266,6 +277,7 @@ fn reset_due_date() {
     fix.test("todo new c -p b --due 2 days");
     fix.test("todo new d e f");
     fix.test("todo due c --none")
+        .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("b", 5, Blocked))
         .printed_task(&PrintableTask::new("c", 6, Blocked))
@@ -279,6 +291,7 @@ fn show_tasks_without_due_dates() {
     fix.test("todo new d e f --due tomorrow -p a b c");
     fix.test("todo new g h i --chain");
     fix.test("todo due --none")
+        .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("g", 4, Incomplete))
         .printed_task(&PrintableTask::new("h", 8, Blocked))
@@ -293,6 +306,7 @@ fn show_tasks_without_due_date_excludes_complete() {
     fix.test("todo new d e f --chain");
     fix.test("todo check d");
     fix.test("todo due --none")
+        .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("e", 4, Incomplete))
         .printed_task(&PrintableTask::new("f", 5, Blocked))
@@ -306,6 +320,7 @@ fn show_tasks_without_due_date_include_done() {
     fix.test("todo new d e f --chain");
     fix.test("todo check d");
     fix.test("todo due --none -d")
+        .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("d", 0, Complete))
         .printed_task(&PrintableTask::new("e", 4, Incomplete))
@@ -318,6 +333,7 @@ fn cannot_use_due_and_none_flags_at_the_same_time() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 13, 18, 00, 00);
     fix.test("todo due --in 1 day --none")
+        .modified(false)
         .validate()
         .printed_error(&PrintableError::ConflictingArgs((
             "due".to_string(),

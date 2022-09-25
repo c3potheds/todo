@@ -11,7 +11,7 @@ pub fn run(
     list: &mut TodoList,
     printer: &mut impl TodoPrinter,
     cmd: &Unsnooze,
-) {
+) -> bool {
     #[derive(Default)]
     struct UnsnoozeResult {
         tasks_to_print: TaskSet,
@@ -58,4 +58,5 @@ pub fn run(
     tasks_to_print.iter_sorted(list).for_each(|id| {
         printer.print_task(&format_task(list, id).action(Action::Unsnooze));
     });
+    !tasks_to_print.is_empty()
 }

@@ -5,7 +5,12 @@ use {
     printing::{Action, PrintableTask, Status, TodoPrinter},
 };
 
-pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: Rm) {
+pub fn run(
+    list: &mut TodoList,
+    printer: &mut impl TodoPrinter,
+    cmd: Rm,
+) -> bool {
+    let mut mutated = false;
     lookup_tasks(list, &cmd.keys)
         .iter_sorted(list)
         .map(|id| {
@@ -15,11 +20,13 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: Rm) {
                 &PrintableTask::new(&task.desc, pos, Status::Removed)
                     .action(Action::Delete),
             );
+            mutated = true;
             id
         })
         .collect::<Vec<_>>()
         .into_iter()
         .fold(TaskSet::default(), |so_far, id| so_far | list.remove(id))
         .iter_sorted(list)
-        .for_each(|id| printer.print_task(&format_task(list, id)))
+        .for_each(|id| printer.print_task(&format_task(list, id)));
+    mutated
 }

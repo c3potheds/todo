@@ -9,7 +9,11 @@ use {
 
 struct NoPathFound(TaskId, TaskId);
 
-pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Path) {
+pub fn run(
+    list: &TodoList,
+    printer: &mut impl TodoPrinter,
+    cmd: &Path,
+) -> bool {
     let tasks = cmd
         .keys
         .iter()
@@ -52,7 +56,7 @@ pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Path) {
                 format_task_brief(list, a),
                 format_task_brief(list, b),
             ));
-            return;
+            return false;
         }
     }
     .iter_sorted(list)
@@ -65,4 +69,5 @@ pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Path) {
             },
         ))
     });
+    false
 }

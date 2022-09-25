@@ -7,7 +7,7 @@ use {
 #[test]
 fn top_empty() {
     let mut fix = Fixture::default();
-    fix.test("todo top").validate().end();
+    fix.test("todo top").modified(false).validate().end();
 }
 
 #[test]
@@ -15,6 +15,7 @@ fn top_all_tasks_uncategorized() {
     let mut fix = Fixture::default();
     fix.test("todo new a b c");
     fix.test("todo top")
+        .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete))
         .printed_task(&PrintableTask::new("b", 2, Incomplete))
@@ -28,6 +29,7 @@ fn top_all_tasks_categorized_the_same() {
     fix.test("todo new a b c");
     fix.test("todo new d -p a b c");
     fix.test("todo top")
+        .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("d", 4, Blocked))
         .end();
@@ -40,6 +42,7 @@ fn top_multiple_categories() {
     fix.test("todo new g -p a b c");
     fix.test("todo new h -p d e f");
     fix.test("todo top")
+        .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("g", 7, Blocked))
         .printed_task(&PrintableTask::new("h", 8, Blocked))
@@ -52,6 +55,7 @@ fn top_deep_category() {
     fix.test("todo new a b c --chain");
     fix.test("todo new d e f --chain");
     fix.test("todo top")
+        .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("c", 5, Blocked))
         .printed_task(&PrintableTask::new("f", 6, Blocked))
@@ -64,6 +68,7 @@ fn top_does_not_show_complete_tasks_by_default() {
     fix.test("todo new a b c");
     fix.test("todo check a");
     fix.test("todo top")
+        .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("b", 1, Incomplete))
         .printed_task(&PrintableTask::new("c", 2, Incomplete))
@@ -76,6 +81,7 @@ fn top_show_complete_tasks_with_option() {
     fix.test("todo new a b c");
     fix.test("todo check a");
     fix.test("todo top -d")
+        .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("a", 0, Complete))
         .printed_task(&PrintableTask::new("b", 1, Incomplete))
@@ -90,6 +96,7 @@ fn top_show_only_top_level_complete_tasks() {
     fix.test("todo new d e f --chain");
     fix.test("todo check a b c d e f");
     fix.test("todo top -d")
+        .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("c", -1, Complete))
         .printed_task(&PrintableTask::new("f", 0, Complete))
@@ -102,6 +109,7 @@ fn top_underneath_one_task() {
     fix.test("todo new a b");
     fix.test("todo new c -p a b");
     fix.test("todo top c")
+        .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete))
         .printed_task(&PrintableTask::new("b", 2, Incomplete))
@@ -116,6 +124,7 @@ fn top_union_of_categories() {
     fix.test("todo new c d -b x y");
     fix.test("todo new e f -b y");
     fix.test("todo top x y")
+        .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete))
         .printed_task(&PrintableTask::new("b", 2, Incomplete))
@@ -132,6 +141,7 @@ fn top_exclude_deps_with_indirect_connection_to_category() {
     fix.test("todo new x");
     fix.test("todo new a b --chain -b x");
     fix.test("todo top x")
+        .modified(false)
         .validate()
         // a should be excluded because there's also an indirect connection to
         // the top, through b. On the other hand, b is included because the only
@@ -145,6 +155,7 @@ fn top_with_typo() {
     let mut fix = Fixture::default();
     fix.test("todo new blah");
     fix.test("todo top bleh")
+        .modified(false)
         .validate()
         .printed_warning(&PrintableWarning::NoMatchFoundForKey {
             requested_key: Key::ByName("bleh".to_string()),
@@ -158,6 +169,7 @@ fn top_implicit_include_done() {
     fix.test("todo new a b --chain");
     fix.test("todo check a b");
     fix.test("todo top b")
+        .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("a", -1, Complete))
         .end();

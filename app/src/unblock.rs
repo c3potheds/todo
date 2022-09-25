@@ -56,7 +56,11 @@ fn unblock_from_all(
         })
 }
 
-pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Unblock) {
+pub fn run(
+    list: &mut TodoList,
+    printer: &mut impl TodoPrinter,
+    cmd: &Unblock,
+) -> bool {
     let tasks_to_unblock = lookup_tasks(list, &cmd.keys);
     let tasks_to_unblock_from = lookup_tasks(list, &cmd.from);
     let include_done = should_include_done(
@@ -69,8 +73,9 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Unblock) {
         printer.print_error(&PrintableError::NoMatchForKeys {
             keys: cmd.from.clone(),
         });
-        return;
+        return false;
     }
+    let mut mutated = false;
     let tasks_to_print = if tasks_to_unblock_from.is_empty() {
         unblock_from_all(list, &tasks_to_unblock)
     } else {
@@ -87,10 +92,12 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Unblock) {
         .for_each(|id| {
             printer.print_task(&format_task(list, id).action(
                 if tasks_to_unblock.contains(id) {
+                    mutated = true;
                     Action::Unlock
                 } else {
                     Action::None
                 },
             ));
         });
+    mutated
 }

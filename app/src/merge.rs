@@ -12,7 +12,7 @@ pub fn run(
     printer: &mut impl TodoPrinter,
     now: DateTime<Utc>,
     cmd: &Merge,
-) {
+) -> bool {
     let tasks_to_merge = lookup_tasks(list, &cmd.keys);
     let deps = tasks_to_merge
         .iter_unsorted()
@@ -49,7 +49,7 @@ pub fn run(
             adeps_of: format_tasks_brief(list, &adeps_of),
             deps_of: format_tasks_brief(list, &deps_of),
         });
-        return;
+        return false;
     }
     let priority = tasks_to_merge
         .iter_unsorted()
@@ -108,4 +108,5 @@ pub fn run(
                 },
             ));
         });
+    true
 }

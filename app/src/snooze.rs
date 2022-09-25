@@ -14,7 +14,7 @@ pub fn run(
     printer: &mut impl TodoPrinter,
     now: DateTime<Utc>,
     cmd: &Snooze,
-) {
+) -> bool {
     let snooze_date =
         match parse_snooze_date_or_print_error(now, &cmd.until, printer) {
             Ok(Some(snooze_date)) => snooze_date,
@@ -22,16 +22,20 @@ pub fn run(
                 printer.print_error(&PrintableError::EmptyDate {
                     flag: Some("--until".to_string()),
                 });
-                return;
+                return false;
             }
             Err(()) => {
-                return;
+                return false;
             }
         };
+    let mut mutated = false;
     lookup_tasks(list, &cmd.keys)
         .iter_sorted(list)
         .filter(|&id| match list.snooze(id, snooze_date) {
-            Ok(()) => true,
+            Ok(()) => {
+                mutated = true;
+                true
+            }
             Err(warnings) => warnings.into_iter().fold(
                 true,
                 |snoozed, warning| match warning {
@@ -68,4 +72,5 @@ pub fn run(
                     .start_date(snooze_date),
             )
         });
+    mutated
 }

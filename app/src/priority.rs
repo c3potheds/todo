@@ -11,15 +11,22 @@ fn set_priority(
     tasks: TaskSet,
     priority: i32,
     include_done: bool,
-) {
+) -> bool {
+    let mut mutated = false;
     tasks
         .iter_sorted(list)
         .fold(TaskSet::default(), |so_far, id| {
-            so_far | list.set_priority(id, priority)
+            let affected_by_id = list.set_priority(id, priority);
+            if affected_by_id.is_empty() {
+                return so_far;
+            }
+            mutated = true;
+            so_far | affected_by_id
         })
         .include_done(list, include_done)
         .iter_sorted(list)
         .for_each(|id| printer.print_task(&format_task(list, id)));
+    mutated
 }
 
 fn source_of_priority(list: &TodoList, id: TaskId) -> TaskSet {
@@ -77,7 +84,7 @@ pub fn run(
     list: &mut TodoList,
     printer: &mut impl TodoPrinter,
     cmd: &Priority,
-) {
+) -> bool {
     let tasks = if cmd.keys.is_empty() {
         None
     } else {
@@ -88,20 +95,27 @@ pub fn run(
         (Some(tasks), Some(priority)) => {
             set_priority(list, printer, tasks, priority, cmd.include_done)
         }
-        (Some(tasks), None) => show_source_of_priority_for_tasks(
-            list,
-            printer,
-            tasks,
-            cmd.include_done,
-        ),
-        (None, Some(priority)) => show_all_tasks_with_priority(
-            list,
-            printer,
-            priority,
-            cmd.include_done,
-        ),
+        (Some(tasks), None) => {
+            show_source_of_priority_for_tasks(
+                list,
+                printer,
+                tasks,
+                cmd.include_done,
+            );
+            false
+        }
+        (None, Some(priority)) => {
+            show_all_tasks_with_priority(
+                list,
+                printer,
+                priority,
+                cmd.include_done,
+            );
+            false
+        }
         (None, None) => {
-            show_all_tasks_with_priority(list, printer, 1, cmd.include_done)
+            show_all_tasks_with_priority(list, printer, 1, cmd.include_done);
+            false
         }
     }
 }

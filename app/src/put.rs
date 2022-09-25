@@ -20,7 +20,11 @@ fn print_block_error(
     });
 }
 
-pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Put) {
+pub fn run(
+    list: &mut TodoList,
+    printer: &mut impl TodoPrinter,
+    cmd: &Put,
+) -> bool {
     let tasks_to_put = lookup_tasks(list, &cmd.keys);
     let before = lookup_tasks(list, &cmd.preposition.before);
     let after = lookup_tasks(list, &cmd.preposition.after);
@@ -37,6 +41,7 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Put) {
         .fold(TaskSet::default(), |so_far, id| so_far | list.adeps(id));
     let tasks_to_block_on = after | before_deps;
     let tasks_to_block = before | after_adeps;
+    let mut mutated = false;
 
     let mut blocked_tasks = HashSet::new();
     tasks_to_put
@@ -51,6 +56,7 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Put) {
             .on(blocking)
         {
             Ok(affected) => {
+                mutated = true;
                 blocked_tasks.insert(blocked);
                 so_far | affected
             }
@@ -70,4 +76,5 @@ pub fn run(list: &mut TodoList, printer: &mut impl TodoPrinter, cmd: &Put) {
                 },
             ))
         });
+    mutated
 }

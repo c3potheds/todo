@@ -24,12 +24,17 @@ fn edit_with_description(
     printer: &mut impl TodoPrinter,
     ids: &TaskSet,
     desc: &str,
-) {
+) -> bool {
+    let mut mutated = false;
     ids.iter_sorted(list)
         .filter(|&id| list.set_desc(id, Cow::Owned(desc.to_string())))
         .collect::<TaskSet>()
         .iter_sorted(list)
-        .for_each(|id| printer.print_task(&format_task(list, id)));
+        .for_each(|id| {
+            printer.print_task(&format_task(list, id));
+            mutated = true;
+        });
+    mutated
 }
 
 enum EditError {
@@ -89,7 +94,8 @@ fn edit_with_text_editor(
     printer: &mut impl TodoPrinter,
     ids: &TaskSet,
     editor_output: &str,
-) {
+) -> bool {
+    let mut mutated = false;
     editor_output
         .lines()
         .flat_map(|line| {
@@ -108,7 +114,11 @@ fn edit_with_text_editor(
         })
         .collect::<TaskSet>()
         .iter_sorted(list)
-        .for_each(|id| printer.print_task(&format_task(list, id)));
+        .for_each(|id| {
+            printer.print_task(&format_task(list, id));
+            mutated = true;
+        });
+    mutated
 }
 
 pub fn run(
@@ -116,7 +126,7 @@ pub fn run(
     printer: &mut impl TodoPrinter,
     text_editor: &impl TextEditor,
     cmd: &Edit,
-) {
+) -> bool {
     let tasks_to_edit = lookup_tasks(list, &cmd.keys);
     match &cmd.desc {
         Some(ref desc) => {
@@ -129,8 +139,9 @@ pub fn run(
                 edit_with_text_editor(list, printer, &tasks_to_edit, output)
             }
             Err(_) => {
-                printer.print_error(&PrintableError::FailedToUseTextEditor)
+                printer.print_error(&PrintableError::FailedToUseTextEditor);
+                false
             }
         },
-    };
+    }
 }

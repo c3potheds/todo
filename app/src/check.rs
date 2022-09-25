@@ -18,6 +18,7 @@ struct CheckResult {
     checked: TaskSet,
     unlocked: TaskSet,
     cannot_complete: Vec<(TaskId, Reason)>,
+    mutated: bool,
 }
 
 impl std::ops::BitOr for CheckResult {
@@ -29,6 +30,7 @@ impl std::ops::BitOr for CheckResult {
             checked: self.checked | other.checked,
             unlocked: self.unlocked | other.unlocked,
             cannot_complete: self.cannot_complete,
+            mutated: self.mutated || other.mutated,
         }
     }
 }
@@ -53,11 +55,15 @@ fn force_check(
         Ok(ForceChecked {
             completed,
             unblocked,
-        }) => CheckResult {
-            checked: completed,
-            unlocked: unblocked,
-            ..Default::default()
-        },
+        }) => {
+            let mutated = !completed.is_empty() || !unblocked.is_empty();
+            CheckResult {
+                checked: completed,
+                unlocked: unblocked,
+                mutated,
+                ..Default::default()
+            }
+        }
         Err(CheckError::TaskIsAlreadyComplete) => CheckResult {
             cannot_complete: vec![(id, Reason::AlreadyComplete)],
             ..Default::default()
@@ -79,6 +85,7 @@ fn check(
         Ok(unblocked) => CheckResult {
             checked: TaskSet::of(id),
             unlocked: unblocked,
+            mutated: true,
             ..Default::default()
         },
         Err(CheckError::TaskIsAlreadyComplete) => CheckResult {
@@ -121,12 +128,13 @@ pub fn run(
     printer: &mut impl TodoPrinter,
     now: DateTime<Utc>,
     cmd: &Check,
-) {
+) -> bool {
     let tasks_to_check = lookup_tasks(list, &cmd.keys);
     let CheckResult {
         checked,
         unlocked,
         cannot_complete,
+        mutated,
     } = if cmd.force {
         force_check(list, now, tasks_to_check)
     } else {
@@ -141,4 +149,5 @@ pub fn run(
     (unlocked - checked).iter_sorted(list).for_each(|id| {
         printer.print_task(&format_task(list, id).action(Action::Unlock));
     });
+    mutated
 }
