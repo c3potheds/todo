@@ -28,14 +28,14 @@ use {clap::Parser, lookup_key::Key};
 /// have their priority set to the given level, and all affected tasks will
 /// be printed.
 #[derive(Debug, PartialEq, Eq, Parser, Default)]
-#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
+#[command(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Priority {
     /// Tasks to assign a priority to.
     pub keys: Vec<Key>,
     /// The priority level for the tasks.
-    #[clap(long = "is", short = 'P')]
+    #[arg(long = "is", short = 'P')]
     pub priority: Option<i32>,
     /// Show complete tasks in the result.
-    #[clap(long, short = 'd')]
+    #[arg(long, short = 'd')]
     pub include_done: bool,
 }

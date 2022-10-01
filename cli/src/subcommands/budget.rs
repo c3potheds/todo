@@ -21,12 +21,12 @@ use {clap::Parser, lookup_key::Key};
 #[derive(Debug, PartialEq, Eq, Parser)]
 pub struct Budget {
     /// The tasks to assign a budget to.
-    #[clap(required = true, min_values = 1)]
+    #[arg(required = true, num_args = 1..)]
     pub keys: Vec<Key>,
     /// The description of the budgeted duration.
-    #[clap(long, alias = "is", required = true, min_values = 1)]
+    #[arg(long, alias = "is", required = true, num_args = 1..)]
     pub budget: Vec<String>,
     /// Show completed affected tasks.
-    #[clap(long, short = 'd')]
+    #[arg(long, short = 'd')]
     pub include_done: bool,
 }

@@ -30,31 +30,31 @@ use {clap::Parser, lookup_key::Key};
 /// complete a certain task. You can use this to get a "big picture" view
 /// of how a task fits into the larger plan.
 #[derive(Debug, Default, PartialEq, Eq, Parser)]
-#[clap(
+#[command(
     allow_negative_numbers(true),
     verbatim_doc_comment,
     group(
         ArgGroup::new("context")
-            .args(&["no-context", "blocked-by", "blocking"])
+            .args(&["no_context", "blocked_by", "blocking"])
     )
 )]
 pub struct Get {
     /// Tasks to explore.
-    #[clap(required = true, min_values = 1)]
+    #[arg(required = true, num_args = 1..)]
     pub keys: Vec<Key>,
     /// Show completed deps if no given task is complete.
     ///
     /// Completed deps and adeps will be shown even without this flag if any of
     /// the tasks that match the given keys are themselves complete.
-    #[clap(long, short = 'd')]
+    #[arg(long, short = 'd')]
     pub include_done: bool,
     /// Do not show context (transitive deps and adeps of given tasks).
-    #[clap(long, short = 'n')]
+    #[arg(long, short = 'n')]
     pub no_context: bool,
     /// Only show transitive deps of given tasks.
-    #[clap(long, short = 'p')]
+    #[arg(long, short = 'p')]
     pub blocked_by: bool,
     /// Only show transitive adeps of given tasks.
-    #[clap(long, short = 'b')]
+    #[arg(long, short = 'b')]
     pub blocking: bool,
 }

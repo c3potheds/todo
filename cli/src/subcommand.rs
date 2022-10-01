@@ -21,7 +21,7 @@ pub enum SubCommand {
     /// are associated with non-positive integers (with the most-recently
     /// completed task having number 0, and others having negative numbers) that
     /// can be used as task key arguments in commands.
-    #[clap(verbatim_doc_comment)]
+    #[command(verbatim_doc_comment)]
     Log,
 
     Merge(Merge),

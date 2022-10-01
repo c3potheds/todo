@@ -39,23 +39,23 @@ use {clap::Parser, lookup_key::Key};
 ///
 ///  a <- b1 <- b2 <- b3 <- c
 #[derive(Debug, PartialEq, Eq, Parser, Default)]
-#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
+#[command(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Split {
     /// Tasks to split.
-    #[clap(required = true, min_values = 1)]
+    #[arg(required = true, num_args = 1..)]
     pub keys: Vec<Key>,
 
     /// Descriptions for new tasks.
-    #[clap(long, required = true, min_values = 1)]
+    #[arg(long, required = true, num_args = 1..)]
     pub into: Vec<String>,
 
     /// If passed, the results of the split will be put in a dependency chain.
-    #[clap(long)]
+    #[arg(long)]
     pub chain: bool,
 
     /// If passed, keeps the original task, but blocks it on the new tasks.
     /// The budget of the original task will be transferred to the new tasks.
-    #[clap(long, short = 'k')]
+    #[arg(long, short = 'k')]
     pub keep: bool,
 
     /// If passed with the value "true", then the new tasks will be marked as
@@ -63,6 +63,6 @@ pub struct Split {
     /// tags. If not passed, then the new tasks will be marked as tags if the
     /// original task was marked as a tag and --keep was not passed, otherwise
     /// they will not be marked as tags.
-    #[clap(long, short = 't')]
+    #[arg(long, short = 't')]
     pub tag: Option<bool>,
 }

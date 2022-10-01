@@ -9,19 +9,19 @@ use {clap::Parser, lookup_key::Key};
 ///
 /// This is the opposite of 'split'.
 #[derive(Debug, Default, PartialEq, Eq, Parser)]
-#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
+#[command(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Merge {
     /// Tasks to merge.
-    #[clap(required = true, min_values = 1)]
+    #[arg(required = true, num_args = 1..)]
     pub keys: Vec<Key>,
     /// Description of new task to merge into.
-    #[clap(long)]
+    #[arg(long)]
     pub into: String,
     /// If passed with a value of "true", the new task will be marked as a tag.
     /// If passed with a value of "false", the new task will not be marked as a
     /// tag. If not passed, the new task will be marked as a tag if all of the
     /// original tasks were marked as tags, otherwise it will not be marked as
     /// a tag.
-    #[clap(long, short = 't')]
+    #[arg(long, short = 't')]
     pub tag: Option<bool>,
 }

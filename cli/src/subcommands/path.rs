@@ -6,9 +6,9 @@ use {clap::Parser, lookup_key::Key};
 /// with any tasks that are antidependencies of the first and dependencies
 /// of the second printed in between, in order.
 #[derive(Debug, PartialEq, Eq, Parser)]
-#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
+#[command(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Path {
     /// Tasks to find paths between. Should match at least two tasks.
-    #[clap(required = true, min_values = 1)]
+    #[arg(required = true, num_args = 1..)]
     pub keys: Vec<Key>,
 }

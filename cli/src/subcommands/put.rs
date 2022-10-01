@@ -3,10 +3,10 @@ use {clap::Parser, lookup_key::Key};
 #[derive(Debug, PartialEq, Eq, Parser)]
 pub struct Prepositions {
     /// Put the selected tasks before these tasks.
-    #[clap(long, short = 'B', min_values = 1)]
+    #[arg(long, short = 'B', num_args = 1..)]
     pub before: Vec<Key>,
     /// Put the selected tasks after these tasks.
-    #[clap(long, short = 'A', min_values = 1)]
+    #[arg(long, short = 'A', num_args = 1..)]
     pub after: Vec<Key>,
 }
 
@@ -30,14 +30,14 @@ pub struct Prepositions {
 ///
 ///   a <- b <- t <- c
 #[derive(Debug, PartialEq, Eq, Parser)]
-#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
+#[command(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Put {
     /// Selected task keys.
-    #[clap(required = true, min_values = 1)]
+    #[arg(required = true, num_args = 1..)]
     pub keys: Vec<Key>,
-    #[clap(flatten)]
+    #[command(flatten)]
     pub preposition: Prepositions,
     /// Include affected complete tasks in the result.
-    #[clap(long, short = 'd')]
+    #[arg(long, short = 'd')]
     pub include_done: bool,
 }

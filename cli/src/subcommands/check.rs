@@ -16,13 +16,13 @@ use {clap::Parser, lookup_key::Key};
 #[derive(Debug, PartialEq, Eq, Parser)]
 pub struct Check {
     /// Tasks to mark as complete.
-    #[clap(required = true, min_values = 1)]
+    #[arg(required = true, num_args = 1..)]
     pub keys: Vec<Key>,
     /// If passed, all incomplete dependencies will also be completed.
     ///
     /// If this is not passed, it is an error to 'check' (complete) a blocked
     /// task. When you "force"-check a task, it will be guaranteed to be
     /// complete at the end of the operation.
-    #[clap(long)]
+    #[arg(long)]
     pub force: bool,
 }

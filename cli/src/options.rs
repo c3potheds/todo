@@ -95,7 +95,7 @@ use {crate::SubCommand, clap::Parser};
 /// There are many other things you can do with this app. To read more, try
 /// using 'todo help' with one of the subcommands, listed below.
 #[derive(Debug, Parser)]
-#[clap(
+#[command(
     name = "todo",
     author = "Simeon Anfinrud",
     version = "0.1",
@@ -103,18 +103,18 @@ use {crate::SubCommand, clap::Parser};
     verbatim_doc_comment
 )]
 pub struct Options {
-    #[clap(subcommand)]
+    #[command(subcommand)]
     pub cmd: Option<SubCommand>,
 
     /// Show blocked tasks in the status.
-    #[clap(long, short = 'b')]
+    #[arg(long, short = 'b')]
     pub include_blocked: bool,
 
     /// Show complete tasks in the status.
-    #[clap(long, short = 'd')]
+    #[arg(long, short = 'd')]
     pub include_done: bool,
 
     /// Show all tasks in the status.
-    #[clap(long, short = 'a')]
+    #[arg(long, short = 'a')]
     pub include_all: bool,
 }

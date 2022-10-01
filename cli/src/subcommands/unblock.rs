@@ -6,17 +6,17 @@ use {clap::Parser, lookup_key::Key};
 /// is provided, then the given tasks will be unblocked from all of their direct
 /// dependencies.
 #[derive(Debug, PartialEq, Eq, Parser)]
-#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
+#[command(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Unblock {
     /// Tasks to unblock.
-    #[clap(required = true, min_values = 1)]
+    #[arg(required = true, num_args = 1..)]
     pub keys: Vec<Key>,
 
     /// Tasks to unblock from.
-    #[clap(long, min_values = 1)]
+    #[arg(long, num_args = 1..)]
     pub from: Vec<Key>,
 
     /// Show affected complete tasks in the result.
-    #[clap(long, short = 'd')]
+    #[arg(long, short = 'd')]
     pub include_done: bool,
 }

@@ -10,10 +10,10 @@ use {clap::Parser, lookup_key::Key};
 /// incomplete blocking tasks must be completed before the task they block
 /// is completed.
 #[derive(Debug, PartialEq, Eq, Parser)]
-#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
+#[command(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Restore {
     /// Tasks to restore, marking as incomplete.
-    #[clap(required = true, min_values = 1)]
+    #[arg(required = true, num_args = 1..)]
     pub keys: Vec<Key>,
     /// If passed, all complete antidependencies will also be restored.
     ///
@@ -21,6 +21,6 @@ pub struct Restore {
     /// a task that blocks other complete tasks. When you "force"-restore a
     /// task, it will be guaranteed to be incomplete at the end of the
     /// operation.
-    #[clap(long)]
+    #[arg(long)]
     pub force: bool,
 }

@@ -6,12 +6,12 @@ use {clap::Parser, lookup_key::Key};
 /// information if needed. If no --desc is provided, then a text editor is
 /// opened, which lets you edit the task descriptions interactively.
 #[derive(Debug, PartialEq, Eq, Parser)]
-#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
+#[command(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Edit {
     /// Tasks to edit.
-    #[clap(required = true, min_values = 1)]
+    #[arg(required = true, num_args = 1..)]
     pub keys: Vec<Key>,
     /// The new description. If not set, a text editor is used.
-    #[clap(long)]
+    #[arg(long)]
     pub desc: Option<String>,
 }
