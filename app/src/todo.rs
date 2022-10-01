@@ -1,8 +1,8 @@
 use {
     super::{
-        block, budget, chain, check, due, edit, find, get, log, merge, new,
-        path, priority, punt, put, restore, rm, snooze, snoozed, split, status,
-        tag, top, unblock, unsnooze,
+        block, bottom, budget, chain, check, due, edit, find, get, log, merge,
+        new, path, priority, punt, put, restore, rm, snooze, snoozed, split,
+        status, tag, top, unblock, unsnooze,
     },
     cli::{Options, SubCommand},
     clock::Clock,
@@ -31,6 +31,7 @@ pub fn todo(
     let now = clock.now();
     match options.cmd {
         Some(Block(cmd)) => block::run(list, printer, &cmd),
+        Some(Bottom(cmd)) => bottom::run(list, printer, &cmd),
         Some(Budget(cmd)) => budget::run(list, printer, &cmd),
         Some(Chain(cmd)) => chain::run(list, printer, &cmd),
         Some(Check(cmd)) => check::run(list, printer, now, &cmd),

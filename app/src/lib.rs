@@ -1,4 +1,5 @@
 mod block;
+mod bottom;
 mod budget;
 mod chain;
 mod check;
@@ -30,6 +31,9 @@ pub use self::todo::todo;
 
 #[cfg(test)]
 mod block_test;
+
+#[cfg(test)]
+mod bottom_test;
 
 #[cfg(test)]
 mod budget_test;
