@@ -1,4 +1,5 @@
 mod block;
+mod bottom;
 mod budget;
 mod chain;
 mod check;
@@ -24,6 +25,7 @@ mod unblock;
 mod unsnooze;
 
 pub use self::block::Block;
+pub use self::bottom::Bottom;
 pub use self::budget::Budget;
 pub use self::chain::Chain;
 pub use self::check::Check;
@@ -50,6 +52,9 @@ pub use self::unsnooze::Unsnooze;
 
 #[cfg(test)]
 mod block_test;
+
+#[cfg(test)]
+mod bottom_test;
 
 #[cfg(test)]
 mod budget_test;

@@ -4,6 +4,7 @@ use clap::Parser;
 #[derive(Debug, PartialEq, Eq, Parser)]
 pub enum SubCommand {
     Block(Block),
+    Bottom(Bottom),
     Budget(Budget),
     Chain(Chain),
     Check(Check),
