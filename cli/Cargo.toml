@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-clap = { version = "3.2", features = ["derive"] }
+clap = { version = "4.0.*", features = ["derive"] }
 
 lookup_key = { path = "../lookup_key" }

@@ -8,13 +8,13 @@ use clap::Parser;
 /// if successful. If '--reset' is passed, the config value is restored to the
 /// default.
 #[derive(Debug, PartialEq, Eq, Parser)]
-#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
+#[command(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Config {
     /// The key to change. Must be a valid config key
     pub key: Option<String>,
     /// If provided, sets the config value for the given key.
     pub value: Vec<String>,
     /// If passed, resets the config value to the default.
-    #[clap(long)]
+    #[arg(long)]
     pub reset: bool,
 }

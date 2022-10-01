@@ -11,16 +11,16 @@ use {clap::Parser, lookup_key::Key};
 /// If no keys are passed, and the --unmark flag is not passed, then this
 /// subcommand will print all tags.
 #[derive(Debug, Default, PartialEq, Eq, Parser)]
-#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
+#[command(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Tag {
     /// Tasks to mark as tags. If none are given and --unmark is not passed,
     /// all existing tags are printed.
-    #[clap(required = false)]
+    #[arg(required = false)]
     pub keys: Vec<Key>,
     /// Tasks to unmark as tags.
-    #[clap(long, short = 'u', min_values = 1, required = false)]
+    #[arg(long, short = 'u', num_args = 1.., required = false)]
     pub unmark: Vec<Key>,
     /// If passed, print affected completed tasks.
-    #[clap(long, short = 'd')]
+    #[arg(long, short = 'd')]
     pub include_done: bool,
 }

@@ -21,13 +21,13 @@ use {clap::Parser, lookup_key::Key};
 /// that day. If the 'until' argument is the name of a month, the task will
 /// unsnooze at the beginning of that month.
 #[derive(Debug, PartialEq, Eq, Parser)]
-#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
+#[command(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Snooze {
     /// Tasks to snooze.
-    #[clap(required = true, min_values = 1)]
+    #[arg(required = true, num_args = 1..)]
     pub keys: Vec<Key>,
 
     /// Description of how long to snooze.
-    #[clap(long, min_values = 1)]
+    #[arg(long, num_args = 1..)]
     pub until: Vec<String>,
 }

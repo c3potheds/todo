@@ -22,17 +22,17 @@ use {clap::Parser, lookup_key::Key};
 /// You can undo this command with the 'unblock' command, run
 /// 'todo help unblock' for more info.
 #[derive(Debug, PartialEq, Eq, Parser)]
-#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
+#[command(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Block {
     /// Tasks to block.
-    #[clap(required = true, min_values = 1)]
+    #[arg(required = true, num_args = 1..)]
     pub keys: Vec<Key>,
 
     /// Tasks to block on.
-    #[clap(long, required = true, min_values = 1)]
+    #[arg(long, required = true, num_args = 1..)]
     pub on: Vec<Key>,
 
     /// Include complete affected deps in result.
-    #[clap(long, short = 'd')]
+    #[arg(long, short = 'd')]
     pub include_done: bool,
 }

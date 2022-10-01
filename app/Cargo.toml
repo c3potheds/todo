@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
-clap = "3.2"
+clap = "4.0.*"
 humantime = "2.1"
 itertools = "0.10"
 

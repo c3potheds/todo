@@ -11,9 +11,9 @@ use {clap::Parser, lookup_key::Key};
 /// task for later without blocking it on anything. You can send it to the
 /// end of the list with the 'punt' command.
 #[derive(Debug, PartialEq, Eq, Parser)]
-#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
+#[command(allow_negative_numbers(true), verbatim_doc_comment)]
 pub struct Punt {
     /// Tasks to punt.
-    #[clap(required = true, min_values = 1)]
+    #[arg(required = true, num_args = 1..)]
     pub keys: Vec<Key>,
 }

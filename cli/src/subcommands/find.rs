@@ -6,15 +6,15 @@ use clap::Parser;
 /// The results include incomplete tasks and blocked tasks, and can include
 /// complete tasks if you pass the --include-done flag.
 #[derive(Debug, Default, PartialEq, Eq, Parser)]
-#[clap(verbatim_doc_comment)]
+#[command(verbatim_doc_comment)]
 pub struct Find {
     /// Search terms, which can be a substring of any task description.
-    #[clap(required = true, min_values = 1)]
+    #[arg(required = true, num_args = 1..)]
     pub terms: Vec<String>,
     /// Show completed tasks in search results.
-    #[clap(long, short = 'd')]
+    #[arg(long, short = 'd')]
     pub include_done: bool,
     /// Search for tasks with the given tags.
-    #[clap(long, short = 't')]
+    #[arg(long, short = 't')]
     pub tag: bool,
 }
