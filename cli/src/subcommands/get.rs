@@ -1,3 +1,5 @@
+use clap::ArgGroup;
+
 use {clap::Parser, lookup_key::Key};
 
 /// Shows tasks related to given tasks.
@@ -27,8 +29,15 @@ use {clap::Parser, lookup_key::Key};
 /// This is also useful for seeing what tasks may be unlocked if you
 /// complete a certain task. You can use this to get a "big picture" view
 /// of how a task fits into the larger plan.
-#[derive(Debug, PartialEq, Eq, Parser)]
-#[clap(allow_negative_numbers(true), verbatim_doc_comment)]
+#[derive(Debug, Default, PartialEq, Eq, Parser)]
+#[clap(
+    allow_negative_numbers(true),
+    verbatim_doc_comment,
+    group(
+        ArgGroup::new("context")
+            .args(&["no-context", "blocked-by", "blocking"])
+    )
+)]
 pub struct Get {
     /// Tasks to explore.
     #[clap(required = true, min_values = 1)]
@@ -42,4 +51,10 @@ pub struct Get {
     /// Do not show context (transitive deps and adeps of given tasks).
     #[clap(long, short = 'n')]
     pub no_context: bool,
+    /// Only show transitive deps of given tasks.
+    #[clap(long, short = 'p')]
+    pub blocked_by: bool,
+    /// Only show transitive adeps of given tasks.
+    #[clap(long, short = 'b')]
+    pub blocking: bool,
 }

@@ -188,3 +188,55 @@ fn get_no_context_complete_and_incomplete_match() {
         .printed_task(&PrintableTask::new("a", 2, Blocked).action(Select))
         .end();
 }
+
+#[test]
+fn get_blocked_by_one_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --chain");
+    fix.test("todo get --blocked-by b")
+        .modified(false)
+        .validate()
+        .printed_task(&PrintableTask::new("b", 2, Blocked).action(Select))
+        .printed_task(&PrintableTask::new("c", 3, Blocked))
+        .end();
+}
+
+#[test]
+fn get_blocked_by_shows_transitive_adeps() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c d e --chain");
+    fix.test("todo get --blocked-by b")
+        .modified(false)
+        .validate()
+        .printed_task(&PrintableTask::new("b", 2, Blocked).action(Select))
+        .printed_task(&PrintableTask::new("c", 3, Blocked))
+        .printed_task(&PrintableTask::new("d", 4, Blocked))
+        .printed_task(&PrintableTask::new("e", 5, Blocked))
+        .end();
+}
+
+#[test]
+fn get_blocking_one_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --chain");
+    fix.test("todo get --blocking b")
+        .modified(false)
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("b", 2, Blocked).action(Select))
+        .end();
+}
+
+#[test]
+fn get_blocking_shows_transitive_deps() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c d e --chain");
+    fix.test("todo get --blocking d")
+        .modified(false)
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("b", 2, Blocked))
+        .printed_task(&PrintableTask::new("c", 3, Blocked))
+        .printed_task(&PrintableTask::new("d", 4, Blocked).action(Select))
+        .end();
+}
