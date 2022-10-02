@@ -3,49 +3,55 @@ use {
     cli::Find,
     lookup_key::Key,
     model::{TaskSet, TaskStatus, TodoList},
-    printing::TodoPrinter,
+    printing::{PrintableAppSuccess, PrintableResult},
 };
 
-fn find_with_tag(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Find) {
+fn find_with_tag<'list>(
+    list: &'list TodoList,
+    cmd: &Find,
+) -> PrintableResult<'list> {
     let keys = cmd
         .terms
         .iter()
         .map(|term| Key::ByName(term.to_string()))
         .collect::<Vec<_>>();
-    lookup_tasks(list, keys.iter())
-        .iter_sorted(list)
-        .fold(TaskSet::default(), |so_far, id| {
-            so_far | list.transitive_deps(id) | TaskSet::of(id)
-        })
-        .iter_sorted(list)
-        .filter(|&id| {
-            cmd.include_done || list.status(id) != Some(TaskStatus::Complete)
-        })
-        .for_each(|id| {
-            printer.print_task(&format_task(list, id));
-        });
+    Ok(PrintableAppSuccess {
+        tasks: lookup_tasks(list, keys.iter())
+            .iter_sorted(list)
+            .fold(TaskSet::default(), |so_far, id| {
+                so_far | list.transitive_deps(id) | TaskSet::of(id)
+            })
+            .iter_sorted(list)
+            .filter(|&id| {
+                cmd.include_done
+                    || list.status(id) != Some(TaskStatus::Complete)
+            })
+            .map(|id| format_task(list, id))
+            .collect(),
+        ..Default::default()
+    })
 }
 
-pub fn run(
-    list: &TodoList,
-    printer: &mut impl TodoPrinter,
-    cmd: &Find,
-) -> bool {
+pub fn run<'list>(list: &'list TodoList, cmd: &Find) -> PrintableResult<'list> {
     if cmd.tag {
-        find_with_tag(list, printer, cmd);
-        return false;
+        return find_with_tag(list, cmd);
     }
-    list.all_tasks()
-        .filter(|&id| {
-            let task = list.get(id).unwrap();
-            cmd.terms
-                .iter()
-                .map(|term| term.to_lowercase())
-                .any(|term| task.desc.to_lowercase().contains(&term))
-        })
-        .filter(|&id| {
-            cmd.include_done || list.status(id) != Some(TaskStatus::Complete)
-        })
-        .for_each(|id| printer.print_task(&format_task(list, id)));
-    false
+    Ok(PrintableAppSuccess {
+        tasks: list
+            .all_tasks()
+            .filter(|&id| {
+                let task = list.get(id).unwrap();
+                cmd.terms
+                    .iter()
+                    .map(|term| term.to_lowercase())
+                    .any(|term| task.desc.to_lowercase().contains(&term))
+            })
+            .filter(|&id| {
+                cmd.include_done
+                    || list.status(id) != Some(TaskStatus::Complete)
+            })
+            .map(|id| format_task(list, id))
+            .collect(),
+        ..Default::default()
+    })
 }

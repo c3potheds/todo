@@ -39,7 +39,7 @@ pub fn todo(
         Some(Config(_)) => unimplemented!(),
         Some(Due(cmd)) => due::run(list, printer, now, &cmd),
         Some(Edit(cmd)) => edit::run(list, text_editor, &cmd).print(printer),
-        Some(Find(cmd)) => find::run(list, printer, &cmd),
+        Some(Find(cmd)) => find::run(list, &cmd).print(printer),
         Some(Get(cmd)) => get::run(list, printer, &cmd),
         Some(Log) => log::run(list, printer),
         Some(Merge(cmd)) => merge::run(list, printer, now, &cmd),
