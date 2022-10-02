@@ -1,13 +1,11 @@
-use model::TaskSet;
-
 use {
     super::util::{format_task, lookup_tasks, should_include_done},
     cli::Get,
-    model::TodoList,
-    printing::{Action, TodoPrinter},
+    model::{TaskSet, TodoList},
+    printing::{Action, PrintableAppSuccess, PrintableResult},
 };
 
-pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Get) -> bool {
+pub fn run<'list>(list: &'list TodoList, cmd: &Get) -> PrintableResult<'list> {
     let requested_tasks = lookup_tasks(list, &cmd.keys);
     let include_done = should_include_done(
         cmd.include_done,
@@ -27,7 +25,7 @@ pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Get) -> bool {
             // Any other combination is invalid.
             _ => unreachable!(),
         };
-    requested_tasks
+    let tasks_to_print = requested_tasks
         .iter_sorted(list)
         .fold(requested_tasks.clone(), |so_far, id| {
             so_far
@@ -44,14 +42,16 @@ pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Get) -> bool {
         })
         .include_done(list, include_done)
         .iter_sorted(list)
-        .for_each(|id| {
-            printer.print_task(&format_task(list, id).action(
-                if requested_tasks.contains(id) {
-                    Action::Select
-                } else {
-                    Action::None
-                },
-            ))
-        });
-    false
+        .map(|id| {
+            format_task(list, id).action(if requested_tasks.contains(id) {
+                Action::Select
+            } else {
+                Action::None
+            })
+        })
+        .collect();
+    Ok(PrintableAppSuccess {
+        tasks: tasks_to_print,
+        ..Default::default()
+    })
 }
