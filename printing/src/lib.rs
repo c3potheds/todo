@@ -28,6 +28,7 @@ mod simple_todo_printer_test;
 #[cfg(test)]
 mod testing_test;
 
+#[derive(Default)]
 pub struct PrintableAppSuccess<'list> {
     pub warnings: Vec<PrintableWarning>,
     pub tasks: Vec<PrintableTask<'list>>,
