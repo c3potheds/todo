@@ -33,7 +33,7 @@ pub fn todo(
     match options.cmd {
         Some(Block(cmd)) => block::run(list, &cmd).print(printer),
         Some(Bottom(cmd)) => bottom::run(list, &cmd).print(printer),
-        Some(Budget(cmd)) => budget::run(list, printer, &cmd),
+        Some(Budget(cmd)) => budget::run(list, &cmd).print(printer),
         Some(Chain(cmd)) => chain::run(list, printer, &cmd),
         Some(Check(cmd)) => check::run(list, printer, now, &cmd),
         Some(Config(_)) => unimplemented!(),
