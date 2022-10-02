@@ -5,31 +5,37 @@ use {
     model::{
         CheckError, CheckOptions, ForceChecked, TaskId, TaskSet, TodoList,
     },
-    printing::{Action, PrintableError, PrintableWarning, TodoPrinter},
+    printing::{
+        Action, PrintableAppSuccess, PrintableError, PrintableResult,
+        PrintableWarning,
+    },
 };
 
-enum Reason {
-    BlockedBy(Vec<TaskId>),
-    AlreadyComplete,
-}
-
 #[derive(Default)]
-struct CheckResult {
+struct Checked {
     checked: TaskSet,
     unlocked: TaskSet,
-    cannot_complete: Vec<(TaskId, Reason)>,
+    already_complete: TaskSet,
     mutated: bool,
 }
 
-impl std::ops::BitOr for CheckResult {
+struct CannotComplete {
+    cannot_complete: TaskId,
+    blocked_by: Vec<TaskId>,
+}
+
+type CheckResult = Result<Checked, Vec<CannotComplete>>;
+
+impl std::ops::BitOr for Checked {
     type Output = Self;
 
-    fn bitor(mut self, other: Self) -> Self {
-        self.cannot_complete.extend(other.cannot_complete);
-        CheckResult {
-            checked: self.checked | other.checked,
-            unlocked: self.unlocked | other.unlocked,
-            cannot_complete: self.cannot_complete,
+    fn bitor(self, other: Self) -> Self {
+        let checked = self.checked | other.checked;
+        let unlocked = (self.unlocked | other.unlocked) - checked.clone();
+        Checked {
+            checked,
+            unlocked,
+            already_complete: self.already_complete | other.already_complete,
             mutated: self.mutated || other.mutated,
         }
     }
@@ -41,7 +47,7 @@ fn check_with_fn<Check: FnMut(TaskId) -> CheckResult>(
 ) -> CheckResult {
     tasks_to_check
         .into_iter()
-        .fold(CheckResult::default(), |so_far, id| so_far | check_fn(id))
+        .try_fold(Checked::default(), |a, id| Ok(a | check_fn(id)?))
 }
 
 fn force_check(
@@ -57,17 +63,17 @@ fn force_check(
             unblocked,
         }) => {
             let mutated = !completed.is_empty() || !unblocked.is_empty();
-            CheckResult {
+            Ok(Checked {
                 checked: completed,
                 unlocked: unblocked,
+                already_complete: TaskSet::default(),
                 mutated,
-                ..Default::default()
-            }
+            })
         }
-        Err(CheckError::TaskIsAlreadyComplete) => CheckResult {
-            cannot_complete: vec![(id, Reason::AlreadyComplete)],
+        Err(CheckError::TaskIsAlreadyComplete) => Ok(Checked {
+            already_complete: TaskSet::of(id),
             ..Default::default()
-        },
+        }),
         Err(CheckError::TaskIsBlockedBy(_)) => {
             panic!("Somehow got a TaskIsBlockedBy error from force_check().")
         }
@@ -82,72 +88,74 @@ fn check(
     check_with_fn(tasks_to_check.iter_sorted(list).collect(), |id| match list
         .check(CheckOptions { id, now })
     {
-        Ok(unblocked) => CheckResult {
+        Ok(unblocked) => Ok(Checked {
             checked: TaskSet::of(id),
             unlocked: unblocked,
+            already_complete: TaskSet::default(),
             mutated: true,
+        }),
+        Err(CheckError::TaskIsAlreadyComplete) => Ok(Checked {
+            already_complete: TaskSet::of(id),
             ..Default::default()
-        },
-        Err(CheckError::TaskIsAlreadyComplete) => CheckResult {
-            cannot_complete: vec![(id, Reason::AlreadyComplete)],
-            ..Default::default()
-        },
-        Err(CheckError::TaskIsBlockedBy(deps)) => CheckResult {
-            cannot_complete: vec![(id, Reason::BlockedBy(deps))],
-            ..Default::default()
-        },
+        }),
+        Err(CheckError::TaskIsBlockedBy(deps)) => Err(vec![CannotComplete {
+            cannot_complete: id,
+            blocked_by: deps,
+        }]),
     })
 }
 
-fn print_cannot_complete_error(
-    list: &TodoList,
-    printer: &mut impl TodoPrinter,
-    id: TaskId,
-    reason: Reason,
-) {
-    match reason {
-        Reason::AlreadyComplete => printer.print_warning(
-            &PrintableWarning::CannotCheckBecauseAlreadyComplete {
-                cannot_check: format_task_brief(list, id),
-            },
-        ),
-        Reason::BlockedBy(deps) => {
-            printer.print_error(&PrintableError::CannotCheckBecauseBlocked {
-                cannot_check: format_task_brief(list, id),
-                blocked_by: deps
-                    .into_iter()
-                    .map(|dep| format_task_brief(list, dep))
-                    .collect(),
-            })
-        }
-    }
-}
-
-pub fn run(
-    list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+pub fn run<'list>(
+    list: &'list mut TodoList,
     now: DateTime<Utc>,
     cmd: &Check,
-) -> bool {
+) -> PrintableResult<'list> {
     let tasks_to_check = lookup_tasks(list, &cmd.keys);
-    let CheckResult {
+    let Checked {
         checked,
         unlocked,
-        cannot_complete,
+        already_complete,
         mutated,
     } = if cmd.force {
         force_check(list, now, tasks_to_check)
     } else {
         check(list, now, tasks_to_check)
-    };
-    cannot_complete.into_iter().for_each(|(id, reason)| {
-        print_cannot_complete_error(list, printer, id, reason)
-    });
-    checked.iter_sorted(list).for_each(|id| {
-        printer.print_task(&format_task(list, id).action(Action::Check));
-    });
-    (unlocked - checked).iter_sorted(list).for_each(|id| {
-        printer.print_task(&format_task(list, id).action(Action::Unlock));
-    });
-    mutated
+    }
+    .map_err(|cannot_completes| {
+        cannot_completes
+            .into_iter()
+            .map(
+                |CannotComplete {
+                     cannot_complete,
+                     blocked_by,
+                 }| PrintableError::CannotCheckBecauseBlocked {
+                    cannot_check: format_task_brief(list, cannot_complete),
+                    blocked_by: blocked_by
+                        .into_iter()
+                        .map(|dep| format_task_brief(list, dep))
+                        .collect(),
+                },
+            )
+            .collect::<Vec<_>>()
+    })?;
+    let warnings = already_complete
+        .iter_sorted(list)
+        .map(|id| PrintableWarning::CannotCheckBecauseAlreadyComplete {
+            cannot_check: format_task_brief(list, id),
+        })
+        .collect();
+    let tasks_to_print = checked
+        .iter_sorted(list)
+        .map(|id| format_task(list, id).action(Action::Check))
+        .chain(
+            unlocked
+                .iter_sorted(list)
+                .map(|id| format_task(list, id).action(Action::Unlock)),
+        )
+        .collect();
+    Ok(PrintableAppSuccess {
+        warnings,
+        tasks: tasks_to_print,
+        mutated,
+    })
 }
