@@ -206,15 +206,14 @@ pub fn should_include_done(
     from_cmdline || any_tasks_are_complete(list, tasks.into_iter())
 }
 
-pub fn parse_due_date_or_print_error(
+pub fn parse_due_date(
     now: DateTime<Utc>,
-    due_date_vec: &[String],
-    printer: &mut impl TodoPrinter,
-) -> Result<Option<DateTime<Utc>>, ()> {
-    if due_date_vec.is_empty() {
+    chunks: &[String],
+) -> Result<Option<DateTime<Utc>>, PrintableError> {
+    if chunks.is_empty() {
         return Ok(None);
     }
-    let due_date_string = due_date_vec.join(" ");
+    let due_date_string = chunks.join(" ");
     match ::time_format::parse_time(
         Local,
         now.with_timezone(&Local),
@@ -222,20 +221,24 @@ pub fn parse_due_date_or_print_error(
         ::time_format::Snap::ToEnd,
     ) {
         Ok(due_date) => Ok(Some(due_date.with_timezone(&Utc))),
-        Err(_) => {
-            printer.print_error(&PrintableError::CannotParseDueDate {
-                cannot_parse: due_date_string.to_string(),
-            });
-            Err(())
-        }
+        Err(_) => Err(PrintableError::CannotParseDueDate {
+            cannot_parse: due_date_string.to_string(),
+        }),
     }
 }
 
-pub fn parse_budget_or_print_error(
-    budget_vec: &[String],
+pub fn parse_due_date_or_print_error(
+    now: DateTime<Utc>,
+    due_date_vec: &[String],
     printer: &mut impl TodoPrinter,
-) -> Result<DurationInSeconds, ()> {
-    let budget_string = budget_vec.join(" ");
+) -> Result<Option<DateTime<Utc>>, ()> {
+    parse_due_date(now, due_date_vec).map_err(|e| printer.print_error(&e))
+}
+
+pub fn parse_budget(
+    chunks: &[String],
+) -> Result<DurationInSeconds, PrintableError> {
+    let budget_string = chunks.join(" ");
     if budget_string == "0" || budget_string.is_empty() {
         return Ok(DurationInSeconds::default());
     }
@@ -244,21 +247,24 @@ pub fn parse_budget_or_print_error(
             Ok(DurationInSeconds(match u32::try_from(duration.as_secs()) {
                 Ok(secs) => secs,
                 Err(_) => {
-                    printer.print_error(&PrintableError::DurationIsTooLong {
+                    return Err(PrintableError::DurationIsTooLong {
                         duration: duration.as_secs(),
-                        string_repr: budget_string.clone(),
-                    });
-                    return Err(());
+                        string_repr: budget_string,
+                    })
                 }
             }))
         }
-        Err(_) => {
-            printer.print_error(&PrintableError::CannotParseDuration {
-                cannot_parse: budget_string.clone(),
-            });
-            Err(())
-        }
+        Err(_) => Err(PrintableError::CannotParseDuration {
+            cannot_parse: budget_string.clone(),
+        }),
     }
+}
+
+pub fn parse_budget_or_print_error(
+    budget_vec: &[String],
+    printer: &mut impl TodoPrinter,
+) -> Result<DurationInSeconds, ()> {
+    parse_budget(budget_vec).map_err(|e| printer.print_error(&e))
 }
 
 pub fn parse_snooze_date_or_print_error(
