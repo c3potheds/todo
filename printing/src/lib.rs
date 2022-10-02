@@ -27,3 +27,42 @@ mod printable_warning_test;
 mod simple_todo_printer_test;
 #[cfg(test)]
 mod testing_test;
+
+pub struct PrintableAppSuccess<'list> {
+    pub warnings: Vec<PrintableWarning>,
+    pub tasks: Vec<PrintableTask<'list>>,
+    pub mutated: bool,
+}
+
+pub type PrintableResult<'list> =
+    Result<PrintableAppSuccess<'list>, Vec<PrintableError>>;
+
+pub trait Printable {
+    fn print(&self, printer: &mut impl TodoPrinter) -> bool;
+}
+
+impl Printable for PrintableResult<'_> {
+    fn print(&self, printer: &mut impl TodoPrinter) -> bool {
+        match self {
+            Self::Ok(PrintableAppSuccess {
+                warnings,
+                tasks,
+                mutated,
+            }) => {
+                for warning in warnings {
+                    printer.print_warning(warning);
+                }
+                for task in tasks {
+                    printer.print_task(task);
+                }
+                *mutated
+            }
+            Self::Err(errors) => {
+                for error in errors {
+                    printer.print_error(error);
+                }
+                false
+            }
+        }
+    }
+}
