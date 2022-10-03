@@ -2,7 +2,7 @@ use {
     super::util::format_task,
     chrono::{DateTime, Utc},
     model::{TaskStatus, TodoList},
-    printing::{Action, TodoPrinter},
+    printing::{Action, PrintableAppSuccess, PrintableResult},
 };
 
 pub struct Status {
@@ -10,28 +10,31 @@ pub struct Status {
     pub include_done: bool,
 }
 
-pub fn run(
-    list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+pub fn run<'list>(
+    list: &'list mut TodoList,
     now: DateTime<Utc>,
     cmd: &Status,
-) -> bool {
+) -> PrintableResult<'list> {
     let unsnoozed_tasks = list.unsnooze_up_to(now);
-    list.all_tasks()
+    let tasks_to_print = list
+        .all_tasks()
         .filter(|&id| match list.status(id) {
             Some(TaskStatus::Blocked) => cmd.include_blocked,
             Some(TaskStatus::Complete) => cmd.include_done,
             Some(TaskStatus::Incomplete) => true,
             None => false,
         })
-        .for_each(|id| {
-            printer.print_task(&format_task(list, id).action(
-                if unsnoozed_tasks.contains(id) {
-                    Action::Unsnooze
-                } else {
-                    Action::None
-                },
-            ))
-        });
-    !unsnoozed_tasks.is_empty()
+        .map(|id| {
+            format_task(list, id).action(if unsnoozed_tasks.contains(id) {
+                Action::Unsnooze
+            } else {
+                Action::None
+            })
+        })
+        .collect();
+    Ok(PrintableAppSuccess {
+        tasks: tasks_to_print,
+        mutated: !unsnoozed_tasks.is_empty(),
+        ..Default::default()
+    })
 }
