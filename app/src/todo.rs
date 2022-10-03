@@ -50,7 +50,7 @@ pub fn todo(
         Some(Put(cmd)) => put::run(list, &cmd).print(printer),
         Some(Restore(cmd)) => restore::run(list, &cmd).print(printer),
         Some(Rm(cmd)) => rm::run(list, printer, cmd),
-        Some(Snooze(cmd)) => snooze::run(list, printer, now, &cmd),
+        Some(Snooze(cmd)) => snooze::run(list, now, &cmd).print(printer),
         Some(Snoozed(_)) => snoozed::run(list, printer, now),
         Some(Split(cmd)) => split::run(list, printer, cmd),
         Some(Tag(cmd)) => tag::run(list, printer, &cmd),
