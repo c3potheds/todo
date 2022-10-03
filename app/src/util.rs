@@ -267,12 +267,11 @@ pub fn parse_budget_or_print_error(
     parse_budget(budget_vec).map_err(|e| printer.print_error(&e))
 }
 
-pub fn parse_snooze_date_or_print_error(
+pub fn parse_snooze_date(
     now: DateTime<Utc>,
-    snooze_date_vec: &[String],
-    printer: &mut impl TodoPrinter,
-) -> Result<Option<DateTime<Utc>>, ()> {
-    let date_string = snooze_date_vec.join(" ");
+    chunks: &[String],
+) -> Result<Option<DateTime<Utc>>, PrintableError> {
+    let date_string = chunks.join(" ");
     if date_string.is_empty() || date_string.is_empty() {
         return Ok(None);
     }
@@ -283,11 +282,16 @@ pub fn parse_snooze_date_or_print_error(
         ::time_format::Snap::ToStart,
     ) {
         Ok(snooze_date) => Ok(Some(snooze_date.with_timezone(&Utc))),
-        Err(_) => {
-            printer.print_error(&PrintableError::CannotParseDueDate {
-                cannot_parse: date_string.to_string(),
-            });
-            Err(())
-        }
+        Err(_) => Err(PrintableError::CannotParseDueDate {
+            cannot_parse: date_string.to_string(),
+        }),
     }
+}
+
+pub fn parse_snooze_date_or_print_error(
+    now: DateTime<Utc>,
+    snooze_date_vec: &[String],
+    printer: &mut impl TodoPrinter,
+) -> Result<Option<DateTime<Utc>>, ()> {
+    parse_snooze_date(now, snooze_date_vec).map_err(|e| printer.print_error(&e))
 }
