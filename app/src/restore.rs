@@ -4,44 +4,51 @@ use {
     },
     cli::Restore,
     model::{ForceRestored, RestoreError, TaskId, TaskSet, TodoList},
-    printing::{Action, PrintableError, PrintableWarning, TodoPrinter},
-    std::collections::HashSet,
+    printing::{
+        Action, PrintableAppSuccess, PrintableError, PrintableResult,
+        PrintableWarning,
+    },
 };
 
-enum Reason {
-    BlockingComplete(TaskSet),
-    AlreadyIncomplete,
-}
-
-struct RestoreResult {
+#[derive(Default)]
+struct Restored {
     restored: TaskSet,
     blocked: TaskSet,
-    cannot_restore: Vec<(TaskId, Reason)>,
+    already_incomplete: TaskSet,
+    mutated: bool,
 }
+
+impl std::ops::BitOr for Restored {
+    type Output = Self;
+
+    fn bitor(self, other: Self) -> Self {
+        let restored = self.restored | other.restored;
+        let blocked = (self.blocked | other.blocked) - restored.clone();
+        Restored {
+            restored,
+            blocked,
+            already_incomplete: self.already_incomplete
+                | other.already_incomplete,
+            mutated: self.mutated || other.mutated,
+        }
+    }
+}
+
+struct CannotRestore {
+    cannot_restore: TaskId,
+    blocking_complete: Vec<TaskId>,
+}
+
+type RestoreResult = Result<Restored, Vec<CannotRestore>>;
 
 fn restore_with_fn<Restore: FnMut(TaskId) -> RestoreResult>(
     tasks_to_restore: Vec<TaskId>,
     mut restore_fn: Restore,
 ) -> RestoreResult {
-    tasks_to_restore.into_iter().rev().fold(
-        RestoreResult {
-            restored: TaskSet::default(),
-            blocked: TaskSet::default(),
-            cannot_restore: Vec::new(),
-        },
-        |so_far, id| {
-            let step = (restore_fn)(id);
-            RestoreResult {
-                restored: so_far.restored | step.restored,
-                blocked: so_far.blocked | step.blocked,
-                cannot_restore: so_far
-                    .cannot_restore
-                    .into_iter()
-                    .chain(step.cannot_restore.into_iter())
-                    .collect(),
-            }
-        },
-    )
+    tasks_to_restore
+        .into_iter()
+        .rev()
+        .try_fold(Restored::default(), |acc, id| Ok(acc | restore_fn(id)?))
 }
 
 fn force_restore(
@@ -49,16 +56,16 @@ fn force_restore(
     tasks_to_restore: Vec<TaskId>,
 ) -> RestoreResult {
     restore_with_fn(tasks_to_restore, |id| match list.force_restore(id) {
-        Ok(ForceRestored { restored, blocked }) => RestoreResult {
+        Ok(ForceRestored { restored, blocked }) => Ok(Restored {
             restored,
             blocked,
-            cannot_restore: Vec::new(),
-        },
-        Err(RestoreError::TaskIsAlreadyIncomplete) => RestoreResult {
-            restored: TaskSet::default(),
-            blocked: TaskSet::default(),
-            cannot_restore: vec![(id, Reason::AlreadyIncomplete)],
-        },
+            mutated: true,
+            ..Default::default()
+        }),
+        Err(RestoreError::TaskIsAlreadyIncomplete) => Ok(Restored {
+            already_incomplete: TaskSet::of(id),
+            ..Default::default()
+        }),
         Err(RestoreError::WouldRestore(_)) => {
             panic!("Somehow got a WouldRestore error from force_restore().")
         }
@@ -70,63 +77,81 @@ fn restore(
     tasks_to_restore: Vec<TaskId>,
 ) -> RestoreResult {
     restore_with_fn(tasks_to_restore, |id| match list.restore(id) {
-        Ok(blocked) => RestoreResult {
-            restored: std::iter::once(id).collect(),
+        Ok(blocked) => Ok(Restored {
+            restored: TaskSet::of(id),
             blocked,
-            cannot_restore: Vec::new(),
-        },
-        Err(RestoreError::TaskIsAlreadyIncomplete) => RestoreResult {
-            restored: TaskSet::default(),
-            blocked: TaskSet::default(),
-            cannot_restore: vec![(id, Reason::AlreadyIncomplete)],
-        },
-        Err(RestoreError::WouldRestore(adeps)) => RestoreResult {
-            restored: TaskSet::default(),
-            blocked: TaskSet::default(),
-            cannot_restore: vec![(id, Reason::BlockingComplete(adeps))],
-        },
+            mutated: true,
+            ..Default::default()
+        }),
+        Err(RestoreError::TaskIsAlreadyIncomplete) => Ok(Restored {
+            already_incomplete: TaskSet::of(id),
+            ..Default::default()
+        }),
+        Err(RestoreError::WouldRestore(adeps)) => Err(vec![CannotRestore {
+            cannot_restore: id,
+            blocking_complete: adeps.iter_sorted(list).collect(),
+        }]),
     })
 }
 
-pub fn run(
-    list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+fn format_cannot_restore(
+    list: &TodoList,
+    cannot_restore: CannotRestore,
+) -> PrintableError {
+    let CannotRestore {
+        cannot_restore,
+        blocking_complete,
+    } = cannot_restore;
+    PrintableError::CannotRestoreBecauseAntidependencyIsComplete {
+        cannot_restore: format_task_brief(list, cannot_restore),
+        complete_antidependencies: format_tasks_brief(
+            list,
+            &blocking_complete.into_iter().collect(),
+        ),
+    }
+}
+
+pub fn run<'list>(
+    list: &'list mut TodoList,
     cmd: &Restore,
-) -> bool {
+) -> PrintableResult<'list> {
     let tasks_to_restore =
         lookup_tasks(list, &cmd.keys).iter_sorted(list).collect();
-    let result = if cmd.force {
+    let Restored {
+        restored,
+        blocked,
+        already_incomplete,
+        mutated,
+    } = if cmd.force {
         force_restore(list, tasks_to_restore)
     } else {
         restore(list, tasks_to_restore)
-    };
-    result
-        .cannot_restore
-        .into_iter()
-        .for_each(|(id, reason)| match reason {
-            Reason::AlreadyIncomplete => printer.print_warning(
-                &PrintableWarning::CannotRestoreBecauseAlreadyIncomplete {
-                    cannot_restore: format_task_brief(list, id),
-                },
-            ),
-            Reason::BlockingComplete(adeps) => printer.print_error(
-                &PrintableError::CannotRestoreBecauseAntidependencyIsComplete {
-                    cannot_restore: format_task_brief(list, id),
-                    complete_antidependencies: format_tasks_brief(list, &adeps),
-                },
-            ),
-        });
-    // A task that was restored may become blocked by another task's restoration
-    // and thus may show up in more than one of the TaskSets.
-    let mut do_not_print_again = HashSet::new();
-    result.restored.iter_sorted(list).for_each(|id| {
-        do_not_print_again.insert(id);
-        printer.print_task(&format_task(list, id).action(Action::Uncheck))
-    });
-    result.blocked.iter_sorted(list).for_each(|id| {
-        if !do_not_print_again.contains(&id) {
-            printer.print_task(&format_task(list, id).action(Action::Lock));
-        }
-    });
-    !result.restored.is_empty() || !result.blocked.is_empty()
+    }
+    .map_err(|cannot_restore| {
+        cannot_restore
+            .into_iter()
+            .map(|e| format_cannot_restore(list, e))
+            .collect::<Vec<_>>()
+    })?;
+    use PrintableWarning::CannotRestoreBecauseAlreadyIncomplete;
+    let warnings = already_incomplete
+        .iter_sorted(list)
+        .map(|id| CannotRestoreBecauseAlreadyIncomplete {
+            cannot_restore: format_task_brief(list, id),
+        })
+        .collect();
+    let tasks_to_print = restored
+        .iter_sorted(list)
+        .map(|id| format_task(list, id).action(Action::Uncheck))
+        .chain(
+            blocked
+                .iter_sorted(list)
+                .map(|id| format_task(list, id).action(Action::Lock)),
+        )
+        .collect();
+    Ok(PrintableAppSuccess {
+        tasks: tasks_to_print,
+        warnings,
+        mutated,
+    })
 }
