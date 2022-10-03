@@ -59,6 +59,18 @@ pub fn run<'list>(
                         warnings.extend(
                             new_warnings
                                 .into_iter()
+                                .inspect(|w| {
+                                    if let
+                                    SnoozeWarning::SnoozedUntilAfterDueDate{
+                                        snoozed_until: _, due_date: _
+                                    } = w {
+                                        mutated = true;
+                                        // TODO: Make a push() method for
+                                        // TaskSet so we don't have to clone
+                                        // here.
+                                        snoozed = snoozed.clone() | TaskSet::of(id);
+                                    }
+                                })
                                 .map(|w| format_snooze_warning(list, id, w)),
                         );
                     }
