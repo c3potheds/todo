@@ -2,18 +2,17 @@ use {
     super::util::{format_task, lookup_tasks},
     cli::Priority,
     model::{TaskId, TaskSet, TaskStatus, TodoList},
-    printing::TodoPrinter,
+    printing::{PrintableAppSuccess, PrintableResult},
 };
 
-fn set_priority(
-    list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+fn set_priority<'list>(
+    list: &'list mut TodoList,
     tasks: TaskSet,
     priority: i32,
     include_done: bool,
-) -> bool {
+) -> PrintableResult<'list> {
     let mut mutated = false;
-    tasks
+    let tasks_to_print = tasks
         .iter_sorted(list)
         .fold(TaskSet::default(), |so_far, id| {
             let affected_by_id = list.set_priority(id, priority);
@@ -25,8 +24,13 @@ fn set_priority(
         })
         .include_done(list, include_done)
         .iter_sorted(list)
-        .for_each(|id| printer.print_task(&format_task(list, id)));
-    mutated
+        .map(|id| format_task(list, id))
+        .collect();
+    Ok(PrintableAppSuccess {
+        tasks: tasks_to_print,
+        mutated,
+        ..Default::default()
+    })
 }
 
 fn source_of_priority(list: &TodoList, id: TaskId) -> TaskSet {
@@ -43,31 +47,33 @@ fn source_of_priority(list: &TodoList, id: TaskId) -> TaskSet {
         .collect()
 }
 
-fn show_source_of_priority_for_tasks(
-    list: &TodoList,
-    printer: &mut impl TodoPrinter,
+fn show_source_of_priority_for_tasks<'list>(
+    list: &'list TodoList,
     tasks: TaskSet,
     include_done: bool,
-) {
-    tasks
+) -> PrintableResult<'list> {
+    let tasks_to_print = tasks
         .iter_unsorted()
         .fold(TaskSet::default(), |so_far, id| {
             so_far | source_of_priority(list, id) | TaskSet::of(id)
         })
         .include_done(list, include_done)
         .iter_sorted(list)
-        .for_each(|id| {
-            printer.print_task(&format_task(list, id));
-        })
+        .map(|id| format_task(list, id))
+        .collect();
+    Ok(PrintableAppSuccess {
+        tasks: tasks_to_print,
+        ..Default::default()
+    })
 }
 
-fn show_all_tasks_with_priority(
-    list: &TodoList,
-    printer: &mut impl TodoPrinter,
+fn show_all_tasks_with_priority<'list>(
+    list: &'list TodoList,
     priority: i32,
     include_done: bool,
-) {
-    list.all_tasks()
+) -> PrintableResult<'list> {
+    let tasks_to_print = list
+        .all_tasks()
         .filter(|&id| {
             include_done || list.status(id) != Some(TaskStatus::Complete)
         })
@@ -75,16 +81,18 @@ fn show_all_tasks_with_priority(
             Some(p) => p >= priority,
             None => false,
         })
-        .for_each(|id| {
-            printer.print_task(&format_task(list, id));
-        })
+        .map(|id| format_task(list, id))
+        .collect();
+    Ok(PrintableAppSuccess {
+        tasks: tasks_to_print,
+        ..Default::default()
+    })
 }
 
-pub fn run(
-    list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+pub fn run<'list>(
+    list: &'list mut TodoList,
     cmd: &Priority,
-) -> bool {
+) -> PrintableResult<'list> {
     let tasks = if cmd.keys.is_empty() {
         None
     } else {
@@ -93,29 +101,14 @@ pub fn run(
     let priority = cmd.priority;
     match (tasks, priority) {
         (Some(tasks), Some(priority)) => {
-            set_priority(list, printer, tasks, priority, cmd.include_done)
+            set_priority(list, tasks, priority, cmd.include_done)
         }
         (Some(tasks), None) => {
-            show_source_of_priority_for_tasks(
-                list,
-                printer,
-                tasks,
-                cmd.include_done,
-            );
-            false
+            show_source_of_priority_for_tasks(list, tasks, cmd.include_done)
         }
         (None, Some(priority)) => {
-            show_all_tasks_with_priority(
-                list,
-                printer,
-                priority,
-                cmd.include_done,
-            );
-            false
+            show_all_tasks_with_priority(list, priority, cmd.include_done)
         }
-        (None, None) => {
-            show_all_tasks_with_priority(list, printer, 1, cmd.include_done);
-            false
-        }
+        (None, None) => show_all_tasks_with_priority(list, 1, cmd.include_done),
     }
 }
