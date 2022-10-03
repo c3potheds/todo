@@ -46,7 +46,7 @@ pub fn todo(
         Some(New(cmd)) => new::run(list, printer, now, &cmd),
         Some(Path(cmd)) => path::run(list, &cmd).print(printer),
         Some(Priority(cmd)) => priority::run(list, &cmd).print(printer),
-        Some(Punt(cmd)) => punt::run(list, printer, &cmd),
+        Some(Punt(cmd)) => punt::run(list, &cmd).print(printer),
         Some(Put(cmd)) => put::run(list, printer, &cmd),
         Some(Restore(cmd)) => restore::run(list, printer, &cmd),
         Some(Rm(cmd)) => rm::run(list, printer, cmd),
