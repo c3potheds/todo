@@ -29,11 +29,16 @@ impl<'a> Default for Fixture<'a> {
 pub struct Validator {
     printer: FakePrinter,
     mutated: bool,
+    cmd: String,
 }
 
 impl Validator {
     pub fn modified(self, expected: bool) -> Self {
-        assert_eq!(self.mutated, expected);
+        assert_eq!(
+            self.mutated, expected,
+            "Incorrect mutation from '{}'; expected {}, got {}",
+            self.cmd, expected, self.mutated
+        );
         self
     }
 
@@ -54,6 +59,10 @@ impl<'a> Fixture<'a> {
             &self.clock,
             options,
         );
-        Validator { printer, mutated }
+        Validator {
+            printer,
+            mutated,
+            cmd: s.to_string(),
+        }
     }
 }
