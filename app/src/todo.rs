@@ -53,7 +53,7 @@ pub fn todo(
         Some(Snooze(cmd)) => snooze::run(list, now, &cmd).print(printer),
         Some(Snoozed(_)) => snoozed::run(list, now).print(printer),
         Some(Split(cmd)) => split::run(list, cmd).print(printer),
-        Some(Tag(cmd)) => tag::run(list, printer, &cmd),
+        Some(Tag(cmd)) => tag::run(list, &cmd).print(printer),
         Some(Top(cmd)) => top::run(list, printer, &cmd),
         Some(Unblock(cmd)) => unblock::run(list, printer, &cmd),
         Some(Unsnooze(cmd)) => unsnooze::run(list, printer, &cmd),
