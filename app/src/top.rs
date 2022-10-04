@@ -2,24 +2,27 @@ use {
     super::util::{format_task, lookup_task, should_include_done},
     cli::Top,
     model::{TaskSet, TaskStatus, TodoList},
-    printing::{PrintableWarning, TodoPrinter},
+    printing::{PrintableAppSuccess, PrintableResult, PrintableWarning},
 };
 
-pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Top) -> bool {
+pub fn run<'list>(list: &'list TodoList, cmd: &Top) -> PrintableResult<'list> {
     // Handle the case where no tasks are specified. In this case, we want to
     // print all tasks that do not have any antidependencies (including complete
     // tasks iff '--include_done' is passed).)
     if cmd.keys.is_empty() {
-        list.all_tasks()
+        let tasks_to_print = list
+            .all_tasks()
             .filter(|&id| {
                 cmd.include_done
                     || list.status(id) != Some(TaskStatus::Complete)
             })
             .filter(|&id| list.adeps(id).is_empty())
-            .for_each(|id| {
-                printer.print_task(&format_task(list, id));
-            });
-        return false;
+            .map(|id| format_task(list, id))
+            .collect();
+        return Ok(PrintableAppSuccess {
+            tasks: tasks_to_print,
+            ..Default::default()
+        });
     }
 
     // Handle the case where tasks are specified. If no matches are found, print
@@ -28,10 +31,11 @@ pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Top) -> bool {
     // themselves directly or indirectly block the specified tasks. In other
     // words, the top tasks for a given task are the ones that, if completed,
     // would unblock the given task.
+    let mut warnings = Vec::new();
     let tasks = cmd.keys.iter().fold(TaskSet::default(), |so_far, key| {
         let tasks = lookup_task(list, key);
         if tasks.is_empty() {
-            printer.print_warning(&PrintableWarning::NoMatchFoundForKey {
+            warnings.push(PrintableWarning::NoMatchFoundForKey {
                 requested_key: key.clone(),
             });
         }
@@ -39,7 +43,7 @@ pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Top) -> bool {
     });
     let include_done =
         should_include_done(cmd.include_done, list, tasks.iter_unsorted());
-    tasks
+    let tasks_to_print = tasks
         .iter_unsorted()
         // For each matching task, find the top tasks that directly block it.
         .fold(TaskSet::default(), |so_far, id| {
@@ -56,8 +60,11 @@ pub fn run(list: &TodoList, printer: &mut impl TodoPrinter, cmd: &Top) -> bool {
                 | so_far
         })
         .iter_sorted(list)
-        .for_each(|id| {
-            printer.print_task(&format_task(list, id));
-        });
-    false
+        .map(|id| format_task(list, id))
+        .collect();
+    Ok(PrintableAppSuccess {
+        tasks: tasks_to_print,
+        warnings,
+        ..Default::default()
+    })
 }
