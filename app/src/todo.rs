@@ -55,7 +55,7 @@ pub fn todo(
         Some(Split(cmd)) => split::run(list, cmd).print(printer),
         Some(Tag(cmd)) => tag::run(list, &cmd).print(printer),
         Some(Top(cmd)) => top::run(list, &cmd).print(printer),
-        Some(Unblock(cmd)) => unblock::run(list, printer, &cmd),
+        Some(Unblock(cmd)) => unblock::run(list, &cmd).print(printer),
         Some(Unsnooze(cmd)) => unsnooze::run(list, printer, &cmd),
         None => status::run(list, now, &status_options(options)).print(printer),
     }

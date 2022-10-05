@@ -3,38 +3,35 @@ use {
         format_task, format_task_brief, lookup_tasks, should_include_done,
     },
     cli::Unblock,
-    model::{TaskId, TaskSet, TodoList},
-    printing::{Action, PrintableError, PrintableWarning, TodoPrinter},
+    model::{TaskSet, TodoList},
+    printing::{
+        Action, PrintableAppSuccess, PrintableError, PrintableResult,
+        PrintableWarning,
+    },
 };
-
-fn print_unblock_warning(
-    printer: &mut impl TodoPrinter,
-    list: &TodoList,
-    blocking: TaskId,
-    blocked: TaskId,
-) {
-    printer.print_warning(
-        &PrintableWarning::CannotUnblockBecauseTaskIsNotBlocked {
-            cannot_unblock: format_task_brief(list, blocked),
-            requested_unblock_from: format_task_brief(list, blocking),
-        },
-    );
-}
 
 fn unblock_from_given(
     list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
     tasks_to_unblock: &TaskSet,
     tasks_to_unblock_from: &TaskSet,
-) -> TaskSet {
+) -> (TaskSet, Vec<PrintableWarning>) {
     tasks_to_unblock.product(tasks_to_unblock_from, list).fold(
-        TaskSet::default(),
-        |so_far, (blocked, blocking)| match list.unblock(blocked).from(blocking)
+        (TaskSet::default(), Vec::new()),
+        |(affected_so_far, mut warnings_so_far), (blocked, blocking)| match list
+            .unblock(blocked)
+            .from(blocking)
         {
-            Ok(affected) => so_far | affected,
+            Ok(affected) => (affected_so_far | affected, warnings_so_far),
             Err(_) => {
-                print_unblock_warning(printer, list, blocking, blocked);
-                so_far
+                warnings_so_far.push(
+                    PrintableWarning::CannotUnblockBecauseTaskIsNotBlocked {
+                        cannot_unblock: format_task_brief(list, blocked),
+                        requested_unblock_from: format_task_brief(
+                            list, blocking,
+                        ),
+                    },
+                );
+                (affected_so_far, warnings_so_far)
             }
         },
     )
@@ -47,20 +44,20 @@ fn unblock_from_all(
     tasks_to_unblock
         .iter_unsorted()
         .fold(TaskSet::default(), |so_far, id| {
-            list.deps(id)
-                .iter_unsorted()
-                .fold(TaskSet::default(), |so_far, dep| {
-                    list.unblock(id).from(dep).unwrap() | so_far
-                })
-                | so_far
+            so_far
+                | list
+                    .deps(id)
+                    .iter_unsorted()
+                    .fold(TaskSet::default(), |so_far, dep| {
+                        list.unblock(id).from(dep).unwrap() | so_far
+                    })
         })
 }
 
-pub fn run(
-    list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+pub fn run<'list>(
+    list: &'list mut TodoList,
     cmd: &Unblock,
-) -> bool {
+) -> PrintableResult<'list> {
     let tasks_to_unblock = lookup_tasks(list, &cmd.keys);
     let tasks_to_unblock_from = lookup_tasks(list, &cmd.from);
     let include_done = should_include_done(
@@ -70,34 +67,31 @@ pub fn run(
             .iter_unsorted(),
     );
     if !cmd.from.is_empty() && tasks_to_unblock_from.is_empty() {
-        printer.print_error(&PrintableError::NoMatchForKeys {
+        return Err(vec![PrintableError::NoMatchForKeys {
             keys: cmd.from.clone(),
-        });
-        return false;
+        }]);
     }
     let mut mutated = false;
-    let tasks_to_print = if tasks_to_unblock_from.is_empty() {
-        unblock_from_all(list, &tasks_to_unblock)
+    let (affected_tasks, warnings) = if tasks_to_unblock_from.is_empty() {
+        (unblock_from_all(list, &tasks_to_unblock), Vec::new())
     } else {
-        unblock_from_given(
-            list,
-            printer,
-            &tasks_to_unblock,
-            &tasks_to_unblock_from,
-        )
+        unblock_from_given(list, &tasks_to_unblock, &tasks_to_unblock_from)
     };
-    tasks_to_print
+    let tasks_to_print = affected_tasks
         .include_done(list, include_done)
         .iter_sorted(list)
-        .for_each(|id| {
-            printer.print_task(&format_task(list, id).action(
-                if tasks_to_unblock.contains(id) {
-                    mutated = true;
-                    Action::Unlock
-                } else {
-                    Action::None
-                },
-            ));
-        });
-    mutated
+        .map(|id| {
+            format_task(list, id).action(if tasks_to_unblock.contains(id) {
+                mutated = true;
+                Action::Unlock
+            } else {
+                Action::None
+            })
+        })
+        .collect();
+    Ok(PrintableAppSuccess {
+        tasks: tasks_to_print,
+        warnings,
+        mutated,
+    })
 }
