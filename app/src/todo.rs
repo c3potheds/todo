@@ -37,7 +37,7 @@ pub fn todo(
         Some(Chain(cmd)) => chain::run(list, &cmd).print(printer),
         Some(Check(cmd)) => check::run(list, now, &cmd).print(printer),
         Some(Config(_)) => unimplemented!(),
-        Some(Due(cmd)) => due::run(list, printer, now, &cmd),
+        Some(Due(cmd)) => due::run(list, now, &cmd).print(printer),
         Some(Edit(cmd)) => edit::run(list, text_editor, &cmd).print(printer),
         Some(Find(cmd)) => find::run(list, &cmd).print(printer),
         Some(Get(cmd)) => get::run(list, &cmd).print(printer),
