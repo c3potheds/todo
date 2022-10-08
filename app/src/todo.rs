@@ -49,7 +49,7 @@ pub fn todo(
         Some(Punt(cmd)) => punt::run(list, &cmd).print(printer),
         Some(Put(cmd)) => put::run(list, &cmd).print(printer),
         Some(Restore(cmd)) => restore::run(list, &cmd).print(printer),
-        Some(Rm(cmd)) => rm::run(list, printer, cmd),
+        Some(Rm(cmd)) => rm::run(list, cmd).print(printer),
         Some(Snooze(cmd)) => snooze::run(list, now, &cmd).print(printer),
         Some(Snoozed(_)) => snoozed::run(list, now).print(printer),
         Some(Split(cmd)) => split::run(list, cmd).print(printer),

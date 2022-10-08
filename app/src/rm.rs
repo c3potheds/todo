@@ -2,31 +2,34 @@ use {
     super::util::{format_task, lookup_tasks},
     cli::Rm,
     model::{TaskSet, TodoList},
-    printing::{Action, PrintableTask, Status, TodoPrinter},
+    printing::{PrintableAppSuccess, PrintableInfo, PrintableResult},
 };
 
-pub fn run(
-    list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+pub fn run<'list>(
+    list: &'list mut TodoList,
     cmd: Rm,
-) -> bool {
-    let mut mutated = false;
-    lookup_tasks(list, &cmd.keys)
+) -> PrintableResult<'list> {
+    let tasks_to_remove = lookup_tasks(list, &cmd.keys);
+    let (removed_tasks, affected_tasks) =
+        tasks_to_remove.iter_sorted(list).fold(
+            (Vec::new(), TaskSet::default()),
+            |(mut removed, affected), id| {
+                let task = list.get(id).unwrap();
+                removed.push(PrintableInfo::Removed {
+                    desc: task.desc.to_string(),
+                });
+                (removed, affected | list.remove(id))
+            },
+        );
+    let tasks_to_print = affected_tasks
         .iter_sorted(list)
-        .map(|id| {
-            let task = list.get(id).unwrap();
-            let pos = list.position(id).unwrap();
-            printer.print_task(
-                &PrintableTask::new(&task.desc, pos, Status::Removed)
-                    .action(Action::Delete),
-            );
-            mutated = true;
-            id
-        })
-        .collect::<Vec<_>>()
-        .into_iter()
-        .fold(TaskSet::default(), |so_far, id| so_far | list.remove(id))
-        .iter_sorted(list)
-        .for_each(|id| printer.print_task(&format_task(list, id)));
-    mutated
+        .map(|id| format_task(list, id))
+        .collect();
+    let mutated = !removed_tasks.is_empty();
+    Ok(PrintableAppSuccess {
+        tasks: tasks_to_print,
+        infos: removed_tasks,
+        mutated,
+        ..Default::default()
+    })
 }
