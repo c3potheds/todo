@@ -39,7 +39,7 @@ pub fn run<'list>(
         .iter()
         .map(|desc| {
             let id = list.add(NewOptions {
-                desc: Cow::Owned(desc.clone()),
+                desc: Cow::Owned(desc.trim().to_string()),
                 now,
                 priority: priority.unwrap_or(0),
                 due_date,

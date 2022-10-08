@@ -675,3 +675,43 @@ fn new_tag_chain() {
         .printed_task(&PrintableTask::new("c", 3, Blocked).action(New).as_tag())
         .end();
 }
+
+#[test]
+fn trim_leading_whitespace_from_desc() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(New))
+        .end();
+    fix.test("todo new ' a'")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("a", 2, Incomplete).action(New))
+        .end();
+    fix.test("todo new '  a'")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("a", 3, Incomplete).action(New))
+        .end();
+}
+
+#[test]
+fn trim_trailing_whitespace_from_desc() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(New))
+        .end();
+    fix.test("todo new 'a '")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("a", 2, Incomplete).action(New))
+        .end();
+    fix.test("todo new 'a  '")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("a", 3, Incomplete).action(New))
+        .end();
+}
