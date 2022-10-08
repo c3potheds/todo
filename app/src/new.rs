@@ -1,36 +1,25 @@
 use {
     super::util::{
         format_task, format_task_brief, format_tasks_brief, lookup_tasks,
-        parse_budget_or_print_error, parse_due_date_or_print_error,
-        parse_snooze_date_or_print_error,
+        parse_budget, parse_due_date, parse_snooze_date,
     },
     chrono::{DateTime, Utc},
     cli::New,
     model::{CheckError, CheckOptions, NewOptions, TaskSet, TodoList},
-    printing::{Action, PrintableError, TodoPrinter},
+    printing::{Action, PrintableAppSuccess, PrintableError, PrintableResult},
     std::{borrow::Cow, collections::HashSet, iter::FromIterator},
 };
 
-pub fn run(
-    list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+pub fn run<'list>(
+    list: &'list mut TodoList,
     now: DateTime<Utc>,
     cmd: &New,
-) -> bool {
-    let due_date = match parse_due_date_or_print_error(now, &cmd.due, printer) {
-        Ok(due_date) => due_date,
-        Err(_) => return false,
-    };
-    let budget = match parse_budget_or_print_error(&cmd.budget, printer) {
-        Ok(budget) => budget,
-        Err(_) => return false,
-    };
-    let snooze_date =
-        match parse_snooze_date_or_print_error(now, &cmd.snooze, printer) {
-            Ok(Some(snooze_date)) => snooze_date,
-            Ok(None) => now,
-            Err(_) => return false,
-        };
+) -> PrintableResult<'list> {
+    let due_date = parse_due_date(now, &cmd.due).map_err(|e| vec![e])?;
+    let budget = parse_budget(&cmd.budget).map_err(|e| vec![e])?;
+    let snooze_date = parse_snooze_date(now, &cmd.snooze)
+        .map_err(|e| vec![e])?
+        .unwrap_or_default();
     let deps = lookup_tasks(list, &cmd.blocked_by);
     let adeps = lookup_tasks(list, &cmd.blocking);
     let before = lookup_tasks(list, &cmd.before);
@@ -62,28 +51,27 @@ pub fn run(
             id
         })
         .collect();
-    deps.product(&new_tasks, list).for_each(|(dep, new)| {
-        match list.block(new).on(dep) {
-            Ok(affected) => to_print.extend(affected.iter_unsorted()),
-            Err(_) => printer.print_error(
-                &PrintableError::CannotBlockBecauseWouldCauseCycle {
-                    cannot_block: format_task_brief(list, new),
-                    requested_dependency: format_task_brief(list, dep),
+    to_print.extend(
+        deps.product(&new_tasks, list)
+            .chain(new_tasks.product(&adeps, list))
+            .try_fold(
+                TaskSet::default(),
+                |so_far, (a, b)| -> Result<_, Vec<PrintableError>> {
+                    Ok(so_far
+                        | list.block(b).on(a).map_err(|_| {
+                            vec![
+                            PrintableError::CannotBlockBecauseWouldCauseCycle {
+                                cannot_block: format_task_brief(list, b),
+                                requested_dependency: format_task_brief(
+                                    list, a,
+                                ),
+                            },
+                        ]
+                        })?)
                 },
-            ),
-        }
-    });
-    adeps.product(&new_tasks, list).for_each(|(adep, new)| {
-        match list.block(adep).on(new) {
-            Ok(affected) => to_print.extend(affected.iter_unsorted()),
-            Err(_) => printer.print_error(
-                &PrintableError::CannotBlockBecauseWouldCauseCycle {
-                    cannot_block: format_task_brief(list, adep),
-                    requested_dependency: format_task_brief(list, new),
-                },
-            ),
-        }
-    });
+            )?
+            .iter_unsorted(),
+    );
     if cmd.chain {
         use itertools::Itertools;
         new_tasks.iter_sorted(list).tuple_windows().for_each(
@@ -96,32 +84,42 @@ pub fn run(
         );
     }
     if cmd.done {
-        new_tasks.iter_sorted(list).for_each(|id| {
-            if let Err(CheckError::TaskIsBlockedBy(blocking)) =
-                list.check(CheckOptions { id, now })
-            {
-                printer.print_error(
-                    &PrintableError::CannotCheckBecauseBlocked {
-                        cannot_check: format_task_brief(list, id),
-                        blocked_by: format_tasks_brief(
-                            list,
-                            &TaskSet::from_iter(blocking),
-                        ),
-                    },
-                );
-            }
-        });
+        to_print.extend(
+            new_tasks
+                .iter_sorted(list)
+                .try_fold(TaskSet::default(), |so_far, id| {
+                    match list.check(CheckOptions { id, now }) {
+                        Ok(affected) => Ok(so_far | affected),
+                        Err(CheckError::TaskIsBlockedBy(blocking)) => {
+                            Err(vec![
+                                PrintableError::CannotCheckBecauseBlocked {
+                                    cannot_check: format_task_brief(list, id),
+                                    blocked_by: format_tasks_brief(
+                                        list,
+                                        &TaskSet::from_iter(blocking),
+                                    ),
+                                },
+                            ])
+                        }
+                        _ => Ok(so_far),
+                    }
+                })?
+                .iter_unsorted(),
+        );
     }
-    TaskSet::from_iter(to_print.into_iter())
+    let tasks_to_print = TaskSet::from_iter(to_print)
         .iter_sorted(list)
-        .for_each(|id| {
-            printer.print_task(&format_task(list, id).action(
-                if new_tasks.contains(id) {
-                    Action::New
-                } else {
-                    Action::None
-                },
-            ));
-        });
-    true
+        .map(|id| {
+            format_task(list, id).action(if new_tasks.contains(id) {
+                Action::New
+            } else {
+                Action::None
+            })
+        })
+        .collect();
+    Ok(PrintableAppSuccess {
+        tasks: tasks_to_print,
+        mutated: true,
+        ..Default::default()
+    })
 }

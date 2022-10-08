@@ -1,7 +1,13 @@
 use {
     super::testing::Fixture,
-    printing::{Action::*, PrintableTask, Status::*},
+    printing::{PrintableInfo, PrintableTask, Status::*},
 };
+
+fn info_removed(desc: &str) -> PrintableInfo {
+    PrintableInfo::Removed {
+        desc: desc.to_string(),
+    }
+}
 
 #[test]
 fn rm_nonexistent_task() {
@@ -16,7 +22,7 @@ fn rm_only_task() {
     fix.test("todo rm a")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Removed).action(Delete))
+        .printed_info(&info_removed("a"))
         .end();
 }
 
@@ -27,7 +33,7 @@ fn rm_task_with_adeps() {
     fix.test("todo rm a")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Removed).action(Delete))
+        .printed_info(&info_removed("a"))
         .printed_task(&PrintableTask::new("b", 1, Incomplete))
         .end();
 }
@@ -39,7 +45,7 @@ fn rm_task_with_deps_and_adeps() {
     fix.test("todo rm b")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("b", 2, Removed).action(Delete))
+        .printed_info(&info_removed("b"))
         .printed_task(&PrintableTask::new("c", 2, Blocked))
         .end();
 }
@@ -51,9 +57,9 @@ fn rm_three_tasks() {
     fix.test("todo rm a c e")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Removed).action(Delete))
-        .printed_task(&PrintableTask::new("c", 3, Removed).action(Delete))
-        .printed_task(&PrintableTask::new("e", 5, Removed).action(Delete))
+        .printed_info(&info_removed("a"))
+        .printed_info(&info_removed("c"))
+        .printed_info(&info_removed("e"))
         .end();
     fix.test("todo")
         .modified(false)
@@ -71,6 +77,6 @@ fn rm_complete_task() {
     fix.test("todo rm a")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 0, Removed).action(Delete))
+        .printed_info(&info_removed("a"))
         .end();
 }

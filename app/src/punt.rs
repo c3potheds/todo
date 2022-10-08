@@ -1,36 +1,44 @@
 use {
     super::util::{format_task, format_task_brief, lookup_tasks},
     cli::Punt,
-    model::{PuntError, TodoList},
-    printing::{Action, PrintableWarning, TodoPrinter},
+    model::{PuntError, TaskSet, TodoList},
+    printing::{
+        Action, PrintableAppSuccess, PrintableResult, PrintableWarning,
+    },
 };
 
-pub fn run(
-    list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+pub fn run<'list>(
+    list: &'list mut TodoList,
     cmd: &Punt,
-) -> bool {
-    let mut mutated = false;
-    lookup_tasks(list, &cmd.keys)
+) -> PrintableResult<'list> {
+    let (punted_tasks, warnings, mutated) =
+        lookup_tasks(list, &cmd.keys).iter_sorted(list).fold(
+            (TaskSet::default(), Vec::new(), false),
+            |(mut punted_tasks, mut warnings, mut mutated), id| {
+                match list.punt(id) {
+                    Err(PuntError::TaskIsComplete) => {
+                        warnings.push(
+                            PrintableWarning::CannotPuntBecauseComplete {
+                                cannot_punt: format_task_brief(list, id),
+                            },
+                        );
+                    }
+                    _ => {
+                        mutated = true;
+                        punted_tasks = punted_tasks | TaskSet::of(id);
+                    }
+                }
+                (punted_tasks, warnings, mutated)
+            },
+        );
+    let tasks_to_print = punted_tasks
         .iter_sorted(list)
-        .filter(|&id| match list.punt(id) {
-            Err(PuntError::TaskIsComplete) => {
-                printer.print_warning(
-                    &PrintableWarning::CannotPuntBecauseComplete {
-                        cannot_punt: format_task_brief(list, id),
-                    },
-                );
-                false
-            }
-            _ => {
-                mutated = true;
-                true
-            }
-        })
-        .collect::<Vec<_>>()
-        .into_iter()
-        .for_each(|id| {
-            printer.print_task(&format_task(list, id).action(Action::Punt))
-        });
-    mutated
+        .map(|id| format_task(list, id).action(Action::Punt))
+        .collect();
+    Ok(PrintableAppSuccess {
+        tasks: tasks_to_print,
+        warnings,
+        mutated,
+        ..Default::default()
+    })
 }

@@ -71,6 +71,7 @@ fn main() -> TodoResult {
         Err(_) => model::TodoList::default(),
     };
 
+    use printing::Printable;
     let mutated = if let Some((term_width, _)) = term_size::dimensions_stdout()
     {
         let mut printer = SimpleTodoPrinter {
@@ -87,19 +88,19 @@ fn main() -> TodoResult {
         };
         app::todo(
             &mut model,
-            &mut printer,
             &ScrawlTextEditor(&config.text_editor_cmd),
             &SystemClock,
             options,
         )
+        .print(&mut printer)
     } else {
         app::todo(
             &mut model,
-            &mut ScriptingTodoPrinter,
             &FakeTextEditor::no_user_output(),
             &SystemClock,
             options,
         )
+        .print(&mut ScriptingTodoPrinter)
     };
     if mutated {
         let file = File::create(&data_path)?;

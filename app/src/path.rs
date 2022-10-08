@@ -4,41 +4,40 @@ use {
     },
     cli::Path,
     model::{TaskId, TaskSet, TodoList},
-    printing::{Action, PrintableWarning, TodoPrinter},
+    printing::{
+        Action, PrintableAppSuccess, PrintableResult, PrintableWarning,
+    },
 };
 
 struct NoPathFound(TaskId, TaskId);
 
-pub fn run(
-    list: &TodoList,
-    printer: &mut impl TodoPrinter,
-    cmd: &Path,
-) -> bool {
-    let tasks = cmd
-        .keys
-        .iter()
-        .flat_map(|key| {
-            let matches = lookup_task(list, key);
-            if matches.is_empty() {
-                printer.print_warning(&PrintableWarning::NoMatchFoundForKey {
+pub fn run<'list>(list: &'list TodoList, cmd: &Path) -> PrintableResult<'list> {
+    let (tasks, mut warnings) = cmd.keys.iter().fold(
+        (Vec::new(), Vec::new()),
+        |(mut tasks, mut warnings), key| {
+            let found_tasks = lookup_task(list, key);
+            if found_tasks.is_empty() {
+                warnings.push(PrintableWarning::NoMatchFoundForKey {
                     requested_key: key.clone(),
                 });
-            } else if matches.len() > 1 {
-                printer.print_warning(&PrintableWarning::AmbiguousKey {
+            } else if found_tasks.len() > 1 {
+                warnings.push(PrintableWarning::AmbiguousKey {
                     key: key.clone(),
-                    matches: format_tasks_brief(list, &matches),
+                    matches: format_tasks_brief(list, &found_tasks),
                 });
             }
-            matches
-                .iter_sorted(list)
+            found_tasks.iter_sorted(list).for_each(|id| {
+                tasks.push(id);
                 // Hack to handle the one-key case. Since each item appears
                 // twice, a path will be found between a task and itself if no
                 // other tasks were matched.
-                .flat_map(|id| std::iter::once(id).chain(std::iter::once(id)))
-        })
-        .collect::<Vec<_>>();
+                tasks.push(id);
+            });
+            (tasks, warnings)
+        },
+    );
     use itertools::Itertools;
-    match tasks.iter().copied().tuple_windows().try_fold(
+    let tasks_to_print = match tasks.iter().copied().tuple_windows().try_fold(
         TaskSet::default(),
         |so_far, (a, b)| {
             let a_and_adeps = TaskSet::of(a) | list.transitive_adeps(a);
@@ -52,22 +51,29 @@ pub fn run(
     ) {
         Ok(path) => path,
         Err(NoPathFound(a, b)) => {
-            printer.print_warning(&PrintableWarning::NoPathFoundBetween(
+            warnings.push(PrintableWarning::NoPathFoundBetween(
                 format_task_brief(list, a),
                 format_task_brief(list, b),
             ));
-            return false;
+            return Ok(PrintableAppSuccess {
+                tasks: Vec::new(),
+                warnings,
+                ..Default::default()
+            });
         }
     }
     .iter_sorted(list)
-    .for_each(|id| {
-        printer.print_task(&format_task(list, id).action(
-            if tasks.contains(&id) {
-                Action::Select
-            } else {
-                Action::None
-            },
-        ))
-    });
-    false
+    .map(|id| {
+        format_task(list, id).action(if tasks.contains(&id) {
+            Action::Select
+        } else {
+            Action::None
+        })
+    })
+    .collect();
+    Ok(PrintableAppSuccess {
+        tasks: tasks_to_print,
+        warnings,
+        ..Default::default()
+    })
 }

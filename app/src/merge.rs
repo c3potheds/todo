@@ -3,16 +3,15 @@ use {
     chrono::{DateTime, Utc},
     cli::Merge,
     model::{DurationInSeconds, NewOptions, TaskSet, TodoList},
-    printing::{Action, PrintableError, TodoPrinter},
+    printing::{Action, PrintableAppSuccess, PrintableError, PrintableResult},
     std::borrow::Cow,
 };
 
-pub fn run(
-    list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+pub fn run<'list>(
+    list: &'list mut TodoList,
     now: DateTime<Utc>,
     cmd: &Merge,
-) -> bool {
+) -> PrintableResult<'list> {
     let tasks_to_merge = lookup_tasks(list, &cmd.keys);
     let deps = tasks_to_merge
         .iter_unsorted()
@@ -44,12 +43,11 @@ pub fn run(
             .iter_unsorted()
             .fold(TaskSet::default(), |so_far, id| so_far | list.adeps(id))
             & tasks_to_merge;
-        printer.print_error(&PrintableError::CannotMerge {
+        return Err(vec![PrintableError::CannotMerge {
             cycle_through: format_tasks_brief(list, &cycle_through),
             adeps_of: format_tasks_brief(list, &adeps_of),
             deps_of: format_tasks_brief(list, &deps_of),
-        });
-        return false;
+        }]);
     }
     let priority = tasks_to_merge
         .iter_unsorted()
@@ -97,16 +95,19 @@ pub fn run(
     tasks_to_merge.iter_sorted(list).for_each(|id| {
         list.remove(id);
     });
-    (deps | TaskSet::of(merged) | adeps)
+    let tasks_to_print = (deps | TaskSet::of(merged) | adeps)
         .iter_sorted(list)
-        .for_each(|id| {
-            printer.print_task(&format_task(list, id).action(
-                if id == merged {
-                    Action::Select
-                } else {
-                    Action::None
-                },
-            ));
-        });
-    true
+        .map(|id| {
+            format_task(list, id).action(if id == merged {
+                Action::Select
+            } else {
+                Action::None
+            })
+        })
+        .collect();
+    Ok(PrintableAppSuccess {
+        tasks: tasks_to_print,
+        mutated: true,
+        ..Default::default()
+    })
 }

@@ -7,7 +7,7 @@ use {
     cli::{Options, SubCommand},
     clock::Clock,
     model::TodoList,
-    printing::TodoPrinter,
+    printing::PrintableResult,
     text_editing::TextEditor,
 };
 
@@ -20,42 +20,41 @@ fn status_options(options: Options) -> status::Status {
 
 /// Runs the 'todo' command line application. Returns whether the list was
 /// modified; if so, the caller should save the list.
-pub fn todo(
-    list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+pub fn todo<'list>(
+    list: &'list mut TodoList,
     text_editor: &impl TextEditor,
     clock: &impl Clock,
     options: Options,
-) -> bool {
+) -> PrintableResult<'list> {
     use self::SubCommand::*;
     let now = clock.now();
     match options.cmd {
-        Some(Block(cmd)) => block::run(list, printer, &cmd),
-        Some(Bottom(cmd)) => bottom::run(list, printer, &cmd),
-        Some(Budget(cmd)) => budget::run(list, printer, &cmd),
-        Some(Chain(cmd)) => chain::run(list, printer, &cmd),
-        Some(Check(cmd)) => check::run(list, printer, now, &cmd),
+        Some(Block(cmd)) => block::run(list, &cmd),
+        Some(Bottom(cmd)) => bottom::run(list, &cmd),
+        Some(Budget(cmd)) => budget::run(list, &cmd),
+        Some(Chain(cmd)) => chain::run(list, &cmd),
+        Some(Check(cmd)) => check::run(list, now, &cmd),
         Some(Config(_)) => unimplemented!(),
-        Some(Due(cmd)) => due::run(list, printer, now, &cmd),
-        Some(Edit(cmd)) => edit::run(list, printer, text_editor, &cmd),
-        Some(Find(cmd)) => find::run(list, printer, &cmd),
-        Some(Get(cmd)) => get::run(list, printer, &cmd),
-        Some(Log) => log::run(list, printer),
-        Some(Merge(cmd)) => merge::run(list, printer, now, &cmd),
-        Some(New(cmd)) => new::run(list, printer, now, &cmd),
-        Some(Path(cmd)) => path::run(list, printer, &cmd),
-        Some(Priority(cmd)) => priority::run(list, printer, &cmd),
-        Some(Punt(cmd)) => punt::run(list, printer, &cmd),
-        Some(Put(cmd)) => put::run(list, printer, &cmd),
-        Some(Restore(cmd)) => restore::run(list, printer, &cmd),
-        Some(Rm(cmd)) => rm::run(list, printer, cmd),
-        Some(Snooze(cmd)) => snooze::run(list, printer, now, &cmd),
-        Some(Snoozed(_)) => snoozed::run(list, printer, now),
-        Some(Split(cmd)) => split::run(list, printer, cmd),
-        Some(Tag(cmd)) => tag::run(list, printer, &cmd),
-        Some(Top(cmd)) => top::run(list, printer, &cmd),
-        Some(Unblock(cmd)) => unblock::run(list, printer, &cmd),
-        Some(Unsnooze(cmd)) => unsnooze::run(list, printer, &cmd),
-        None => status::run(list, printer, now, &status_options(options)),
+        Some(Due(cmd)) => due::run(list, now, &cmd),
+        Some(Edit(cmd)) => edit::run(list, text_editor, &cmd),
+        Some(Find(cmd)) => find::run(list, &cmd),
+        Some(Get(cmd)) => get::run(list, &cmd),
+        Some(Log) => log::run(list),
+        Some(Merge(cmd)) => merge::run(list, now, &cmd),
+        Some(New(cmd)) => new::run(list, now, &cmd),
+        Some(Path(cmd)) => path::run(list, &cmd),
+        Some(Priority(cmd)) => priority::run(list, &cmd),
+        Some(Punt(cmd)) => punt::run(list, &cmd),
+        Some(Put(cmd)) => put::run(list, &cmd),
+        Some(Restore(cmd)) => restore::run(list, &cmd),
+        Some(Rm(cmd)) => rm::run(list, cmd),
+        Some(Snooze(cmd)) => snooze::run(list, now, &cmd),
+        Some(Snoozed(_)) => snoozed::run(list, now),
+        Some(Split(cmd)) => split::run(list, cmd),
+        Some(Tag(cmd)) => tag::run(list, &cmd),
+        Some(Top(cmd)) => top::run(list, &cmd),
+        Some(Unblock(cmd)) => unblock::run(list, &cmd),
+        Some(Unsnooze(cmd)) => unsnooze::run(list, &cmd),
+        None => status::run(list, now, &status_options(options)),
     }
 }

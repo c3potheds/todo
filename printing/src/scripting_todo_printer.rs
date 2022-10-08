@@ -1,5 +1,8 @@
 use {
-    crate::{PrintableError, PrintableTask, PrintableWarning, TodoPrinter},
+    crate::{
+        PrintableError, PrintableInfo, PrintableTask, PrintableWarning,
+        TodoPrinter,
+    },
     std::io::Write,
 };
 
@@ -8,6 +11,10 @@ pub struct ScriptingTodoPrinter;
 impl TodoPrinter for ScriptingTodoPrinter {
     fn print_task(&mut self, task: &PrintableTask) {
         writeln!(std::io::stdout(), "{}", task.number).unwrap_or_default();
+    }
+
+    fn print_info(&mut self, info: &PrintableInfo) {
+        writeln!(std::io::stderr(), "{}", info).unwrap_or_default();
     }
 
     fn print_warning(&mut self, warning: &PrintableWarning) {

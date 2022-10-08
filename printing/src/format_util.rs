@@ -49,7 +49,6 @@ pub fn format_number(number: i32, status: Status) -> String {
         Status::Complete => Color::Green.normal(),
         Status::Incomplete => Color::Yellow.normal(),
         Status::Blocked => Color::Red.normal(),
-        Status::Removed => Color::White.normal(),
     };
     let mut indexing = number.to_string();
     indexing.push(')');

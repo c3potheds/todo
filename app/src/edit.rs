@@ -1,9 +1,11 @@
+use printing::{PrintableAppSuccess, PrintableResult};
+
 use {
     super::util::{format_task, lookup_tasks},
     cli::Edit,
     itertools::Itertools,
     model::{TaskId, TaskSet, TodoList},
-    printing::{PrintableError, TodoPrinter},
+    printing::PrintableError,
     std::borrow::Cow,
     text_editing::TextEditor,
 };
@@ -19,22 +21,24 @@ fn format_tasks_for_text_editor(list: &TodoList, ids: &TaskSet) -> String {
         .join("\n")
 }
 
-fn edit_with_description(
-    list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+fn edit_with_description<'list>(
+    list: &'list mut TodoList,
     ids: &TaskSet,
     desc: &str,
-) -> bool {
-    let mut mutated = false;
-    ids.iter_sorted(list)
-        .filter(|&id| list.set_desc(id, Cow::Owned(desc.to_string())))
-        .collect::<TaskSet>()
+) -> PrintableResult<'list> {
+    let tasks_to_print: Vec<_> = ids
         .iter_sorted(list)
-        .for_each(|id| {
-            printer.print_task(&format_task(list, id));
-            mutated = true;
-        });
-    mutated
+        .filter(|&id| list.set_desc(id, Cow::Owned(desc.to_string())))
+        .collect::<Vec<_>>()
+        .into_iter()
+        .map(|id| format_task(list, id))
+        .collect();
+    let mutated = !tasks_to_print.is_empty();
+    Ok(PrintableAppSuccess {
+        tasks: tasks_to_print,
+        mutated,
+        ..Default::default()
+    })
 }
 
 enum EditError {
@@ -59,89 +63,75 @@ fn parse_line_from_text_editor(line: &str) -> Result<(i32, String), EditError> {
 
 fn update_desc(
     list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
     ids: &TaskSet,
     pos: i32,
     desc: &str,
-) -> Option<TaskId> {
+) -> Result<TaskId, PrintableError> {
     match list.lookup_by_number(pos) {
         Some(id) => {
             if !ids.contains(id) {
-                printer.print_error(
-                    &PrintableError::CannotEditBecauseUnexpectedNumber {
-                        requested: pos,
-                    },
-                );
-                None
+                Err(PrintableError::CannotEditBecauseUnexpectedNumber {
+                    requested: pos,
+                })
             } else {
-                Some(id)
+                list.set_desc(id, Cow::Owned(desc.to_string()));
+                Ok(id)
             }
         }
-        _ => {
-            printer.print_error(
-                &PrintableError::CannotEditBecauseNoTaskWithNumber {
-                    requested: pos,
-                },
-            );
-            None
-        }
+        _ => Err(PrintableError::CannotEditBecauseNoTaskWithNumber {
+            requested: pos,
+        }),
     }
-    .filter(|&id| list.set_desc(id, Cow::Owned(desc.to_string())))
 }
 
-fn edit_with_text_editor(
-    list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+fn edit_with_text_editor<'list>(
+    list: &'list mut TodoList,
     ids: &TaskSet,
     editor_output: &str,
-) -> bool {
+) -> PrintableResult<'list> {
     let mut mutated = false;
-    editor_output
+    let tasks_to_print = editor_output
         .lines()
-        .flat_map(|line| {
+        .try_fold(TaskSet::default(), |so_far, line| {
             match parse_line_from_text_editor(line) {
-                Ok((pos, desc)) => update_desc(list, printer, ids, pos, &desc),
-                Err(_) => {
-                    printer.print_error(
-                        &PrintableError::CannotEditBecauseInvalidLine {
-                            malformed_line: line.to_string(),
+                Ok((pos, desc)) => Ok(so_far
+                    | TaskSet::of(update_desc(list, ids, pos, &desc).map(
+                        |x| {
+                            mutated = true;
+                            x
                         },
-                    );
-                    None
-                }
+                    )?)),
+                Err(_) => Err(PrintableError::CannotEditBecauseInvalidLine {
+                    malformed_line: line.to_string(),
+                }),
             }
-            .into_iter()
         })
-        .collect::<TaskSet>()
+        .map_err(|e| vec![e])?
         .iter_sorted(list)
-        .for_each(|id| {
-            printer.print_task(&format_task(list, id));
-            mutated = true;
-        });
-    mutated
+        .map(|id| format_task(list, id))
+        .collect();
+    Ok(PrintableAppSuccess {
+        tasks: tasks_to_print,
+        mutated,
+        ..Default::default()
+    })
 }
 
-pub fn run(
-    list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+pub fn run<'list>(
+    list: &'list mut TodoList,
     text_editor: &impl TextEditor,
     cmd: &Edit,
-) -> bool {
+) -> PrintableResult<'list> {
     let tasks_to_edit = lookup_tasks(list, &cmd.keys);
     match &cmd.desc {
-        Some(ref desc) => {
-            edit_with_description(list, printer, &tasks_to_edit, desc)
-        }
+        Some(ref desc) => edit_with_description(list, &tasks_to_edit, desc),
         None => match text_editor
             .edit_text(&format_tasks_for_text_editor(list, &tasks_to_edit))
         {
             Ok(ref output) => {
-                edit_with_text_editor(list, printer, &tasks_to_edit, output)
+                edit_with_text_editor(list, &tasks_to_edit, output)
             }
-            Err(_) => {
-                printer.print_error(&PrintableError::FailedToUseTextEditor);
-                false
-            }
+            Err(_) => Err(vec![PrintableError::FailedToUseTextEditor]),
         },
     }
 }

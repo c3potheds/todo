@@ -3,8 +3,8 @@
 use {
     crate::{
         Action::*, BriefPrintableTask, FakePrinter, LogDate::*, Plicit::*,
-        PrintableError, PrintableTask, PrintableWarning, Status::*,
-        TodoPrinter,
+        PrintableError, PrintableInfo, PrintableTask, PrintableWarning,
+        Status::*, TodoPrinter,
     },
     lookup_key::Key,
     testing::ymdhms,
@@ -32,6 +32,16 @@ fn validate_multiple_tasks() {
         .printed_task(&PrintableTask::new("b", 2, Incomplete))
         .printed_task(&PrintableTask::new("c", 3, Incomplete))
         .end();
+}
+
+#[test]
+fn validate_info() {
+    let mut printer = FakePrinter::default();
+    let info = PrintableInfo::Removed {
+        desc: "a".to_string(),
+    };
+    printer.print_info(&info);
+    printer.validate().printed_info(&info).end();
 }
 
 #[test]
@@ -115,6 +125,20 @@ fn fail_validation_on_incorrect_action_exact() {
         .validate()
         .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Select))
         .end();
+}
+
+#[test]
+#[should_panic(expected = "Unexpected info")]
+fn fail_vlaidation_on_wrong_info() {
+    let mut printer = FakePrinter::default();
+    let info1 = PrintableInfo::Removed {
+        desc: "a".to_string(),
+    };
+    let info2 = PrintableInfo::Removed {
+        desc: "b".to_string(),
+    };
+    printer.print_info(&info1);
+    printer.validate().printed_info(&info2).end();
 }
 
 #[test]

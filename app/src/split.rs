@@ -4,7 +4,7 @@ use {
     super::util::{format_task, lookup_tasks},
     cli::Split,
     model::{DurationInSeconds, NewOptions, TaskId, TaskSet, TodoList},
-    printing::{Action, TodoPrinter},
+    printing::{Action, PrintableAppSuccess, PrintableResult},
     std::borrow::Cow,
 };
 
@@ -28,7 +28,7 @@ impl SplitResult {
 fn split(
     list: &mut TodoList,
     id: TaskId,
-    into: Vec<String>,
+    into: &[String],
     chain: bool,
     keep: bool,
     tag: Option<bool>,
@@ -98,35 +98,34 @@ fn split(
     }
 }
 
-pub fn run(
-    list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+pub fn run<'list>(
+    list: &'list mut TodoList,
     cmd: Split,
-) -> bool {
-    let result = lookup_tasks(list, &cmd.keys).iter_sorted(list).fold(
-        SplitResult::default(),
-        |so_far, id| {
-            so_far.combine(split(
-                list,
-                id,
-                cmd.into.to_vec(),
-                cmd.chain,
-                cmd.keep,
-                cmd.tag,
-            ))
-        },
-    );
-    let mutated = !result.to_print.is_empty();
-    result.to_print.iter_sorted(list).for_each(|id| {
-        printer.print_task(&format_task(list, id).action(
-            if result.shards.contains(id) {
+) -> PrintableResult<'list> {
+    let SplitResult {
+        kept,
+        shards,
+        to_print,
+    } = lookup_tasks(list, &cmd.keys)
+        .iter_sorted(list)
+        .map(|id| split(list, id, &cmd.into, cmd.chain, cmd.keep, cmd.tag))
+        .fold(SplitResult::default(), SplitResult::combine);
+    let mutated = !to_print.is_empty();
+    let tasks_to_print = to_print
+        .iter_sorted(list)
+        .map(|id| {
+            format_task(list, id).action(if shards.contains(id) {
                 Action::New
-            } else if result.kept.contains(id) {
+            } else if kept.contains(id) {
                 Action::Select
             } else {
                 Action::None
-            },
-        ));
-    });
-    mutated
+            })
+        })
+        .collect();
+    Ok(PrintableAppSuccess {
+        tasks: tasks_to_print,
+        mutated,
+        ..Default::default()
+    })
 }

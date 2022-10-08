@@ -1,6 +1,6 @@
 use {
     crate::{
-        Action, LogDate, Plicit, PrintableError, PrintableTask,
+        Action, LogDate, Plicit, PrintableError, PrintableInfo, PrintableTask,
         PrintableWarning, Status, TodoPrinter,
     },
     chrono::{DateTime, Duration, Local, Utc},
@@ -24,6 +24,7 @@ struct PrintedTaskInfo {
 #[derive(Debug)]
 enum PrintedItem {
     Task(PrintedTaskInfo),
+    Info(PrintableInfo),
     Warning(PrintableWarning),
     Error(PrintableError),
 }
@@ -237,6 +238,20 @@ impl<'a> Validation<'a> {
         self
     }
 
+    pub fn printed_info(
+        mut self,
+        expected: &'a PrintableInfo,
+    ) -> Validation<'a> {
+        let item = self.pop(expected);
+        match &item {
+            PrintedItem::Info(ref actual) => {
+                assert_eq!(actual, expected, "Unexpected info")
+            }
+            _ => panic!("Expected\n{:#?}\n... but got\n{:#?}", expected, item),
+        };
+        self
+    }
+
     pub fn printed_warning(
         mut self,
         expected: &'a PrintableWarning,
@@ -299,6 +314,10 @@ impl TodoPrinter for FakePrinter {
                 .map(|tag| tag.to_string())
                 .collect(),
         }));
+    }
+
+    fn print_info(&mut self, info: &PrintableInfo) {
+        self.record.push(PrintedItem::Info(info.clone()));
     }
 
     fn print_warning(&mut self, warning: &PrintableWarning) {

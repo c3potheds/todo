@@ -2,15 +2,15 @@ use {
     super::util::{format_task, lookup_tasks},
     cli::Tag,
     model::{TaskSet, TaskStatus, TodoList},
-    printing::{Action, TodoPrinter},
+    printing::{Action, PrintableAppSuccess, PrintableResult},
 };
 
-fn print_all_tags(
-    list: &TodoList,
-    printer: &mut impl TodoPrinter,
+fn print_all_tags<'list>(
+    list: &'list TodoList,
     include_done: bool,
-) {
-    list.all_tasks()
+) -> PrintableResult<'list> {
+    let tasks_to_print = list
+        .all_tasks()
         .filter(|&id| {
             if let (Some(data), Some(status)) = (list.get(id), list.status(id))
             {
@@ -19,10 +19,12 @@ fn print_all_tags(
             }
             false
         })
-        .for_each(|id| {
-            let task = format_task(list, id);
-            printer.print_task(&task.action(Action::None));
-        });
+        .map(|id| format_task(list, id))
+        .collect();
+    Ok(PrintableAppSuccess {
+        tasks: tasks_to_print,
+        ..Default::default()
+    })
 }
 
 fn mark_tasks(
@@ -37,32 +39,34 @@ fn mark_tasks(
         })
 }
 
-pub fn run(
-    list: &mut TodoList,
-    printer: &mut impl TodoPrinter,
+pub fn run<'list>(
+    list: &'list mut TodoList,
     cmd: &Tag,
-) -> bool {
+) -> PrintableResult<'list> {
     if cmd.keys.is_empty() && cmd.unmark.is_empty() {
-        print_all_tags(list, printer, cmd.include_done);
-        return false;
+        return print_all_tags(list, cmd.include_done);
     }
     let tasks_to_mark = lookup_tasks(list, &cmd.keys);
     let tasks_to_unmark = lookup_tasks(list, &cmd.unmark);
     let mut mutated = false;
-    (mark_tasks(list, &tasks_to_mark, true)
+    let tasks_to_print = (mark_tasks(list, &tasks_to_mark, true)
         | mark_tasks(list, &tasks_to_unmark, false))
     .include_done(list, cmd.include_done)
     .iter_sorted(list)
-    .for_each(|id| {
-        let task = format_task(list, id);
-        printer.print_task(&task.action(
+    .map(|id| {
+        format_task(list, id).action(
             if tasks_to_mark.contains(id) || tasks_to_unmark.contains(id) {
                 mutated = true;
                 Action::Select
             } else {
                 Action::None
             },
-        ));
-    });
-    mutated
+        )
+    })
+    .collect();
+    Ok(PrintableAppSuccess {
+        tasks: tasks_to_print,
+        mutated,
+        ..Default::default()
+    })
 }

@@ -2,20 +2,23 @@ use {
     super::util::format_task,
     chrono::{DateTime, Utc},
     model::TodoList,
-    printing::TodoPrinter,
+    printing::{PrintableAppSuccess, PrintableResult},
 };
 
-pub fn run(
-    list: &TodoList,
-    printer: &mut impl TodoPrinter,
+pub fn run<'list>(
+    list: &'list TodoList,
     now: DateTime<Utc>,
-) -> bool {
-    list.all_tasks()
-        .filter(|&id| {
-            list.get(id)
-                .map(|task| task.start_date > now)
-                .unwrap_or_else(|| false)
-        })
-        .for_each(|id| printer.print_task(&format_task(list, id)));
-    false
+) -> PrintableResult<'list> {
+    Ok(PrintableAppSuccess {
+        tasks: list
+            .all_tasks()
+            .filter(|&id| {
+                list.get(id)
+                    .map(|task| task.start_date > now)
+                    .unwrap_or_else(|| false)
+            })
+            .map(|id| format_task(list, id))
+            .collect(),
+        ..Default::default()
+    })
 }

@@ -110,3 +110,24 @@ fn snooze_blocked_task_above_layer_1() {
         )
         .end();
 }
+
+#[test]
+fn snooze_after_due_date() {
+    let mut fix = Fixture::default();
+    fix.clock.now = ymdhms(2022, 10, 02, 23, 00, 00);
+    fix.test("todo new a --due 1 day");
+    fix.test("todo snooze a --until 2 days")
+        .modified(true)
+        .validate()
+        .printed_warning(&PrintableWarning::SnoozedAfterDueDate {
+            snoozed_task: BriefPrintableTask::new(1, Blocked),
+            due_date: ymdhms(2022, 10, 03, 23, 59, 59),
+            snooze_date: ymdhms(2022, 10, 04, 00, 00, 00),
+        })
+        .printed_task(
+            &PrintableTask::new("a", 1, Blocked)
+                .start_date(ymdhms(2022, 10, 04, 00, 00, 00))
+                .action(Snooze),
+        )
+        .end();
+}

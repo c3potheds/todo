@@ -262,14 +262,12 @@ fn print_warning_on_cycle() {
     let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
     fix.test("todo new c -p b -b a")
-        .modified(true)
+        .modified(false)
         .validate()
         .printed_error(&PrintableError::CannotBlockBecauseWouldCauseCycle {
             cannot_block: BriefPrintableTask::new(1, Incomplete),
             requested_dependency: BriefPrintableTask::new(3, Blocked),
         })
-        .printed_task(&PrintableTask::new("b", 2, Blocked))
-        .printed_task(&PrintableTask::new("c", 3, Blocked).action(New))
         .end();
 }
 
@@ -527,14 +525,12 @@ fn new_blocked_by_incomplete_task_but_tried_to_complete() {
     let mut fix = Fixture::default();
     fix.test("todo new a");
     fix.test("todo new b -p a --done")
-        .modified(true)
+        .modified(false)
         .validate()
         .printed_error(&PrintableError::CannotCheckBecauseBlocked {
             cannot_check: BriefPrintableTask::new(2, Blocked),
             blocked_by: vec![BriefPrintableTask::new(1, Incomplete)],
         })
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("b", 2, Blocked).action(New))
         .end();
 }
 
@@ -543,15 +539,12 @@ fn new_blocked_by_incomplete_task_and_blocks_other_task() {
     let mut fix = Fixture::default();
     fix.test("todo new a c");
     fix.test("todo new b -p a -b c --done")
-        .modified(true)
+        .modified(false)
         .validate()
         .printed_error(&PrintableError::CannotCheckBecauseBlocked {
             cannot_check: BriefPrintableTask::new(2, Blocked),
             blocked_by: vec![BriefPrintableTask::new(1, Incomplete)],
         })
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("b", 2, Blocked).action(New))
-        .printed_task(&PrintableTask::new("c", 3, Blocked))
         .end();
 }
 
@@ -561,7 +554,7 @@ fn new_blocked_by_incomplete_task_and_blocks_other_task_with_chain() {
     fix.test("todo new a1 a2 a3");
     fix.test("todo new b1 b2 b3 -p a1 a2 a3");
     fix.test("todo new c1 c2 c3 -p b1 b2 b3 --done")
-        .modified(true)
+        .modified(false)
         .validate()
         .printed_error(&PrintableError::CannotCheckBecauseBlocked {
             cannot_check: BriefPrintableTask::new(7, Blocked),
@@ -571,28 +564,6 @@ fn new_blocked_by_incomplete_task_and_blocks_other_task_with_chain() {
                 BriefPrintableTask::new(6, Blocked),
             ],
         })
-        .printed_error(&PrintableError::CannotCheckBecauseBlocked {
-            cannot_check: BriefPrintableTask::new(8, Blocked),
-            blocked_by: vec![
-                BriefPrintableTask::new(4, Blocked),
-                BriefPrintableTask::new(5, Blocked),
-                BriefPrintableTask::new(6, Blocked),
-            ],
-        })
-        .printed_error(&PrintableError::CannotCheckBecauseBlocked {
-            cannot_check: BriefPrintableTask::new(9, Blocked),
-            blocked_by: vec![
-                BriefPrintableTask::new(4, Blocked),
-                BriefPrintableTask::new(5, Blocked),
-                BriefPrintableTask::new(6, Blocked),
-            ],
-        })
-        .printed_task(&PrintableTask::new("b1", 4, Blocked))
-        .printed_task(&PrintableTask::new("b2", 5, Blocked))
-        .printed_task(&PrintableTask::new("b3", 6, Blocked))
-        .printed_task(&PrintableTask::new("c1", 7, Blocked).action(New))
-        .printed_task(&PrintableTask::new("c2", 8, Blocked).action(New))
-        .printed_task(&PrintableTask::new("c3", 9, Blocked).action(New))
         .end();
 }
 

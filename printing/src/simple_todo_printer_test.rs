@@ -2,8 +2,9 @@
 
 use {
     crate::{
-        BriefPrintableTask, PrintableError, PrintableTask, PrintableWarning,
-        PrintingContext, SimpleTodoPrinter, Status::*, TodoPrinter,
+        BriefPrintableTask, PrintableError, PrintableInfo, PrintableTask,
+        PrintableWarning, PrintingContext, SimpleTodoPrinter, Status::*,
+        TodoPrinter,
     },
     lookup_key::Key,
     std::io::Write,
@@ -98,4 +99,12 @@ fn print_error_to_broken_pipe() {
         "a".to_string(),
         "b".to_string(),
     )));
+}
+
+#[test]
+fn print_info_to_broken_pipe() {
+    let mut printer = create_printer_to_broken_pipe();
+    printer.print_info(&PrintableInfo::Removed {
+        desc: "a".to_string(),
+    });
 }

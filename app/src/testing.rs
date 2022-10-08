@@ -29,11 +29,16 @@ impl<'a> Default for Fixture<'a> {
 pub struct Validator {
     printer: FakePrinter,
     mutated: bool,
+    cmd: String,
 }
 
 impl Validator {
     pub fn modified(self, expected: bool) -> Self {
-        assert_eq!(self.mutated, expected);
+        assert_eq!(
+            self.mutated, expected,
+            "Incorrect mutation from '{}'; expected {}, got {}",
+            self.cmd, expected, self.mutated
+        );
         self
     }
 
@@ -47,13 +52,18 @@ impl<'a> Fixture<'a> {
         let mut printer = FakePrinter::default();
         let options = Options::try_parse_from(s.split(' '))
             .expect("Could not parse args");
+        use printing::Printable;
         let mutated = crate::todo(
             &mut self.list,
-            &mut printer,
             &self.text_editor,
             &self.clock,
             options,
-        );
-        Validator { printer, mutated }
+        )
+        .print(&mut printer);
+        Validator {
+            printer,
+            mutated,
+            cmd: s.to_string(),
+        }
     }
 }

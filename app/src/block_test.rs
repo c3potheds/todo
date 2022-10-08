@@ -99,6 +99,20 @@ fn cannot_block_on_self() {
 }
 
 #[test]
+fn cannot_block_on_adep() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b --chain");
+    fix.test("todo block a --on b")
+        .modified(false)
+        .validate()
+        .printed_error(&PrintableError::CannotBlockBecauseWouldCauseCycle {
+            cannot_block: BriefPrintableTask::new(1, Incomplete),
+            requested_dependency: BriefPrintableTask::new(2, Blocked),
+        })
+        .end();
+}
+
+#[test]
 fn block_updates_implicit_priority_of_deps() {
     let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
