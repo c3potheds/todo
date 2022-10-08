@@ -52,13 +52,14 @@ impl<'a> Fixture<'a> {
         let mut printer = FakePrinter::default();
         let options = Options::try_parse_from(s.split(' '))
             .expect("Could not parse args");
+        use printing::Printable;
         let mutated = crate::todo(
             &mut self.list,
-            &mut printer,
             &self.text_editor,
             &self.clock,
             options,
-        );
+        )
+        .print(&mut printer);
         Validator {
             printer,
             mutated,

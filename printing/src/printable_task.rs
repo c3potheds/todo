@@ -12,7 +12,6 @@ pub enum Status {
     Incomplete,
     Complete,
     Blocked,
-    Removed,
 }
 
 impl Default for Status {
