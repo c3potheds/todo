@@ -253,3 +253,31 @@ fn split_tag_keep() {
         )
         .end();
 }
+
+#[test]
+fn trim_leading_whitespace() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a");
+    fix.test("todo split a --into ' a.x' '  a.y' '   a.z' --keep")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("a.x", 1, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("a.y", 2, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("a.z", 3, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("a", 4, Blocked).action(Select))
+        .end();
+}
+
+#[test]
+fn trim_trailing_whitespace() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a");
+    fix.test("todo split a --into 'a.x ' 'a.y  ' 'a.z   ' --keep")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("a.x", 1, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("a.y", 2, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("a.z", 3, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("a", 4, Blocked).action(Select))
+        .end();
+}
