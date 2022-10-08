@@ -261,3 +261,36 @@ fn show_tags_for_merged_task() {
         .printed_task(&PrintableTask::new("c", 2, Blocked).as_tag())
         .end();
 }
+
+#[test]
+fn trim_leading_whitespace_from_desc() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c");
+    fix.test("todo merge a b c --into '  abc'")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("abc", 1, Incomplete).action(Select))
+        .end();
+}
+
+#[test]
+fn trim_trailing_whitespace_from_desc() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c");
+    fix.test("todo merge a b c --into 'abc  '")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("abc", 1, Incomplete).action(Select))
+        .end();
+}
+
+#[test]
+fn trim_leading_and_trailing_whitespace_from_desc() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c");
+    fix.test("todo merge a b c --into '  abc  '")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("abc", 1, Incomplete).action(Select))
+        .end();
+}
