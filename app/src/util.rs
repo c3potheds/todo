@@ -4,7 +4,6 @@ use {
     model::{DurationInSeconds, TaskId, TaskSet, TaskStatus, TodoList},
     printing::{
         BriefPrintableTask, Plicit, PrintableError, PrintableTask, Status,
-        TodoPrinter,
     },
     std::convert::TryFrom,
 };
@@ -227,14 +226,6 @@ pub fn parse_due_date(
     }
 }
 
-pub fn parse_due_date_or_print_error(
-    now: DateTime<Utc>,
-    due_date_vec: &[String],
-    printer: &mut impl TodoPrinter,
-) -> Result<Option<DateTime<Utc>>, ()> {
-    parse_due_date(now, due_date_vec).map_err(|e| printer.print_error(&e))
-}
-
 pub fn parse_budget(
     chunks: &[String],
 ) -> Result<DurationInSeconds, PrintableError> {
@@ -260,13 +251,6 @@ pub fn parse_budget(
     }
 }
 
-pub fn parse_budget_or_print_error(
-    budget_vec: &[String],
-    printer: &mut impl TodoPrinter,
-) -> Result<DurationInSeconds, ()> {
-    parse_budget(budget_vec).map_err(|e| printer.print_error(&e))
-}
-
 pub fn parse_snooze_date(
     now: DateTime<Utc>,
     chunks: &[String],
@@ -286,12 +270,4 @@ pub fn parse_snooze_date(
             cannot_parse: date_string.to_string(),
         }),
     }
-}
-
-pub fn parse_snooze_date_or_print_error(
-    now: DateTime<Utc>,
-    snooze_date_vec: &[String],
-    printer: &mut impl TodoPrinter,
-) -> Result<Option<DateTime<Utc>>, ()> {
-    parse_snooze_date(now, snooze_date_vec).map_err(|e| printer.print_error(&e))
 }

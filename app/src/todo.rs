@@ -43,7 +43,7 @@ pub fn todo(
         Some(Get(cmd)) => get::run(list, &cmd).print(printer),
         Some(Log) => log::run(list).print(printer),
         Some(Merge(cmd)) => merge::run(list, now, &cmd).print(printer),
-        Some(New(cmd)) => new::run(list, printer, now, &cmd),
+        Some(New(cmd)) => new::run(list, now, &cmd).print(printer),
         Some(Path(cmd)) => path::run(list, &cmd).print(printer),
         Some(Priority(cmd)) => priority::run(list, &cmd).print(printer),
         Some(Punt(cmd)) => punt::run(list, &cmd).print(printer),
