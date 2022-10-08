@@ -45,7 +45,7 @@ fn split(
         .map(|desc| {
             let task = list.get(id).unwrap();
             let options = NewOptions {
-                desc: Cow::Owned(desc.clone()),
+                desc: Cow::Owned(desc.trim().to_string()),
                 now: task.creation_time,
                 priority: task.priority,
                 due_date: task.due_date,
