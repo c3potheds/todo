@@ -50,8 +50,9 @@ impl Validator {
 impl<'a> Fixture<'a> {
     pub fn test(&mut self, s: &str) -> Validator {
         let mut printer = FakePrinter::default();
-        let options = Options::try_parse_from(s.split(' '))
-            .expect("Could not parse args");
+        let args = shlex::split(s).expect("Could not split args");
+        let options =
+            Options::try_parse_from(args).expect("Could not parse args");
         use printing::Printable;
         let mutated = crate::todo(
             &mut self.list,

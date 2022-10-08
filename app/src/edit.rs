@@ -28,7 +28,7 @@ fn edit_with_description<'list>(
 ) -> PrintableResult<'list> {
     let tasks_to_print: Vec<_> = ids
         .iter_sorted(list)
-        .filter(|&id| list.set_desc(id, Cow::Owned(desc.to_string())))
+        .filter(|&id| list.set_desc(id, Cow::Owned(desc.trim().to_string())))
         .collect::<Vec<_>>()
         .into_iter()
         .map(|id| format_task(list, id))
@@ -52,7 +52,7 @@ fn parse_line_from_text_editor(line: &str) -> Result<(i32, String), EditError> {
     match split.next() {
         Some(should_be_num) => match should_be_num.parse::<i32>() {
             Ok(num) => match split.next() {
-                Some(desc) => Ok((num, desc.to_string())),
+                Some(desc) => Ok((num, desc.trim().to_string())),
                 _ => Err(EditError::MissingTaskDescription),
             },
             _ => Err(EditError::InvalidNumber(should_be_num.to_string())),
