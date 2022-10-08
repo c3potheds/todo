@@ -36,8 +36,8 @@ fn edit_with_description<'list>(
     let mutated = !tasks_to_print.is_empty();
     Ok(PrintableAppSuccess {
         tasks: tasks_to_print,
-        warnings: vec![],
         mutated,
+        ..Default::default()
     })
 }
 
@@ -112,8 +112,8 @@ fn edit_with_text_editor<'list>(
         .collect();
     Ok(PrintableAppSuccess {
         tasks: tasks_to_print,
-        warnings: vec![],
         mutated,
+        ..Default::default()
     })
 }
 

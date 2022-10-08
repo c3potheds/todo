@@ -47,7 +47,7 @@ pub fn run<'list>(
     let mutated = !tasks_to_print.is_empty();
     Ok(PrintableAppSuccess {
         tasks: tasks_to_print,
-        warnings: Vec::new(),
         mutated,
+        ..Default::default()
     })
 }

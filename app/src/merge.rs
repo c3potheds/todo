@@ -107,7 +107,7 @@ pub fn run<'list>(
         .collect();
     Ok(PrintableAppSuccess {
         tasks: tasks_to_print,
-        warnings: vec![],
         mutated: true,
+        ..Default::default()
     })
 }

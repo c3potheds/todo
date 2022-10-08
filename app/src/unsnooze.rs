@@ -65,5 +65,6 @@ pub fn run<'list>(
         tasks: formatted_tasks_to_print,
         warnings: formatted_warnings,
         mutated,
+        ..Default::default()
     })
 }

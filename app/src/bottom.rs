@@ -70,6 +70,6 @@ pub fn run<'list>(
     Ok(PrintableAppSuccess {
         warnings,
         tasks,
-        mutated: false,
+        ..Default::default()
     })
 }

@@ -4,8 +4,8 @@
 
 use {
     crate::{
-        format_util::format_number, Plicit, PrintableError, PrintableTask,
-        PrintableWarning, TodoPrinter,
+        format_util::format_number, Plicit, PrintableError, PrintableInfo,
+        PrintableTask, PrintableWarning, TodoPrinter,
     },
     ansi_term::{Color, Style},
     chrono::{DateTime, Duration, Local, Utc},
@@ -300,6 +300,9 @@ impl<Out: Write> TodoPrinter for SimpleTodoPrinter<Out> {
             }
         )
         .unwrap_or_default();
+    }
+    fn print_info(&mut self, info: &PrintableInfo) {
+        writeln!(self.out, "{}", info).unwrap_or_default();
     }
     fn print_warning(&mut self, warning: &PrintableWarning) {
         writeln!(self.out, "{}", warning).unwrap_or_default();
