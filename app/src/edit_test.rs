@@ -139,3 +139,63 @@ fn edit_with_text_editor_text_editor_fails() {
         .end();
     assert_eq!(*fix.text_editor.recorded_input(), "1) a");
 }
+
+#[test]
+fn trim_leading_whitespace_from_desc_from_text_editor() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a");
+    fix.text_editor = FakeTextEditor::user_will_enter("1)     b");
+    fix.test("todo edit 1")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("b", 1, Incomplete))
+        .end();
+}
+
+#[test]
+fn trim_trailing_whitespace_from_desc_from_text_editor() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a");
+    fix.text_editor = FakeTextEditor::user_will_enter("1) b     ");
+    fix.test("todo edit 1")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("b", 1, Incomplete))
+        .end();
+}
+
+#[test]
+fn trim_whitespace_from_desc_from_text_editor_with_multiple_tasks() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c");
+    fix.text_editor = FakeTextEditor::user_will_enter("1)  d  \n2)  e \n3) f ");
+    fix.test("todo edit 1 2 3")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("d", 1, Incomplete))
+        .printed_task(&PrintableTask::new("e", 2, Incomplete))
+        .printed_task(&PrintableTask::new("f", 3, Incomplete))
+        .end();
+}
+
+#[test]
+fn trim_leading_whitespace_from_command_line() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a");
+    fix.test("todo edit 1 --desc '  b'")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("b", 1, Incomplete))
+        .end();
+}
+
+#[test]
+fn trim_trailing_whitespace_from_command_line() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a");
+    fix.test("todo edit 1 --desc 'b  '")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("b", 1, Incomplete))
+        .end();
+}
