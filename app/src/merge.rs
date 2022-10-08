@@ -76,7 +76,7 @@ pub fn run<'list>(
             .all(|id| list.get(id).map_or_else(|| true, |data| data.tag)),
     };
     let merged = list.add(NewOptions {
-        desc: Cow::Owned(cmd.into.to_string()),
+        desc: Cow::Owned(cmd.into.trim().to_string()),
         now,
         priority,
         due_date,
