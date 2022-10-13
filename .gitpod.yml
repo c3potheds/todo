@@ -15,5 +15,5 @@ vscode:
     - withfig.fig
     - serayuzgur.crates
     - ryanluker.vscode-coverage-gutters
-    - bungcip.better-toml
+    - tamasfe.even-better-toml
     - eamodio.gitlens
