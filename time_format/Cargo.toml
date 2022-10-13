@@ -4,5 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-chrono = { version = "0.4", features = ["serde"] }
-humantime = "2.1"
+chrono.workspace = true
+humantime.workspace = true

@@ -4,10 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-ansi_term = "0.12"
-chrono = { version = "0.4", features = ["serde"] }
-textwrap = "0.16.0"
+ansi_term.workspace = true
+chrono.workspace = true
+textwrap.workspace = true
 
-lookup_key = { path = "../lookup_key" }
-time_format = { path = "../time_format" }
-testing = { path = "../testing" }
+lookup_key.workspace = true
+time_format.workspace = true
+testing.workspace = true

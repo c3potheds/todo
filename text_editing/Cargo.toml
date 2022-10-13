@@ -4,4 +4,4 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-scrawl = "2.0"
+scrawl.workspace = true
