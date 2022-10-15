@@ -2,6 +2,7 @@
 
 use {
     super::testing::Fixture,
+    chrono::Duration,
     printing::{
         Action::*, BriefPrintableTask, Plicit::*, PrintableError,
         PrintableTask, Status::*,
@@ -404,6 +405,7 @@ fn new_with_budget_shows_affected_deps() {
         .printed_task(
             &PrintableTask::new("b", 2, Blocked)
                 .due_date(Explicit(end_of_day))
+                .budget(Duration::hours(5))
                 .action(New),
         )
         .end();

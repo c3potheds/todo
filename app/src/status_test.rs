@@ -114,7 +114,11 @@ fn status_unsnoozes_if_snooze_time_passed() {
     fix.test("todo")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Unsnooze))
+        .printed_task(
+            &PrintableTask::new("a", 1, Incomplete)
+                .start_date(ymdhms(2021, 05, 29, 00, 00, 00))
+                .action(Unsnooze),
+        )
         .end();
 }
 
@@ -139,8 +143,20 @@ fn status_unsnooze_preserves_order() {
     fix.test("todo")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Unsnooze))
-        .printed_task(&PrintableTask::new("b", 2, Incomplete).action(Unsnooze))
-        .printed_task(&PrintableTask::new("c", 3, Incomplete).action(Unsnooze))
+        .printed_task(
+            &PrintableTask::new("a", 1, Incomplete)
+                .start_date(ymdhms(2021, 05, 30, 13, 00, 00))
+                .action(Unsnooze),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 2, Incomplete)
+                .start_date(ymdhms(2021, 05, 30, 14, 00, 00))
+                .action(Unsnooze),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 3, Incomplete)
+                .start_date(ymdhms(2021, 05, 30, 15, 00, 00))
+                .action(Unsnooze),
+        )
         .end();
 }

@@ -3,8 +3,8 @@
 use {
     super::testing::Fixture,
     printing::{
-        Action::*, BriefPrintableTask, PrintableError, PrintableTask,
-        PrintableWarning, Status::*,
+        Action::*, BriefPrintableTask, Plicit::Explicit, PrintableError,
+        PrintableTask, PrintableWarning, Status::*,
     },
     testing::ymdhms,
 };
@@ -127,6 +127,7 @@ fn snooze_after_due_date() {
         .printed_task(
             &PrintableTask::new("a", 1, Blocked)
                 .start_date(ymdhms(2022, 10, 04, 00, 00, 00))
+                .due_date(Explicit(ymdhms(2022, 10, 03, 23, 59, 59)))
                 .action(Snooze),
         )
         .end();
