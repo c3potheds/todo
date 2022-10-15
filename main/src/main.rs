@@ -27,14 +27,10 @@ enum TodoError {
 type TodoResult = Result<(), TodoError>;
 
 fn log10(n: usize) -> usize {
-    let mut log = 1;
-    let mut base = 1;
-    loop {
-        if n / base < 10 {
-            return log;
-        }
-        log += 1;
-        base *= 10;
+    if n < 10 {
+        1
+    } else {
+        1 + log10(n / 10)
     }
 }
 
