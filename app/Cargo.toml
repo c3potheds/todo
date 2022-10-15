@@ -18,3 +18,6 @@ printing = { path = "../printing" }
 testing = { path = "../testing" }
 text_editing = { path = "../text_editing" }
 time_format = { path = "../time_format" }
+
+[dev-dependencies]
+pretty_assertions = "1.3.0"
