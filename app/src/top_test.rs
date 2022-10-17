@@ -31,7 +31,7 @@ fn top_all_tasks_categorized_the_same() {
     fix.test("todo top")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("d", 4, Blocked))
+        .printed_task(&PrintableTask::new("d", 4, Blocked).deps_stats(3, 3))
         .end();
 }
 
@@ -44,8 +44,8 @@ fn top_multiple_categories() {
     fix.test("todo top")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("g", 7, Blocked))
-        .printed_task(&PrintableTask::new("h", 8, Blocked))
+        .printed_task(&PrintableTask::new("g", 7, Blocked).deps_stats(3, 3))
+        .printed_task(&PrintableTask::new("h", 8, Blocked).deps_stats(3, 3))
         .end();
 }
 
@@ -57,8 +57,8 @@ fn top_deep_category() {
     fix.test("todo top")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("c", 5, Blocked))
-        .printed_task(&PrintableTask::new("f", 6, Blocked))
+        .printed_task(&PrintableTask::new("c", 5, Blocked).deps_stats(1, 2))
+        .printed_task(&PrintableTask::new("f", 6, Blocked).deps_stats(1, 2))
         .end();
 }
 
@@ -111,8 +111,8 @@ fn top_underneath_one_task() {
     fix.test("todo top c")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("b", 2, Incomplete))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(0, 1))
+        .printed_task(&PrintableTask::new("b", 2, Incomplete).adeps_stats(0, 1))
         .end();
 }
 
@@ -126,12 +126,12 @@ fn top_union_of_categories() {
     fix.test("todo top x y")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("b", 2, Incomplete))
-        .printed_task(&PrintableTask::new("c", 3, Incomplete))
-        .printed_task(&PrintableTask::new("d", 4, Incomplete))
-        .printed_task(&PrintableTask::new("e", 5, Incomplete))
-        .printed_task(&PrintableTask::new("f", 6, Incomplete))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(0, 1))
+        .printed_task(&PrintableTask::new("b", 2, Incomplete).adeps_stats(0, 1))
+        .printed_task(&PrintableTask::new("c", 3, Incomplete).adeps_stats(0, 2))
+        .printed_task(&PrintableTask::new("d", 4, Incomplete).adeps_stats(0, 2))
+        .printed_task(&PrintableTask::new("e", 5, Incomplete).adeps_stats(0, 1))
+        .printed_task(&PrintableTask::new("f", 6, Incomplete).adeps_stats(0, 1))
         .end();
 }
 
@@ -146,7 +146,7 @@ fn top_exclude_deps_with_indirect_connection_to_category() {
         // a should be excluded because there's also an indirect connection to
         // the top, through b. On the other hand, b is included because the only
         // path to the top is direct.
-        .printed_task(&PrintableTask::new("b", 2, Blocked))
+        .printed_task(&PrintableTask::new("b", 2, Blocked).deps_stats(1, 1))
         .end();
 }
 

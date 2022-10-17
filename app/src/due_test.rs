@@ -46,13 +46,18 @@ fn show_tasks_with_due_date_includes_blocked() {
         .validate()
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
-                .due_date(Explicit(in_5_hours)),
+                .due_date(Explicit(in_5_hours))
+                .adeps_stats(1, 2),
         )
         .printed_task(
-            &PrintableTask::new("b", 5, Blocked).due_date(Implicit(in_2_days)),
+            &PrintableTask::new("b", 5, Blocked)
+                .due_date(Implicit(in_2_days))
+                .deps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("c", 6, Blocked).due_date(Explicit(in_2_days)),
+            &PrintableTask::new("c", 6, Blocked)
+                .due_date(Explicit(in_2_days))
+                .deps_stats(1, 2),
         )
         .end();
 }
@@ -72,10 +77,13 @@ fn show_tasks_with_due_date_excludes_complete() {
         .validate()
         .printed_task(
             &PrintableTask::new("b", 1, Incomplete)
-                .due_date(Implicit(in_2_days)),
+                .due_date(Implicit(in_2_days))
+                .adeps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("c", 5, Blocked).due_date(Explicit(in_2_days)),
+            &PrintableTask::new("c", 5, Blocked)
+                .due_date(Explicit(in_2_days))
+                .deps_stats(1, 2),
         )
         .end();
 }
@@ -95,14 +103,17 @@ fn show_tasks_with_due_date_include_done() {
         .validate()
         .printed_task(
             &PrintableTask::new("a", 0, Complete)
-                .punctuality(chrono::Duration::hours(5)),
+                .punctuality(-chrono::Duration::hours(5)),
         )
         .printed_task(
             &PrintableTask::new("b", 1, Incomplete)
-                .due_date(Implicit(in_2_days)),
+                .due_date(Implicit(in_2_days))
+                .adeps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("c", 5, Blocked).due_date(Explicit(in_2_days)),
+            &PrintableTask::new("c", 5, Blocked)
+                .due_date(Explicit(in_2_days))
+                .deps_stats(1, 2),
         )
         .end();
 }
@@ -123,7 +134,8 @@ fn show_tasks_with_due_date_earlier_than_given_date() {
         .validate()
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
-                .due_date(Explicit(in_5_hours)),
+                .due_date(Explicit(in_5_hours))
+                .adeps_stats(1, 2),
         )
         .printed_task(
             &PrintableTask::new("g", 2, Incomplete)
@@ -148,11 +160,12 @@ fn show_tasks_with_due_date_earlier_than_given_date_include_done() {
         .validate()
         .printed_task(
             &PrintableTask::new("g", 0, Complete)
-                .punctuality(chrono::Duration::hours(6)),
+                .punctuality(-chrono::Duration::hours(6)),
         )
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
-                .due_date(Explicit(in_5_hours)),
+                .due_date(Explicit(in_5_hours))
+                .adeps_stats(1, 2),
         )
         .end();
 }
@@ -171,13 +184,18 @@ fn show_source_of_implicit_due_date() {
         .validate()
         .printed_task(
             &PrintableTask::new("a", 4, Incomplete)
-                .due_date(Implicit(in_2_days)),
+                .due_date(Implicit(in_2_days))
+                .adeps_stats(1, 2),
         )
         .printed_task(
-            &PrintableTask::new("b", 5, Blocked).due_date(Implicit(in_2_days)),
+            &PrintableTask::new("b", 5, Blocked)
+                .due_date(Implicit(in_2_days))
+                .deps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("c", 6, Blocked).due_date(Explicit(in_2_days)),
+            &PrintableTask::new("c", 6, Blocked)
+                .due_date(Explicit(in_2_days))
+                .deps_stats(1, 2),
         )
         .end();
 }
@@ -228,14 +246,14 @@ fn set_due_date_include_done() {
     // Monday.
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let thursday = ymdhms(2021, 04, 15, 23, 59, 59);
+    let punctuality = fix.clock.now - thursday;
     fix.test("todo new a b --chain");
     fix.test("todo check a");
     fix.test("todo due b --on thursday --include-done")
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 0, Complete)
-                .punctuality(fix.clock.now - thursday),
+            &PrintableTask::new("a", 0, Complete).punctuality(punctuality),
         )
         .printed_task(
             &PrintableTask::new("b", 1, Incomplete)
@@ -258,13 +276,18 @@ fn set_due_date_prints_affected_tasks() {
         .validate()
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
-                .due_date(Implicit(in_1_hour)),
+                .due_date(Implicit(in_1_hour))
+                .adeps_stats(1, 2),
         )
         .printed_task(
-            &PrintableTask::new("b", 5, Blocked).due_date(Implicit(in_1_hour)),
+            &PrintableTask::new("b", 5, Blocked)
+                .due_date(Implicit(in_1_hour))
+                .deps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("c", 6, Blocked).due_date(Explicit(in_1_hour)),
+            &PrintableTask::new("c", 6, Blocked)
+                .due_date(Explicit(in_1_hour))
+                .deps_stats(1, 2),
         )
         .end();
 }
@@ -279,8 +302,8 @@ fn reset_due_date() {
     fix.test("todo due c --none")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("b", 5, Blocked))
-        .printed_task(&PrintableTask::new("c", 6, Blocked))
+        .printed_task(&PrintableTask::new("b", 5, Blocked).deps_stats(1, 1))
+        .printed_task(&PrintableTask::new("c", 6, Blocked).deps_stats(1, 2))
         .end();
 }
 
@@ -293,9 +316,9 @@ fn show_tasks_without_due_dates() {
     fix.test("todo due --none")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("g", 4, Incomplete))
-        .printed_task(&PrintableTask::new("h", 8, Blocked))
-        .printed_task(&PrintableTask::new("i", 9, Blocked))
+        .printed_task(&PrintableTask::new("g", 4, Incomplete).adeps_stats(1, 2))
+        .printed_task(&PrintableTask::new("h", 8, Blocked).deps_stats(1, 1))
+        .printed_task(&PrintableTask::new("i", 9, Blocked).deps_stats(1, 2))
         .end();
 }
 
@@ -308,8 +331,8 @@ fn show_tasks_without_due_date_excludes_complete() {
     fix.test("todo due --none")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("e", 4, Incomplete))
-        .printed_task(&PrintableTask::new("f", 5, Blocked))
+        .printed_task(&PrintableTask::new("e", 4, Incomplete).adeps_stats(1, 1))
+        .printed_task(&PrintableTask::new("f", 5, Blocked).deps_stats(1, 2))
         .end();
 }
 
@@ -323,8 +346,8 @@ fn show_tasks_without_due_date_include_done() {
         .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("d", 0, Complete))
-        .printed_task(&PrintableTask::new("e", 4, Incomplete))
-        .printed_task(&PrintableTask::new("f", 5, Blocked))
+        .printed_task(&PrintableTask::new("e", 4, Incomplete).adeps_stats(1, 1))
+        .printed_task(&PrintableTask::new("f", 5, Blocked).deps_stats(1, 2))
         .end();
 }
 

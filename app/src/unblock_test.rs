@@ -85,9 +85,9 @@ fn unblock_from_all2() {
     fix.test("todo unblock c")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 1))
         .printed_task(&PrintableTask::new("c", 2, Incomplete).action(Unlock))
-        .printed_task(&PrintableTask::new("b", 3, Blocked))
+        .printed_task(&PrintableTask::new("b", 3, Blocked).deps_stats(1, 1))
         .end();
 }
 
@@ -134,10 +134,14 @@ fn unblock_updates_priority() {
         )
         // a and b have their priorities reset to 1.
         .printed_task(
-            &PrintableTask::new("a", 2, Incomplete).priority(Explicit(1)),
+            &PrintableTask::new("a", 2, Incomplete)
+                .priority(Explicit(1))
+                .adeps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("b", 3, Blocked).priority(Explicit(1)),
+            &PrintableTask::new("b", 3, Blocked)
+                .priority(Explicit(1))
+                .deps_stats(1, 1),
         )
         .end();
 }
@@ -157,7 +161,9 @@ fn unblock_does_not_show_unaffected_priority() {
                 .priority(Explicit(1)),
         )
         .printed_task(
-            &PrintableTask::new("b", 3, Blocked).priority(Explicit(1)),
+            &PrintableTask::new("b", 3, Blocked)
+                .priority(Explicit(1))
+                .deps_stats(1, 1),
         )
         .end();
 }

@@ -24,7 +24,11 @@ fn punt_blocked_task() {
         // need to mark the session as modified.
         // .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("b", 3, Blocked).action(Punt))
+        .printed_task(
+            &PrintableTask::new("b", 3, Blocked)
+                .action(Punt)
+                .deps_stats(1, 1),
+        )
         .end();
 }
 

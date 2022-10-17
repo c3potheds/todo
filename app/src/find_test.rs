@@ -65,7 +65,11 @@ fn find_includes_blocked_tasks() {
     fix.test("todo find b")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("aba", 2, Blocked).action(Select))
+        .printed_task(
+            &PrintableTask::new("aba", 2, Blocked)
+                .action(Select)
+                .deps_stats(1, 1),
+        )
         .end();
 }
 
@@ -90,11 +94,26 @@ fn find_includes_matches_with_tag() {
     fix.test("todo find g")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 4, Incomplete).tag("g"))
-        .printed_task(&PrintableTask::new("b", 5, Incomplete).tag("g"))
-        .printed_task(&PrintableTask::new("c", 6, Incomplete).tag("g"))
         .printed_task(
-            &PrintableTask::new("g", 7, Blocked).as_tag().action(Select),
+            &PrintableTask::new("a", 4, Incomplete)
+                .tag("g")
+                .adeps_stats(0, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 5, Incomplete)
+                .tag("g")
+                .adeps_stats(0, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 6, Incomplete)
+                .tag("g")
+                .adeps_stats(0, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("g", 7, Blocked)
+                .as_tag()
+                .action(Select)
+                .deps_stats(3, 3),
         )
         .end();
 }
@@ -146,13 +165,26 @@ fn find_incomplete_matches_with_tag() {
     fix.test("todo find gg")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 4, Incomplete).tag("ggg"))
-        .printed_task(&PrintableTask::new("b", 5, Incomplete).tag("ggg"))
-        .printed_task(&PrintableTask::new("c", 6, Incomplete).tag("ggg"))
+        .printed_task(
+            &PrintableTask::new("a", 4, Incomplete)
+                .tag("ggg")
+                .adeps_stats(0, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 5, Incomplete)
+                .tag("ggg")
+                .adeps_stats(0, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 6, Incomplete)
+                .tag("ggg")
+                .adeps_stats(0, 1),
+        )
         .printed_task(
             &PrintableTask::new("ggg", 7, Blocked)
                 .as_tag()
-                .action(Select),
+                .action(Select)
+                .deps_stats(3, 3),
         )
         .end();
 }

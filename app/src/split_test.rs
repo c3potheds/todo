@@ -28,9 +28,21 @@ fn split_chained() {
     fix.test("todo split a --into a1 a2 a3 --chain")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a1", 1, Incomplete).action(New))
-        .printed_task(&PrintableTask::new("a2", 2, Blocked).action(New))
-        .printed_task(&PrintableTask::new("a3", 3, Blocked).action(New))
+        .printed_task(
+            &PrintableTask::new("a1", 1, Incomplete)
+                .action(New)
+                .adeps_stats(1, 2),
+        )
+        .printed_task(
+            &PrintableTask::new("a2", 2, Blocked)
+                .action(New)
+                .deps_stats(1, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("a3", 3, Blocked)
+                .action(New)
+                .deps_stats(1, 2),
+        )
         .end();
 }
 
@@ -41,11 +53,23 @@ fn split_preserves_dependency_structure() {
     fix.test("todo split b --into b1 b2 b3")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("b1", 2, Blocked).action(New))
-        .printed_task(&PrintableTask::new("b2", 3, Blocked).action(New))
-        .printed_task(&PrintableTask::new("b3", 4, Blocked).action(New))
-        .printed_task(&PrintableTask::new("c", 5, Blocked))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(3, 4))
+        .printed_task(
+            &PrintableTask::new("b1", 2, Blocked)
+                .action(New)
+                .deps_stats(1, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("b2", 3, Blocked)
+                .action(New)
+                .deps_stats(1, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("b3", 4, Blocked)
+                .action(New)
+                .deps_stats(1, 1),
+        )
+        .printed_task(&PrintableTask::new("c", 5, Blocked).deps_stats(1, 4))
         .end();
 }
 
@@ -80,17 +104,20 @@ fn chained_split_task_with_budget_distributes_budget() {
         .printed_task(
             &PrintableTask::new("x", 1, Incomplete)
                 .action(New)
-                .budget(Duration::hours(1)),
+                .budget(Duration::hours(1))
+                .adeps_stats(1, 2),
         )
         .printed_task(
             &PrintableTask::new("y", 2, Blocked)
                 .action(New)
-                .budget(Duration::hours(1)),
+                .budget(Duration::hours(1))
+                .deps_stats(1, 1),
         )
         .printed_task(
             &PrintableTask::new("z", 3, Blocked)
                 .action(New)
-                .budget(Duration::hours(1)),
+                .budget(Duration::hours(1))
+                .deps_stats(1, 2),
         )
         .end();
 }
@@ -127,10 +154,26 @@ fn split_task_keep() {
     fix.test("todo split a --into x y z --keep")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("x", 1, Incomplete).action(New))
-        .printed_task(&PrintableTask::new("y", 2, Incomplete).action(New))
-        .printed_task(&PrintableTask::new("z", 3, Incomplete).action(New))
-        .printed_task(&PrintableTask::new("a", 4, Blocked).action(Select))
+        .printed_task(
+            &PrintableTask::new("x", 1, Incomplete)
+                .action(New)
+                .adeps_stats(0, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("y", 2, Incomplete)
+                .action(New)
+                .adeps_stats(0, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("z", 3, Incomplete)
+                .action(New)
+                .adeps_stats(0, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("a", 4, Blocked)
+                .action(Select)
+                .deps_stats(3, 3),
+        )
         .end();
 }
 
@@ -141,10 +184,26 @@ fn split_task_keep_chained() {
     fix.test("todo split a --into x y z --keep --chain")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("x", 1, Incomplete).action(New))
-        .printed_task(&PrintableTask::new("y", 2, Blocked).action(New))
-        .printed_task(&PrintableTask::new("z", 3, Blocked).action(New))
-        .printed_task(&PrintableTask::new("a", 4, Blocked).action(Select))
+        .printed_task(
+            &PrintableTask::new("x", 1, Incomplete)
+                .action(New)
+                .adeps_stats(1, 3),
+        )
+        .printed_task(
+            &PrintableTask::new("y", 2, Blocked)
+                .action(New)
+                .deps_stats(1, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("z", 3, Blocked)
+                .action(New)
+                .deps_stats(1, 2),
+        )
+        .printed_task(
+            &PrintableTask::new("a", 4, Blocked)
+                .action(Select)
+                .deps_stats(1, 3),
+        )
         .end();
 }
 
@@ -158,19 +217,26 @@ fn split_task_keep_with_budget() {
         .printed_task(
             &PrintableTask::new("x", 1, Incomplete)
                 .action(New)
-                .budget(Duration::hours(3)),
+                .budget(Duration::hours(3))
+                .adeps_stats(0, 1),
         )
         .printed_task(
             &PrintableTask::new("y", 2, Incomplete)
                 .action(New)
-                .budget(Duration::hours(3)),
+                .budget(Duration::hours(3))
+                .adeps_stats(0, 1),
         )
         .printed_task(
             &PrintableTask::new("z", 3, Incomplete)
                 .action(New)
-                .budget(Duration::hours(3)),
+                .budget(Duration::hours(3))
+                .adeps_stats(0, 1),
         )
-        .printed_task(&PrintableTask::new("a", 4, Blocked).action(Select))
+        .printed_task(
+            &PrintableTask::new("a", 4, Blocked)
+                .action(Select)
+                .deps_stats(3, 3),
+        )
         .end();
 }
 
@@ -184,19 +250,26 @@ fn split_task_chain_keep_with_budget() {
         .printed_task(
             &PrintableTask::new("x", 1, Incomplete)
                 .action(New)
-                .budget(Duration::hours(1)),
+                .budget(Duration::hours(1))
+                .adeps_stats(1, 3),
         )
         .printed_task(
             &PrintableTask::new("y", 2, Blocked)
                 .action(New)
-                .budget(Duration::hours(1)),
+                .budget(Duration::hours(1))
+                .deps_stats(1, 1),
         )
         .printed_task(
             &PrintableTask::new("z", 3, Blocked)
                 .action(New)
-                .budget(Duration::hours(1)),
+                .budget(Duration::hours(1))
+                .deps_stats(1, 2),
         )
-        .printed_task(&PrintableTask::new("a", 4, Blocked).action(Select))
+        .printed_task(
+            &PrintableTask::new("a", 4, Blocked)
+                .action(Select)
+                .deps_stats(1, 3),
+        )
         .end();
 }
 
@@ -240,16 +313,28 @@ fn split_tag_keep() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("x", 1, Incomplete).action(New).tag("a"),
+            &PrintableTask::new("x", 1, Incomplete)
+                .action(New)
+                .tag("a")
+                .adeps_stats(0, 1),
         )
         .printed_task(
-            &PrintableTask::new("y", 2, Incomplete).action(New).tag("a"),
+            &PrintableTask::new("y", 2, Incomplete)
+                .action(New)
+                .tag("a")
+                .adeps_stats(0, 1),
         )
         .printed_task(
-            &PrintableTask::new("z", 3, Incomplete).action(New).tag("a"),
+            &PrintableTask::new("z", 3, Incomplete)
+                .action(New)
+                .tag("a")
+                .adeps_stats(0, 1),
         )
         .printed_task(
-            &PrintableTask::new("a", 4, Blocked).action(Select).as_tag(),
+            &PrintableTask::new("a", 4, Blocked)
+                .action(Select)
+                .as_tag()
+                .deps_stats(3, 3),
         )
         .end();
 }
@@ -261,10 +346,26 @@ fn trim_leading_whitespace() {
     fix.test("todo split a --into ' a.x' '  a.y' '   a.z' --keep")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a.x", 1, Incomplete).action(New))
-        .printed_task(&PrintableTask::new("a.y", 2, Incomplete).action(New))
-        .printed_task(&PrintableTask::new("a.z", 3, Incomplete).action(New))
-        .printed_task(&PrintableTask::new("a", 4, Blocked).action(Select))
+        .printed_task(
+            &PrintableTask::new("a.x", 1, Incomplete)
+                .action(New)
+                .adeps_stats(0, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("a.y", 2, Incomplete)
+                .action(New)
+                .adeps_stats(0, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("a.z", 3, Incomplete)
+                .action(New)
+                .adeps_stats(0, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("a", 4, Blocked)
+                .action(Select)
+                .deps_stats(3, 3),
+        )
         .end();
 }
 
@@ -275,9 +376,25 @@ fn trim_trailing_whitespace() {
     fix.test("todo split a --into 'a.x ' 'a.y  ' 'a.z   ' --keep")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a.x", 1, Incomplete).action(New))
-        .printed_task(&PrintableTask::new("a.y", 2, Incomplete).action(New))
-        .printed_task(&PrintableTask::new("a.z", 3, Incomplete).action(New))
-        .printed_task(&PrintableTask::new("a", 4, Blocked).action(Select))
+        .printed_task(
+            &PrintableTask::new("a.x", 1, Incomplete)
+                .action(New)
+                .adeps_stats(0, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("a.y", 2, Incomplete)
+                .action(New)
+                .adeps_stats(0, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("a.z", 3, Incomplete)
+                .action(New)
+                .adeps_stats(0, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("a", 4, Blocked)
+                .action(Select)
+                .deps_stats(3, 3),
+        )
         .end();
 }

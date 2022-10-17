@@ -64,31 +64,36 @@ fn budget_chain_alters_due_dates() {
             &PrintableTask::new("a", 1, Incomplete)
                 .due_date(Implicit(ymdhms(2021, 04, 29, 19, 59, 59)))
                 .budget(Duration::hours(1))
-                .action(Select),
+                .action(Select)
+                .adeps_stats(1, 4),
         )
         .printed_task(
             &PrintableTask::new("b", 2, Blocked)
                 .due_date(Implicit(ymdhms(2021, 04, 29, 20, 59, 59)))
                 .budget(Duration::hours(1))
-                .action(Select),
+                .action(Select)
+                .deps_stats(1, 1),
         )
         .printed_task(
             &PrintableTask::new("c", 3, Blocked)
                 .due_date(Implicit(ymdhms(2021, 04, 29, 21, 59, 59)))
                 .budget(Duration::hours(1))
-                .action(Select),
+                .action(Select)
+                .deps_stats(1, 2),
         )
         .printed_task(
             &PrintableTask::new("d", 4, Blocked)
                 .due_date(Implicit(ymdhms(2021, 04, 29, 22, 59, 59)))
                 .budget(Duration::hours(1))
-                .action(Select),
+                .action(Select)
+                .deps_stats(1, 3),
         )
         .printed_task(
             &PrintableTask::new("e", 5, Blocked)
                 .due_date(Explicit(ymdhms(2021, 04, 29, 23, 59, 59)))
                 .budget(Duration::hours(1))
-                .action(Select),
+                .action(Select)
+                .deps_stats(1, 4),
         )
         .end();
 }
@@ -103,17 +108,20 @@ fn budget_shows_affected_tasks() {
         .validate()
         .printed_task(
             &PrintableTask::new("a", 1, Incomplete)
-                .due_date(Implicit(ymdhms(2021, 04, 29, 18, 00, 00))),
+                .due_date(Implicit(ymdhms(2021, 04, 29, 18, 00, 00)))
+                .adeps_stats(1, 2),
         )
         .printed_task(
             &PrintableTask::new("b", 2, Blocked)
-                .due_date(Implicit(ymdhms(2021, 04, 29, 18, 00, 00))),
+                .due_date(Implicit(ymdhms(2021, 04, 29, 18, 00, 00)))
+                .deps_stats(1, 1),
         )
         .printed_task(
             &PrintableTask::new("c", 3, Blocked)
                 .due_date(Explicit(ymdhms(2021, 04, 29, 20, 00, 00)))
                 .budget(Duration::hours(2))
-                .action(Select),
+                .action(Select)
+                .deps_stats(1, 2),
         )
         .end();
 }
@@ -129,13 +137,15 @@ fn budget_does_not_show_unaffected_tasks() {
         .validate()
         .printed_task(
             &PrintableTask::new("b", 2, Blocked)
-                .due_date(Implicit(ymdhms(2021, 04, 29, 18, 00, 00))),
+                .due_date(Implicit(ymdhms(2021, 04, 29, 18, 00, 00)))
+                .deps_stats(1, 1),
         )
         .printed_task(
             &PrintableTask::new("c", 3, Blocked)
                 .due_date(Explicit(ymdhms(2021, 04, 29, 20, 00, 00)))
                 .budget(Duration::hours(2))
-                .action(Select),
+                .action(Select)
+                .deps_stats(1, 2),
         )
         .end();
 }
@@ -178,13 +188,15 @@ fn budget_does_not_include_complete_affected_deps() {
         .validate()
         .printed_task(
             &PrintableTask::new("b", 1, Incomplete)
-                .due_date(Implicit(ymdhms(2021, 04, 30, 22, 59, 59))),
+                .due_date(Implicit(ymdhms(2021, 04, 30, 22, 59, 59)))
+                .adeps_stats(1, 1),
         )
         .printed_task(
             &PrintableTask::new("c", 2, Blocked)
                 .due_date(Explicit(ymdhms(2021, 04, 30, 23, 59, 59)))
                 .budget(Duration::hours(1))
-                .action(Select),
+                .action(Select)
+                .deps_stats(1, 2),
         )
         .end();
 }
@@ -198,19 +210,20 @@ fn budget_include_complete_affected_deps() {
     fix.test("todo budget c --is 1 hour -d")
         .modified(true)
         .validate()
-        .printed_task(
-            &PrintableTask::new("a", 0, Complete)
-                .punctuality(-chrono::Duration::hours(10)),
-        )
+        .printed_task(&PrintableTask::new("a", 0, Complete).punctuality(
+            -chrono::Duration::hours(12) + chrono::Duration::seconds(1),
+        ))
         .printed_task(
             &PrintableTask::new("b", 1, Incomplete)
-                .due_date(Implicit(ymdhms(2021, 04, 30, 22, 59, 59))),
+                .due_date(Implicit(ymdhms(2021, 04, 30, 22, 59, 59)))
+                .adeps_stats(1, 1),
         )
         .printed_task(
             &PrintableTask::new("c", 2, Blocked)
                 .due_date(Explicit(ymdhms(2021, 04, 30, 23, 59, 59)))
                 .budget(Duration::hours(1))
-                .action(Select),
+                .action(Select)
+                .deps_stats(1, 2),
         )
         .end();
 }

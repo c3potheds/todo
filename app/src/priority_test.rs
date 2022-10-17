@@ -66,13 +66,19 @@ fn priority_shows_affected_deps() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete).priority(Implicit(1)),
+            &PrintableTask::new("a", 1, Incomplete)
+                .priority(Implicit(1))
+                .adeps_stats(0, 1),
         )
         .printed_task(
-            &PrintableTask::new("c", 2, Incomplete).priority(Implicit(1)),
+            &PrintableTask::new("c", 2, Incomplete)
+                .priority(Implicit(1))
+                .adeps_stats(0, 1),
         )
         .printed_task(
-            &PrintableTask::new("d", 4, Blocked).priority(Explicit(1)),
+            &PrintableTask::new("d", 4, Blocked)
+                .priority(Explicit(1))
+                .deps_stats(2, 2),
         )
         .end();
 }
@@ -87,10 +93,14 @@ fn priority_does_not_show_complete_affected_deps() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("c", 1, Incomplete).priority(Implicit(1)),
+            &PrintableTask::new("c", 1, Incomplete)
+                .priority(Implicit(1))
+                .adeps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("d", 3, Blocked).priority(Explicit(1)),
+            &PrintableTask::new("d", 3, Blocked)
+                .priority(Explicit(1))
+                .deps_stats(1, 2),
         )
         .end();
 }
@@ -108,10 +118,14 @@ fn priority_include_done() {
             &PrintableTask::new("a", 0, Complete).priority(Implicit(1)),
         )
         .printed_task(
-            &PrintableTask::new("c", 1, Incomplete).priority(Implicit(1)),
+            &PrintableTask::new("c", 1, Incomplete)
+                .priority(Implicit(1))
+                .adeps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("d", 3, Blocked).priority(Explicit(1)),
+            &PrintableTask::new("d", 3, Blocked)
+                .priority(Explicit(1))
+                .deps_stats(1, 2),
         )
         .end();
 }
@@ -124,13 +138,19 @@ fn priority_shows_affected_transitive_deps() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete).priority(Implicit(1)),
+            &PrintableTask::new("a", 1, Incomplete)
+                .priority(Implicit(1))
+                .adeps_stats(1, 3),
         )
         .printed_task(
-            &PrintableTask::new("b", 2, Blocked).priority(Implicit(1)),
+            &PrintableTask::new("b", 2, Blocked)
+                .priority(Implicit(1))
+                .deps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("c", 3, Blocked).priority(Explicit(1)),
+            &PrintableTask::new("c", 3, Blocked)
+                .priority(Explicit(1))
+                .deps_stats(1, 2),
         )
         .end();
 }
@@ -158,16 +178,24 @@ fn priority_does_not_show_deps_with_higher_priorities() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("d", 4, Incomplete).priority(Implicit(2)),
+            &PrintableTask::new("d", 4, Incomplete)
+                .priority(Implicit(2))
+                .adeps_stats(0, 1),
         )
         .printed_task(
-            &PrintableTask::new("e", 5, Incomplete).priority(Implicit(2)),
+            &PrintableTask::new("e", 5, Incomplete)
+                .priority(Implicit(2))
+                .adeps_stats(0, 1),
         )
         .printed_task(
-            &PrintableTask::new("f", 6, Incomplete).priority(Implicit(2)),
+            &PrintableTask::new("f", 6, Incomplete)
+                .priority(Implicit(2))
+                .adeps_stats(0, 1),
         )
         .printed_task(
-            &PrintableTask::new("g", 7, Blocked).priority(Explicit(2)),
+            &PrintableTask::new("g", 7, Blocked)
+                .priority(Explicit(2))
+                .deps_stats(6, 6),
         )
         .end();
 }
@@ -232,13 +260,19 @@ fn explain_source_of_priority() {
         .modified(false)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete).priority(Implicit(1)),
+            &PrintableTask::new("a", 1, Incomplete)
+                .priority(Implicit(1))
+                .adeps_stats(1, 2),
         )
         .printed_task(
-            &PrintableTask::new("b", 2, Blocked).priority(Implicit(1)),
+            &PrintableTask::new("b", 2, Blocked)
+                .priority(Implicit(1))
+                .deps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("c", 3, Blocked).priority(Explicit(1)),
+            &PrintableTask::new("c", 3, Blocked)
+                .priority(Explicit(1))
+                .deps_stats(1, 2),
         )
         .end();
 }
@@ -252,25 +286,39 @@ fn explain_source_of_priority_deep() {
         .modified(false)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete).priority(Implicit(1)),
+            &PrintableTask::new("a", 1, Incomplete)
+                .priority(Implicit(1))
+                .adeps_stats(1, 8),
         )
         .printed_task(
-            &PrintableTask::new("b", 2, Blocked).priority(Implicit(1)),
+            &PrintableTask::new("b", 2, Blocked)
+                .priority(Implicit(1))
+                .deps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("c", 3, Blocked).priority(Implicit(1)),
+            &PrintableTask::new("c", 3, Blocked)
+                .priority(Implicit(1))
+                .deps_stats(1, 2),
         )
         .printed_task(
-            &PrintableTask::new("d", 4, Blocked).priority(Implicit(1)),
+            &PrintableTask::new("d", 4, Blocked)
+                .priority(Implicit(1))
+                .deps_stats(1, 3),
         )
         .printed_task(
-            &PrintableTask::new("e", 5, Blocked).priority(Implicit(1)),
+            &PrintableTask::new("e", 5, Blocked)
+                .priority(Implicit(1))
+                .deps_stats(1, 4),
         )
         .printed_task(
-            &PrintableTask::new("f", 6, Blocked).priority(Implicit(1)),
+            &PrintableTask::new("f", 6, Blocked)
+                .priority(Implicit(1))
+                .deps_stats(1, 5),
         )
         .printed_task(
-            &PrintableTask::new("g", 7, Blocked).priority(Explicit(1)),
+            &PrintableTask::new("g", 7, Blocked)
+                .priority(Explicit(1))
+                .deps_stats(1, 6),
         )
         .end();
 }
