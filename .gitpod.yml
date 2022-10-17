@@ -4,7 +4,7 @@
 
 tasks:
   - init: |
-      cargo install cargo-nextest bacon bat
+      cargo install cargo-nextest bacon bat fd-find tere
       cargo build
     command: bacon test
 
