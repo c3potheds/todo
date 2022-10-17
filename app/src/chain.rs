@@ -12,19 +12,21 @@ pub fn run<'list>(
     list: &'list mut TodoList,
     cmd: &Chain,
 ) -> PrintableResult<'list> {
-    let tasks = cmd
+    let tasks_to_chain = cmd
         .keys
         .iter()
         .flat_map(|key| lookup_task(list, key).iter_sorted(list))
         .collect::<Vec<_>>();
-    let include_done =
-        should_include_done(cmd.include_done, list, tasks.iter().copied());
+    let include_done = should_include_done(
+        cmd.include_done,
+        list,
+        tasks_to_chain.iter().copied(),
+    );
     let mut actions = HashMap::new();
     let mut mutated = false;
     use itertools::Itertools;
-    let tasks_to_print = tasks
-        .iter()
-        .copied()
+    let tasks_to_print = tasks_to_chain
+        .into_iter()
         .tuple_windows()
         .try_fold(TaskSet::default(), |so_far, (a, b)| {
             match list.block(b).on(a) {
