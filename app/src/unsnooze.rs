@@ -19,7 +19,7 @@ pub fn run<'list>(
             |(mut tasks_to_print, mut warnings), id| {
                 match list.unsnooze(id) {
                     Ok(()) => {
-                        tasks_to_print = tasks_to_print | TaskSet::of(id);
+                        tasks_to_print.push(id);
                     }
                     Err(w) => {
                         warnings

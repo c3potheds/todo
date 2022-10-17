@@ -53,7 +53,7 @@ pub fn run<'list>(
                 match list.snooze(id, snooze_date) {
                     Ok(()) => {
                         mutated = true;
-                        snoozed = snoozed | TaskSet::of(id);
+                        snoozed.push(id);
                     }
                     Err(new_warnings) => {
                         warnings.extend(
@@ -65,10 +65,7 @@ pub fn run<'list>(
                                         snoozed_until: _, due_date: _
                                     } = w {
                                         mutated = true;
-                                        // TODO: Make a push() method for
-                                        // TaskSet so we don't have to clone
-                                        // here.
-                                        snoozed = snoozed.clone() | TaskSet::of(id);
+                                        snoozed.push(id);
                                     }
                                 })
                                 .map(|w| format_snooze_warning(list, id, w)),

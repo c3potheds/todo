@@ -36,6 +36,10 @@ impl TaskSet {
         }
     }
 
+    pub fn push(&mut self, id: TaskId) {
+        self.ids.insert(id);
+    }
+
     /// Iterates the set in an arbitrary order. Careful when using this; it may
     /// cause non-determinism. It is more efficient than iterating in sorted
     /// order.

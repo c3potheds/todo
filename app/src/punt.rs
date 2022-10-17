@@ -25,7 +25,7 @@ pub fn run<'list>(
                     }
                     _ => {
                         mutated = true;
-                        punted_tasks = punted_tasks | TaskSet::of(id);
+                        punted_tasks.push(id);
                     }
                 }
                 (punted_tasks, warnings, mutated)
