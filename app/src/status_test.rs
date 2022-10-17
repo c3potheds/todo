@@ -33,7 +33,7 @@ fn status_does_not_include_blocked_tasks() {
     fix.test("todo")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 1))
         .printed_task(&PrintableTask::new("c", 2, Incomplete))
         .end();
 }
@@ -46,8 +46,8 @@ fn include_blocked_in_status() {
     fix.test("todo -b")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("b", 1, Incomplete))
-        .printed_task(&PrintableTask::new("a", 2, Blocked))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete).adeps_stats(1, 1))
+        .printed_task(&PrintableTask::new("a", 2, Blocked).deps_stats(1, 1))
         .end();
 }
 
@@ -73,8 +73,8 @@ fn include_all_in_status() {
         .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("a", 0, Complete))
-        .printed_task(&PrintableTask::new("b", 1, Incomplete))
-        .printed_task(&PrintableTask::new("c", 2, Blocked))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete).adeps_stats(1, 1))
+        .printed_task(&PrintableTask::new("c", 2, Blocked).deps_stats(1, 2))
         .end();
 }
 

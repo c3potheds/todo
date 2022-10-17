@@ -72,8 +72,12 @@ fn get_shows_blocking_tasks() {
     fix.test("todo get 2")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("b", 2, Blocked).action(Select))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 1))
+        .printed_task(
+            &PrintableTask::new("b", 2, Blocked)
+                .action(Select)
+                .deps_stats(1, 1),
+        )
         .end();
 }
 
@@ -85,8 +89,12 @@ fn get_shows_blocked_tasks() {
     fix.test("todo get 1")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Select))
-        .printed_task(&PrintableTask::new("b", 2, Blocked))
+        .printed_task(
+            &PrintableTask::new("a", 1, Incomplete)
+                .action(Select)
+                .adeps_stats(1, 1),
+        )
+        .printed_task(&PrintableTask::new("b", 2, Blocked).deps_stats(1, 1))
         .end();
 }
 
@@ -97,11 +105,15 @@ fn get_shows_transitive_deps_and_adeps() {
     fix.test("todo get 3")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("b", 2, Blocked))
-        .printed_task(&PrintableTask::new("c", 3, Blocked).action(Select))
-        .printed_task(&PrintableTask::new("d", 4, Blocked))
-        .printed_task(&PrintableTask::new("e", 5, Blocked))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 4))
+        .printed_task(&PrintableTask::new("b", 2, Blocked).deps_stats(1, 1))
+        .printed_task(
+            &PrintableTask::new("c", 3, Blocked)
+                .action(Select)
+                .deps_stats(1, 2),
+        )
+        .printed_task(&PrintableTask::new("d", 4, Blocked).deps_stats(1, 3))
+        .printed_task(&PrintableTask::new("e", 5, Blocked).deps_stats(1, 4))
         .end();
 }
 
@@ -124,7 +136,11 @@ fn get_no_context_single_task_by_name() {
     fix.test("todo get a -n")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Select))
+        .printed_task(
+            &PrintableTask::new("a", 1, Incomplete)
+                .action(Select)
+                .adeps_stats(1, 2),
+        )
         .end();
 }
 
@@ -135,8 +151,16 @@ fn get_no_context_multiple_tasks_by_name() {
     fix.test("todo get a b -n")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Select))
-        .printed_task(&PrintableTask::new("b", 2, Blocked).action(Select))
+        .printed_task(
+            &PrintableTask::new("a", 1, Incomplete)
+                .action(Select)
+                .adeps_stats(1, 2),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 2, Blocked)
+                .action(Select)
+                .deps_stats(1, 1),
+        )
         .end();
 }
 
@@ -172,7 +196,11 @@ fn get_no_context_blocked_task() {
     fix.test("todo get c -n")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("c", 3, Blocked).action(Select))
+        .printed_task(
+            &PrintableTask::new("c", 3, Blocked)
+                .action(Select)
+                .deps_stats(1, 2),
+        )
         .end();
 }
 
@@ -185,7 +213,11 @@ fn get_no_context_complete_and_incomplete_match() {
         .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("a", 0, Complete).action(Select))
-        .printed_task(&PrintableTask::new("a", 2, Blocked).action(Select))
+        .printed_task(
+            &PrintableTask::new("a", 2, Blocked)
+                .action(Select)
+                .deps_stats(1, 2),
+        )
         .end();
 }
 
@@ -196,8 +228,12 @@ fn get_blocked_by_one_task() {
     fix.test("todo get --blocked-by b")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("b", 2, Blocked).action(Select))
-        .printed_task(&PrintableTask::new("c", 3, Blocked))
+        .printed_task(
+            &PrintableTask::new("b", 2, Blocked)
+                .action(Select)
+                .deps_stats(1, 1),
+        )
+        .printed_task(&PrintableTask::new("c", 3, Blocked).deps_stats(1, 2))
         .end();
 }
 
@@ -208,10 +244,14 @@ fn get_blocked_by_shows_transitive_adeps() {
     fix.test("todo get --blocked-by b")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("b", 2, Blocked).action(Select))
-        .printed_task(&PrintableTask::new("c", 3, Blocked))
-        .printed_task(&PrintableTask::new("d", 4, Blocked))
-        .printed_task(&PrintableTask::new("e", 5, Blocked))
+        .printed_task(
+            &PrintableTask::new("b", 2, Blocked)
+                .action(Select)
+                .deps_stats(1, 1),
+        )
+        .printed_task(&PrintableTask::new("c", 3, Blocked).deps_stats(1, 2))
+        .printed_task(&PrintableTask::new("d", 4, Blocked).deps_stats(1, 3))
+        .printed_task(&PrintableTask::new("e", 5, Blocked).deps_stats(1, 4))
         .end();
 }
 
@@ -222,8 +262,12 @@ fn get_blocking_one_task() {
     fix.test("todo get --blocking b")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("b", 2, Blocked).action(Select))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 2))
+        .printed_task(
+            &PrintableTask::new("b", 2, Blocked)
+                .action(Select)
+                .deps_stats(1, 1),
+        )
         .end();
 }
 
@@ -234,9 +278,13 @@ fn get_blocking_shows_transitive_deps() {
     fix.test("todo get --blocking d")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("b", 2, Blocked))
-        .printed_task(&PrintableTask::new("c", 3, Blocked))
-        .printed_task(&PrintableTask::new("d", 4, Blocked).action(Select))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 4))
+        .printed_task(&PrintableTask::new("b", 2, Blocked).deps_stats(1, 1))
+        .printed_task(&PrintableTask::new("c", 3, Blocked).deps_stats(1, 2))
+        .printed_task(
+            &PrintableTask::new("d", 4, Blocked)
+                .action(Select)
+                .deps_stats(1, 3),
+        )
         .end();
 }

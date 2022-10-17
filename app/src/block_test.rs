@@ -13,8 +13,12 @@ fn block_one_on_one() {
     fix.test("todo block 1 --on 2")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("b", 1, Incomplete))
-        .printed_task(&PrintableTask::new("a", 2, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete).adeps_stats(1, 1))
+        .printed_task(
+            &PrintableTask::new("a", 2, Blocked)
+                .action(Lock)
+                .deps_stats(1, 1),
+        )
         .end();
 }
 
@@ -25,8 +29,12 @@ fn block_by_name() {
     fix.test("todo block a --on b")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("b", 1, Incomplete))
-        .printed_task(&PrintableTask::new("a", 2, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete).adeps_stats(1, 1))
+        .printed_task(
+            &PrintableTask::new("a", 2, Blocked)
+                .action(Lock)
+                .deps_stats(1, 1),
+        )
         .end();
 }
 
@@ -37,10 +45,14 @@ fn block_one_on_three() {
     fix.test("todo block 1 --on 2 3 4")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("b", 1, Incomplete))
-        .printed_task(&PrintableTask::new("c", 2, Incomplete))
-        .printed_task(&PrintableTask::new("d", 3, Incomplete))
-        .printed_task(&PrintableTask::new("a", 4, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete).adeps_stats(0, 1))
+        .printed_task(&PrintableTask::new("c", 2, Incomplete).adeps_stats(0, 1))
+        .printed_task(&PrintableTask::new("d", 3, Incomplete).adeps_stats(0, 1))
+        .printed_task(
+            &PrintableTask::new("a", 4, Blocked)
+                .action(Lock)
+                .deps_stats(3, 3),
+        )
         .end();
 }
 
@@ -51,10 +63,22 @@ fn block_three_on_one() {
     fix.test("todo block 1 2 3 --on 4")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("d", 1, Incomplete))
-        .printed_task(&PrintableTask::new("a", 2, Blocked).action(Lock))
-        .printed_task(&PrintableTask::new("b", 3, Blocked).action(Lock))
-        .printed_task(&PrintableTask::new("c", 4, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("d", 1, Incomplete).adeps_stats(3, 3))
+        .printed_task(
+            &PrintableTask::new("a", 2, Blocked)
+                .action(Lock)
+                .deps_stats(1, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 3, Blocked)
+                .action(Lock)
+                .deps_stats(1, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 4, Blocked)
+                .action(Lock)
+                .deps_stats(1, 1),
+        )
         .end();
 }
 
@@ -78,9 +102,17 @@ fn block_multiple_on_following_task() {
     fix.test("todo block 1 2 --on 3")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("c", 1, Incomplete))
-        .printed_task(&PrintableTask::new("a", 3, Blocked).action(Lock))
-        .printed_task(&PrintableTask::new("b", 4, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("c", 1, Incomplete).adeps_stats(2, 2))
+        .printed_task(
+            &PrintableTask::new("a", 3, Blocked)
+                .action(Lock)
+                .deps_stats(1, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 4, Blocked)
+                .action(Lock)
+                .deps_stats(1, 1),
+        )
         .end();
 }
 
@@ -121,15 +153,20 @@ fn block_updates_implicit_priority_of_deps() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete).priority(Implicit(1)),
+            &PrintableTask::new("a", 1, Incomplete)
+                .priority(Implicit(1))
+                .adeps_stats(1, 2),
         )
         .printed_task(
-            &PrintableTask::new("b", 2, Blocked).priority(Implicit(1)),
+            &PrintableTask::new("b", 2, Blocked)
+                .priority(Implicit(1))
+                .deps_stats(1, 1),
         )
         .printed_task(
             &PrintableTask::new("c", 3, Blocked)
                 .action(Lock)
-                .priority(Explicit(1)),
+                .priority(Explicit(1))
+                .deps_stats(1, 2),
         )
         .end();
 }
@@ -143,12 +180,15 @@ fn block_does_not_print_priority_updates_for_unaffected_deps() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("b", 2, Blocked).priority(Explicit(1)),
+            &PrintableTask::new("b", 2, Blocked)
+                .priority(Explicit(1))
+                .deps_stats(1, 1),
         )
         .printed_task(
             &PrintableTask::new("c", 3, Blocked)
                 .action(Lock)
-                .priority(Explicit(1)),
+                .priority(Explicit(1))
+                .deps_stats(1, 2),
         )
         .end();
 }
@@ -163,12 +203,15 @@ fn block_excludes_complete_affected_tasks() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("b", 1, Incomplete).priority(Implicit(1)),
+            &PrintableTask::new("b", 1, Incomplete)
+                .priority(Implicit(1))
+                .adeps_stats(1, 1),
         )
         .printed_task(
             &PrintableTask::new("c", 2, Blocked)
                 .action(Lock)
-                .priority(Explicit(1)),
+                .priority(Explicit(1))
+                .deps_stats(1, 2),
         )
         .end();
 }
@@ -186,12 +229,15 @@ fn block_include_done() {
             &PrintableTask::new("a", 0, Complete).priority(Implicit(1)),
         )
         .printed_task(
-            &PrintableTask::new("b", 1, Incomplete).priority(Implicit(1)),
+            &PrintableTask::new("b", 1, Incomplete)
+                .priority(Implicit(1))
+                .adeps_stats(1, 1),
         )
         .printed_task(
             &PrintableTask::new("c", 2, Blocked)
                 .action(Lock)
-                .priority(Explicit(1)),
+                .priority(Explicit(1))
+                .deps_stats(1, 2),
         )
         .end();
 }

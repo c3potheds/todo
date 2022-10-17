@@ -105,7 +105,11 @@ fn check_newly_unblocked_task_with_chained_dependencies() {
         .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 0, Complete).action(Check))
-        .printed_task(&PrintableTask::new("b", 1, Incomplete).action(Unlock))
+        .printed_task(
+            &PrintableTask::new("b", 1, Incomplete)
+                .action(Unlock)
+                .adeps_stats(1, 1),
+        )
         .end();
     fix.test("todo check 1")
         .modified(true)
@@ -129,7 +133,11 @@ fn check_does_not_show_adeps_that_are_not_unlocked() {
         .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 0, Complete).action(Check))
-        .printed_task(&PrintableTask::new("b", 1, Incomplete).action(Unlock))
+        .printed_task(
+            &PrintableTask::new("b", 1, Incomplete)
+                .action(Unlock)
+                .adeps_stats(1, 1),
+        )
         // Do not print c, even though it's a direct adep, because it has not
         // been unlocked.
         .end();

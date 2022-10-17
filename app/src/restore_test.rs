@@ -67,8 +67,16 @@ fn restore_task_with_incomplete_antidependency() {
     fix.test("todo restore 0")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Uncheck))
-        .printed_task(&PrintableTask::new("b", 2, Blocked).action(Lock))
+        .printed_task(
+            &PrintableTask::new("a", 1, Incomplete)
+                .action(Uncheck)
+                .adeps_stats(1, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 2, Blocked)
+                .action(Lock)
+                .deps_stats(1, 1),
+        )
         .end();
 }
 
@@ -140,8 +148,16 @@ fn force_restore_task_with_complete_adeps() {
     fix.test("todo restore a --force")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Uncheck))
-        .printed_task(&PrintableTask::new("b", 2, Blocked).action(Uncheck))
+        .printed_task(
+            &PrintableTask::new("a", 1, Incomplete)
+                .action(Uncheck)
+                .adeps_stats(1, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 2, Blocked)
+                .action(Uncheck)
+                .deps_stats(1, 1),
+        )
         .end();
 }
 
@@ -153,9 +169,21 @@ fn force_restore_task_with_complete_adeps_with_complete_adeps() {
     fix.test("todo restore a --force")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Uncheck))
-        .printed_task(&PrintableTask::new("b", 2, Blocked).action(Uncheck))
-        .printed_task(&PrintableTask::new("c", 3, Blocked).action(Uncheck))
+        .printed_task(
+            &PrintableTask::new("a", 1, Incomplete)
+                .action(Uncheck)
+                .adeps_stats(1, 2),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 2, Blocked)
+                .action(Uncheck)
+                .deps_stats(1, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 3, Blocked)
+                .action(Uncheck)
+                .deps_stats(1, 2),
+        )
         .end();
 }
 
@@ -167,10 +195,26 @@ fn force_restore_task_with_complete_and_incomplete_adeps() {
     fix.test("todo restore a --force")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Uncheck))
-        .printed_task(&PrintableTask::new("b", 2, Blocked).action(Uncheck))
-        .printed_task(&PrintableTask::new("c", 3, Blocked).action(Uncheck))
-        .printed_task(&PrintableTask::new("d", 4, Blocked).action(Lock))
+        .printed_task(
+            &PrintableTask::new("a", 1, Incomplete)
+                .action(Uncheck)
+                .adeps_stats(1, 3),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 2, Blocked)
+                .action(Uncheck)
+                .deps_stats(1, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 3, Blocked)
+                .action(Uncheck)
+                .deps_stats(1, 2),
+        )
+        .printed_task(
+            &PrintableTask::new("d", 4, Blocked)
+                .action(Lock)
+                .deps_stats(1, 3),
+        )
         .end();
 }
 
@@ -182,7 +226,15 @@ fn restore_chain() {
     fix.test("todo restore a b")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Uncheck))
-        .printed_task(&PrintableTask::new("b", 2, Blocked).action(Uncheck))
+        .printed_task(
+            &PrintableTask::new("a", 1, Incomplete)
+                .action(Uncheck)
+                .adeps_stats(1, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 2, Blocked)
+                .action(Uncheck)
+                .deps_stats(1, 1),
+        )
         .end();
 }

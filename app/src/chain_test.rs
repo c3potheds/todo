@@ -20,9 +20,17 @@ fn chain_three() {
     fix.test("todo chain a b c")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("b", 4, Blocked).action(Lock))
-        .printed_task(&PrintableTask::new("c", 5, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 2))
+        .printed_task(
+            &PrintableTask::new("b", 4, Blocked)
+                .action(Lock)
+                .deps_stats(1, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 5, Blocked)
+                .action(Lock)
+                .deps_stats(1, 2),
+        )
         .end();
 }
 
@@ -49,15 +57,20 @@ fn chain_shows_affected_deps() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete).priority(Implicit(1)),
+            &PrintableTask::new("a", 1, Incomplete)
+                .priority(Implicit(1))
+                .adeps_stats(1, 2),
         )
         .printed_task(
-            &PrintableTask::new("b", 2, Blocked).priority(Implicit(1)),
+            &PrintableTask::new("b", 2, Blocked)
+                .priority(Implicit(1))
+                .deps_stats(1, 1),
         )
         .printed_task(
             &PrintableTask::new("c", 3, Blocked)
                 .priority(Explicit(1))
-                .action(Lock),
+                .action(Lock)
+                .deps_stats(1, 2),
         )
         .end();
 }
@@ -72,12 +85,15 @@ fn chain_excludes_complete_affected_deps() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("b", 1, Incomplete).priority(Implicit(1)),
+            &PrintableTask::new("b", 1, Incomplete)
+                .priority(Implicit(1))
+                .adeps_stats(1, 1),
         )
         .printed_task(
             &PrintableTask::new("c", 2, Blocked)
                 .priority(Explicit(1))
-                .action(Lock),
+                .action(Lock)
+                .deps_stats(1, 2),
         )
         .end();
 }
@@ -89,9 +105,17 @@ fn chain_by_range() {
     fix.test("todo chain 1..3")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("b", 2, Blocked).action(Lock))
-        .printed_task(&PrintableTask::new("c", 3, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 2))
+        .printed_task(
+            &PrintableTask::new("b", 2, Blocked)
+                .action(Lock)
+                .deps_stats(1, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 3, Blocked)
+                .action(Lock)
+                .deps_stats(1, 2),
+        )
         .end();
 }
 
@@ -102,8 +126,16 @@ fn chain_ambiguous_key() {
     fix.test("todo chain a")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("a", 2, Blocked).action(Lock))
-        .printed_task(&PrintableTask::new("a", 3, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 2))
+        .printed_task(
+            &PrintableTask::new("a", 2, Blocked)
+                .action(Lock)
+                .deps_stats(1, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("a", 3, Blocked)
+                .action(Lock)
+                .deps_stats(1, 2),
+        )
         .end();
 }

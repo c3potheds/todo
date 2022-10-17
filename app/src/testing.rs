@@ -1,94 +1,50 @@
 #![allow(clippy::zero_prefixed_literal)]
 
 use {
-    chrono::{DateTime, Duration, TimeZone, Utc},
+    chrono::{TimeZone, Utc},
     clap::Parser,
     cli::Options,
     clock::FakeClock,
     model::TodoList,
     pretty_assertions::assert_eq,
     printing::{
-        Action, LogDate, Plicit, PrintableError, PrintableInfo, PrintableTask,
-        PrintableWarning, Status, TodoPrinter,
+        PrintableError, PrintableInfo, PrintableTask, PrintableWarning,
+        TodoPrinter,
     },
     text_editing::FakeTextEditor,
 };
 
 #[derive(Debug, PartialEq, Eq)]
-struct PrintedTaskInfo {
-    desc: String,
-    number: i32,
-    status: Status,
-    action: Action,
-    log_date: Option<LogDate>,
-    priority: Option<Plicit<i32>>,
-    due_date: Option<Plicit<DateTime<Utc>>>,
-    start_date: Option<DateTime<Utc>>,
-    budget: Option<Duration>,
-    is_explicit_tag: bool,
-    implicit_tags: Vec<String>,
-}
-
-#[derive(Debug, PartialEq, Eq)]
-enum PrintedItem {
-    Task(PrintedTaskInfo),
+enum PrintedItem<'list> {
+    Task(PrintableTask<'list>),
     Info(PrintableInfo),
     Warning(PrintableWarning),
     Error(PrintableError),
 }
 
-pub struct Validation<'a> {
-    cmd: &'a str,
-    actual: &'a Vec<PrintedItem>,
-    expected: Vec<PrintedItem>,
+pub struct Validation<'validation, 'test> {
+    cmd: &'validation str,
+    actual: &'validation Vec<PrintedItem<'test>>,
+    expected: Vec<PrintedItem<'test>>,
 }
 
-fn record_task_info(task: &PrintableTask) -> PrintedItem {
-    PrintedItem::Task(PrintedTaskInfo {
-        desc: task.desc.to_string(),
-        number: task.number,
-        status: task.status,
-        action: task.action,
-        log_date: task.log_date.clone(),
-        priority: task.priority.clone(),
-        due_date: task.due_date.clone(),
-        start_date: task.start_date,
-        budget: task.budget,
-        is_explicit_tag: task.is_explicit_tag,
-        implicit_tags: task
-            .implicit_tags
-            .iter()
-            .map(|tag| tag.to_string())
-            .collect(),
-    })
-}
-
-impl<'a> Validation<'a> {
-    pub fn printed_task(
-        mut self,
-        task: &'a PrintableTask<'a>,
-    ) -> Validation<'a> {
-        self.expected.push(record_task_info(task));
+impl<'validation, 'test> Validation<'validation, 'test> {
+    pub fn printed_task(mut self, task: &PrintableTask<'test>) -> Self {
+        self.expected.push(PrintedItem::Task(task.clone()));
         self
     }
 
-    pub fn printed_info(mut self, info: &'a PrintableInfo) -> Validation<'a> {
+    pub fn printed_info(mut self, info: &PrintableInfo) -> Self {
         self.expected.push(PrintedItem::Info(info.clone()));
         self
     }
 
-    pub fn printed_warning(
-        mut self,
-        expected: &'a PrintableWarning,
-    ) -> Validation<'a> {
+    pub fn printed_warning(mut self, expected: &PrintableWarning) -> Self {
         self.expected.push(PrintedItem::Warning(expected.clone()));
         self
     }
 
-    pub fn printed_error(
-        mut self,
-        expected: &'a PrintableError,
-    ) -> Validation<'a> {
+    pub fn printed_error(mut self, expected: &PrintableError) -> Self {
         self.expected.push(PrintedItem::Error(expected.clone()));
         self
     }
@@ -96,20 +52,31 @@ impl<'a> Validation<'a> {
     pub fn end(self) {
         let cmd = self.cmd;
         assert_eq!(
-            &self.expected, self.actual,
-            "Unexpected output from '{cmd}' (left: expected, right: actual)"
+            // Note: the pretty_assertions crate switches the order of the
+            // arguments to assert_eq!() so that the first argument is labeled
+            // "right" and the second argument is labeled "left".
+            //
+            // The "left" argument is painted red, so we want that to be the
+            // erroneous actual value when the assertion fails. The "right"
+            // argument is painted green, showing what the output should be.
+            &self.expected,
+            self.actual,
+            "Unexpected output from '{cmd}' (left: actual, right: expected)"
         );
     }
 }
 
 #[derive(Default)]
-struct FakePrinter {
-    record: Vec<PrintedItem>,
+struct FakePrinter<'a> {
+    record: Vec<PrintedItem<'a>>,
 }
 
-impl TodoPrinter for FakePrinter {
-    fn print_task(&mut self, task: &PrintableTask) {
-        self.record.push(record_task_info(task));
+impl<'a, 'b> TodoPrinter<'b> for FakePrinter<'a>
+where
+    'b: 'a,
+{
+    fn print_task(&mut self, task: &PrintableTask<'b>) {
+        self.record.push(PrintedItem::Task(task.clone()));
     }
 
     fn print_info(&mut self, info: &PrintableInfo) {
@@ -125,13 +92,13 @@ impl TodoPrinter for FakePrinter {
     }
 }
 
-pub struct Fixture<'a> {
-    pub list: TodoList<'a>,
+pub struct Fixture<'list> {
+    pub list: TodoList<'list>,
     pub clock: FakeClock,
-    pub text_editor: FakeTextEditor<'a>,
+    pub text_editor: FakeTextEditor<'list>,
 }
 
-impl<'a> Default for Fixture<'a> {
+impl<'list> Default for Fixture<'list> {
     fn default() -> Self {
         Fixture {
             list: TodoList::default(),
@@ -141,13 +108,13 @@ impl<'a> Default for Fixture<'a> {
     }
 }
 
-pub struct Validator {
-    record: Vec<PrintedItem>,
+pub struct Validator<'test> {
+    record: Vec<PrintedItem<'test>>,
     mutated: bool,
     cmd: String,
 }
 
-impl Validator {
+impl<'test> Validator<'test> {
     pub fn modified(self, expected: bool) -> Self {
         assert_eq!(
             self.mutated, expected,
@@ -157,7 +124,7 @@ impl Validator {
         self
     }
 
-    pub fn validate(&mut self) -> Validation<'_> {
+    pub fn validate(&mut self) -> Validation<'_, 'test> {
         Validation {
             cmd: &self.cmd,
             actual: &mut self.record,
@@ -166,8 +133,8 @@ impl Validator {
     }
 }
 
-impl<'a> Fixture<'a> {
-    pub fn test(&mut self, s: &str) -> Validator {
+impl<'list> Fixture<'list> {
+    pub fn test(&mut self, s: &str) -> Validator<'_> {
         let mut printer = FakePrinter::default();
         let args = shlex::split(s).expect("Could not split args");
         let options =

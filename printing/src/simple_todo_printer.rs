@@ -289,8 +289,8 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
     }
 }
 
-impl<Out: Write> TodoPrinter for SimpleTodoPrinter<Out> {
-    fn print_task<'a>(&mut self, task: &PrintableTask<'a>) {
+impl<'a, Out: Write> TodoPrinter<'a> for SimpleTodoPrinter<Out> {
+    fn print_task(&mut self, task: &PrintableTask<'a>) {
         writeln!(
             self.out,
             "{}",

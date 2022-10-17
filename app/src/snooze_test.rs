@@ -106,7 +106,8 @@ fn snooze_blocked_task_above_layer_1() {
         .printed_task(
             &PrintableTask::new("c", 3, Blocked)
                 .start_date(ymdhms(2021, 05, 28, 00, 00, 00))
-                .action(Snooze),
+                .action(Snooze)
+                .deps_stats(1, 2),
         )
         .end();
 }

@@ -38,8 +38,12 @@ fn merge_preserves_deps() {
     fix.test("todo merge b c --into bc")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("bc", 2, Blocked).action(Select))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 1))
+        .printed_task(
+            &PrintableTask::new("bc", 2, Blocked)
+                .action(Select)
+                .deps_stats(1, 1),
+        )
         .end();
 }
 
@@ -50,8 +54,12 @@ fn merge_preserves_adeps() {
     fix.test("todo merge a b --into ab")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("ab", 1, Incomplete).action(Select))
-        .printed_task(&PrintableTask::new("c", 2, Blocked))
+        .printed_task(
+            &PrintableTask::new("ab", 1, Incomplete)
+                .action(Select)
+                .adeps_stats(1, 1),
+        )
+        .printed_task(&PrintableTask::new("c", 2, Blocked).deps_stats(1, 1))
         .end();
 }
 
@@ -62,9 +70,13 @@ fn merge_preserves_deps_and_adeps() {
     fix.test("todo merge b c d --into bcd")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("bcd", 2, Blocked).action(Select))
-        .printed_task(&PrintableTask::new("e", 3, Blocked))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 2))
+        .printed_task(
+            &PrintableTask::new("bcd", 2, Blocked)
+                .action(Select)
+                .deps_stats(1, 1),
+        )
+        .printed_task(&PrintableTask::new("e", 3, Blocked).deps_stats(1, 2))
         .end();
 }
 
@@ -146,9 +158,13 @@ fn merge_inside_chain() {
     fix.test("todo merge c d --into cd")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("b", 2, Blocked))
-        .printed_task(&PrintableTask::new("cd", 3, Blocked).action(Select))
-        .printed_task(&PrintableTask::new("e", 4, Blocked))
+        .printed_task(&PrintableTask::new("b", 2, Blocked).deps_stats(1, 1))
+        .printed_task(
+            &PrintableTask::new("cd", 3, Blocked)
+                .action(Select)
+                .deps_stats(1, 2),
+        )
+        .printed_task(&PrintableTask::new("e", 4, Blocked).deps_stats(1, 3))
         .end();
 }
 
@@ -256,9 +272,14 @@ fn show_tags_for_merged_task() {
             &PrintableTask::new("ab", 1, Incomplete)
                 .action(Select)
                 .as_tag()
-                .tag("c"),
+                .tag("c")
+                .adeps_stats(1, 1),
         )
-        .printed_task(&PrintableTask::new("c", 2, Blocked).as_tag())
+        .printed_task(
+            &PrintableTask::new("c", 2, Blocked)
+                .as_tag()
+                .deps_stats(1, 1),
+        )
         .end();
 }
 

@@ -8,8 +8,8 @@ use {
 
 pub struct ScriptingTodoPrinter;
 
-impl TodoPrinter for ScriptingTodoPrinter {
-    fn print_task(&mut self, task: &PrintableTask) {
+impl<'a> TodoPrinter<'a> for ScriptingTodoPrinter {
+    fn print_task(&mut self, task: &PrintableTask<'a>) {
         writeln!(std::io::stdout(), "{}", task.number).unwrap_or_default();
     }
 

@@ -37,12 +37,15 @@ pub struct PrintableAppSuccess<'list> {
 pub type PrintableResult<'list> =
     Result<PrintableAppSuccess<'list>, Vec<PrintableError>>;
 
-pub trait Printable {
-    fn print(&self, printer: &mut impl TodoPrinter) -> bool;
+pub trait Printable<'a> {
+    fn print(&self, printer: &mut impl TodoPrinter<'a>) -> bool;
 }
 
-impl Printable for PrintableResult<'_> {
-    fn print(&self, printer: &mut impl TodoPrinter) -> bool {
+impl<'a, 'b> Printable<'a> for PrintableResult<'b>
+where
+    'b: 'a,
+{
+    fn print(&self, printer: &mut impl TodoPrinter<'a>) -> bool {
         match self {
             Self::Ok(PrintableAppSuccess {
                 warnings,

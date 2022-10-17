@@ -46,7 +46,7 @@ fn rm_task_with_deps_and_adeps() {
         .modified(true)
         .validate()
         .printed_info(&info_removed("b"))
-        .printed_task(&PrintableTask::new("c", 2, Blocked))
+        .printed_task(&PrintableTask::new("c", 2, Blocked).deps_stats(1, 1))
         .end();
 }
 

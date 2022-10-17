@@ -34,10 +34,20 @@ fn tag_show_blocked_tags() {
             &PrintableTask::new("a", 1, Incomplete)
                 .tag("c")
                 .tag("b")
-                .as_tag(),
+                .as_tag()
+                .adeps_stats(1, 2),
         )
-        .printed_task(&PrintableTask::new("b", 2, Blocked).tag("c").as_tag())
-        .printed_task(&PrintableTask::new("c", 3, Blocked).as_tag())
+        .printed_task(
+            &PrintableTask::new("b", 2, Blocked)
+                .tag("c")
+                .as_tag()
+                .deps_stats(1, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 3, Blocked)
+                .as_tag()
+                .deps_stats(1, 2),
+        )
         .end();
 }
 
@@ -126,10 +136,21 @@ fn tag_prints_affected_deps_when_marking() {
     fix.test("todo tag c")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).tag("c"))
-        .printed_task(&PrintableTask::new("b", 2, Blocked).tag("c"))
         .printed_task(
-            &PrintableTask::new("c", 3, Blocked).action(Select).as_tag(),
+            &PrintableTask::new("a", 1, Incomplete)
+                .tag("c")
+                .adeps_stats(1, 2),
+        )
+        .printed_task(
+            &PrintableTask::new("b", 2, Blocked)
+                .tag("c")
+                .deps_stats(1, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 3, Blocked)
+                .action(Select)
+                .as_tag()
+                .deps_stats(1, 2),
         )
         .end();
 }
@@ -188,9 +209,16 @@ fn tag_does_not_show_complete_deps_by_default_when_marking() {
     fix.test("todo tag c")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("b", 1, Incomplete).tag("c"))
         .printed_task(
-            &PrintableTask::new("c", 2, Blocked).action(Select).as_tag(),
+            &PrintableTask::new("b", 1, Incomplete)
+                .tag("c")
+                .adeps_stats(1, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 2, Blocked)
+                .action(Select)
+                .as_tag()
+                .deps_stats(1, 2),
         )
         .end();
 }
@@ -204,9 +232,16 @@ fn tag_show_complete_deps_when_marking() {
         .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 0, Complete).tag("c"))
-        .printed_task(&PrintableTask::new("b", 1, Incomplete).tag("c"))
         .printed_task(
-            &PrintableTask::new("c", 2, Blocked).action(Select).as_tag(),
+            &PrintableTask::new("b", 1, Incomplete)
+                .tag("c")
+                .adeps_stats(1, 1),
+        )
+        .printed_task(
+            &PrintableTask::new("c", 2, Blocked)
+                .action(Select)
+                .as_tag()
+                .deps_stats(1, 2),
         )
         .end();
 }
@@ -220,8 +255,12 @@ fn tag_does_not_show_complete_deps_by_default_when_unmarking() {
     fix.test("todo tag -u c")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("b", 1, Incomplete))
-        .printed_task(&PrintableTask::new("c", 2, Blocked).action(Select))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete).adeps_stats(1, 1))
+        .printed_task(
+            &PrintableTask::new("c", 2, Blocked)
+                .action(Select)
+                .deps_stats(1, 2),
+        )
         .end();
 }
 
@@ -235,7 +274,11 @@ fn tag_show_complete_deps_when_unmarking() {
         .modified(true)
         .validate()
         .printed_task(&PrintableTask::new("a", 0, Complete))
-        .printed_task(&PrintableTask::new("b", 1, Incomplete))
-        .printed_task(&PrintableTask::new("c", 2, Blocked).action(Select))
+        .printed_task(&PrintableTask::new("b", 1, Incomplete).adeps_stats(1, 1))
+        .printed_task(
+            &PrintableTask::new("c", 2, Blocked)
+                .action(Select)
+                .deps_stats(1, 2),
+        )
         .end();
 }

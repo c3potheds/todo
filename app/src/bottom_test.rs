@@ -31,9 +31,9 @@ fn bottom_all_tasks_categorized_the_same() {
     fix.test("todo bottom")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("b", 2, Incomplete))
-        .printed_task(&PrintableTask::new("c", 3, Incomplete))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(0, 1))
+        .printed_task(&PrintableTask::new("b", 2, Incomplete).adeps_stats(0, 1))
+        .printed_task(&PrintableTask::new("c", 3, Incomplete).adeps_stats(0, 1))
         .end();
 }
 
@@ -46,12 +46,12 @@ fn bottom_multiple_categories() {
     fix.test("todo bottom")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("b", 2, Incomplete))
-        .printed_task(&PrintableTask::new("c", 3, Incomplete))
-        .printed_task(&PrintableTask::new("d", 4, Incomplete))
-        .printed_task(&PrintableTask::new("e", 5, Incomplete))
-        .printed_task(&PrintableTask::new("f", 6, Incomplete))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(0, 1))
+        .printed_task(&PrintableTask::new("b", 2, Incomplete).adeps_stats(0, 1))
+        .printed_task(&PrintableTask::new("c", 3, Incomplete).adeps_stats(0, 1))
+        .printed_task(&PrintableTask::new("d", 4, Incomplete).adeps_stats(0, 1))
+        .printed_task(&PrintableTask::new("e", 5, Incomplete).adeps_stats(0, 1))
+        .printed_task(&PrintableTask::new("f", 6, Incomplete).adeps_stats(0, 1))
         .end();
 }
 
@@ -63,8 +63,8 @@ fn bottom_deep_category() {
     fix.test("todo bottom")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("d", 2, Incomplete))
+        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 2))
+        .printed_task(&PrintableTask::new("d", 2, Incomplete).adeps_stats(1, 2))
         .end();
 }
 
@@ -124,7 +124,7 @@ fn bottom_above_blocking_task() {
     fix.test("todo bottom a")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("b", 2, Blocked))
+        .printed_task(&PrintableTask::new("b", 2, Blocked).deps_stats(1, 1))
         .end();
 }
 
@@ -135,7 +135,7 @@ fn bottom_above_blocked_task() {
     fix.test("todo bottom b")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("c", 3, Blocked))
+        .printed_task(&PrintableTask::new("c", 3, Blocked).deps_stats(1, 2))
         .end();
 }
 
@@ -149,12 +149,12 @@ fn bottom_above_two_tasks() {
     fix.test("todo bottom x y")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 3, Blocked))
-        .printed_task(&PrintableTask::new("b", 4, Blocked))
-        .printed_task(&PrintableTask::new("c", 5, Blocked))
-        .printed_task(&PrintableTask::new("d", 6, Blocked))
-        .printed_task(&PrintableTask::new("e", 7, Blocked))
-        .printed_task(&PrintableTask::new("f", 8, Blocked))
+        .printed_task(&PrintableTask::new("a", 3, Blocked).deps_stats(1, 1))
+        .printed_task(&PrintableTask::new("b", 4, Blocked).deps_stats(1, 1))
+        .printed_task(&PrintableTask::new("c", 5, Blocked).deps_stats(2, 2))
+        .printed_task(&PrintableTask::new("d", 6, Blocked).deps_stats(2, 2))
+        .printed_task(&PrintableTask::new("e", 7, Blocked).deps_stats(1, 1))
+        .printed_task(&PrintableTask::new("f", 8, Blocked).deps_stats(1, 1))
         .end();
 }
 
@@ -169,7 +169,7 @@ fn bottom_exclude_adeps_with_indirect_connection() {
         // b should be excluded because there's also an indirect connection to
         // it, through a. On the other hand, a is included because the only
         // path to it from the "bottom" task is direct.
-        .printed_task(&PrintableTask::new("a", 2, Blocked))
+        .printed_task(&PrintableTask::new("a", 2, Blocked).deps_stats(1, 1))
         .end();
 }
 
