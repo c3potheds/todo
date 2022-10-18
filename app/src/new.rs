@@ -23,6 +23,7 @@ pub fn run<'list>(
     let deps = lookup_tasks(list, &cmd.blocked_by);
     let adeps = lookup_tasks(list, &cmd.blocking);
     let before = lookup_tasks(list, &cmd.before);
+    let by = lookup_tasks(list, &cmd.by);
     let before_deps = before
         .iter_unsorted()
         .fold(TaskSet::default(), |so_far, id| so_far | list.deps(id));
@@ -30,8 +31,14 @@ pub fn run<'list>(
     let after_adeps = after
         .iter_unsorted()
         .fold(TaskSet::default(), |so_far, id| so_far | list.adeps(id));
-    let deps = deps | before_deps | after;
-    let adeps = adeps | before | after_adeps;
+    let (by_deps, by_adeps) = by.iter_unsorted().fold(
+        (TaskSet::default(), TaskSet::default()),
+        |(so_far_deps, so_far_adeps), id| {
+            (so_far_deps | list.deps(id), so_far_adeps | list.adeps(id))
+        },
+    );
+    let deps = deps | before_deps | after | by_deps;
+    let adeps = adeps | before | after_adeps | by_adeps;
     let priority = cmd.priority;
     let mut to_print = HashSet::new();
     let new_tasks: TaskSet = cmd

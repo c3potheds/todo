@@ -259,6 +259,75 @@ fn new_one_after_three() {
 }
 
 #[test]
+fn new_one_by_one() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --chain");
+    fix.test("todo new d --by b")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("d", 3, Blocked).action(New))
+        .printed_task(&PrintableTask::new("c", 4, Blocked))
+        .end();
+}
+
+#[test]
+fn new_three_by_one() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --chain");
+    fix.test("todo new d e f --by b")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("d", 3, Blocked).action(New))
+        .printed_task(&PrintableTask::new("e", 4, Blocked).action(New))
+        .printed_task(&PrintableTask::new("f", 5, Blocked).action(New))
+        .printed_task(&PrintableTask::new("c", 6, Blocked))
+        .end();
+}
+
+#[test]
+fn new_one_by_three() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c");
+    fix.test("todo new d -p a b c");
+    fix.test("todo new e --by a b c")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("e", 4, Incomplete).action(New))
+        .printed_task(&PrintableTask::new("d", 5, Blocked))
+        .end();
+}
+
+#[test]
+fn new_one_by_one_with_chain() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --chain");
+    fix.test("todo new d --by b --chain")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("d", 3, Blocked).action(New))
+        .printed_task(&PrintableTask::new("c", 4, Blocked))
+        .end();
+}
+
+#[test]
+fn new_three_by_one_with_chain() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --chain");
+    fix.test("todo new d e f --by b --chain")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("d", 3, Blocked).action(New))
+        .printed_task(&PrintableTask::new("e", 4, Blocked).action(New))
+        .printed_task(&PrintableTask::new("f", 5, Blocked).action(New))
+        .printed_task(&PrintableTask::new("c", 6, Blocked))
+        .end();
+}
+
+#[test]
 fn print_warning_on_cycle() {
     let mut fix = Fixture::default();
     fix.test("todo new a b --chain");
