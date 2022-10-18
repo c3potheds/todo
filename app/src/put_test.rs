@@ -239,3 +239,112 @@ fn put_include_done() {
         )
         .end();
 }
+
+#[test]
+fn put_task_by_initial_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --chain");
+    fix.test("todo new t");
+    fix.test("todo put t --by a")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("t", 2, Incomplete))
+        .printed_task(&PrintableTask::new("b", 3, Blocked).action(Lock))
+        .end();
+}
+
+#[test]
+fn put_task_by_interior_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --chain");
+    fix.test("todo new t");
+    fix.test("todo put t --by b")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("t", 3, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("c", 4, Blocked).action(Lock))
+        .end();
+}
+
+#[test]
+fn put_task_by_terminal_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --chain");
+    fix.test("todo new t");
+    fix.test("todo put t --by c")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("b", 2, Blocked))
+        .printed_task(&PrintableTask::new("t", 4, Blocked).action(Lock))
+        .end();
+}
+
+#[test]
+fn put_task_by_isolated_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c");
+    fix.test("todo new t");
+    fix.test("todo put t --by a")
+        .modified(false)
+        .validate()
+        .end();
+}
+
+#[test]
+fn put_task_by_complete_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --chain");
+    fix.test("todo check a b");
+    fix.test("todo new t");
+    fix.test("todo put t --by b")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("t", 1, Incomplete).action(Lock))
+        .printed_task(&PrintableTask::new("c", 2, Blocked).action(Lock))
+        .end();
+}
+
+#[test]
+fn put_task_by_complete_task_include_done() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --chain");
+    fix.test("todo check a b");
+    fix.test("todo new t");
+    fix.test("todo put t --by b -d")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("a", -1, Complete))
+        .printed_task(&PrintableTask::new("t", 1, Incomplete).action(Lock))
+        .printed_task(&PrintableTask::new("c", 2, Blocked).action(Lock))
+        .end();
+}
+
+#[test]
+fn put_task_by_task_whose_adeps_are_complete() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --chain");
+    fix.test("todo check a b c");
+    fix.test("todo new t");
+    fix.test("todo put t --by b -d")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("a", -1, Complete))
+        .printed_task(&PrintableTask::new("t", 1, Incomplete).action(Lock))
+        .printed_task(&PrintableTask::new("c", 2, Blocked).action(Lock))
+        .end();
+}
+
+#[test]
+fn put_complete_task_by_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --chain");
+    fix.test("todo new t -d");
+    fix.test("todo put t --by b")
+        .modified(true)
+        .validate()
+        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&PrintableTask::new("t", 3, Blocked).action(Lock))
+        .printed_task(&PrintableTask::new("c", 4, Blocked).action(Lock))
+        .end();
+}
