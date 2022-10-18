@@ -6,12 +6,12 @@ use {
     cli::Options,
     clock::FakeClock,
     model::TodoList,
+    pretty_assertions::assert_eq,
     printing::{
         Action, LogDate, Plicit, PrintableError, PrintableInfo, PrintableTask,
         PrintableWarning, Status, TodoPrinter,
     },
     text_editing::FakeTextEditor,
-    pretty_assertions::assert_eq,
 };
 
 #[derive(Debug, PartialEq, Eq)]
@@ -38,6 +38,7 @@ enum PrintedItem {
 }
 
 pub struct Validation<'a> {
+    cmd: &'a str,
     actual: &'a Vec<PrintedItem>,
     expected: Vec<PrintedItem>,
 }
@@ -93,7 +94,11 @@ impl<'a> Validation<'a> {
     }
 
     pub fn end(self) {
-        assert_eq!(self.actual, &self.expected);
+        let cmd = self.cmd;
+        assert_eq!(
+            &self.expected, self.actual,
+            "Unexpected output from '{cmd}' (left: expected, right: actual)"
+        );
     }
 }
 
@@ -154,6 +159,7 @@ impl Validator {
 
     pub fn validate(&mut self) -> Validation<'_> {
         Validation {
+            cmd: &self.cmd,
             actual: &mut self.record,
             expected: Vec::new(),
         }
