@@ -13,6 +13,7 @@ fn new_missing_keys() {
     expect_error("todo new a -p");
     expect_error("todo new a --before");
     expect_error("todo new a --after");
+    expect_error("todo new a --by");
     expect_error("todo new a --due");
     expect_error("todo new a --budget");
     expect_error("todo new a --snooze");
@@ -133,6 +134,62 @@ fn new_before_after_short() {
             desc: vec!["c".to_string()],
             before: vec![ByName("a".to_string())],
             after: vec![ByName("b".to_string())],
+            ..Default::default()
+        }),
+    );
+}
+
+#[test]
+fn new_by_long() {
+    expect_parses_into(
+        "todo new c --by d",
+        SubCommand::New(New {
+            desc: vec!["c".to_string()],
+            by: vec![ByName("d".to_string())],
+            ..Default::default()
+        }),
+    );
+}
+
+#[test]
+fn new_by_long_many() {
+    expect_parses_into(
+        "todo new a b c --by d e f",
+        SubCommand::New(New {
+            desc: vec!["a".to_string(), "b".to_string(), "c".to_string()],
+            by: vec![
+                ByName("d".to_string()),
+                ByName("e".to_string()),
+                ByName("f".to_string()),
+            ],
+            ..Default::default()
+        }),
+    );
+}
+
+#[test]
+fn new_by_short() {
+    expect_parses_into(
+        "todo new c -Y d",
+        SubCommand::New(New {
+            desc: vec!["c".to_string()],
+            by: vec![ByName("d".to_string())],
+            ..Default::default()
+        }),
+    );
+}
+
+#[test]
+fn new_by_short_many() {
+    expect_parses_into(
+        "todo new a b c -Y x y z",
+        SubCommand::New(New {
+            desc: vec!["a".to_string(), "b".to_string(), "c".to_string()],
+            by: vec![
+                ByName("x".to_string()),
+                ByName("y".to_string()),
+                ByName("z".to_string()),
+            ],
             ..Default::default()
         }),
     );
