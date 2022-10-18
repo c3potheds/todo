@@ -27,7 +27,7 @@ fn put_one_before() {
             keys: vec![ByName("a".to_string())],
             preposition: Prepositions {
                 before: vec![ByName("b".to_string())],
-                after: vec![],
+                ..Default::default()
             },
             include_done: false,
         }),
@@ -42,7 +42,7 @@ fn put_one_before_short() {
             keys: vec![ByName("a".to_string())],
             preposition: Prepositions {
                 before: vec![ByName("b".to_string())],
-                after: vec![],
+                ..Default::default()
             },
             include_done: false,
         }),
@@ -56,8 +56,8 @@ fn put_one_after() {
         SubCommand::Put(Put {
             keys: vec![ByName("a".to_string())],
             preposition: Prepositions {
-                before: vec![],
                 after: vec![ByName("b".to_string())],
+                ..Default::default()
             },
             include_done: false,
         }),
@@ -71,8 +71,8 @@ fn put_one_after_short() {
         SubCommand::Put(Put {
             keys: vec![ByName("a".to_string())],
             preposition: Prepositions {
-                before: vec![],
                 after: vec![ByName("b".to_string())],
+                ..Default::default()
             },
             include_done: false,
         }),
@@ -100,6 +100,7 @@ fn put_multiple_before_and_after() {
                     ByName("h".to_string()),
                     ByName("i".to_string()),
                 ],
+                ..Default::default()
             },
             include_done: false,
         }),
@@ -114,7 +115,7 @@ fn put_include_done_long() {
             keys: vec![ByName("a".to_string())],
             preposition: Prepositions {
                 before: vec![ByName("b".to_string())],
-                after: vec![],
+                ..Default::default()
             },
             include_done: true,
         }),
@@ -129,9 +130,49 @@ fn put_include_done_short() {
             keys: vec![ByName("a".to_string())],
             preposition: Prepositions {
                 before: vec![ByName("b".to_string())],
-                after: vec![],
+                ..Default::default()
             },
             include_done: true,
+        }),
+    );
+}
+
+#[test]
+fn put_by_long() {
+    expect_parses_into(
+        "todo put a --by b c",
+        SubCommand::Put(Put {
+            keys: vec![
+                ByName("a".to_string()),
+            ],
+            preposition: Prepositions {
+                by: vec![
+                    ByName("b".to_string()),
+                    ByName("c".to_string()),
+                ],
+                ..Default::default()
+            },
+            include_done: false,
+        }),
+    );
+}
+
+#[test]
+fn put_by_short() {
+    expect_parses_into(
+        "todo put a -Y b c",
+        SubCommand::Put(Put {
+            keys: vec![
+                ByName("a".to_string()),
+            ],
+            preposition: Prepositions {
+                by: vec![
+                    ByName("b".to_string()),
+                    ByName("c".to_string()),
+                ],
+                ..Default::default()
+            },
+            include_done: false,
         }),
     );
 }
