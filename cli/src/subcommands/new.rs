@@ -39,7 +39,7 @@ pub struct New {
     pub after: Vec<Key>,
 
     /// Put the new tasks 'by' these tasks.
-    /// 
+    ///
     /// The new tasks will have the same deps and adeps as these tasks.
     #[arg(long, short = 'Y', value_name = "keys", num_args = 1..)]
     pub by: Vec<Key>,
