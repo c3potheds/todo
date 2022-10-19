@@ -14,7 +14,4 @@ pub struct Find {
     /// Show completed tasks in search results.
     #[arg(long, short = 'd')]
     pub include_done: bool,
-    /// Search for tasks with the given tags.
-    #[arg(long, short = 't')]
-    pub tag: bool,
 }
