@@ -1,6 +1,6 @@
 use {
     super::testing::Fixture,
-    printing::{PrintableTask, Status::*},
+    printing::{Action::Select, PrintableTask, Status::*},
 };
 
 #[test]
@@ -10,7 +10,7 @@ fn find_with_exact_match() {
     fix.test("todo find b")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("b", 2, Incomplete))
+        .printed_task(&PrintableTask::new("b", 2, Incomplete).action(Select))
         .end();
 }
 
@@ -21,7 +21,7 @@ fn find_with_substring_match() {
     fix.test("todo find b")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("aba", 2, Incomplete))
+        .printed_task(&PrintableTask::new("aba", 2, Incomplete).action(Select))
         .end();
 }
 
@@ -32,9 +32,9 @@ fn find_with_multiple_matches() {
     fix.test("todo find a")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("aaa", 1, Incomplete))
-        .printed_task(&PrintableTask::new("aba", 2, Incomplete))
-        .printed_task(&PrintableTask::new("aca", 3, Incomplete))
+        .printed_task(&PrintableTask::new("aaa", 1, Incomplete).action(Select))
+        .printed_task(&PrintableTask::new("aba", 2, Incomplete).action(Select))
+        .printed_task(&PrintableTask::new("aca", 3, Incomplete).action(Select))
         .end();
 }
 
@@ -54,7 +54,7 @@ fn find_includes_complete_tasks() {
     fix.test("todo find b -d")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("aba", 0, Complete))
+        .printed_task(&PrintableTask::new("aba", 0, Complete).action(Select))
         .end();
 }
 
@@ -65,7 +65,7 @@ fn find_includes_blocked_tasks() {
     fix.test("todo find b")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("aba", 2, Blocked))
+        .printed_task(&PrintableTask::new("aba", 2, Blocked).action(Select))
         .end();
 }
 
@@ -76,8 +76,8 @@ fn find_case_insensitive() {
     fix.test("todo find aa")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("AAA", 1, Incomplete))
-        .printed_task(&PrintableTask::new("aaa", 2, Incomplete))
+        .printed_task(&PrintableTask::new("AAA", 1, Incomplete).action(Select))
+        .printed_task(&PrintableTask::new("aaa", 2, Incomplete).action(Select))
         .end();
 }
 
@@ -87,13 +87,15 @@ fn find_includes_matches_with_tag() {
     fix.test("todo new a b c d e f");
     fix.test("todo new g -p a b c --tag");
     // Because a, b, and c are tagged with 'g', they show up in 'find' results.
-    fix.test("todo find g -t")
+    fix.test("todo find g")
         .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("a", 4, Incomplete).tag("g"))
         .printed_task(&PrintableTask::new("b", 5, Incomplete).tag("g"))
         .printed_task(&PrintableTask::new("c", 6, Incomplete).tag("g"))
-        .printed_task(&PrintableTask::new("g", 7, Blocked).as_tag())
+        .printed_task(
+            &PrintableTask::new("g", 7, Blocked).as_tag().action(Select),
+        )
         .end();
 }
 
@@ -104,10 +106,14 @@ fn find_includes_matches_with_tag_excludes_complete() {
     fix.test("todo new g -p a b c --tag");
     // Although a, b, and c are tagged with 'g', they are complete, so they do
     // not show up in 'find' results by default.
-    fix.test("todo find g -t")
+    fix.test("todo find g")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("g", 1, Incomplete).as_tag())
+        .printed_task(
+            &PrintableTask::new("g", 1, Incomplete)
+                .as_tag()
+                .action(Select),
+        )
         .end();
 }
 
@@ -118,12 +124,35 @@ fn find_includes_matches_with_tag_include_complete() {
     fix.test("todo new g -p a b c --tag");
     // Since the '-d' flag is used, a, b, and c show up even though they are
     // complete.
-    fix.test("todo find g -d -t")
+    fix.test("todo find g -d")
         .modified(false)
         .validate()
         .printed_task(&PrintableTask::new("a", -5, Complete).tag("g"))
         .printed_task(&PrintableTask::new("b", -4, Complete).tag("g"))
         .printed_task(&PrintableTask::new("c", -3, Complete).tag("g"))
-        .printed_task(&PrintableTask::new("g", 1, Incomplete).as_tag())
+        .printed_task(
+            &PrintableTask::new("g", 1, Incomplete)
+                .as_tag()
+                .action(Select),
+        )
+        .end();
+}
+
+#[test]
+fn find_incomplete_matches_with_tag() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c d e f");
+    fix.test("todo new ggg -p a b c --tag");
+    fix.test("todo find gg")
+        .modified(false)
+        .validate()
+        .printed_task(&PrintableTask::new("a", 4, Incomplete).tag("ggg"))
+        .printed_task(&PrintableTask::new("b", 5, Incomplete).tag("ggg"))
+        .printed_task(&PrintableTask::new("c", 6, Incomplete).tag("ggg"))
+        .printed_task(
+            &PrintableTask::new("ggg", 7, Blocked)
+                .as_tag()
+                .action(Select),
+        )
         .end();
 }
