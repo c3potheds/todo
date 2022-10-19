@@ -142,14 +142,9 @@ fn put_by_long() {
     expect_parses_into(
         "todo put a --by b c",
         SubCommand::Put(Put {
-            keys: vec![
-                ByName("a".to_string()),
-            ],
+            keys: vec![ByName("a".to_string())],
             preposition: Prepositions {
-                by: vec![
-                    ByName("b".to_string()),
-                    ByName("c".to_string()),
-                ],
+                by: vec![ByName("b".to_string()), ByName("c".to_string())],
                 ..Default::default()
             },
             include_done: false,
@@ -162,14 +157,9 @@ fn put_by_short() {
     expect_parses_into(
         "todo put a -Y b c",
         SubCommand::Put(Put {
-            keys: vec![
-                ByName("a".to_string()),
-            ],
+            keys: vec![ByName("a".to_string())],
             preposition: Prepositions {
-                by: vec![
-                    ByName("b".to_string()),
-                    ByName("c".to_string()),
-                ],
+                by: vec![ByName("b".to_string()), ByName("c".to_string())],
                 ..Default::default()
             },
             include_done: false,

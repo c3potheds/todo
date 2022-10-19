@@ -9,7 +9,7 @@ pub struct Prepositions {
     #[arg(long, short = 'A', num_args = 1..)]
     pub after: Vec<Key>,
     /// Put the selected tasks 'by' these tasks.
-    /// 
+    ///
     /// The selected tasks will have the same deps and adeps as these tasks.
     #[arg(long, short = 'Y', num_args = 1..)]
     pub by: Vec<Key>,
@@ -34,11 +34,11 @@ pub struct Prepositions {
 /// If you put task "t" after b, the result is:
 ///
 ///   a <- b <- t <- c
-/// 
+///
 /// If you put task 't' by b, the result is:
 ///
 ///   a <- (b, t) <- c
-/// 
+///
 /// ... where (b, t) represents two tasks, both of which depend on a and are
 /// depended on by c.
 #[derive(Debug, PartialEq, Eq, Parser)]
