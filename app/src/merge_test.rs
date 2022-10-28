@@ -1,10 +1,10 @@
 #![allow(clippy::zero_prefixed_literal)]
 
 use {
+    super::testing::task,
     super::testing::Fixture,
     printing::{
-        Action::*, BriefPrintableTask, Plicit::*, PrintableError,
-        PrintableTask, Status::*,
+        Action::*, BriefPrintableTask, Plicit::*, PrintableError, Status::*,
     },
     testing::ymdhms,
 };
@@ -16,7 +16,7 @@ fn merge_two_tasks() {
     fix.test("todo merge a b --into ab")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("ab", 2, Incomplete).action(Select))
+        .printed_task(&task("ab", 2, Incomplete).action(Select))
         .end();
 }
 
@@ -27,7 +27,7 @@ fn merge_three_tasks() {
     fix.test("todo merge a b c --into abc")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("abc", 1, Incomplete).action(Select))
+        .printed_task(&task("abc", 1, Incomplete).action(Select))
         .end();
 }
 
@@ -38,12 +38,8 @@ fn merge_preserves_deps() {
     fix.test("todo merge b c --into bc")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 1))
-        .printed_task(
-            &PrintableTask::new("bc", 2, Blocked)
-                .action(Select)
-                .deps_stats(1, 1),
-        )
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(1, 1))
+        .printed_task(&task("bc", 2, Blocked).action(Select).deps_stats(1, 1))
         .end();
 }
 
@@ -55,11 +51,9 @@ fn merge_preserves_adeps() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("ab", 1, Incomplete)
-                .action(Select)
-                .adeps_stats(1, 1),
+            &task("ab", 1, Incomplete).action(Select).adeps_stats(1, 1),
         )
-        .printed_task(&PrintableTask::new("c", 2, Blocked).deps_stats(1, 1))
+        .printed_task(&task("c", 2, Blocked).deps_stats(1, 1))
         .end();
 }
 
@@ -70,13 +64,9 @@ fn merge_preserves_deps_and_adeps() {
     fix.test("todo merge b c d --into bcd")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 2))
-        .printed_task(
-            &PrintableTask::new("bcd", 2, Blocked)
-                .action(Select)
-                .deps_stats(1, 1),
-        )
-        .printed_task(&PrintableTask::new("e", 3, Blocked).deps_stats(1, 2))
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(1, 2))
+        .printed_task(&task("bcd", 2, Blocked).action(Select).deps_stats(1, 1))
+        .printed_task(&task("e", 3, Blocked).deps_stats(1, 2))
         .end();
 }
 
@@ -92,7 +82,7 @@ fn merged_task_has_min_due_date_of_sources() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("abc", 1, Incomplete)
+            &task("abc", 1, Incomplete)
                 .action(Select)
                 .due_date(Explicit(in_10_min)),
         )
@@ -110,7 +100,7 @@ fn merged_task_has_max_priority_of_sources() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("abcd", 1, Incomplete)
+            &task("abcd", 1, Incomplete)
                 .action(Select)
                 .priority(Explicit(2)),
         )
@@ -158,13 +148,9 @@ fn merge_inside_chain() {
     fix.test("todo merge c d --into cd")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("b", 2, Blocked).deps_stats(1, 1))
-        .printed_task(
-            &PrintableTask::new("cd", 3, Blocked)
-                .action(Select)
-                .deps_stats(1, 2),
-        )
-        .printed_task(&PrintableTask::new("e", 4, Blocked).deps_stats(1, 3))
+        .printed_task(&task("b", 2, Blocked).deps_stats(1, 1))
+        .printed_task(&task("cd", 3, Blocked).action(Select).deps_stats(1, 2))
+        .printed_task(&task("e", 4, Blocked).deps_stats(1, 3))
         .end();
 }
 
@@ -178,7 +164,7 @@ fn merge_task_with_snoozed_task() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("ab", 1, Blocked)
+            &task("ab", 1, Blocked)
                 .action(Select)
                 .start_date(ymdhms(2021, 05, 29, 00, 00, 00)),
         )
@@ -197,7 +183,7 @@ fn merge_snoozed_tasks() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("abc", 1, Blocked)
+            &task("abc", 1, Blocked)
                 .action(Select)
                 .start_date(ymdhms(2021, 05, 28, 19, 00, 00)),
         )
@@ -211,11 +197,7 @@ fn merge_tags_default() {
     fix.test("todo merge a b c --into abc")
         .modified(true)
         .validate()
-        .printed_task(
-            &PrintableTask::new("abc", 1, Incomplete)
-                .action(Select)
-                .as_tag(),
-        )
+        .printed_task(&task("abc", 1, Incomplete).action(Select).as_tag())
         .end();
 }
 
@@ -226,11 +208,7 @@ fn merge_tags_into_tag() {
     fix.test("todo merge a b c --into abc --tag true")
         .modified(true)
         .validate()
-        .printed_task(
-            &PrintableTask::new("abc", 1, Incomplete)
-                .action(Select)
-                .as_tag(),
-        )
+        .printed_task(&task("abc", 1, Incomplete).action(Select).as_tag())
         .end();
 }
 
@@ -241,11 +219,7 @@ fn merge_tasks_into_tag() {
     fix.test("todo merge a b c --into abc --tag true")
         .modified(true)
         .validate()
-        .printed_task(
-            &PrintableTask::new("abc", 1, Incomplete)
-                .action(Select)
-                .as_tag(),
-        )
+        .printed_task(&task("abc", 1, Incomplete).action(Select).as_tag())
         .end();
 }
 
@@ -256,7 +230,7 @@ fn merge_tags_into_task() {
     fix.test("todo merge a b c --into abc --tag false")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("abc", 1, Incomplete).action(Select))
+        .printed_task(&task("abc", 1, Incomplete).action(Select))
         .end();
 }
 
@@ -269,17 +243,13 @@ fn show_tags_for_merged_task() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("ab", 1, Incomplete)
+            &task("ab", 1, Incomplete)
                 .action(Select)
                 .as_tag()
                 .tag("c")
                 .adeps_stats(1, 1),
         )
-        .printed_task(
-            &PrintableTask::new("c", 2, Blocked)
-                .as_tag()
-                .deps_stats(1, 1),
-        )
+        .printed_task(&task("c", 2, Blocked).as_tag().deps_stats(1, 1))
         .end();
 }
 
@@ -290,7 +260,7 @@ fn trim_leading_whitespace_from_desc() {
     fix.test("todo merge a b c --into '  abc'")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("abc", 1, Incomplete).action(Select))
+        .printed_task(&task("abc", 1, Incomplete).action(Select))
         .end();
 }
 
@@ -301,7 +271,7 @@ fn trim_trailing_whitespace_from_desc() {
     fix.test("todo merge a b c --into 'abc  '")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("abc", 1, Incomplete).action(Select))
+        .printed_task(&task("abc", 1, Incomplete).action(Select))
         .end();
 }
 
@@ -312,6 +282,6 @@ fn trim_leading_and_trailing_whitespace_from_desc() {
     fix.test("todo merge a b c --into '  abc  '")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("abc", 1, Incomplete).action(Select))
+        .printed_task(&task("abc", 1, Incomplete).action(Select))
         .end();
 }

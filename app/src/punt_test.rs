@@ -1,6 +1,7 @@
 use {
+    super::testing::task,
     super::testing::Fixture,
-    printing::{Action::*, PrintableTask, Status::*},
+    printing::{Action::*, Status::*},
 };
 
 #[test]
@@ -10,7 +11,7 @@ fn punt_first_task() {
     fix.test("todo punt 1")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 3, Incomplete).action(Punt))
+        .printed_task(&task("a", 3, Incomplete).action(Punt))
         .end();
 }
 
@@ -24,11 +25,7 @@ fn punt_blocked_task() {
         // need to mark the session as modified.
         // .modified(false)
         .validate()
-        .printed_task(
-            &PrintableTask::new("b", 3, Blocked)
-                .action(Punt)
-                .deps_stats(1, 1),
-        )
+        .printed_task(&task("b", 3, Blocked).action(Punt).deps_stats(1, 1))
         .end();
 }
 
@@ -39,6 +36,6 @@ fn punt_by_name() {
     fix.test("todo punt a")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 3, Incomplete).action(Punt))
+        .printed_task(&task("a", 3, Incomplete).action(Punt))
         .end();
 }

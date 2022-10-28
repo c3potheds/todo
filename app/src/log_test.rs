@@ -1,9 +1,10 @@
 #![allow(clippy::zero_prefixed_literal)]
 
 use {
+    super::testing::task,
     super::testing::Fixture,
     chrono::{Local, TimeZone, Utc},
-    printing::{LogDate::*, PrintableTask, Status::*},
+    printing::{LogDate::*, Status::*},
 };
 
 #[test]
@@ -22,8 +23,7 @@ fn log_after_single_task_completed() {
         .modified(false)
         .validate()
         .printed_task(
-            &PrintableTask::new("b", 0, Complete)
-                .log_date(YearMonthDay(2021, 03, 26)),
+            &task("b", 0, Complete).log_date(YearMonthDay(2021, 03, 26)),
         )
         .end();
 }
@@ -38,11 +38,10 @@ fn log_after_multiple_tasks_completed() {
         .modified(false)
         .validate()
         .printed_task(
-            &PrintableTask::new("c", 0, Complete)
-                .log_date(YearMonthDay(2021, 03, 26)),
+            &task("c", 0, Complete).log_date(YearMonthDay(2021, 03, 26)),
         )
         .printed_task(
-            &PrintableTask::new("a", -1, Complete)
+            &task("a", -1, Complete)
                 // Don't repeat the log date if it's the same.
                 .log_date(Invisible),
         )
@@ -67,18 +66,12 @@ fn log_shows_date_when_it_changes() {
         .modified(false)
         .validate()
         .printed_task(
-            &PrintableTask::new("d", 0, Complete)
-                .log_date(YearMonthDay(2021, 01, 02)),
+            &task("d", 0, Complete).log_date(YearMonthDay(2021, 01, 02)),
         )
+        .printed_task(&task("c", -1, Complete).log_date(Invisible))
         .printed_task(
-            &PrintableTask::new("c", -1, Complete).log_date(Invisible),
+            &task("b", -2, Complete).log_date(YearMonthDay(2021, 01, 01)),
         )
-        .printed_task(
-            &PrintableTask::new("b", -2, Complete)
-                .log_date(YearMonthDay(2021, 01, 01)),
-        )
-        .printed_task(
-            &PrintableTask::new("a", -3, Complete).log_date(Invisible),
-        )
+        .printed_task(&task("a", -3, Complete).log_date(Invisible))
         .end();
 }

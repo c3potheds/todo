@@ -1,11 +1,12 @@
 #![allow(clippy::zero_prefixed_literal)]
 
 use {
+    super::testing::task,
     super::util::*,
     chrono::Duration,
     lookup_key::Key,
     model::{CheckOptions, NewOptions, TodoList},
-    printing::{Action::*, Plicit::*, PrintableTask, Status::*},
+    printing::{Action::*, Plicit::*, Status::*},
     testing::ymdhms,
 };
 
@@ -14,7 +15,7 @@ fn format_task_basic() {
     let mut list = TodoList::default();
     let a = list.add("a");
     let actual = format_task(&list, a);
-    let expected = PrintableTask::new("a", 1, Incomplete);
+    let expected = task("a", 1, Incomplete);
     assert_eq!(actual, expected);
 }
 
@@ -23,7 +24,7 @@ fn format_task_with_action() {
     let mut list = TodoList::default();
     let a = list.add("a");
     let actual = format_task(&list, a).action(Punt);
-    let expected = PrintableTask::new("a", 1, Incomplete).action(Punt);
+    let expected = task("a", 1, Incomplete).action(Punt);
     assert_eq!(actual, expected);
 }
 
@@ -32,7 +33,7 @@ fn format_task_with_priority() {
     let mut list = TodoList::default();
     let a = list.add(NewOptions::new().desc("a").priority(1));
     let actual = format_task(&list, a);
-    let expected = PrintableTask::new("a", 1, Incomplete).priority(Explicit(1));
+    let expected = task("a", 1, Incomplete).priority(Explicit(1));
     assert_eq!(actual, expected);
 }
 
@@ -41,7 +42,7 @@ fn format_task_with_zero_priority() {
     let mut list = TodoList::default();
     let a = list.add(NewOptions::new().desc("a").priority(0));
     let actual = format_task(&list, a);
-    let expected = PrintableTask::new("a", 1, Incomplete);
+    let expected = task("a", 1, Incomplete);
     assert_eq!(actual, expected);
 }
 
@@ -57,7 +58,7 @@ fn format_task_with_budget() {
             .due_date(due),
     );
     let actual = format_task(&list, a);
-    let expected = PrintableTask::new("a", 1, Incomplete)
+    let expected = task("a", 1, Incomplete)
         .due_date(Explicit(due))
         .budget(Duration::hours(10));
     assert_eq!(actual, expected);
@@ -72,7 +73,7 @@ fn format_incomplete_task_with_adep_stats() {
     list.block(b).on(a).unwrap();
     list.block(c).on(b).unwrap();
     let actual = format_task(&list, a);
-    let expected = PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 2);
+    let expected = task("a", 1, Incomplete).adeps_stats(1, 2);
     assert_eq!(actual, expected);
 }
 
@@ -85,7 +86,7 @@ fn format_incomplete_task_with_all_all_adeps_unlockable() {
     list.block(b).on(a).unwrap();
     list.block(c).on(a).unwrap();
     let actual = format_task(&list, a);
-    let expected = PrintableTask::new("a", 1, Incomplete).adeps_stats(2, 2);
+    let expected = task("a", 1, Incomplete).adeps_stats(2, 2);
     assert_eq!(actual, expected);
 }
 
@@ -144,7 +145,7 @@ fn format_incomplete_task_with_long_adep_chain() {
     list.block(y).on(x).unwrap();
     list.block(z).on(y).unwrap();
     let actual = format_task(&list, a);
-    let expected = PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 25);
+    let expected = task("a", 1, Incomplete).adeps_stats(1, 25);
     assert_eq!(actual, expected);
 }
 
@@ -157,7 +158,7 @@ fn format_blocked_task_with_two_deps() {
     list.block(c).on(a).unwrap();
     list.block(c).on(b).unwrap();
     let actual = format_task(&list, c);
-    let expected = PrintableTask::new("c", 3, Blocked).deps_stats(2, 2);
+    let expected = task("c", 3, Blocked).deps_stats(2, 2);
     assert_eq!(actual, expected);
 }
 
@@ -168,7 +169,7 @@ fn format_blocked_task_with_one_dep() {
     let b = list.add("b");
     list.block(b).on(a).unwrap();
     let actual = format_task(&list, b);
-    let expected = PrintableTask::new("b", 2, Blocked).deps_stats(1, 1);
+    let expected = task("b", 2, Blocked).deps_stats(1, 1);
     assert_eq!(actual, expected);
 }
 
@@ -182,7 +183,7 @@ fn format_blocked_task_with_complete_deps() {
     list.block(c).on(b).unwrap();
     list.check(a).unwrap();
     let actual = format_task(&list, c);
-    let expected = PrintableTask::new("c", 2, Blocked).deps_stats(1, 2);
+    let expected = task("c", 2, Blocked).deps_stats(1, 2);
     assert_eq!(actual, expected);
 }
 
@@ -195,7 +196,7 @@ fn format_blocked_task_with_blocked_deps() {
     list.block(b).on(a).unwrap();
     list.block(c).on(b).unwrap();
     let actual = format_task(&list, c);
-    let expected = PrintableTask::new("c", 3, Blocked).deps_stats(1, 2);
+    let expected = task("c", 3, Blocked).deps_stats(1, 2);
     assert_eq!(actual, expected);
 }
 
@@ -208,7 +209,7 @@ fn format_blocked_task_with_deps_and_adeps() {
     list.block(b).on(a).unwrap();
     list.block(c).on(b).unwrap();
     let actual = format_task(&list, b);
-    let expected = PrintableTask::new("b", 2, Blocked).deps_stats(1, 1);
+    let expected = task("b", 2, Blocked).deps_stats(1, 1);
     assert_eq!(actual, expected);
 }
 
@@ -224,7 +225,7 @@ fn format_complete_task_does_not_show_deps_or_adeps() {
     list.check(b).unwrap();
     list.check(c).unwrap();
     let actual = format_task(&list, b);
-    let expected = PrintableTask::new("b", -1, Complete);
+    let expected = task("b", -1, Complete);
     assert_eq!(actual, expected);
 }
 
@@ -236,7 +237,7 @@ fn format_incomplete_task_does_not_show_deps() {
     list.block(b).on(a).unwrap();
     list.check(a).unwrap();
     let actual = format_task(&list, b);
-    let expected = PrintableTask::new("b", 1, Incomplete);
+    let expected = task("b", 1, Incomplete);
     assert_eq!(actual, expected);
 }
 
@@ -252,8 +253,8 @@ fn format_complete_task_with_punctuality_early() {
     );
     list.check(CheckOptions { id: a, now }).unwrap();
     let actual = format_task(&list, a);
-    let expected = PrintableTask::new("a", 0, Complete)
-        .punctuality(-chrono::Duration::hours(2));
+    let expected =
+        task("a", 0, Complete).punctuality(-chrono::Duration::hours(2));
     assert_eq!(actual, expected);
 }
 
@@ -269,8 +270,8 @@ fn format_complete_task_with_punctuality_late() {
     );
     list.check(CheckOptions { id: a, now }).unwrap();
     let actual = format_task(&list, a);
-    let expected = PrintableTask::new("a", 0, Complete)
-        .punctuality(chrono::Duration::days(3));
+    let expected =
+        task("a", 0, Complete).punctuality(chrono::Duration::days(3));
     assert_eq!(actual, expected);
 }
 
@@ -279,7 +280,7 @@ fn format_tag() {
     let mut list = TodoList::default();
     let a = list.add(NewOptions::new().desc("a").as_tag());
     let actual = format_task(&list, a);
-    let expected = PrintableTask::new("a", 1, Incomplete).as_tag();
+    let expected = task("a", 1, Incomplete).as_tag();
     assert_eq!(actual, expected);
 }
 
@@ -292,10 +293,7 @@ fn format_task_with_implicit_tags() {
     list.block(a).on(c).unwrap();
     list.block(b).on(c).unwrap();
     let actual = format_task(&list, c);
-    let expected = PrintableTask::new("c", 1, Incomplete)
-        .adeps_stats(2, 2)
-        .tag("a")
-        .tag("b");
+    let expected = task("c", 1, Incomplete).adeps_stats(2, 2).tag("a").tag("b");
     assert_eq!(actual, expected);
 }
 
@@ -308,7 +306,7 @@ fn format_tag_with_implicit_tags() {
     list.block(a).on(c).unwrap();
     list.block(b).on(c).unwrap();
     let actual = format_task(&list, c);
-    let expected = PrintableTask::new("c", 1, Incomplete)
+    let expected = task("c", 1, Incomplete)
         .adeps_stats(2, 2)
         .tag("a")
         .tag("b")

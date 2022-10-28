@@ -1,10 +1,11 @@
 #![allow(clippy::zero_prefixed_literal)]
 
 use {
+    super::testing::task,
     super::testing::Fixture,
     printing::{
         Action::*, BriefPrintableTask, Plicit::Explicit, PrintableError,
-        PrintableTask, PrintableWarning, Status::*,
+        PrintableWarning, Status::*,
     },
     testing::ymdhms,
 };
@@ -31,7 +32,7 @@ fn snooze_one_task() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 2, Blocked)
+            &task("a", 2, Blocked)
                 .start_date(ymdhms(2021, 05, 28, 00, 00, 00))
                 .action(Snooze),
         )
@@ -47,17 +48,17 @@ fn snooze_multiple_tasks() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 3, Blocked)
+            &task("a", 3, Blocked)
                 .start_date(ymdhms(2021, 05, 29, 00, 00, 00))
                 .action(Snooze),
         )
         .printed_task(
-            &PrintableTask::new("c", 4, Blocked)
+            &task("c", 4, Blocked)
                 .start_date(ymdhms(2021, 05, 29, 00, 00, 00))
                 .action(Snooze),
         )
         .printed_task(
-            &PrintableTask::new("e", 5, Blocked)
+            &task("e", 5, Blocked)
                 .start_date(ymdhms(2021, 05, 29, 00, 00, 00))
                 .action(Snooze),
         )
@@ -73,7 +74,7 @@ fn snooze_snoozed_task() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Blocked)
+            &task("a", 1, Blocked)
                 .start_date(ymdhms(2021, 05, 27, 14, 00, 00))
                 .action(Snooze),
         )
@@ -104,7 +105,7 @@ fn snooze_blocked_task_above_layer_1() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("c", 3, Blocked)
+            &task("c", 3, Blocked)
                 .start_date(ymdhms(2021, 05, 28, 00, 00, 00))
                 .action(Snooze)
                 .deps_stats(1, 2),
@@ -126,7 +127,7 @@ fn snooze_after_due_date() {
             snooze_date: ymdhms(2022, 10, 04, 00, 00, 00),
         })
         .printed_task(
-            &PrintableTask::new("a", 1, Blocked)
+            &task("a", 1, Blocked)
                 .start_date(ymdhms(2022, 10, 04, 00, 00, 00))
                 .due_date(Explicit(ymdhms(2022, 10, 03, 23, 59, 59)))
                 .action(Snooze),

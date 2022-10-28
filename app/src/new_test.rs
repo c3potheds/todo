@@ -1,11 +1,11 @@
 #![allow(clippy::zero_prefixed_literal)]
 
 use {
+    super::testing::task,
     super::testing::Fixture,
     chrono::Duration,
     printing::{
-        Action::*, BriefPrintableTask, Plicit::*, PrintableError,
-        PrintableTask, Status::*,
+        Action::*, BriefPrintableTask, Plicit::*, PrintableError, Status::*,
     },
     testing::ymdhms,
 };
@@ -16,7 +16,7 @@ fn new_one_task() {
     fix.test("todo new a")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(New))
+        .printed_task(&task("a", 1, Incomplete).action(New))
         .end();
 }
 
@@ -26,9 +26,9 @@ fn new_multiple_tasks() {
     fix.test("todo new a b c")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(New))
-        .printed_task(&PrintableTask::new("b", 2, Incomplete).action(New))
-        .printed_task(&PrintableTask::new("c", 3, Incomplete).action(New))
+        .printed_task(&task("a", 1, Incomplete).action(New))
+        .printed_task(&task("b", 2, Incomplete).action(New))
+        .printed_task(&task("c", 3, Incomplete).action(New))
         .end();
 }
 
@@ -40,8 +40,8 @@ fn new_block_on_complete_task() {
     fix.test("todo new b -p 0")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 0, Complete))
-        .printed_task(&PrintableTask::new("b", 1, Incomplete).action(New))
+        .printed_task(&task("a", 0, Complete))
+        .printed_task(&task("b", 1, Incomplete).action(New))
         .end();
 }
 
@@ -53,12 +53,8 @@ fn new_blocking_complete_task() {
     fix.test("todo new b -b 0")
         .modified(true)
         .validate()
-        .printed_task(
-            &PrintableTask::new("b", 1, Incomplete)
-                .action(New)
-                .adeps_stats(1, 1),
-        )
-        .printed_task(&PrintableTask::new("a", 2, Blocked).deps_stats(1, 1))
+        .printed_task(&task("b", 1, Incomplete).action(New).adeps_stats(1, 1))
+        .printed_task(&task("a", 2, Blocked).deps_stats(1, 1))
         .end();
 }
 
@@ -69,13 +65,9 @@ fn new_by_name() {
     fix.test("todo new d -p c -b a")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("c", 2, Incomplete).adeps_stats(1, 2))
-        .printed_task(
-            &PrintableTask::new("d", 3, Blocked)
-                .action(New)
-                .deps_stats(1, 1),
-        )
-        .printed_task(&PrintableTask::new("a", 4, Blocked).deps_stats(1, 2))
+        .printed_task(&task("c", 2, Incomplete).adeps_stats(1, 2))
+        .printed_task(&task("d", 3, Blocked).action(New).deps_stats(1, 1))
+        .printed_task(&task("a", 4, Blocked).deps_stats(1, 2))
         .end();
 }
 
@@ -85,21 +77,9 @@ fn new_chain_three() {
     fix.test("todo new a b c --chain")
         .modified(true)
         .validate()
-        .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
-                .action(New)
-                .adeps_stats(1, 2),
-        )
-        .printed_task(
-            &PrintableTask::new("b", 2, Blocked)
-                .action(New)
-                .deps_stats(1, 1),
-        )
-        .printed_task(
-            &PrintableTask::new("c", 3, Blocked)
-                .action(New)
-                .deps_stats(1, 2),
-        )
+        .printed_task(&task("a", 1, Incomplete).action(New).adeps_stats(1, 2))
+        .printed_task(&task("b", 2, Blocked).action(New).deps_stats(1, 1))
+        .printed_task(&task("c", 3, Blocked).action(New).deps_stats(1, 2))
         .end();
 }
 
@@ -110,12 +90,8 @@ fn new_one_blocking_one() {
     fix.test("todo new b --blocking 1")
         .modified(true)
         .validate()
-        .printed_task(
-            &PrintableTask::new("b", 1, Incomplete)
-                .action(New)
-                .adeps_stats(1, 1),
-        )
-        .printed_task(&PrintableTask::new("a", 2, Blocked).deps_stats(1, 1))
+        .printed_task(&task("b", 1, Incomplete).action(New).adeps_stats(1, 1))
+        .printed_task(&task("a", 2, Blocked).deps_stats(1, 1))
         .end();
 }
 
@@ -126,12 +102,8 @@ fn new_blocked_by_one() {
     fix.test("todo new b --blocked-by 1")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 1))
-        .printed_task(
-            &PrintableTask::new("b", 2, Blocked)
-                .action(New)
-                .deps_stats(1, 1),
-        )
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(1, 1))
+        .printed_task(&task("b", 2, Blocked).action(New).deps_stats(1, 1))
         .end();
 }
 
@@ -142,12 +114,8 @@ fn new_one_blocking_one_short() {
     fix.test("todo new b -b 1")
         .modified(true)
         .validate()
-        .printed_task(
-            &PrintableTask::new("b", 1, Incomplete)
-                .action(New)
-                .adeps_stats(1, 1),
-        )
-        .printed_task(&PrintableTask::new("a", 2, Blocked).deps_stats(1, 1))
+        .printed_task(&task("b", 1, Incomplete).action(New).adeps_stats(1, 1))
+        .printed_task(&task("a", 2, Blocked).deps_stats(1, 1))
         .end();
 }
 
@@ -158,12 +126,8 @@ fn new_blocked_by_one_short() {
     fix.test("todo new b -p 1")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 1))
-        .printed_task(
-            &PrintableTask::new("b", 2, Blocked)
-                .action(New)
-                .deps_stats(1, 1),
-        )
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(1, 1))
+        .printed_task(&task("b", 2, Blocked).action(New).deps_stats(1, 1))
         .end();
 }
 
@@ -174,14 +138,10 @@ fn new_blocking_multiple() {
     fix.test("todo new d -b 1 2 3")
         .modified(true)
         .validate()
-        .printed_task(
-            &PrintableTask::new("d", 1, Incomplete)
-                .action(New)
-                .adeps_stats(3, 3),
-        )
-        .printed_task(&PrintableTask::new("a", 2, Blocked).deps_stats(1, 1))
-        .printed_task(&PrintableTask::new("b", 3, Blocked).deps_stats(1, 1))
-        .printed_task(&PrintableTask::new("c", 4, Blocked).deps_stats(1, 1))
+        .printed_task(&task("d", 1, Incomplete).action(New).adeps_stats(3, 3))
+        .printed_task(&task("a", 2, Blocked).deps_stats(1, 1))
+        .printed_task(&task("b", 3, Blocked).deps_stats(1, 1))
+        .printed_task(&task("c", 4, Blocked).deps_stats(1, 1))
         .end();
 }
 
@@ -192,13 +152,9 @@ fn new_blocking_and_blocked_by() {
     fix.test("todo new c -p 1 -b 2")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 2))
-        .printed_task(
-            &PrintableTask::new("c", 2, Blocked)
-                .action(New)
-                .deps_stats(1, 1),
-        )
-        .printed_task(&PrintableTask::new("b", 3, Blocked).deps_stats(1, 2))
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(1, 2))
+        .printed_task(&task("c", 2, Blocked).action(New).deps_stats(1, 1))
+        .printed_task(&task("b", 3, Blocked).deps_stats(1, 2))
         .end();
 }
 
@@ -209,13 +165,9 @@ fn new_in_between_blocking_pair() {
     fix.test("todo new c -p 1 -b 2")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 2))
-        .printed_task(
-            &PrintableTask::new("c", 2, Blocked)
-                .action(New)
-                .deps_stats(1, 1),
-        )
-        .printed_task(&PrintableTask::new("b", 3, Blocked).deps_stats(1, 2))
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(1, 2))
+        .printed_task(&task("c", 2, Blocked).action(New).deps_stats(1, 1))
+        .printed_task(&task("b", 3, Blocked).deps_stats(1, 2))
         .end();
 }
 
@@ -226,13 +178,9 @@ fn new_one_before_one() {
     fix.test("todo new d --before b")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 3))
-        .printed_task(
-            &PrintableTask::new("d", 2, Blocked)
-                .action(New)
-                .deps_stats(1, 1),
-        )
-        .printed_task(&PrintableTask::new("b", 3, Blocked).deps_stats(1, 2))
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(1, 3))
+        .printed_task(&task("d", 2, Blocked).action(New).deps_stats(1, 1))
+        .printed_task(&task("b", 3, Blocked).deps_stats(1, 2))
         .end();
 }
 
@@ -243,23 +191,11 @@ fn new_three_before_one() {
     fix.test("todo new d e f --before b")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(3, 5))
-        .printed_task(
-            &PrintableTask::new("d", 2, Blocked)
-                .action(New)
-                .deps_stats(1, 1),
-        )
-        .printed_task(
-            &PrintableTask::new("e", 3, Blocked)
-                .action(New)
-                .deps_stats(1, 1),
-        )
-        .printed_task(
-            &PrintableTask::new("f", 4, Blocked)
-                .action(New)
-                .deps_stats(1, 1),
-        )
-        .printed_task(&PrintableTask::new("b", 5, Blocked).deps_stats(1, 4))
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(3, 5))
+        .printed_task(&task("d", 2, Blocked).action(New).deps_stats(1, 1))
+        .printed_task(&task("e", 3, Blocked).action(New).deps_stats(1, 1))
+        .printed_task(&task("f", 4, Blocked).action(New).deps_stats(1, 1))
+        .printed_task(&task("b", 5, Blocked).deps_stats(1, 4))
         .end();
 }
 
@@ -271,15 +207,11 @@ fn new_one_before_three() {
     fix.test("todo new e --before b c d")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 4))
-        .printed_task(
-            &PrintableTask::new("e", 2, Blocked)
-                .action(New)
-                .deps_stats(1, 1),
-        )
-        .printed_task(&PrintableTask::new("b", 3, Blocked).deps_stats(1, 2))
-        .printed_task(&PrintableTask::new("c", 4, Blocked).deps_stats(1, 2))
-        .printed_task(&PrintableTask::new("d", 5, Blocked).deps_stats(1, 2))
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(1, 4))
+        .printed_task(&task("e", 2, Blocked).action(New).deps_stats(1, 1))
+        .printed_task(&task("b", 3, Blocked).deps_stats(1, 2))
+        .printed_task(&task("c", 4, Blocked).deps_stats(1, 2))
+        .printed_task(&task("d", 5, Blocked).deps_stats(1, 2))
         .end();
 }
 
@@ -290,13 +222,9 @@ fn new_one_after_one() {
     fix.test("todo new d --after b")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("b", 2, Blocked).deps_stats(1, 1))
-        .printed_task(
-            &PrintableTask::new("d", 3, Blocked)
-                .action(New)
-                .deps_stats(1, 2),
-        )
-        .printed_task(&PrintableTask::new("c", 4, Blocked).deps_stats(1, 3))
+        .printed_task(&task("b", 2, Blocked).deps_stats(1, 1))
+        .printed_task(&task("d", 3, Blocked).action(New).deps_stats(1, 2))
+        .printed_task(&task("c", 4, Blocked).deps_stats(1, 3))
         .end();
 }
 
@@ -307,23 +235,11 @@ fn new_three_after_one() {
     fix.test("todo new d e f --after b")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("b", 2, Blocked).deps_stats(1, 1))
-        .printed_task(
-            &PrintableTask::new("d", 3, Blocked)
-                .action(New)
-                .deps_stats(1, 2),
-        )
-        .printed_task(
-            &PrintableTask::new("e", 4, Blocked)
-                .action(New)
-                .deps_stats(1, 2),
-        )
-        .printed_task(
-            &PrintableTask::new("f", 5, Blocked)
-                .action(New)
-                .deps_stats(1, 2),
-        )
-        .printed_task(&PrintableTask::new("c", 6, Blocked).deps_stats(1, 5))
+        .printed_task(&task("b", 2, Blocked).deps_stats(1, 1))
+        .printed_task(&task("d", 3, Blocked).action(New).deps_stats(1, 2))
+        .printed_task(&task("e", 4, Blocked).action(New).deps_stats(1, 2))
+        .printed_task(&task("f", 5, Blocked).action(New).deps_stats(1, 2))
+        .printed_task(&task("c", 6, Blocked).deps_stats(1, 5))
         .end();
 }
 
@@ -334,15 +250,11 @@ fn new_one_after_three() {
     fix.test("todo new d -p a b c");
     fix.test("todo new e --after a b c")
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(0, 2))
-        .printed_task(&PrintableTask::new("b", 2, Incomplete).adeps_stats(0, 2))
-        .printed_task(&PrintableTask::new("c", 3, Incomplete).adeps_stats(0, 2))
-        .printed_task(
-            &PrintableTask::new("e", 4, Blocked)
-                .action(New)
-                .deps_stats(3, 3),
-        )
-        .printed_task(&PrintableTask::new("d", 5, Blocked).deps_stats(3, 4))
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(0, 2))
+        .printed_task(&task("b", 2, Incomplete).adeps_stats(0, 2))
+        .printed_task(&task("c", 3, Incomplete).adeps_stats(0, 2))
+        .printed_task(&task("e", 4, Blocked).action(New).deps_stats(3, 3))
+        .printed_task(&task("d", 5, Blocked).deps_stats(3, 4))
         .end();
 }
 
@@ -353,13 +265,9 @@ fn new_one_by_one() {
     fix.test("todo new d --by b")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(2, 3))
-        .printed_task(
-            &PrintableTask::new("d", 3, Blocked)
-                .action(New)
-                .deps_stats(1, 1),
-        )
-        .printed_task(&PrintableTask::new("c", 4, Blocked).deps_stats(1, 3))
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(2, 3))
+        .printed_task(&task("d", 3, Blocked).action(New).deps_stats(1, 1))
+        .printed_task(&task("c", 4, Blocked).deps_stats(1, 3))
         .end();
 }
 
@@ -370,23 +278,11 @@ fn new_three_by_one() {
     fix.test("todo new d e f --by b")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(4, 5))
-        .printed_task(
-            &PrintableTask::new("d", 3, Blocked)
-                .action(New)
-                .deps_stats(1, 1),
-        )
-        .printed_task(
-            &PrintableTask::new("e", 4, Blocked)
-                .action(New)
-                .deps_stats(1, 1),
-        )
-        .printed_task(
-            &PrintableTask::new("f", 5, Blocked)
-                .action(New)
-                .deps_stats(1, 1),
-        )
-        .printed_task(&PrintableTask::new("c", 6, Blocked).deps_stats(1, 5))
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(4, 5))
+        .printed_task(&task("d", 3, Blocked).action(New).deps_stats(1, 1))
+        .printed_task(&task("e", 4, Blocked).action(New).deps_stats(1, 1))
+        .printed_task(&task("f", 5, Blocked).action(New).deps_stats(1, 1))
+        .printed_task(&task("c", 6, Blocked).deps_stats(1, 5))
         .end();
 }
 
@@ -398,12 +294,8 @@ fn new_one_by_three() {
     fix.test("todo new e --by a b c")
         .modified(true)
         .validate()
-        .printed_task(
-            &PrintableTask::new("e", 4, Incomplete)
-                .action(New)
-                .adeps_stats(0, 1),
-        )
-        .printed_task(&PrintableTask::new("d", 5, Blocked).deps_stats(4, 4))
+        .printed_task(&task("e", 4, Incomplete).action(New).adeps_stats(0, 1))
+        .printed_task(&task("d", 5, Blocked).deps_stats(4, 4))
         .end();
 }
 
@@ -414,13 +306,9 @@ fn new_one_by_one_with_chain() {
     fix.test("todo new d --by b --chain")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(2, 3))
-        .printed_task(
-            &PrintableTask::new("d", 3, Blocked)
-                .action(New)
-                .deps_stats(1, 1),
-        )
-        .printed_task(&PrintableTask::new("c", 4, Blocked).deps_stats(1, 3))
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(2, 3))
+        .printed_task(&task("d", 3, Blocked).action(New).deps_stats(1, 1))
+        .printed_task(&task("c", 4, Blocked).deps_stats(1, 3))
         .end();
 }
 
@@ -431,23 +319,11 @@ fn new_three_by_one_with_chain() {
     fix.test("todo new d e f --by b --chain")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(2, 5))
-        .printed_task(
-            &PrintableTask::new("d", 3, Blocked)
-                .action(New)
-                .deps_stats(1, 1),
-        )
-        .printed_task(
-            &PrintableTask::new("e", 4, Blocked)
-                .action(New)
-                .deps_stats(1, 2),
-        )
-        .printed_task(
-            &PrintableTask::new("f", 5, Blocked)
-                .action(New)
-                .deps_stats(1, 3),
-        )
-        .printed_task(&PrintableTask::new("c", 6, Blocked).deps_stats(1, 5))
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(2, 5))
+        .printed_task(&task("d", 3, Blocked).action(New).deps_stats(1, 1))
+        .printed_task(&task("e", 4, Blocked).action(New).deps_stats(1, 2))
+        .printed_task(&task("f", 5, Blocked).action(New).deps_stats(1, 3))
+        .printed_task(&task("c", 6, Blocked).deps_stats(1, 5))
         .end();
 }
 
@@ -472,9 +348,7 @@ fn new_with_priority() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
-                .action(New)
-                .priority(Explicit(1)),
+            &task("a", 1, Incomplete).action(New).priority(Explicit(1)),
         )
         .end();
 }
@@ -487,9 +361,7 @@ fn new_task_with_priority_inserted_before_unprioritized_tasks() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("c", 1, Incomplete)
-                .action(New)
-                .priority(Explicit(1)),
+            &task("c", 1, Incomplete).action(New).priority(Explicit(1)),
         )
         .end();
 }
@@ -502,9 +374,7 @@ fn new_task_with_negative_priority_inserted_after_unprioritized_tasks() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("c", 3, Incomplete)
-                .action(New)
-                .priority(Explicit(-1)),
+            &task("c", 3, Incomplete).action(New).priority(Explicit(-1)),
         )
         .end();
 }
@@ -518,9 +388,7 @@ fn new_task_with_priority_inserted_in_sorted_order() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("c", 2, Incomplete)
-                .action(New)
-                .priority(Explicit(2)),
+            &task("c", 2, Incomplete).action(New).priority(Explicit(2)),
         )
         .end();
 }
@@ -534,7 +402,7 @@ fn new_with_due_date() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
+            &task("a", 1, Incomplete)
                 .due_date(Explicit(in_5_hours))
                 .action(New),
         )
@@ -564,22 +432,22 @@ fn new_with_due_date_shows_affected_deps() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
+            &task("a", 1, Incomplete)
                 .due_date(Implicit(in_2_days))
                 .adeps_stats(1, 3),
         )
         .printed_task(
-            &PrintableTask::new("b", 2, Blocked)
+            &task("b", 2, Blocked)
                 .due_date(Implicit(in_2_days))
                 .deps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("c", 3, Blocked)
+            &task("c", 3, Blocked)
                 .due_date(Implicit(in_2_days))
                 .deps_stats(1, 2),
         )
         .printed_task(
-            &PrintableTask::new("d", 4, Blocked)
+            &task("d", 4, Blocked)
                 .due_date(Explicit(in_2_days))
                 .action(New)
                 .deps_stats(1, 3),
@@ -598,12 +466,12 @@ fn new_with_budget_shows_affected_deps() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
+            &task("a", 1, Incomplete)
                 .due_date(Implicit(before_7))
                 .adeps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("b", 2, Blocked)
+            &task("b", 2, Blocked)
                 .due_date(Explicit(end_of_day))
                 .budget(Duration::hours(5))
                 .action(New)
@@ -657,7 +525,7 @@ fn new_snooze_one_task() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Blocked)
+            &task("a", 1, Blocked)
                 .action(New)
                 .start_date(ymdhms(2021, 05, 29, 00, 00, 00)),
         )
@@ -672,17 +540,17 @@ fn new_snooze_multiple_tasks() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Blocked)
+            &task("a", 1, Blocked)
                 .action(New)
                 .start_date(ymdhms(2021, 05, 30, 00, 00, 00)),
         )
         .printed_task(
-            &PrintableTask::new("b", 2, Blocked)
+            &task("b", 2, Blocked)
                 .action(New)
                 .start_date(ymdhms(2021, 05, 30, 00, 00, 00)),
         )
         .printed_task(
-            &PrintableTask::new("c", 3, Blocked)
+            &task("c", 3, Blocked)
                 .action(New)
                 .start_date(ymdhms(2021, 05, 30, 00, 00, 00)),
         )
@@ -695,7 +563,7 @@ fn new_complete_task() {
     fix.test("todo new a --done")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 0, Complete).action(New))
+        .printed_task(&task("a", 0, Complete).action(New))
         .end();
 }
 
@@ -705,9 +573,9 @@ fn multiple_new_complete_tasks() {
     fix.test("todo new a b c --done")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", -2, Complete).action(New))
-        .printed_task(&PrintableTask::new("b", -1, Complete).action(New))
-        .printed_task(&PrintableTask::new("c", 0, Complete).action(New))
+        .printed_task(&task("a", -2, Complete).action(New))
+        .printed_task(&task("b", -1, Complete).action(New))
+        .printed_task(&task("c", 0, Complete).action(New))
         .end();
 }
 
@@ -717,9 +585,9 @@ fn new_complete_chain() {
     fix.test("todo new a b c --chain --done")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", -2, Complete).action(New))
-        .printed_task(&PrintableTask::new("b", -1, Complete).action(New))
-        .printed_task(&PrintableTask::new("c", 0, Complete).action(New))
+        .printed_task(&task("a", -2, Complete).action(New))
+        .printed_task(&task("b", -1, Complete).action(New))
+        .printed_task(&task("c", 0, Complete).action(New))
         .end();
 }
 
@@ -777,12 +645,8 @@ fn new_block_completed_task() {
     fix.test("todo new b -b a")
         .modified(true)
         .validate()
-        .printed_task(
-            &PrintableTask::new("b", 1, Incomplete)
-                .action(New)
-                .adeps_stats(1, 1),
-        )
-        .printed_task(&PrintableTask::new("a", 2, Blocked).deps_stats(1, 1))
+        .printed_task(&task("b", 1, Incomplete).action(New).adeps_stats(1, 1))
+        .printed_task(&task("a", 2, Blocked).deps_stats(1, 1))
         .end();
 }
 
@@ -793,13 +657,9 @@ fn new_transitively_block_completed_task() {
     fix.test("todo new a -b b")
         .modified(true)
         .validate()
-        .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
-                .action(New)
-                .adeps_stats(1, 2),
-        )
-        .printed_task(&PrintableTask::new("b", 2, Blocked).deps_stats(1, 1))
-        .printed_task(&PrintableTask::new("c", 3, Blocked).deps_stats(1, 2))
+        .printed_task(&task("a", 1, Incomplete).action(New).adeps_stats(1, 2))
+        .printed_task(&task("b", 2, Blocked).deps_stats(1, 1))
+        .printed_task(&task("c", 3, Blocked).deps_stats(1, 2))
         .end();
 }
 
@@ -809,9 +669,7 @@ fn new_as_tag() {
     fix.test("todo new a --tag")
         .modified(true)
         .validate()
-        .printed_task(
-            &PrintableTask::new("a", 1, Incomplete).action(New).as_tag(),
-        )
+        .printed_task(&task("a", 1, Incomplete).action(New).as_tag())
         .end();
 }
 
@@ -821,15 +679,9 @@ fn new_multiple_as_tag() {
     fix.test("todo new a b c --tag")
         .modified(true)
         .validate()
-        .printed_task(
-            &PrintableTask::new("a", 1, Incomplete).action(New).as_tag(),
-        )
-        .printed_task(
-            &PrintableTask::new("b", 2, Incomplete).action(New).as_tag(),
-        )
-        .printed_task(
-            &PrintableTask::new("c", 3, Incomplete).action(New).as_tag(),
-        )
+        .printed_task(&task("a", 1, Incomplete).action(New).as_tag())
+        .printed_task(&task("b", 2, Incomplete).action(New).as_tag())
+        .printed_task(&task("c", 3, Incomplete).action(New).as_tag())
         .end();
 }
 
@@ -841,16 +693,12 @@ fn new_blocking_tag() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("b", 1, Incomplete)
+            &task("b", 1, Incomplete)
                 .action(New)
                 .tag("a")
                 .adeps_stats(1, 1),
         )
-        .printed_task(
-            &PrintableTask::new("a", 2, Blocked)
-                .as_tag()
-                .deps_stats(1, 1),
-        )
+        .printed_task(&task("a", 2, Blocked).as_tag().deps_stats(1, 1))
         .end();
 }
 
@@ -862,17 +710,13 @@ fn new_tag_blocking_tag() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("b", 1, Incomplete)
+            &task("b", 1, Incomplete)
                 .action(New)
                 .tag("a")
                 .as_tag()
                 .adeps_stats(1, 1),
         )
-        .printed_task(
-            &PrintableTask::new("a", 2, Blocked)
-                .as_tag()
-                .deps_stats(1, 1),
-        )
+        .printed_task(&task("a", 2, Blocked).as_tag().deps_stats(1, 1))
         .end();
 }
 
@@ -883,7 +727,7 @@ fn new_tag_chain() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
+            &task("a", 1, Incomplete)
                 .action(New)
                 .tag("c")
                 .tag("b")
@@ -891,17 +735,14 @@ fn new_tag_chain() {
                 .adeps_stats(1, 2),
         )
         .printed_task(
-            &PrintableTask::new("b", 2, Blocked)
+            &task("b", 2, Blocked)
                 .action(New)
                 .tag("c")
                 .as_tag()
                 .deps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("c", 3, Blocked)
-                .action(New)
-                .as_tag()
-                .deps_stats(1, 2),
+            &task("c", 3, Blocked).action(New).as_tag().deps_stats(1, 2),
         )
         .end();
 }
@@ -912,17 +753,17 @@ fn trim_leading_whitespace_from_desc() {
     fix.test("todo new a")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(New))
+        .printed_task(&task("a", 1, Incomplete).action(New))
         .end();
     fix.test("todo new ' a'")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 2, Incomplete).action(New))
+        .printed_task(&task("a", 2, Incomplete).action(New))
         .end();
     fix.test("todo new '  a'")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 3, Incomplete).action(New))
+        .printed_task(&task("a", 3, Incomplete).action(New))
         .end();
 }
 
@@ -932,16 +773,16 @@ fn trim_trailing_whitespace_from_desc() {
     fix.test("todo new a")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(New))
+        .printed_task(&task("a", 1, Incomplete).action(New))
         .end();
     fix.test("todo new 'a '")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 2, Incomplete).action(New))
+        .printed_task(&task("a", 2, Incomplete).action(New))
         .end();
     fix.test("todo new 'a  '")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 3, Incomplete).action(New))
+        .printed_task(&task("a", 3, Incomplete).action(New))
         .end();
 }

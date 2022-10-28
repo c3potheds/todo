@@ -1,6 +1,6 @@
+#[allow(clippy::zero_prefixed_literal)]
 use {
-    super::testing::Fixture,
-    printing::{PrintableTask, Status::*},
+    super::testing::task, super::testing::Fixture, printing::Status::*,
     testing::ymdhms,
 };
 
@@ -20,8 +20,7 @@ fn one_snoozed_task() {
         .modified(false)
         .validate()
         .printed_task(
-            &PrintableTask::new("b", 3, Blocked)
-                .start_date(ymdhms(2021, 05, 27, 12, 00, 00)),
+            &task("b", 3, Blocked).start_date(ymdhms(2021, 05, 27, 12, 00, 00)),
         )
         .end();
 }
@@ -36,16 +35,13 @@ fn multiple_snoozed_tasks() {
         .modified(false)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 3, Blocked)
-                .start_date(ymdhms(2022, 10, 15, 13, 00, 00)),
+            &task("a", 3, Blocked).start_date(ymdhms(2022, 10, 15, 13, 00, 00)),
         )
         .printed_task(
-            &PrintableTask::new("b", 4, Blocked)
-                .start_date(ymdhms(2022, 10, 15, 13, 00, 00)),
+            &task("b", 4, Blocked).start_date(ymdhms(2022, 10, 15, 13, 00, 00)),
         )
         .printed_task(
-            &PrintableTask::new("c", 5, Blocked)
-                .start_date(ymdhms(2022, 10, 15, 13, 00, 00)),
+            &task("c", 5, Blocked).start_date(ymdhms(2022, 10, 15, 13, 00, 00)),
         )
         .end();
 }

@@ -1,8 +1,9 @@
 use {
+    super::testing::task,
     super::testing::Fixture,
     printing::{
-        Action::*, BriefPrintableTask, PrintableError, PrintableTask,
-        PrintableWarning, Status::*,
+        Action::*, BriefPrintableTask, PrintableError, PrintableWarning,
+        Status::*,
     },
 };
 
@@ -29,7 +30,7 @@ fn restore_complete_task() {
     fix.test("todo restore 0")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Uncheck))
+        .printed_task(&task("a", 1, Incomplete).action(Uncheck))
         .end();
 }
 
@@ -42,7 +43,7 @@ fn restore_task_with_negative_number() {
     fix.test("todo restore -1")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 2, Incomplete).action(Uncheck))
+        .printed_task(&task("a", 2, Incomplete).action(Uncheck))
         .end();
 }
 
@@ -54,7 +55,7 @@ fn restore_same_task_with_multiple_keys() {
     fix.test("todo restore 0 0")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 2, Incomplete).action(Uncheck))
+        .printed_task(&task("a", 2, Incomplete).action(Uncheck))
         .end();
 }
 
@@ -68,15 +69,9 @@ fn restore_task_with_incomplete_antidependency() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
-                .action(Uncheck)
-                .adeps_stats(1, 1),
+            &task("a", 1, Incomplete).action(Uncheck).adeps_stats(1, 1),
         )
-        .printed_task(
-            &PrintableTask::new("b", 2, Blocked)
-                .action(Lock)
-                .deps_stats(1, 1),
-        )
+        .printed_task(&task("b", 2, Blocked).action(Lock).deps_stats(1, 1))
         .end();
 }
 
@@ -109,7 +104,7 @@ fn restore_by_name() {
     fix.test("todo restore a")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 2, Incomplete).action(Uncheck))
+        .printed_task(&task("a", 2, Incomplete).action(Uncheck))
         .end();
 }
 
@@ -121,7 +116,7 @@ fn force_restore_complete_task() {
     fix.test("todo restore a --force")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Uncheck))
+        .printed_task(&task("a", 1, Incomplete).action(Uncheck))
         .end();
 }
 
@@ -149,15 +144,9 @@ fn force_restore_task_with_complete_adeps() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
-                .action(Uncheck)
-                .adeps_stats(1, 1),
+            &task("a", 1, Incomplete).action(Uncheck).adeps_stats(1, 1),
         )
-        .printed_task(
-            &PrintableTask::new("b", 2, Blocked)
-                .action(Uncheck)
-                .deps_stats(1, 1),
-        )
+        .printed_task(&task("b", 2, Blocked).action(Uncheck).deps_stats(1, 1))
         .end();
 }
 
@@ -170,20 +159,10 @@ fn force_restore_task_with_complete_adeps_with_complete_adeps() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
-                .action(Uncheck)
-                .adeps_stats(1, 2),
+            &task("a", 1, Incomplete).action(Uncheck).adeps_stats(1, 2),
         )
-        .printed_task(
-            &PrintableTask::new("b", 2, Blocked)
-                .action(Uncheck)
-                .deps_stats(1, 1),
-        )
-        .printed_task(
-            &PrintableTask::new("c", 3, Blocked)
-                .action(Uncheck)
-                .deps_stats(1, 2),
-        )
+        .printed_task(&task("b", 2, Blocked).action(Uncheck).deps_stats(1, 1))
+        .printed_task(&task("c", 3, Blocked).action(Uncheck).deps_stats(1, 2))
         .end();
 }
 
@@ -196,25 +175,11 @@ fn force_restore_task_with_complete_and_incomplete_adeps() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
-                .action(Uncheck)
-                .adeps_stats(1, 3),
+            &task("a", 1, Incomplete).action(Uncheck).adeps_stats(1, 3),
         )
-        .printed_task(
-            &PrintableTask::new("b", 2, Blocked)
-                .action(Uncheck)
-                .deps_stats(1, 1),
-        )
-        .printed_task(
-            &PrintableTask::new("c", 3, Blocked)
-                .action(Uncheck)
-                .deps_stats(1, 2),
-        )
-        .printed_task(
-            &PrintableTask::new("d", 4, Blocked)
-                .action(Lock)
-                .deps_stats(1, 3),
-        )
+        .printed_task(&task("b", 2, Blocked).action(Uncheck).deps_stats(1, 1))
+        .printed_task(&task("c", 3, Blocked).action(Uncheck).deps_stats(1, 2))
+        .printed_task(&task("d", 4, Blocked).action(Lock).deps_stats(1, 3))
         .end();
 }
 
@@ -227,14 +192,8 @@ fn restore_chain() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
-                .action(Uncheck)
-                .adeps_stats(1, 1),
+            &task("a", 1, Incomplete).action(Uncheck).adeps_stats(1, 1),
         )
-        .printed_task(
-            &PrintableTask::new("b", 2, Blocked)
-                .action(Uncheck)
-                .deps_stats(1, 1),
-        )
+        .printed_task(&task("b", 2, Blocked).action(Uncheck).deps_stats(1, 1))
         .end();
 }

@@ -1,6 +1,7 @@
 use {
+    super::testing::task,
     super::testing::Fixture,
-    printing::{Plicit::*, PrintableTask, Status::*},
+    printing::{Plicit::*, Status::*},
 };
 
 #[test]
@@ -10,9 +11,7 @@ fn priority_set_for_one_task() {
     fix.test("todo priority a --is 1")
         .modified(true)
         .validate()
-        .printed_task(
-            &PrintableTask::new("a", 1, Incomplete).priority(Explicit(1)),
-        )
+        .printed_task(&task("a", 1, Incomplete).priority(Explicit(1)))
         .end();
 }
 
@@ -23,15 +22,9 @@ fn priority_set_for_three_tasks() {
     fix.test("todo priority a b c --is 2")
         .modified(true)
         .validate()
-        .printed_task(
-            &PrintableTask::new("a", 1, Incomplete).priority(Explicit(2)),
-        )
-        .printed_task(
-            &PrintableTask::new("b", 2, Incomplete).priority(Explicit(2)),
-        )
-        .printed_task(
-            &PrintableTask::new("c", 3, Incomplete).priority(Explicit(2)),
-        )
+        .printed_task(&task("a", 1, Incomplete).priority(Explicit(2)))
+        .printed_task(&task("b", 2, Incomplete).priority(Explicit(2)))
+        .printed_task(&task("c", 3, Incomplete).priority(Explicit(2)))
         .end();
 }
 
@@ -42,18 +35,14 @@ fn priority_reorders_task() {
     fix.test("todo priority b --is 1")
         .modified(true)
         .validate()
-        .printed_task(
-            &PrintableTask::new("b", 1, Incomplete).priority(Explicit(1)),
-        )
+        .printed_task(&task("b", 1, Incomplete).priority(Explicit(1)))
         .end();
     fix.test("todo")
         .modified(false)
         .validate()
-        .printed_task(
-            &PrintableTask::new("b", 1, Incomplete).priority(Explicit(1)),
-        )
-        .printed_task(&PrintableTask::new("a", 2, Incomplete))
-        .printed_task(&PrintableTask::new("c", 3, Incomplete))
+        .printed_task(&task("b", 1, Incomplete).priority(Explicit(1)))
+        .printed_task(&task("a", 2, Incomplete))
+        .printed_task(&task("c", 3, Incomplete))
         .end();
 }
 
@@ -66,19 +55,17 @@ fn priority_shows_affected_deps() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
+            &task("a", 1, Incomplete)
                 .priority(Implicit(1))
                 .adeps_stats(0, 1),
         )
         .printed_task(
-            &PrintableTask::new("c", 2, Incomplete)
+            &task("c", 2, Incomplete)
                 .priority(Implicit(1))
                 .adeps_stats(0, 1),
         )
         .printed_task(
-            &PrintableTask::new("d", 4, Blocked)
-                .priority(Explicit(1))
-                .deps_stats(2, 2),
+            &task("d", 4, Blocked).priority(Explicit(1)).deps_stats(2, 2),
         )
         .end();
 }
@@ -93,14 +80,12 @@ fn priority_does_not_show_complete_affected_deps() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("c", 1, Incomplete)
+            &task("c", 1, Incomplete)
                 .priority(Implicit(1))
                 .adeps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("d", 3, Blocked)
-                .priority(Explicit(1))
-                .deps_stats(1, 2),
+            &task("d", 3, Blocked).priority(Explicit(1)).deps_stats(1, 2),
         )
         .end();
 }
@@ -114,18 +99,14 @@ fn priority_include_done() {
     fix.test("todo priority d --is 1 --include-done")
         .modified(true)
         .validate()
+        .printed_task(&task("a", 0, Complete).priority(Implicit(1)))
         .printed_task(
-            &PrintableTask::new("a", 0, Complete).priority(Implicit(1)),
-        )
-        .printed_task(
-            &PrintableTask::new("c", 1, Incomplete)
+            &task("c", 1, Incomplete)
                 .priority(Implicit(1))
                 .adeps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("d", 3, Blocked)
-                .priority(Explicit(1))
-                .deps_stats(1, 2),
+            &task("d", 3, Blocked).priority(Explicit(1)).deps_stats(1, 2),
         )
         .end();
 }
@@ -138,19 +119,15 @@ fn priority_shows_affected_transitive_deps() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
+            &task("a", 1, Incomplete)
                 .priority(Implicit(1))
                 .adeps_stats(1, 3),
         )
         .printed_task(
-            &PrintableTask::new("b", 2, Blocked)
-                .priority(Implicit(1))
-                .deps_stats(1, 1),
+            &task("b", 2, Blocked).priority(Implicit(1)).deps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("c", 3, Blocked)
-                .priority(Explicit(1))
-                .deps_stats(1, 2),
+            &task("c", 3, Blocked).priority(Explicit(1)).deps_stats(1, 2),
         )
         .end();
 }
@@ -162,9 +139,7 @@ fn priority_set_negative() {
     fix.test("todo priority a --is -1")
         .modified(true)
         .validate()
-        .printed_task(
-            &PrintableTask::new("a", 3, Incomplete).priority(Explicit(-1)),
-        )
+        .printed_task(&task("a", 3, Incomplete).priority(Explicit(-1)))
         .end();
 }
 
@@ -178,24 +153,22 @@ fn priority_does_not_show_deps_with_higher_priorities() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("d", 4, Incomplete)
+            &task("d", 4, Incomplete)
                 .priority(Implicit(2))
                 .adeps_stats(0, 1),
         )
         .printed_task(
-            &PrintableTask::new("e", 5, Incomplete)
+            &task("e", 5, Incomplete)
                 .priority(Implicit(2))
                 .adeps_stats(0, 1),
         )
         .printed_task(
-            &PrintableTask::new("f", 6, Incomplete)
+            &task("f", 6, Incomplete)
                 .priority(Implicit(2))
                 .adeps_stats(0, 1),
         )
         .printed_task(
-            &PrintableTask::new("g", 7, Blocked)
-                .priority(Explicit(2))
-                .deps_stats(6, 6),
+            &task("g", 7, Blocked).priority(Explicit(2)).deps_stats(6, 6),
         )
         .end();
 }
@@ -209,15 +182,9 @@ fn get_all_tasks_with_priority() {
     fix.test("todo priority --is 2")
         .modified(false)
         .validate()
-        .printed_task(
-            &PrintableTask::new("g", 1, Incomplete).priority(Explicit(2)),
-        )
-        .printed_task(
-            &PrintableTask::new("h", 2, Incomplete).priority(Explicit(2)),
-        )
-        .printed_task(
-            &PrintableTask::new("i", 3, Incomplete).priority(Explicit(2)),
-        )
+        .printed_task(&task("g", 1, Incomplete).priority(Explicit(2)))
+        .printed_task(&task("h", 2, Incomplete).priority(Explicit(2)))
+        .printed_task(&task("i", 3, Incomplete).priority(Explicit(2)))
         .end();
 }
 
@@ -230,24 +197,12 @@ fn get_all_tasks_with_unspecified_priority() {
     fix.test("todo priority --is 1")
         .modified(false)
         .validate()
-        .printed_task(
-            &PrintableTask::new("g", 1, Incomplete).priority(Explicit(2)),
-        )
-        .printed_task(
-            &PrintableTask::new("h", 2, Incomplete).priority(Explicit(2)),
-        )
-        .printed_task(
-            &PrintableTask::new("i", 3, Incomplete).priority(Explicit(2)),
-        )
-        .printed_task(
-            &PrintableTask::new("d", 4, Incomplete).priority(Explicit(1)),
-        )
-        .printed_task(
-            &PrintableTask::new("e", 5, Incomplete).priority(Explicit(1)),
-        )
-        .printed_task(
-            &PrintableTask::new("f", 6, Incomplete).priority(Explicit(1)),
-        )
+        .printed_task(&task("g", 1, Incomplete).priority(Explicit(2)))
+        .printed_task(&task("h", 2, Incomplete).priority(Explicit(2)))
+        .printed_task(&task("i", 3, Incomplete).priority(Explicit(2)))
+        .printed_task(&task("d", 4, Incomplete).priority(Explicit(1)))
+        .printed_task(&task("e", 5, Incomplete).priority(Explicit(1)))
+        .printed_task(&task("f", 6, Incomplete).priority(Explicit(1)))
         .end();
 }
 
@@ -260,19 +215,15 @@ fn explain_source_of_priority() {
         .modified(false)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
+            &task("a", 1, Incomplete)
                 .priority(Implicit(1))
                 .adeps_stats(1, 2),
         )
         .printed_task(
-            &PrintableTask::new("b", 2, Blocked)
-                .priority(Implicit(1))
-                .deps_stats(1, 1),
+            &task("b", 2, Blocked).priority(Implicit(1)).deps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("c", 3, Blocked)
-                .priority(Explicit(1))
-                .deps_stats(1, 2),
+            &task("c", 3, Blocked).priority(Explicit(1)).deps_stats(1, 2),
         )
         .end();
 }
@@ -286,39 +237,27 @@ fn explain_source_of_priority_deep() {
         .modified(false)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
+            &task("a", 1, Incomplete)
                 .priority(Implicit(1))
                 .adeps_stats(1, 8),
         )
         .printed_task(
-            &PrintableTask::new("b", 2, Blocked)
-                .priority(Implicit(1))
-                .deps_stats(1, 1),
+            &task("b", 2, Blocked).priority(Implicit(1)).deps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("c", 3, Blocked)
-                .priority(Implicit(1))
-                .deps_stats(1, 2),
+            &task("c", 3, Blocked).priority(Implicit(1)).deps_stats(1, 2),
         )
         .printed_task(
-            &PrintableTask::new("d", 4, Blocked)
-                .priority(Implicit(1))
-                .deps_stats(1, 3),
+            &task("d", 4, Blocked).priority(Implicit(1)).deps_stats(1, 3),
         )
         .printed_task(
-            &PrintableTask::new("e", 5, Blocked)
-                .priority(Implicit(1))
-                .deps_stats(1, 4),
+            &task("e", 5, Blocked).priority(Implicit(1)).deps_stats(1, 4),
         )
         .printed_task(
-            &PrintableTask::new("f", 6, Blocked)
-                .priority(Implicit(1))
-                .deps_stats(1, 5),
+            &task("f", 6, Blocked).priority(Implicit(1)).deps_stats(1, 5),
         )
         .printed_task(
-            &PrintableTask::new("g", 7, Blocked)
-                .priority(Explicit(1))
-                .deps_stats(1, 6),
+            &task("g", 7, Blocked).priority(Explicit(1)).deps_stats(1, 6),
         )
         .end();
 }

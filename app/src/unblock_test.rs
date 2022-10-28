@@ -1,9 +1,10 @@
 use {
+    super::testing::task,
     super::testing::Fixture,
     lookup_key::Key,
     printing::{
         Action::*, BriefPrintableTask, Plicit::*, PrintableError,
-        PrintableTask, PrintableWarning, Status::*,
+        PrintableWarning, Status::*,
     },
 };
 
@@ -15,8 +16,8 @@ fn unblock_task_from_direct_dependency() {
     fix.test("todo unblock 2 --from 1")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("b", 2, Incomplete).action(Unlock))
+        .printed_task(&task("a", 1, Incomplete))
+        .printed_task(&task("b", 2, Incomplete).action(Unlock))
         .end();
 }
 
@@ -46,8 +47,8 @@ fn unblock_complete_task() {
     fix.test("todo unblock 0 --from -1")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", -1, Complete))
-        .printed_task(&PrintableTask::new("b", 0, Complete).action(Unlock))
+        .printed_task(&task("a", -1, Complete))
+        .printed_task(&task("b", 0, Complete).action(Unlock))
         .end();
 }
 
@@ -58,8 +59,8 @@ fn unblock_by_name() {
     fix.test("todo unblock b --from a")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("b", 2, Incomplete).action(Unlock))
+        .printed_task(&task("a", 1, Incomplete))
+        .printed_task(&task("b", 2, Incomplete).action(Unlock))
         .end();
 }
 
@@ -71,9 +72,9 @@ fn unblock_from_all() {
     fix.test("todo unblock c")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("b", 2, Incomplete))
-        .printed_task(&PrintableTask::new("c", 3, Incomplete).action(Unlock))
+        .printed_task(&task("a", 1, Incomplete))
+        .printed_task(&task("b", 2, Incomplete))
+        .printed_task(&task("c", 3, Incomplete).action(Unlock))
         .end();
 }
 
@@ -85,9 +86,9 @@ fn unblock_from_all2() {
     fix.test("todo unblock c")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 1))
-        .printed_task(&PrintableTask::new("c", 2, Incomplete).action(Unlock))
-        .printed_task(&PrintableTask::new("b", 3, Blocked).deps_stats(1, 1))
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(1, 1))
+        .printed_task(&task("c", 2, Incomplete).action(Unlock))
+        .printed_task(&task("b", 3, Blocked).deps_stats(1, 1))
         .end();
 }
 
@@ -99,8 +100,8 @@ fn unblock_complete() {
     fix.test("todo unblock b")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", -1, Complete))
-        .printed_task(&PrintableTask::new("b", 0, Complete).action(Unlock))
+        .printed_task(&task("a", -1, Complete))
+        .printed_task(&task("b", 0, Complete).action(Unlock))
         .end();
 }
 
@@ -128,20 +129,18 @@ fn unblock_updates_priority() {
         .validate()
         // c is printed first, because its priority is higher.
         .printed_task(
-            &PrintableTask::new("c", 1, Incomplete)
+            &task("c", 1, Incomplete)
                 .action(Unlock)
                 .priority(Explicit(2)),
         )
         // a and b have their priorities reset to 1.
         .printed_task(
-            &PrintableTask::new("a", 2, Incomplete)
+            &task("a", 2, Incomplete)
                 .priority(Explicit(1))
                 .adeps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("b", 3, Blocked)
-                .priority(Explicit(1))
-                .deps_stats(1, 1),
+            &task("b", 3, Blocked).priority(Explicit(1)).deps_stats(1, 1),
         )
         .end();
 }
@@ -156,14 +155,12 @@ fn unblock_does_not_show_unaffected_priority() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("c", 2, Incomplete)
+            &task("c", 2, Incomplete)
                 .action(Unlock)
                 .priority(Explicit(1)),
         )
         .printed_task(
-            &PrintableTask::new("b", 3, Blocked)
-                .priority(Explicit(1))
-                .deps_stats(1, 1),
+            &task("b", 3, Blocked).priority(Explicit(1)).deps_stats(1, 1),
         )
         .end();
 }
@@ -178,11 +175,11 @@ fn unblock_excludes_affected_complete_tasks() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("c", 1, Incomplete)
+            &task("c", 1, Incomplete)
                 .priority(Explicit(1))
                 .action(Unlock),
         )
-        .printed_task(&PrintableTask::new("b", 2, Incomplete))
+        .printed_task(&task("b", 2, Incomplete))
         .end();
 }
 
@@ -195,12 +192,12 @@ fn unblock_include_done() {
     fix.test("todo unblock c --from b -d")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 0, Complete))
+        .printed_task(&task("a", 0, Complete))
         .printed_task(
-            &PrintableTask::new("c", 1, Incomplete)
+            &task("c", 1, Incomplete)
                 .priority(Explicit(1))
                 .action(Unlock),
         )
-        .printed_task(&PrintableTask::new("b", 2, Incomplete))
+        .printed_task(&task("b", 2, Incomplete))
         .end();
 }

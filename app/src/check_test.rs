@@ -1,8 +1,9 @@
 use {
+    super::testing::task,
     super::testing::Fixture,
     printing::{
-        Action::*, BriefPrintableTask, PrintableError, PrintableTask,
-        PrintableWarning, Status::*,
+        Action::*, BriefPrintableTask, PrintableError, PrintableWarning,
+        Status::*,
     },
 };
 
@@ -13,7 +14,7 @@ fn check_one_task() {
     fix.test("todo check 1")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 0, Complete).action(Check))
+        .printed_task(&task("a", 0, Complete).action(Check))
         .end();
 }
 
@@ -24,7 +25,7 @@ fn check_by_name() {
     fix.test("todo check b")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("b", 0, Complete).action(Check))
+        .printed_task(&task("b", 0, Complete).action(Check))
         .end();
 }
 
@@ -66,13 +67,13 @@ fn check_newly_unblocked_task() {
     fix.test("todo check 1")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("b", 0, Complete).action(Check))
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Unlock))
+        .printed_task(&task("b", 0, Complete).action(Check))
+        .printed_task(&task("a", 1, Incomplete).action(Unlock))
         .end();
     fix.test("todo check 1")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 0, Complete).action(Check))
+        .printed_task(&task("a", 0, Complete).action(Check))
         .end();
 }
 
@@ -84,14 +85,14 @@ fn check_newly_unblocked_task_with_multiple_dependencies() {
     fix.test("todo check 1 2")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("b", -1, Complete).action(Check))
-        .printed_task(&PrintableTask::new("c", 0, Complete).action(Check))
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Unlock))
+        .printed_task(&task("b", -1, Complete).action(Check))
+        .printed_task(&task("c", 0, Complete).action(Check))
+        .printed_task(&task("a", 1, Incomplete).action(Unlock))
         .end();
     fix.test("todo check 1")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 0, Complete).action(Check))
+        .printed_task(&task("a", 0, Complete).action(Check))
         .end();
 }
 
@@ -104,23 +105,21 @@ fn check_newly_unblocked_task_with_chained_dependencies() {
     fix.test("todo check 1")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 0, Complete).action(Check))
+        .printed_task(&task("a", 0, Complete).action(Check))
         .printed_task(
-            &PrintableTask::new("b", 1, Incomplete)
-                .action(Unlock)
-                .adeps_stats(1, 1),
+            &task("b", 1, Incomplete).action(Unlock).adeps_stats(1, 1),
         )
         .end();
     fix.test("todo check 1")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("b", 0, Complete).action(Check))
-        .printed_task(&PrintableTask::new("c", 1, Incomplete).action(Unlock))
+        .printed_task(&task("b", 0, Complete).action(Check))
+        .printed_task(&task("c", 1, Incomplete).action(Unlock))
         .end();
     fix.test("todo check 1")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("c", 0, Complete).action(Check))
+        .printed_task(&task("c", 0, Complete).action(Check))
         .end();
 }
 
@@ -132,11 +131,9 @@ fn check_does_not_show_adeps_that_are_not_unlocked() {
     fix.test("todo check 1")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 0, Complete).action(Check))
+        .printed_task(&task("a", 0, Complete).action(Check))
         .printed_task(
-            &PrintableTask::new("b", 1, Incomplete)
-                .action(Unlock)
-                .adeps_stats(1, 1),
+            &task("b", 1, Incomplete).action(Unlock).adeps_stats(1, 1),
         )
         // Do not print c, even though it's a direct adep, because it has not
         // been unlocked.
@@ -150,7 +147,7 @@ fn check_same_task_twice_in_one_command() {
     fix.test("todo check 1 1")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 0, Complete).action(Check))
+        .printed_task(&task("a", 0, Complete).action(Check))
         .end();
 }
 
@@ -175,7 +172,7 @@ fn force_check_incomplete_task() {
     fix.test("todo check a --force")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 0, Complete).action(Check))
+        .printed_task(&task("a", 0, Complete).action(Check))
         .end();
 }
 
@@ -186,8 +183,8 @@ fn force_check_blocked_task() {
     fix.test("todo check b --force")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", -1, Complete).action(Check))
-        .printed_task(&PrintableTask::new("b", 0, Complete).action(Check))
+        .printed_task(&task("a", -1, Complete).action(Check))
+        .printed_task(&task("b", 0, Complete).action(Check))
         .end();
 }
 
@@ -198,9 +195,9 @@ fn force_check_transitively_blocked_task() {
     fix.test("todo check c --force")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", -2, Complete).action(Check))
-        .printed_task(&PrintableTask::new("b", -1, Complete).action(Check))
-        .printed_task(&PrintableTask::new("c", 0, Complete).action(Check))
+        .printed_task(&task("a", -2, Complete).action(Check))
+        .printed_task(&task("b", -1, Complete).action(Check))
+        .printed_task(&task("c", 0, Complete).action(Check))
         .end();
 }
 
@@ -213,8 +210,8 @@ fn force_check_task_with_complete_deps() {
     fix.test("todo check c --force")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("b", -1, Complete).action(Check))
-        .printed_task(&PrintableTask::new("c", 0, Complete).action(Check))
+        .printed_task(&task("b", -1, Complete).action(Check))
+        .printed_task(&task("c", 0, Complete).action(Check))
         .end();
 }
 
@@ -239,8 +236,8 @@ fn check_blocking_chain() {
     fix.test("todo check a b c")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", -2, Complete).action(Check))
-        .printed_task(&PrintableTask::new("b", -1, Complete).action(Check))
-        .printed_task(&PrintableTask::new("c", 0, Complete).action(Check))
+        .printed_task(&task("a", -2, Complete).action(Check))
+        .printed_task(&task("b", -1, Complete).action(Check))
+        .printed_task(&task("c", 0, Complete).action(Check))
         .end();
 }

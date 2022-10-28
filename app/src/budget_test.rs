@@ -1,11 +1,10 @@
 #![allow(clippy::zero_prefixed_literal)]
 
 use {
+    super::testing::task,
     super::testing::Fixture,
     chrono::Duration,
-    printing::{
-        Action::*, Plicit::*, PrintableError, PrintableTask, Status::*,
-    },
+    printing::{Action::*, Plicit::*, PrintableError, Status::*},
     testing::ymdhms,
 };
 
@@ -19,7 +18,7 @@ fn budget_one_task() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
+            &task("a", 1, Incomplete)
                 .due_date(Explicit(in_2_days))
                 .budget(Duration::days(1))
                 .action(Select),
@@ -35,17 +34,17 @@ fn budget_multiple_tasks() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
+            &task("a", 1, Incomplete)
                 .budget(Duration::days(2))
                 .action(Select),
         )
         .printed_task(
-            &PrintableTask::new("c", 3, Incomplete)
+            &task("c", 3, Incomplete)
                 .budget(Duration::days(2))
                 .action(Select),
         )
         .printed_task(
-            &PrintableTask::new("e", 5, Incomplete)
+            &task("e", 5, Incomplete)
                 .budget(Duration::days(2))
                 .action(Select),
         )
@@ -61,35 +60,35 @@ fn budget_chain_alters_due_dates() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
+            &task("a", 1, Incomplete)
                 .due_date(Implicit(ymdhms(2021, 04, 29, 19, 59, 59)))
                 .budget(Duration::hours(1))
                 .action(Select)
                 .adeps_stats(1, 4),
         )
         .printed_task(
-            &PrintableTask::new("b", 2, Blocked)
+            &task("b", 2, Blocked)
                 .due_date(Implicit(ymdhms(2021, 04, 29, 20, 59, 59)))
                 .budget(Duration::hours(1))
                 .action(Select)
                 .deps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("c", 3, Blocked)
+            &task("c", 3, Blocked)
                 .due_date(Implicit(ymdhms(2021, 04, 29, 21, 59, 59)))
                 .budget(Duration::hours(1))
                 .action(Select)
                 .deps_stats(1, 2),
         )
         .printed_task(
-            &PrintableTask::new("d", 4, Blocked)
+            &task("d", 4, Blocked)
                 .due_date(Implicit(ymdhms(2021, 04, 29, 22, 59, 59)))
                 .budget(Duration::hours(1))
                 .action(Select)
                 .deps_stats(1, 3),
         )
         .printed_task(
-            &PrintableTask::new("e", 5, Blocked)
+            &task("e", 5, Blocked)
                 .due_date(Explicit(ymdhms(2021, 04, 29, 23, 59, 59)))
                 .budget(Duration::hours(1))
                 .action(Select)
@@ -107,17 +106,17 @@ fn budget_shows_affected_tasks() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
+            &task("a", 1, Incomplete)
                 .due_date(Implicit(ymdhms(2021, 04, 29, 18, 00, 00)))
                 .adeps_stats(1, 2),
         )
         .printed_task(
-            &PrintableTask::new("b", 2, Blocked)
+            &task("b", 2, Blocked)
                 .due_date(Implicit(ymdhms(2021, 04, 29, 18, 00, 00)))
                 .deps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("c", 3, Blocked)
+            &task("c", 3, Blocked)
                 .due_date(Explicit(ymdhms(2021, 04, 29, 20, 00, 00)))
                 .budget(Duration::hours(2))
                 .action(Select)
@@ -136,12 +135,12 @@ fn budget_does_not_show_unaffected_tasks() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("b", 2, Blocked)
+            &task("b", 2, Blocked)
                 .due_date(Implicit(ymdhms(2021, 04, 29, 18, 00, 00)))
                 .deps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("c", 3, Blocked)
+            &task("c", 3, Blocked)
                 .due_date(Explicit(ymdhms(2021, 04, 29, 20, 00, 00)))
                 .budget(Duration::hours(2))
                 .action(Select)
@@ -187,12 +186,12 @@ fn budget_does_not_include_complete_affected_deps() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("b", 1, Incomplete)
+            &task("b", 1, Incomplete)
                 .due_date(Implicit(ymdhms(2021, 04, 30, 22, 59, 59)))
                 .adeps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("c", 2, Blocked)
+            &task("c", 2, Blocked)
                 .due_date(Explicit(ymdhms(2021, 04, 30, 23, 59, 59)))
                 .budget(Duration::hours(1))
                 .action(Select)
@@ -210,16 +209,16 @@ fn budget_include_complete_affected_deps() {
     fix.test("todo budget c --is 1 hour -d")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 0, Complete).punctuality(
+        .printed_task(&task("a", 0, Complete).punctuality(
             -chrono::Duration::hours(12) + chrono::Duration::seconds(1),
         ))
         .printed_task(
-            &PrintableTask::new("b", 1, Incomplete)
+            &task("b", 1, Incomplete)
                 .due_date(Implicit(ymdhms(2021, 04, 30, 22, 59, 59)))
                 .adeps_stats(1, 1),
         )
         .printed_task(
-            &PrintableTask::new("c", 2, Blocked)
+            &task("c", 2, Blocked)
                 .due_date(Explicit(ymdhms(2021, 04, 30, 23, 59, 59)))
                 .budget(Duration::hours(1))
                 .action(Select)
@@ -235,6 +234,6 @@ fn budget_of_zero() {
     fix.test("todo budget a --is 0")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Select))
+        .printed_task(&task("a", 1, Incomplete).action(Select))
         .end();
 }

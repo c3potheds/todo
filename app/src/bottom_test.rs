@@ -1,7 +1,8 @@
 use {
+    super::testing::task,
     super::testing::Fixture,
     lookup_key::Key,
-    printing::{PrintableTask, PrintableWarning, Status::*},
+    printing::{PrintableWarning, Status::*},
 };
 
 #[test]
@@ -17,9 +18,9 @@ fn bottom_all_tasks_uncategorized() {
     fix.test("todo bottom")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("b", 2, Incomplete))
-        .printed_task(&PrintableTask::new("c", 3, Incomplete))
+        .printed_task(&task("a", 1, Incomplete))
+        .printed_task(&task("b", 2, Incomplete))
+        .printed_task(&task("c", 3, Incomplete))
         .end();
 }
 
@@ -31,9 +32,9 @@ fn bottom_all_tasks_categorized_the_same() {
     fix.test("todo bottom")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(0, 1))
-        .printed_task(&PrintableTask::new("b", 2, Incomplete).adeps_stats(0, 1))
-        .printed_task(&PrintableTask::new("c", 3, Incomplete).adeps_stats(0, 1))
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(0, 1))
+        .printed_task(&task("b", 2, Incomplete).adeps_stats(0, 1))
+        .printed_task(&task("c", 3, Incomplete).adeps_stats(0, 1))
         .end();
 }
 
@@ -46,12 +47,12 @@ fn bottom_multiple_categories() {
     fix.test("todo bottom")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(0, 1))
-        .printed_task(&PrintableTask::new("b", 2, Incomplete).adeps_stats(0, 1))
-        .printed_task(&PrintableTask::new("c", 3, Incomplete).adeps_stats(0, 1))
-        .printed_task(&PrintableTask::new("d", 4, Incomplete).adeps_stats(0, 1))
-        .printed_task(&PrintableTask::new("e", 5, Incomplete).adeps_stats(0, 1))
-        .printed_task(&PrintableTask::new("f", 6, Incomplete).adeps_stats(0, 1))
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(0, 1))
+        .printed_task(&task("b", 2, Incomplete).adeps_stats(0, 1))
+        .printed_task(&task("c", 3, Incomplete).adeps_stats(0, 1))
+        .printed_task(&task("d", 4, Incomplete).adeps_stats(0, 1))
+        .printed_task(&task("e", 5, Incomplete).adeps_stats(0, 1))
+        .printed_task(&task("f", 6, Incomplete).adeps_stats(0, 1))
         .end();
 }
 
@@ -63,8 +64,8 @@ fn bottom_deep_category() {
     fix.test("todo bottom")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 2))
-        .printed_task(&PrintableTask::new("d", 2, Incomplete).adeps_stats(1, 2))
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(1, 2))
+        .printed_task(&task("d", 2, Incomplete).adeps_stats(1, 2))
         .end();
 }
 
@@ -76,8 +77,8 @@ fn bottom_does_not_show_complete_tasks_by_default() {
     fix.test("todo bottom")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("b", 1, Incomplete))
-        .printed_task(&PrintableTask::new("c", 2, Incomplete))
+        .printed_task(&task("b", 1, Incomplete))
+        .printed_task(&task("c", 2, Incomplete))
         .end();
 }
 
@@ -89,9 +90,9 @@ fn bottom_show_complete_tasks_with_option() {
     fix.test("todo bottom -d")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 0, Complete))
-        .printed_task(&PrintableTask::new("b", 1, Incomplete))
-        .printed_task(&PrintableTask::new("c", 2, Incomplete))
+        .printed_task(&task("a", 0, Complete))
+        .printed_task(&task("b", 1, Incomplete))
+        .printed_task(&task("c", 2, Incomplete))
         .end();
 }
 
@@ -104,8 +105,8 @@ fn bottom_show_only_bottom_level_complete_tasks() {
     fix.test("todo bottom -d")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", -5, Complete))
-        .printed_task(&PrintableTask::new("d", -4, Complete))
+        .printed_task(&task("a", -5, Complete))
+        .printed_task(&task("d", -4, Complete))
         .end();
 }
 
@@ -124,7 +125,7 @@ fn bottom_above_blocking_task() {
     fix.test("todo bottom a")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("b", 2, Blocked).deps_stats(1, 1))
+        .printed_task(&task("b", 2, Blocked).deps_stats(1, 1))
         .end();
 }
 
@@ -135,7 +136,7 @@ fn bottom_above_blocked_task() {
     fix.test("todo bottom b")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("c", 3, Blocked).deps_stats(1, 2))
+        .printed_task(&task("c", 3, Blocked).deps_stats(1, 2))
         .end();
 }
 
@@ -149,12 +150,12 @@ fn bottom_above_two_tasks() {
     fix.test("todo bottom x y")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 3, Blocked).deps_stats(1, 1))
-        .printed_task(&PrintableTask::new("b", 4, Blocked).deps_stats(1, 1))
-        .printed_task(&PrintableTask::new("c", 5, Blocked).deps_stats(2, 2))
-        .printed_task(&PrintableTask::new("d", 6, Blocked).deps_stats(2, 2))
-        .printed_task(&PrintableTask::new("e", 7, Blocked).deps_stats(1, 1))
-        .printed_task(&PrintableTask::new("f", 8, Blocked).deps_stats(1, 1))
+        .printed_task(&task("a", 3, Blocked).deps_stats(1, 1))
+        .printed_task(&task("b", 4, Blocked).deps_stats(1, 1))
+        .printed_task(&task("c", 5, Blocked).deps_stats(2, 2))
+        .printed_task(&task("d", 6, Blocked).deps_stats(2, 2))
+        .printed_task(&task("e", 7, Blocked).deps_stats(1, 1))
+        .printed_task(&task("f", 8, Blocked).deps_stats(1, 1))
         .end();
 }
 
@@ -169,7 +170,7 @@ fn bottom_exclude_adeps_with_indirect_connection() {
         // b should be excluded because there's also an indirect connection to
         // it, through a. On the other hand, a is included because the only
         // path to it from the "bottom" task is direct.
-        .printed_task(&PrintableTask::new("a", 2, Blocked).deps_stats(1, 1))
+        .printed_task(&task("a", 2, Blocked).deps_stats(1, 1))
         .end();
 }
 
@@ -194,6 +195,6 @@ fn bottom_implicit_include_done() {
     fix.test("todo bottom a")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("b", 0, Complete))
+        .printed_task(&task("b", 0, Complete))
         .end();
 }
