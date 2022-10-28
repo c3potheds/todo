@@ -22,6 +22,8 @@ mod printable_error_test;
 #[cfg(test)]
 mod printable_info_test;
 #[cfg(test)]
+mod printable_task_test;
+#[cfg(test)]
 mod printable_warning_test;
 #[cfg(test)]
 mod simple_todo_printer_test;
