@@ -1,6 +1,7 @@
 use {
+    super::testing::task,
     super::testing::Fixture,
-    printing::{PrintableError, PrintableTask, Status::*},
+    printing::{PrintableError, Status::*},
     text_editing::FakeTextEditor,
 };
 
@@ -11,7 +12,7 @@ fn edit_one_task() {
     fix.test("todo edit 1 --desc b")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("b", 1, Incomplete))
+        .printed_task(&task("b", 1, Incomplete))
         .end();
 }
 
@@ -22,9 +23,9 @@ fn edit_multiple_tasks() {
     fix.test("todo edit 1 2 3 --desc d")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("d", 1, Incomplete))
-        .printed_task(&PrintableTask::new("d", 2, Incomplete))
-        .printed_task(&PrintableTask::new("d", 3, Incomplete))
+        .printed_task(&task("d", 1, Incomplete))
+        .printed_task(&task("d", 2, Incomplete))
+        .printed_task(&task("d", 3, Incomplete))
         .end();
 }
 
@@ -36,7 +37,7 @@ fn edit_with_text_editor_happy_path() {
     fix.test("todo edit 1")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("b", 1, Incomplete))
+        .printed_task(&task("b", 1, Incomplete))
         .end();
     assert_eq!(*fix.text_editor.recorded_input(), "1) a");
 }
@@ -49,7 +50,7 @@ fn edit_with_text_editor_long_desc_later_task() {
     fix.test("todo edit 3")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("this is serious", 3, Incomplete))
+        .printed_task(&task("this is serious", 3, Incomplete))
         .end();
     assert_eq!(*fix.text_editor.recorded_input(), "3) c");
 }
@@ -62,9 +63,9 @@ fn edit_multiple_tasks_with_text_editor() {
     fix.test("todo edit 1 2 3")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("d", 1, Incomplete))
-        .printed_task(&PrintableTask::new("e", 2, Incomplete))
-        .printed_task(&PrintableTask::new("f", 3, Incomplete))
+        .printed_task(&task("d", 1, Incomplete))
+        .printed_task(&task("e", 2, Incomplete))
+        .printed_task(&task("f", 3, Incomplete))
         .end();
     assert_eq!(*fix.text_editor.recorded_input(), "1) a\n2) b\n3) c");
 }
@@ -148,7 +149,7 @@ fn trim_leading_whitespace_from_desc_from_text_editor() {
     fix.test("todo edit 1")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("b", 1, Incomplete))
+        .printed_task(&task("b", 1, Incomplete))
         .end();
 }
 
@@ -160,7 +161,7 @@ fn trim_trailing_whitespace_from_desc_from_text_editor() {
     fix.test("todo edit 1")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("b", 1, Incomplete))
+        .printed_task(&task("b", 1, Incomplete))
         .end();
 }
 
@@ -172,9 +173,9 @@ fn trim_whitespace_from_desc_from_text_editor_with_multiple_tasks() {
     fix.test("todo edit 1 2 3")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("d", 1, Incomplete))
-        .printed_task(&PrintableTask::new("e", 2, Incomplete))
-        .printed_task(&PrintableTask::new("f", 3, Incomplete))
+        .printed_task(&task("d", 1, Incomplete))
+        .printed_task(&task("e", 2, Incomplete))
+        .printed_task(&task("f", 3, Incomplete))
         .end();
 }
 
@@ -185,7 +186,7 @@ fn trim_leading_whitespace_from_command_line() {
     fix.test("todo edit 1 --desc '  b'")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("b", 1, Incomplete))
+        .printed_task(&task("b", 1, Incomplete))
         .end();
 }
 
@@ -196,6 +197,6 @@ fn trim_trailing_whitespace_from_command_line() {
     fix.test("todo edit 1 --desc 'b  '")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("b", 1, Incomplete))
+        .printed_task(&task("b", 1, Incomplete))
         .end();
 }

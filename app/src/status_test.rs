@@ -1,8 +1,9 @@
 #![allow(clippy::zero_prefixed_literal)]
 
 use {
+    super::testing::task,
     super::testing::Fixture,
-    printing::{Action::*, PrintableTask, Status::*},
+    printing::{Action::*, Status::*},
     testing::ymdhms,
 };
 
@@ -19,9 +20,9 @@ fn status_after_added_tasks() {
     fix.test("todo")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("b", 2, Incomplete))
-        .printed_task(&PrintableTask::new("c", 3, Incomplete))
+        .printed_task(&task("a", 1, Incomplete))
+        .printed_task(&task("b", 2, Incomplete))
+        .printed_task(&task("c", 3, Incomplete))
         .end();
 }
 
@@ -33,8 +34,8 @@ fn status_does_not_include_blocked_tasks() {
     fix.test("todo")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).adeps_stats(1, 1))
-        .printed_task(&PrintableTask::new("c", 2, Incomplete))
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(1, 1))
+        .printed_task(&task("c", 2, Incomplete))
         .end();
 }
 
@@ -46,8 +47,8 @@ fn include_blocked_in_status() {
     fix.test("todo -b")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("b", 1, Incomplete).adeps_stats(1, 1))
-        .printed_task(&PrintableTask::new("a", 2, Blocked).deps_stats(1, 1))
+        .printed_task(&task("b", 1, Incomplete).adeps_stats(1, 1))
+        .printed_task(&task("a", 2, Blocked).deps_stats(1, 1))
         .end();
 }
 
@@ -59,8 +60,8 @@ fn include_complete_in_status() {
     fix.test("todo -d")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 0, Complete))
-        .printed_task(&PrintableTask::new("b", 1, Incomplete))
+        .printed_task(&task("a", 0, Complete))
+        .printed_task(&task("b", 1, Incomplete))
         .end();
 }
 
@@ -72,9 +73,9 @@ fn include_all_in_status() {
     fix.test("todo -a")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 0, Complete))
-        .printed_task(&PrintableTask::new("b", 1, Incomplete).adeps_stats(1, 1))
-        .printed_task(&PrintableTask::new("c", 2, Blocked).deps_stats(1, 2))
+        .printed_task(&task("a", 0, Complete))
+        .printed_task(&task("b", 1, Incomplete).adeps_stats(1, 1))
+        .printed_task(&task("c", 2, Blocked).deps_stats(1, 2))
         .end();
 }
 
@@ -86,7 +87,7 @@ fn status_after_check_multiple_tasks() {
     fix.test("todo")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
+        .printed_task(&task("a", 1, Incomplete))
         .end();
 }
 
@@ -99,8 +100,8 @@ fn status_after_unblocking_task() {
     fix.test("todo")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete))
-        .printed_task(&PrintableTask::new("b", 2, Incomplete))
+        .printed_task(&task("a", 1, Incomplete))
+        .printed_task(&task("b", 2, Incomplete))
         .end();
 }
 
@@ -115,7 +116,7 @@ fn status_unsnoozes_if_snooze_time_passed() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
+            &task("a", 1, Incomplete)
                 .start_date(ymdhms(2021, 05, 29, 00, 00, 00))
                 .action(Unsnooze),
         )
@@ -144,17 +145,17 @@ fn status_unsnooze_preserves_order() {
         .modified(true)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
+            &task("a", 1, Incomplete)
                 .start_date(ymdhms(2021, 05, 30, 13, 00, 00))
                 .action(Unsnooze),
         )
         .printed_task(
-            &PrintableTask::new("b", 2, Incomplete)
+            &task("b", 2, Incomplete)
                 .start_date(ymdhms(2021, 05, 30, 14, 00, 00))
                 .action(Unsnooze),
         )
         .printed_task(
-            &PrintableTask::new("c", 3, Incomplete)
+            &task("c", 3, Incomplete)
                 .start_date(ymdhms(2021, 05, 30, 15, 00, 00))
                 .action(Unsnooze),
         )

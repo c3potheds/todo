@@ -1,10 +1,8 @@
 use {
+    super::testing::task,
     super::testing::Fixture,
     lookup_key::Key,
-    printing::{
-        Action::*, BriefPrintableTask, PrintableTask, PrintableWarning,
-        Status::*,
-    },
+    printing::{Action::*, BriefPrintableTask, PrintableWarning, Status::*},
 };
 
 #[test]
@@ -29,15 +27,9 @@ fn path_between_tasks_with_direct_dependency() {
         .modified(false)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
-                .action(Select)
-                .adeps_stats(1, 1),
+            &task("a", 1, Incomplete).action(Select).adeps_stats(1, 1),
         )
-        .printed_task(
-            &PrintableTask::new("b", 2, Blocked)
-                .action(Select)
-                .deps_stats(1, 1),
-        )
+        .printed_task(&task("b", 2, Blocked).action(Select).deps_stats(1, 1))
         .end();
 }
 
@@ -49,16 +41,10 @@ fn path_between_tasks_with_indirect_dependency() {
         .modified(false)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
-                .action(Select)
-                .adeps_stats(1, 2),
+            &task("a", 1, Incomplete).action(Select).adeps_stats(1, 2),
         )
-        .printed_task(&PrintableTask::new("b", 2, Blocked).deps_stats(1, 1))
-        .printed_task(
-            &PrintableTask::new("c", 3, Blocked)
-                .action(Select)
-                .deps_stats(1, 2),
-        )
+        .printed_task(&task("b", 2, Blocked).deps_stats(1, 1))
+        .printed_task(&task("c", 3, Blocked).action(Select).deps_stats(1, 2))
         .end();
 }
 
@@ -112,7 +98,7 @@ fn path_between_task_with_one_match() {
     fix.test("todo path a")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Select))
+        .printed_task(&task("a", 1, Incomplete).action(Select))
         .end();
 }
 
@@ -131,16 +117,10 @@ fn path_between_tasks_of_same_name() {
             ],
         })
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
-                .action(Select)
-                .adeps_stats(1, 2),
+            &task("a", 1, Incomplete).action(Select).adeps_stats(1, 2),
         )
-        .printed_task(&PrintableTask::new("b", 2, Blocked).deps_stats(1, 1))
-        .printed_task(
-            &PrintableTask::new("a", 3, Blocked)
-                .action(Select)
-                .deps_stats(1, 2),
-        )
+        .printed_task(&task("b", 2, Blocked).deps_stats(1, 1))
+        .printed_task(&task("a", 3, Blocked).action(Select).deps_stats(1, 2))
         .end();
 }
 
@@ -152,21 +132,11 @@ fn path_between_three_tasks() {
         .modified(false)
         .validate()
         .printed_task(
-            &PrintableTask::new("a", 1, Incomplete)
-                .action(Select)
-                .adeps_stats(1, 4),
+            &task("a", 1, Incomplete).action(Select).adeps_stats(1, 4),
         )
-        .printed_task(&PrintableTask::new("b", 2, Blocked).deps_stats(1, 1))
-        .printed_task(
-            &PrintableTask::new("c", 3, Blocked)
-                .action(Select)
-                .deps_stats(1, 2),
-        )
-        .printed_task(&PrintableTask::new("d", 4, Blocked).deps_stats(1, 3))
-        .printed_task(
-            &PrintableTask::new("e", 5, Blocked)
-                .action(Select)
-                .deps_stats(1, 4),
-        )
+        .printed_task(&task("b", 2, Blocked).deps_stats(1, 1))
+        .printed_task(&task("c", 3, Blocked).action(Select).deps_stats(1, 2))
+        .printed_task(&task("d", 4, Blocked).deps_stats(1, 3))
+        .printed_task(&task("e", 5, Blocked).action(Select).deps_stats(1, 4))
         .end();
 }

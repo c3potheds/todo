@@ -1,6 +1,7 @@
 use {
+    super::testing::task,
     super::testing::Fixture,
-    printing::{PrintableInfo, PrintableTask, Status::*},
+    printing::{PrintableInfo, Status::*},
 };
 
 fn info_removed(desc: &str) -> PrintableInfo {
@@ -34,7 +35,7 @@ fn rm_task_with_adeps() {
         .modified(true)
         .validate()
         .printed_info(&info_removed("a"))
-        .printed_task(&PrintableTask::new("b", 1, Incomplete))
+        .printed_task(&task("b", 1, Incomplete))
         .end();
 }
 
@@ -46,7 +47,7 @@ fn rm_task_with_deps_and_adeps() {
         .modified(true)
         .validate()
         .printed_info(&info_removed("b"))
-        .printed_task(&PrintableTask::new("c", 2, Blocked).deps_stats(1, 1))
+        .printed_task(&task("c", 2, Blocked).deps_stats(1, 1))
         .end();
 }
 
@@ -64,8 +65,8 @@ fn rm_three_tasks() {
     fix.test("todo")
         .modified(false)
         .validate()
-        .printed_task(&PrintableTask::new("b", 1, Incomplete))
-        .printed_task(&PrintableTask::new("d", 2, Incomplete))
+        .printed_task(&task("b", 1, Incomplete))
+        .printed_task(&task("d", 2, Incomplete))
         .end();
 }
 

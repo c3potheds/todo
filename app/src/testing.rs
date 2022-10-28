@@ -8,7 +8,7 @@ use {
     model::TodoList,
     pretty_assertions::assert_eq,
     printing::{
-        PrintableError, PrintableInfo, PrintableTask, PrintableWarning,
+        PrintableError, PrintableInfo, PrintableTask, PrintableWarning, Status,
         TodoPrinter,
     },
     text_editing::FakeTextEditor,
@@ -153,4 +153,8 @@ impl<'list> Fixture<'list> {
             cmd: s.to_string(),
         }
     }
+}
+
+pub fn task(desc: &str, pos: i32, status: Status) -> PrintableTask<'_> {
+    PrintableTask::new(desc, pos, status)
 }

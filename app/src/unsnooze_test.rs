@@ -1,11 +1,9 @@
 #![allow(clippy::zero_prefixed_literal)]
 
 use {
+    super::testing::task,
     super::testing::Fixture,
-    printing::{
-        Action::*, BriefPrintableTask, PrintableTask, PrintableWarning,
-        Status::*,
-    },
+    printing::{Action::*, BriefPrintableTask, PrintableWarning, Status::*},
     testing::ymdhms,
 };
 
@@ -17,7 +15,7 @@ fn unsnooze_snoozed_task() {
     fix.test("todo unsnooze 1")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 1, Incomplete).action(Unsnooze))
+        .printed_task(&task("a", 1, Incomplete).action(Unsnooze))
         .end();
 }
 
@@ -30,7 +28,7 @@ fn unsnoozed_task_appears_at_end_of_incomplete_list() {
     fix.test("todo unsnooze a")
         .modified(true)
         .validate()
-        .printed_task(&PrintableTask::new("a", 3, Incomplete).action(Unsnooze))
+        .printed_task(&task("a", 3, Incomplete).action(Unsnooze))
         .end();
 }
 
