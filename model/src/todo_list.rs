@@ -280,7 +280,7 @@ impl<'ser> TodoList<'ser> {
         let task = Task::new(task.into());
         let snooze = task.start_date > task.creation_time;
         let id = TaskId(self.tasks.add_node(task));
-        self.put_in_incomplete_layer(id, if snooze { 1 } else { 0 });
+        self.put_in_incomplete_layer(id, usize::from(snooze));
         id
     }
 }

@@ -28,10 +28,10 @@ impl Config {
         Self {
             paginator_cmd: model
                 .paginator_cmd
-                .unwrap_or_else(&default_paginator_cmd),
+                .unwrap_or_else(default_paginator_cmd),
             text_editor_cmd: model
                 .text_editor_cmd
-                .unwrap_or_else(&default_text_editor_cmd),
+                .unwrap_or_else(default_text_editor_cmd),
         }
     }
 }

@@ -102,7 +102,9 @@ impl<'list> Default for Fixture<'list> {
     fn default() -> Self {
         Fixture {
             list: TodoList::default(),
-            clock: FakeClock::new(Utc.ymd(2000, 01, 01).and_hms(00, 00, 00)),
+            clock: FakeClock::new(
+                Utc.with_ymd_and_hms(2000, 01, 01, 00, 00, 00).unwrap(),
+            ),
             text_editor: FakeTextEditor::no_user_output(),
         }
     }

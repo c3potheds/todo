@@ -16,7 +16,7 @@ fn log_with_no_tasks_completed() {
 #[test]
 fn log_after_single_task_completed() {
     let mut fix = Fixture::default();
-    fix.clock.now = Utc.ymd(2021, 03, 26).and_hms(17, 37, 00);
+    fix.clock.now = Utc.with_ymd_and_hms(2021, 03, 26, 17, 37, 00).unwrap();
     fix.test("todo new a b c");
     fix.test("todo check 2");
     fix.test("todo log")
@@ -31,7 +31,7 @@ fn log_after_single_task_completed() {
 #[test]
 fn log_after_multiple_tasks_completed() {
     let mut fix = Fixture::default();
-    fix.clock.now = Utc.ymd(2021, 03, 26).and_hms(17, 42, 00);
+    fix.clock.now = Utc.with_ymd_and_hms(2021, 03, 26, 17, 42, 00).unwrap();
     fix.test("todo new a b c");
     fix.test("todo check 1 3");
     fix.test("todo log")
@@ -52,14 +52,14 @@ fn log_after_multiple_tasks_completed() {
 fn log_shows_date_when_it_changes() {
     let mut fix = Fixture::default();
     fix.clock.now = Local
-        .ymd(2021, 01, 01)
-        .and_hms(00, 00, 00)
+        .with_ymd_and_hms(2021, 01, 01, 00, 00, 00)
+        .unwrap()
         .with_timezone(&Utc);
     fix.test("todo new a b c d");
     fix.test("todo check a b");
     fix.clock.now = Local
-        .ymd(2021, 01, 02)
-        .and_hms(00, 00, 00)
+        .with_ymd_and_hms(2021, 01, 02, 00, 00, 00)
+        .unwrap()
         .with_timezone(&Utc);
     fix.test("todo check c d");
     fix.test("todo log")

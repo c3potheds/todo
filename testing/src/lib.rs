@@ -9,7 +9,7 @@ pub fn ymdhms(
     sec: u32,
 ) -> DateTime<Utc> {
     Local
-        .ymd(yr, mon, day)
-        .and_hms(hr, min, sec)
+        .with_ymd_and_hms(yr, mon, day, hr, min, sec)
+        .unwrap()
         .with_timezone(&Utc)
 }

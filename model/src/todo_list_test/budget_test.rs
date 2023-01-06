@@ -29,13 +29,15 @@ fn dep_of_task_with_budget_incorporates_budget_in_due_date() {
     let b = list.add(
         NewOptions::new()
             .desc("b")
-            .due_date(Utc.ymd(2021, 04, 22).and_hms(23, 59, 59))
+            .due_date(Utc.with_ymd_and_hms(2021, 04, 22, 23, 59, 59).unwrap())
             .budget(budget),
     );
     list.block(b).on(a).unwrap();
     assert_eq!(
         list.implicit_due_date(a),
-        Some(Some(Utc.ymd(2021, 04, 21).and_hms(23, 59, 59)))
+        Some(Some(
+            Utc.with_ymd_and_hms(2021, 04, 21, 23, 59, 59).unwrap()
+        ))
     );
 }
 
@@ -47,7 +49,7 @@ fn chain_of_tasks_with_budgets() {
     let c = list.add(
         NewOptions::new()
             .desc("c")
-            .due_date(Utc.ymd(2021, 04, 22).and_hms(23, 59, 59))
+            .due_date(Utc.with_ymd_and_hms(2021, 04, 22, 23, 59, 59).unwrap())
             .budget(Duration::days(1)),
     );
     list.block(b).on(a).unwrap();
@@ -55,7 +57,9 @@ fn chain_of_tasks_with_budgets() {
     list.block(c).on(b).unwrap();
     assert_eq!(
         list.implicit_due_date(a),
-        Some(Some(Utc.ymd(2021, 04, 20).and_hms(23, 59, 59)))
+        Some(Some(
+            Utc.with_ymd_and_hms(2021, 04, 20, 23, 59, 59).unwrap()
+        ))
     );
 }
 
@@ -95,7 +99,7 @@ fn set_budget_updates_deps() {
     let b = list.add(
         NewOptions::new()
             .desc("b")
-            .due_date(Utc.ymd(2021, 04, 22).and_hms(23, 59, 59)),
+            .due_date(Utc.with_ymd_and_hms(2021, 04, 22, 23, 59, 59).unwrap()),
     );
     list.block(b).on(a).unwrap();
     assert_eq!(
@@ -106,6 +110,8 @@ fn set_budget_updates_deps() {
     );
     assert_eq!(
         list.implicit_due_date(a),
-        Some(Some(Utc.ymd(2021, 04, 21).and_hms(23, 59, 59)))
+        Some(Some(
+            Utc.with_ymd_and_hms(2021, 04, 21, 23, 59, 59).unwrap()
+        ))
     );
 }

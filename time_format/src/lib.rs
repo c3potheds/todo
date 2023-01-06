@@ -151,8 +151,15 @@ fn parse_time_of_day<Tz: TimeZone>(
                     _ => return Err(ParseTimeError),
                 };
                 let mut target = tz
-                    .ymd(now.year(), now.month(), now.day())
-                    .and_hms(hour as u32, minute as u32, 00);
+                    .with_ymd_and_hms(
+                        now.year(),
+                        now.month(),
+                        now.day(),
+                        hour as u32,
+                        minute as u32,
+                        00,
+                    )
+                    .unwrap();
                 if target < now {
                     target += chrono::Duration::days(1);
                 }
@@ -288,16 +295,17 @@ fn parse_year_month_day<'a, Tz: TimeZone>(
     let year = chunk.parse::<i32>().map_err(|_| ParseTimeError)?;
     match chunks.next() {
         Some(chunk) => parse_month_day(
-            tz.ymd(year, 01, 01).and_hms(00, 00, 00),
+            tz.with_ymd_and_hms(year, 01, 01, 00, 00, 00).unwrap(),
             chunk,
             chunks,
             snap,
         )
         .map(|datetime| datetime.with_year(year).unwrap()),
         None => Ok(match snap {
-            Snap::ToStart => tz.ymd(year, 01, 01).and_hms(00, 00, 00),
-            Snap::ToEnd => tz.ymd(year, 12, 31).and_hms(23, 59, 59),
-        }),
+            Snap::ToStart => tz.with_ymd_and_hms(year, 01, 01, 00, 00, 00),
+            Snap::ToEnd => tz.with_ymd_and_hms(year, 12, 31, 23, 59, 59),
+        }
+        .unwrap()),
     }
 }
 

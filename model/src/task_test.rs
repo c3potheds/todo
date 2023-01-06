@@ -11,7 +11,10 @@ fn deserialize_task_with_missing_creation_time() {
         .ok()
         .unwrap();
     assert_eq!(task.desc, "hi");
-    assert!(task.creation_time != Utc.ymd(1970, 01, 01).and_hms(00, 00, 00));
+    assert_ne!(
+        task.creation_time,
+        Utc.with_ymd_and_hms(1970, 01, 01, 00, 00, 00).unwrap()
+    );
     assert_eq!(task.completion_time, None);
     assert_eq!(task.priority, 0);
     assert_eq!(task.implicit_priority, 0);

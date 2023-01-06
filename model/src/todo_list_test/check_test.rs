@@ -43,7 +43,7 @@ fn completion_time_of_completed_task_does_not_update_if_checked() -> TestResult
 fn check_by_options_uses_injected_completion_time() -> TestResult {
     let mut list = TodoList::default();
     let a = list.add("a");
-    let now = Utc.ymd(2021, 03, 26).and_hms(04, 27, 00);
+    let now = Utc.with_ymd_and_hms(2021, 03, 26, 04, 27, 00).unwrap();
     list.check(CheckOptions { id: a, now }).unwrap();
     assert_eq!(list.get(a).unwrap().completion_time, Some(now));
     Ok(())

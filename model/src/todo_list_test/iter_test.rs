@@ -104,19 +104,19 @@ fn sort_by_priority_then_due_date() -> TestResult {
         NewOptions::new()
             .desc("a")
             .priority(2)
-            .due_date(Utc.ymd(2021, 04, 11).and_hms(13, 00, 00)),
+            .due_date(Utc.with_ymd_and_hms(2021, 04, 11, 13, 00, 00).unwrap()),
     );
     let b = list.add(
         NewOptions::new()
             .desc("b")
             .priority(1)
-            .due_date(Utc.ymd(2021, 04, 11).and_hms(11, 00, 00)),
+            .due_date(Utc.with_ymd_and_hms(2021, 04, 11, 11, 00, 00).unwrap()),
     );
     let c = list.add(
         NewOptions::new()
             .desc("c")
             .priority(2)
-            .due_date(Utc.ymd(2021, 04, 11).and_hms(12, 00, 00)),
+            .due_date(Utc.with_ymd_and_hms(2021, 04, 11, 12, 00, 00).unwrap()),
     );
     assert_eq!(list.all_tasks().collect::<Vec<_>>(), vec![c, a, b]);
     Ok(())
