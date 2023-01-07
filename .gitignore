@@ -3,3 +3,5 @@
 Cargo.lock
 /.vscode
 **/*.code-workspace
+**/*.profraw
+**/lcov.info
