@@ -89,6 +89,10 @@ impl TaskSet {
             }
         }
     }
+
+    pub fn as_sorted_vec(&self, list: &TodoList) -> Vec<TaskId> {
+        self.iter_sorted(list).collect()
+    }
 }
 
 impl TaskSet {

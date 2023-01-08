@@ -1,5 +1,7 @@
 use super::*;
 
+use ::pretty_assertions::assert_eq;
+
 #[test]
 fn punt_only_task() -> TestResult {
     let mut list = TodoList::default();
@@ -16,7 +18,7 @@ fn punt_first_of_three_tasks() -> TestResult {
     let b = list.add("b");
     let c = list.add("c");
     list.punt(a)?;
-    itertools::assert_equal(list.incomplete_tasks(), vec![b, c, a]);
+    assert_eq!(list.incomplete_tasks().collect::<Vec<_>>(), [b, c, a]);
     Ok(())
 }
 
@@ -39,6 +41,6 @@ fn punt_blocked_task_moves_to_end_of_layer() -> TestResult {
     list.block(b).on(a)?;
     list.block(c).on(a)?;
     list.punt(b)?;
-    itertools::assert_equal(list.incomplete_tasks(), vec![a, c, b]);
+    assert_eq!(list.incomplete_tasks().collect::<Vec<_>>(), [a, c, b]);
     Ok(())
 }

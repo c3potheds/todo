@@ -1,10 +1,11 @@
 use super::*;
+use ::pretty_assertions::assert_eq;
 
 #[test]
 fn deps_of_standalone_task() -> TestResult {
     let mut list = TodoList::default();
     let a = list.add("a");
-    itertools::assert_equal(list.deps(a).iter_sorted(&list), Vec::new());
+    assert_eq!(list.deps(a).as_sorted_vec(&list), []);
     Ok(())
 }
 
@@ -16,7 +17,7 @@ fn deps_of_blocked_task() -> TestResult {
     let c = list.add("c");
     list.block(c).on(a)?;
     list.block(c).on(b)?;
-    itertools::assert_equal(list.deps(c).iter_sorted(&list), vec![a, b]);
+    assert_eq!(list.deps(c).as_sorted_vec(&list), [a, b]);
     Ok(())
 }
 
@@ -27,7 +28,7 @@ fn deps_of_task_blocked_by_completed_task() -> TestResult {
     let b = list.add("b");
     list.block(b).on(a)?;
     list.check(a)?;
-    itertools::assert_equal(list.deps(b).iter_sorted(&list), vec![a]);
+    assert_eq!(list.deps(b).as_sorted_vec(&list), [a]);
     Ok(())
 }
 
@@ -39,7 +40,7 @@ fn deps_of_task_with_depth_higher_than_one() -> TestResult {
     let c = list.add("c");
     list.block(b).on(a)?;
     list.block(c).on(b)?;
-    itertools::assert_equal(list.deps(c).iter_sorted(&list), vec![b]);
+    assert_eq!(list.deps(c).as_sorted_vec(&list), [b]);
     Ok(())
 }
 
@@ -47,7 +48,7 @@ fn deps_of_task_with_depth_higher_than_one() -> TestResult {
 fn adeps_of_standalone_task() -> TestResult {
     let mut list = TodoList::default();
     let a = list.add("a");
-    itertools::assert_equal(list.adeps(a).iter_sorted(&list), vec![]);
+    assert_eq!(list.adeps(a).as_sorted_vec(&list), []);
     Ok(())
 }
 
@@ -59,7 +60,7 @@ fn adeps_of_blocked_task() -> TestResult {
     let c = list.add("c");
     list.block(b).on(a)?;
     list.block(c).on(a)?;
-    itertools::assert_equal(list.adeps(a).iter_sorted(&list), vec![b, c]);
+    assert_eq!(list.adeps(a).as_sorted_vec(&list), [b, c]);
     Ok(())
 }
 
@@ -70,7 +71,7 @@ fn adeps_of_completed_task() -> TestResult {
     let b = list.add("b");
     list.block(b).on(a)?;
     list.check(a)?;
-    itertools::assert_equal(list.adeps(a).iter_sorted(&list), vec![b]);
+    assert_eq!(list.adeps(a).as_sorted_vec(&list), [b]);
     Ok(())
 }
 
@@ -82,7 +83,7 @@ fn adeps_of_task_with_depth_of_one() -> TestResult {
     let c = list.add("c");
     list.block(b).on(a)?;
     list.block(c).on(b)?;
-    itertools::assert_equal(list.adeps(b).iter_sorted(&list), vec![c]);
+    assert_eq!(list.adeps(b).as_sorted_vec(&list), [c]);
     Ok(())
 }
 
@@ -90,7 +91,7 @@ fn adeps_of_task_with_depth_of_one() -> TestResult {
 fn transitive_deps_of_standalone_task() -> TestResult {
     let mut list = TodoList::default();
     let a = list.add("a");
-    itertools::assert_equal(list.transitive_deps(a).iter_sorted(&list), vec![]);
+    assert_eq!(list.transitive_deps(a).as_sorted_vec(&list), []);
     Ok(())
 }
 
@@ -105,10 +106,7 @@ fn transitive_deps_of_blocked_task() -> TestResult {
     list.block(c).on(a)?;
     list.block(d).on(b)?;
     list.block(d).on(c)?;
-    itertools::assert_equal(
-        list.transitive_deps(d).iter_sorted(&list),
-        vec![a, b, c],
-    );
+    assert_eq!(list.transitive_deps(d).as_sorted_vec(&list), [a, b, c]);
     Ok(())
 }
 
@@ -122,10 +120,7 @@ fn transitive_deps_includes_complete_tasks() -> TestResult {
     list.block(c).on(b)?;
     list.check(a)?;
     list.check(b)?;
-    itertools::assert_equal(
-        list.transitive_deps(c).iter_sorted(&list),
-        vec![a, b],
-    );
+    assert_eq!(list.transitive_deps(c).as_sorted_vec(&list), [a, b]);
     Ok(())
 }
 
@@ -133,10 +128,7 @@ fn transitive_deps_includes_complete_tasks() -> TestResult {
 fn transitive_adeps_of_standalone_task() -> TestResult {
     let mut list = TodoList::default();
     let a = list.add("a");
-    itertools::assert_equal(
-        list.transitive_adeps(a).iter_sorted(&list),
-        vec![],
-    );
+    assert_eq!(list.transitive_adeps(a).as_sorted_vec(&list), []);
     Ok(())
 }
 
@@ -151,10 +143,7 @@ fn transitive_adeps_of_blocking_task() -> TestResult {
     list.block(c).on(a)?;
     list.block(d).on(b)?;
     list.block(d).on(c)?;
-    itertools::assert_equal(
-        list.transitive_adeps(a).iter_sorted(&list),
-        vec![b, c, d],
-    );
+    assert_eq!(list.transitive_adeps(a).as_sorted_vec(&list), [b, c, d]);
     Ok(())
 }
 
@@ -168,9 +157,6 @@ fn transitive_adeps_includes_complete_tasks() -> TestResult {
     list.block(c).on(b)?;
     list.check(a)?;
     list.check(b)?;
-    itertools::assert_equal(
-        list.transitive_adeps(a).iter_sorted(&list),
-        vec![b, c],
-    );
+    assert_eq!(list.transitive_adeps(a).as_sorted_vec(&list), [b, c]);
     Ok(())
 }

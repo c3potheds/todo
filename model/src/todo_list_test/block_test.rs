@@ -1,5 +1,7 @@
 use super::*;
 
+use ::pretty_assertions::assert_eq;
+
 #[test]
 fn ordering_of_blocked_task() -> TestResult {
     let mut list = TodoList::default();
@@ -197,7 +199,7 @@ fn block_complete_task_affects_complete_adeps() -> TestResult {
     list.check(b).unwrap();
     list.check(c).unwrap();
     let res = list.block(b).on(a).unwrap();
-    itertools::assert_equal(res.iter_sorted(&list), vec![a, b, c]);
+    assert_eq!(res.as_sorted_vec(&list), [a, b, c]);
     Ok(())
 }
 
@@ -213,7 +215,7 @@ fn block_blocked_task_on_task_with_higher_depth() -> TestResult {
     list.block(c).on(b).unwrap();
     list.block(e).on(d).unwrap();
     let res = list.block(e).on(c).unwrap();
-    itertools::assert_equal(res.iter_sorted(&list), vec![c, e]);
-    itertools::assert_equal(list.incomplete_tasks(), vec![a, d, b, c, e]);
+    assert_eq!(res.as_sorted_vec(&list), [c, e]);
+    assert_eq!(list.incomplete_tasks().collect::<Vec<_>>(), [a, d, b, c, e]);
     Ok(())
 }

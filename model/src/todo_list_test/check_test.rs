@@ -3,6 +3,7 @@
 use {
     super::*,
     chrono::{TimeZone, Utc},
+    ::pretty_assertions::assert_eq,
 };
 
 #[test]
@@ -131,8 +132,8 @@ fn force_check_incomplete_task() -> TestResult {
     let mut list = TodoList::default();
     let a = list.add("a");
     let result = list.force_check(a).unwrap();
-    itertools::assert_equal(result.completed.iter_sorted(&list), vec![a]);
-    itertools::assert_equal(result.unblocked.iter_sorted(&list), vec![]);
+    assert_eq!(result.completed.as_sorted_vec(&list), [a]);
+    assert_eq!(result.unblocked.as_sorted_vec(&list), []);
     Ok(())
 }
 
@@ -145,8 +146,8 @@ fn force_check_blocked_task() -> TestResult {
     list.block(b).on(a).unwrap();
     list.block(c).on(b).unwrap();
     let result = list.force_check(b).unwrap();
-    itertools::assert_equal(result.completed.iter_sorted(&list), vec![a, b]);
-    itertools::assert_equal(result.unblocked.iter_sorted(&list), vec![c]);
+    assert_eq!(result.completed.as_sorted_vec(&list), [a, b]);
+    assert_eq!(result.unblocked.as_sorted_vec(&list), [c]);
     assert_eq!(list.status(a), Some(TaskStatus::Complete));
     assert_eq!(list.status(b), Some(TaskStatus::Complete));
     assert_eq!(list.status(c), Some(TaskStatus::Incomplete));

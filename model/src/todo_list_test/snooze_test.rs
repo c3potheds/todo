@@ -2,6 +2,7 @@
 
 use {
     super::*,
+    ::pretty_assertions::assert_eq,
     chrono::{TimeZone, Utc},
 };
 
@@ -67,7 +68,7 @@ fn unsnooze_up_to_after_snooze_date() {
     );
     let now = Utc.with_ymd_and_hms(2021, 06, 01, 09, 00, 00).unwrap();
     let unsnoozed = list.unsnooze_up_to(now);
-    itertools::assert_equal(unsnoozed.iter_sorted(&list), vec![a]);
+    assert_eq!(unsnoozed.as_sorted_vec(&list), [a]);
     assert_eq!(list.status(a).unwrap(), TaskStatus::Incomplete);
 }
 
@@ -98,10 +99,10 @@ fn unsnooze_up_to_unsnoozes_multiple_tasks() {
     );
     let now = snooze_b;
     let unsnoozed = list.unsnooze_up_to(now);
-    itertools::assert_equal(unsnoozed.iter_sorted(&list), vec![a, b]);
+    assert_eq!(unsnoozed.as_sorted_vec(&list), [a, b]);
     let now = snooze_c;
     let unsnoozed = list.unsnooze_up_to(now);
-    itertools::assert_equal(unsnoozed.iter_sorted(&list), vec![c]);
+    assert_eq!(unsnoozed.as_sorted_vec(&list), [c]);
 }
 
 #[test]
@@ -124,13 +125,13 @@ fn unsnooze_updates_depth_of_adeps() -> TestResult {
     // a is next because it's snoozed, but was added before d, which is blocked
     // by c.
     // b is blocked by a, and so appears in a deeper layer than a.
-    itertools::assert_equal(list.incomplete_tasks(), vec![c, a, d, b]);
+    assert_eq!(list.incomplete_tasks().collect::<Vec<_>>(), [c, a, d, b]);
     let now = Utc.with_ymd_and_hms(2021, 05, 25, 12, 00, 00).unwrap();
     list.unsnooze_up_to(now);
     // a and b now appear before c and d, respectively, because they are in
     // the same layer, and have a due date which sorts them earlier the other
     // tasks with no due date.
-    itertools::assert_equal(list.incomplete_tasks(), vec![a, c, b, d]);
+    assert_eq!(list.incomplete_tasks().collect::<Vec<_>>(), [a, c, b, d]);
     Ok(())
 }
 
@@ -145,12 +146,13 @@ fn check_snoozed_task() -> TestResult {
             .creation_time(now)
             .start_date(snooze_a),
     );
-    itertools::assert_equal(
-        list.check(CheckOptions { id: a, now })?.iter_sorted(&list),
-        vec![],
+    assert_eq!(
+        list.check(CheckOptions { id: a, now })?
+            .as_sorted_vec(&list),
+        []
     );
-    itertools::assert_equal(list.incomplete_tasks(), vec![]);
-    itertools::assert_equal(list.complete_tasks(), vec![a]);
+    assert_eq!(list.incomplete_tasks().collect::<Vec<_>>(), []);
+    assert_eq!(list.complete_tasks().collect::<Vec<_>>(), [a]);
     Ok(())
 }
 
@@ -165,14 +167,14 @@ fn force_check_snoozed_task() -> TestResult {
             .creation_time(now)
             .start_date(snooze_a),
     );
-    itertools::assert_equal(
+    assert_eq!(
         list.force_check(CheckOptions { id: a, now })?
             .completed
-            .iter_sorted(&list),
-        vec![a],
+            .as_sorted_vec(&list),
+        [a],
     );
-    itertools::assert_equal(list.incomplete_tasks(), vec![]);
-    itertools::assert_equal(list.complete_tasks(), vec![a]);
+    assert_eq!(list.incomplete_tasks().collect::<Vec<_>>(), []);
+    assert_eq!(list.complete_tasks().collect::<Vec<_>>(), [a]);
     Ok(())
 }
 
@@ -208,12 +210,12 @@ fn snooze_blocked_task() -> TestResult {
         list.snooze(b, Utc.with_ymd_and_hms(2021, 05, 25, 15, 00, 00).unwrap()),
         Ok(())
     );
-    itertools::assert_equal(
+    assert_eq!(
         list.unsnooze_up_to(
             Utc.with_ymd_and_hms(2021, 05, 25, 16, 00, 00).unwrap(),
         )
-        .iter_sorted(&list),
-        vec![],
+        .as_sorted_vec(&list),
+        [],
     );
     assert_eq!(list.status(b), Some(TaskStatus::Blocked));
     Ok(())
@@ -260,13 +262,13 @@ fn snoozed_blocked_task_remains_snoozed_when_deps_completed() -> TestResult {
     list.block(b).on(a)?;
     list.snooze(b, Utc.with_ymd_and_hms(2021, 05, 25, 16, 00, 00).unwrap())
         .unwrap();
-    itertools::assert_equal(
+    assert_eq!(
         list.check(CheckOptions {
             id: a,
             now: Utc.with_ymd_and_hms(2021, 05, 25, 15, 00, 00).unwrap(),
         })?
-        .iter_sorted(&list),
-        vec![],
+        .as_sorted_vec(&list),
+        [],
     );
     assert_eq!(list.status(b), Some(TaskStatus::Blocked));
     Ok(())
@@ -281,13 +283,13 @@ fn snoozed_blocked_task_unsnoozes_when_deps_completed_after_snooze_date(
     list.block(b).on(a)?;
     list.snooze(b, Utc.with_ymd_and_hms(2021, 05, 25, 16, 00, 00).unwrap())
         .unwrap();
-    itertools::assert_equal(
+    assert_eq!(
         list.check(CheckOptions {
             id: a,
             now: Utc.with_ymd_and_hms(2021, 05, 25, 17, 00, 00).unwrap(),
         })?
-        .iter_sorted(&list),
-        vec![b],
+        .as_sorted_vec(&list),
+        [b],
     );
     assert_eq!(list.status(b), Some(TaskStatus::Incomplete));
     Ok(())

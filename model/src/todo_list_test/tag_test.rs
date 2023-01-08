@@ -147,7 +147,7 @@ fn subtags() -> TestResult {
 fn set_tag() -> TestResult {
     let mut list = TodoList::default();
     let a = list.add("a");
-    itertools::assert_equal(list.set_tag(a, true).iter_sorted(&list), vec![a]);
+    assert_eq!(list.set_tag(a, true).as_sorted_vec(&list), [a]);
     Ok(())
 }
 
@@ -159,10 +159,7 @@ fn set_blocked_task_as_tag_returns_affected_deps() -> TestResult {
     let c = list.add("c");
     list.block(b).on(a)?;
     list.block(c).on(b)?;
-    itertools::assert_equal(
-        list.set_tag(b, true).iter_sorted(&list),
-        vec![a, b],
-    );
+    assert_eq!(list.set_tag(b, true).as_sorted_vec(&list), [a, b]);
     Ok(())
 }
 
@@ -174,7 +171,7 @@ fn set_tag_on_tag_is_no_op() -> TestResult {
     let c = list.add(NewOptions::new().desc("c").as_tag());
     list.block(b).on(a)?;
     list.block(c).on(b)?;
-    itertools::assert_equal(list.set_tag(b, true).iter_sorted(&list), vec![]);
+    assert_eq!(list.set_tag(b, true).as_sorted_vec(&list), []);
     Ok(())
 }
 
@@ -186,10 +183,7 @@ fn unmark_tag() -> TestResult {
     let c = list.add(NewOptions::new().desc("c").as_tag());
     list.block(b).on(a)?;
     list.block(c).on(b)?;
-    itertools::assert_equal(
-        list.set_tag(b, false).iter_sorted(&list),
-        vec![a, b],
-    );
+    assert_eq!(list.set_tag(b, false).as_sorted_vec(&list), [a, b]);
     Ok(())
 }
 
@@ -199,8 +193,8 @@ fn unmark_task_that_is_not_tag_is_no_op() -> TestResult {
     let a = list.add("a");
     let b = list.add("b");
     list.block(b).on(a)?;
-    itertools::assert_equal(list.set_tag(a, false).iter_sorted(&list), vec![]);
-    itertools::assert_equal(list.set_tag(b, false).iter_sorted(&list), vec![]);
+    assert_eq!(list.set_tag(a, false).as_sorted_vec(&list), []);
+    assert_eq!(list.set_tag(b, false).as_sorted_vec(&list), []);
     Ok(())
 }
 
@@ -213,9 +207,6 @@ fn set_tag_includes_complete_affected_tasks() -> TestResult {
     list.block(b).on(a)?;
     list.block(c).on(b)?;
     list.check(a)?;
-    itertools::assert_equal(
-        list.set_tag(b, true).iter_sorted(&list),
-        vec![a, b],
-    );
+    assert_eq!(list.set_tag(b, true).as_sorted_vec(&list), [a, b],);
     Ok(())
 }

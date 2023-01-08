@@ -1,4 +1,5 @@
 use super::*;
+use ::pretty_assertions::assert_eq;
 
 #[test]
 fn restore_incomplete_task() -> TestResult {
@@ -100,8 +101,8 @@ fn force_restore_returns_newly_blocked_tasks_on_success() -> TestResult {
     list.check(b).unwrap();
     list.check(c).unwrap();
     let result = list.force_restore(a).unwrap();
-    itertools::assert_equal(result.restored.iter_sorted(&list), vec![a, b, c]);
-    itertools::assert_equal(result.blocked.iter_sorted(&list), vec![b, c]);
+    assert_eq!(result.restored.as_sorted_vec(&list), [a, b, c]);
+    assert_eq!(result.blocked.as_sorted_vec(&list), [b, c]);
     Ok(())
 }
 

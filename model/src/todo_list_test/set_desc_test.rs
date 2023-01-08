@@ -27,9 +27,6 @@ fn set_desc_of_tag_updates_deps() -> TestResult {
     list.set_tag(x, true);
     list.block(x).on(a)?;
     list.block(x).on(b)?;
-    assert_eq!(
-        list.set_desc(x, "y").iter_sorted(&list).collect::<Vec<_>>(),
-        vec![a, b, x],
-    );
+    assert_eq!(list.set_desc(x, "y").as_sorted_vec(&list), [a, b, x]);
     Ok(())
 }

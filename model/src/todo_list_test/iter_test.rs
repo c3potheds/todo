@@ -3,6 +3,7 @@
 use {
     super::*,
     chrono::{TimeZone, Utc},
+    ::pretty_assertions::assert_eq,
 };
 
 #[test]
@@ -68,7 +69,7 @@ fn all_tasks_when_all_are_incomplete() -> TestResult {
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
-    itertools::assert_equal(list.all_tasks(), vec![a, b, c]);
+    assert_eq!(list.all_tasks().collect::<Vec<_>>(), [a, b, c]);
     Ok(())
 }
 
@@ -81,7 +82,7 @@ fn all_tasks_when_all_are_complete() -> TestResult {
     list.check(a)?;
     list.check(b)?;
     list.check(c)?;
-    itertools::assert_equal(list.all_tasks(), vec![a, b, c]);
+    assert_eq!(list.all_tasks().collect::<Vec<_>>(), [a, b, c]);
     Ok(())
 }
 
@@ -93,7 +94,7 @@ fn all_tasks_when_some_are_complete_and_some_are_blocked() -> TestResult {
     let c = list.add("c");
     list.check(a)?;
     list.block(c).on(b)?;
-    itertools::assert_equal(list.all_tasks(), vec![a, b, c]);
+    assert_eq!(list.all_tasks().collect::<Vec<_>>(), [a, b, c]);
     Ok(())
 }
 
@@ -118,6 +119,6 @@ fn sort_by_priority_then_due_date() -> TestResult {
             .priority(2)
             .due_date(Utc.with_ymd_and_hms(2021, 04, 11, 12, 00, 00).unwrap()),
     );
-    assert_eq!(list.all_tasks().collect::<Vec<_>>(), vec![c, a, b]);
+    assert_eq!(list.all_tasks().collect::<Vec<_>>(), [c, a, b]);
     Ok(())
 }
