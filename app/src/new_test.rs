@@ -613,7 +613,7 @@ fn new_blocked_by_incomplete_task_and_blocks_other_task() {
         .modified(false)
         .validate()
         .printed_error(&PrintableError::CannotCheckBecauseBlocked {
-            cannot_check: BriefPrintableTask::new(2, Blocked),
+            cannot_check: BriefPrintableTask::new(3, Blocked),
             blocked_by: vec![BriefPrintableTask::new(1, Incomplete)],
         })
         .end();
@@ -784,5 +784,17 @@ fn trim_trailing_whitespace_from_desc() {
         .modified(true)
         .validate()
         .printed_task(&task("a", 3, Incomplete).action(New))
+        .end();
+}
+
+#[test]
+fn do_not_change_position_of_adep_if_complete() {
+    let mut fix = Fixture::default();
+    fix.test("todo new y z");
+    fix.test("todo new x -b y -d")
+        .modified(true)
+        .validate()
+        .printed_task(&task("x", 0, Complete).action(New))
+        .printed_task(&task("y", 1, Incomplete))
         .end();
 }

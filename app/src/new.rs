@@ -60,7 +60,51 @@ pub fn run<'list>(
         .collect();
     to_print.extend(
         deps.product(&new_tasks, list)
-            .chain(new_tasks.product(&adeps, list))
+            .try_fold(
+                TaskSet::default(),
+                |so_far, (a, b)| -> Result<_, Vec<PrintableError>> {
+                    Ok(so_far
+                        | list.block(b).on(a).map_err(|_| {
+                            vec![
+                            PrintableError::CannotBlockBecauseWouldCauseCycle {
+                                cannot_block: format_task_brief(list, b),
+                                requested_dependency: format_task_brief(
+                                    list, a,
+                                ),
+                            },
+                        ]
+                        })?)
+                },
+            )?
+            .iter_unsorted(),
+    );
+    if cmd.done {
+        to_print.extend(
+            new_tasks
+                .iter_sorted(list)
+                .try_fold(TaskSet::default(), |so_far, id| {
+                    match list.check(CheckOptions { id, now }) {
+                        Ok(affected) => Ok(so_far | affected),
+                        Err(CheckError::TaskIsBlockedBy(blocking)) => {
+                            Err(vec![
+                                PrintableError::CannotCheckBecauseBlocked {
+                                    cannot_check: format_task_brief(list, id),
+                                    blocked_by: format_tasks_brief(
+                                        list,
+                                        &TaskSet::from_iter(blocking),
+                                    ),
+                                },
+                            ])
+                        }
+                        _ => Ok(so_far),
+                    }
+                })?
+                .iter_unsorted(),
+        );
+    }
+    to_print.extend(
+        new_tasks
+            .product(&adeps, list)
             .try_fold(
                 TaskSet::default(),
                 |so_far, (a, b)| -> Result<_, Vec<PrintableError>> {
@@ -88,30 +132,6 @@ pub fn run<'list>(
                     panic!("This should never happen because all tasks are new")
                 }
             },
-        );
-    }
-    if cmd.done {
-        to_print.extend(
-            new_tasks
-                .iter_sorted(list)
-                .try_fold(TaskSet::default(), |so_far, id| {
-                    match list.check(CheckOptions { id, now }) {
-                        Ok(affected) => Ok(so_far | affected),
-                        Err(CheckError::TaskIsBlockedBy(blocking)) => {
-                            Err(vec![
-                                PrintableError::CannotCheckBecauseBlocked {
-                                    cannot_check: format_task_brief(list, id),
-                                    blocked_by: format_tasks_brief(
-                                        list,
-                                        &TaskSet::from_iter(blocking),
-                                    ),
-                                },
-                            ])
-                        }
-                        _ => Ok(so_far),
-                    }
-                })?
-                .iter_unsorted(),
         );
     }
     let tasks_to_print = TaskSet::from_iter(to_print)
