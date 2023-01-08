@@ -4,7 +4,7 @@ use {
     super::util::{format_task, lookup_tasks},
     cli::Edit,
     itertools::Itertools,
-    model::{TaskId, TaskSet, TodoList},
+    model::{TaskSet, TodoList},
     printing::PrintableError,
     std::borrow::Cow,
     text_editing::TextEditor,
@@ -25,12 +25,15 @@ fn edit_with_description<'list>(
     list: &'list mut TodoList,
     ids: &TaskSet,
     desc: &str,
+    include_done: bool,
 ) -> PrintableResult<'list> {
     let tasks_to_print: Vec<_> = ids
         .iter_sorted(list)
-        .filter(|&id| list.set_desc(id, Cow::Owned(desc.trim().to_string())))
-        .collect::<Vec<_>>()
-        .into_iter()
+        .fold(TaskSet::default(), |so_far, id| {
+            so_far | list.set_desc(id, Cow::Owned(desc.trim().to_string()))
+        })
+        .include_done(list, include_done)
+        .iter_sorted(list)
         .map(|id| format_task(list, id))
         .collect();
     let mutated = !tasks_to_print.is_empty();
@@ -66,7 +69,7 @@ fn update_desc(
     ids: &TaskSet,
     pos: i32,
     desc: &str,
-) -> Result<TaskId, PrintableError> {
+) -> Result<TaskSet, PrintableError> {
     match list.lookup_by_number(pos) {
         Some(id) => {
             if !ids.contains(id) {
@@ -74,8 +77,7 @@ fn update_desc(
                     requested: pos,
                 })
             } else {
-                list.set_desc(id, Cow::Owned(desc.to_string()));
-                Ok(id)
+                Ok(list.set_desc(id, Cow::Owned(desc.to_string())))
             }
         }
         _ => Err(PrintableError::CannotEditBecauseNoTaskWithNumber {
@@ -95,12 +97,10 @@ fn edit_with_text_editor<'list>(
         .try_fold(TaskSet::default(), |so_far, line| {
             match parse_line_from_text_editor(line) {
                 Ok((pos, desc)) => Ok(so_far
-                    | TaskSet::of(update_desc(list, ids, pos, &desc).map(
-                        |x| {
-                            mutated = true;
-                            x
-                        },
-                    )?)),
+                    | update_desc(list, ids, pos, &desc).map(|x| {
+                        mutated = true;
+                        x
+                    })?),
                 Err(_) => Err(PrintableError::CannotEditBecauseInvalidLine {
                     malformed_line: line.to_string(),
                 }),
@@ -124,7 +124,9 @@ pub fn run<'list>(
 ) -> PrintableResult<'list> {
     let tasks_to_edit = lookup_tasks(list, &cmd.keys);
     match &cmd.desc {
-        Some(ref desc) => edit_with_description(list, &tasks_to_edit, desc),
+        Some(ref desc) => {
+            edit_with_description(list, &tasks_to_edit, desc, cmd.include_done)
+        }
         None => match text_editor
             .edit_text(&format_tasks_for_text_editor(list, &tasks_to_edit))
         {

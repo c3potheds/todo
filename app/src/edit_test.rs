@@ -200,3 +200,81 @@ fn trim_trailing_whitespace_from_command_line() {
         .printed_task(&task("b", 1, Incomplete))
         .end();
 }
+
+#[test]
+fn rename_tag_prints_affected_tasks() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b");
+    fix.test("todo new x --tag -p a b");
+    fix.test("todo edit x --desc y")
+        .modified(true)
+        .validate()
+        .printed_task(&task("a", 1, Incomplete).tag("y").adeps_stats(0, 1))
+        .printed_task(&task("b", 2, Incomplete).tag("y").adeps_stats(0, 1))
+        .printed_task(&task("y", 3, Blocked).as_tag().deps_stats(2, 2))
+        .end();
+}
+
+#[test]
+fn rename_tag_does_not_print_complete_affected_tasks() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b");
+    fix.test("todo new x --tag -p a b");
+    fix.test("todo check a");
+    fix.test("todo edit x --desc y")
+        .modified(true)
+        .validate()
+        .printed_task(&task("b", 1, Incomplete).tag("y").adeps_stats(1, 1))
+        .printed_task(&task("y", 2, Blocked).as_tag().deps_stats(1, 2))
+        .end();
+}
+
+#[test]
+fn rename_tag_prints_complete_affected_tasks_with_done_flag() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b");
+    fix.test("todo new x --tag -p a b");
+    fix.test("todo check a");
+    fix.test("todo edit x --desc y --include-done")
+        .modified(true)
+        .validate()
+        .printed_task(&task("a", 0, Complete).tag("y"))
+        .printed_task(&task("b", 1, Incomplete).tag("y").adeps_stats(1, 1))
+        .printed_task(&task("y", 2, Blocked).as_tag().deps_stats(1, 2))
+        .end();
+}
+
+#[test]
+fn rename_tag_with_text_editor() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b");
+    fix.test("todo new x --tag -p a b");
+    fix.text_editor = FakeTextEditor::user_will_enter("3) y");
+    fix.test("todo edit x")
+        .modified(true)
+        .validate()
+        .printed_task(&task("a", 1, Incomplete).tag("y").adeps_stats(0, 1))
+        .printed_task(&task("b", 2, Incomplete).tag("y").adeps_stats(0, 1))
+        .printed_task(&task("y", 3, Blocked).as_tag().deps_stats(2, 2))
+        .end();
+}
+
+#[test]
+fn rename_tag_with_text_editor_and_multiple_tasks() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b");
+    fix.test("todo new x y --tag -p a b");
+    fix.text_editor = FakeTextEditor::user_will_enter("3) y\n4) z");
+    fix.test("todo edit x y")
+        .modified(true)
+        .validate()
+        .printed_task(
+            &task("a", 1, Incomplete).tag("y").tag("z").adeps_stats(0, 2),
+        )
+        .printed_task(
+            &task("b", 2, Incomplete).tag("y").tag("z").adeps_stats(0, 2),
+        )
+        .printed_task(&task("y", 3, Blocked).as_tag().deps_stats(2, 2))
+        .printed_task(&task("z", 4, Blocked).as_tag().deps_stats(2, 2))
+        .end();
+}

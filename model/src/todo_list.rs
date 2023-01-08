@@ -642,11 +642,28 @@ impl<'ser> TodoList<'ser> {
         &mut self,
         id: TaskId,
         desc: S,
-    ) -> bool {
+    ) -> TaskSet {
         self.tasks
             .node_weight_mut(id.0)
-            .map(|task| task.desc = desc.into())
-            .is_some()
+            .map(|task| {
+                task.desc = desc.into();
+                task.tag
+            })
+            .map(|tag| {
+                if tag {
+                    self.deps(id).iter_sorted(self).fold(
+                        TaskSet::of(id),
+                        |so_far, dep| {
+                            so_far
+                                | self.update_implicits(dep)
+                                | TaskSet::of(dep)
+                        },
+                    )
+                } else {
+                    TaskSet::of(id)
+                }
+            })
+            .unwrap_or_default()
     }
 
     pub fn set_priority(&mut self, id: TaskId, priority: i32) -> TaskSet {
