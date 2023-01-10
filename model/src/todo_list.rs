@@ -175,7 +175,7 @@ impl<'ser> TodoList<'ser> {
     }
 
     // Returns a TaskSet of affected tasks.
-    pub fn update_implicits(&mut self, id: TaskId) -> TaskSet {
+    fn update_implicits(&mut self, id: TaskId) -> TaskSet {
         let mut changed = false;
         let (old_priority, old_due_date, old_tags) = {
             let task = self.get(id).unwrap();
