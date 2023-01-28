@@ -2,8 +2,8 @@
 
 use {
     super::*,
-    chrono::{TimeZone, Utc},
     ::pretty_assertions::assert_eq,
+    chrono::{TimeZone, Utc},
 };
 
 #[test]

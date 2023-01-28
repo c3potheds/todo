@@ -207,6 +207,6 @@ fn set_tag_includes_complete_affected_tasks() -> TestResult {
     list.block(b).on(a)?;
     list.block(c).on(b)?;
     list.check(a)?;
-    assert_eq!(list.set_tag(b, true).as_sorted_vec(&list), [a, b],);
+    assert_eq!(list.set_tag(b, true).as_sorted_vec(&list), [a, b]);
     Ok(())
 }

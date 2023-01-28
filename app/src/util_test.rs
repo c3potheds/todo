@@ -3,12 +3,12 @@
 use {
     super::testing::task,
     super::util::*,
+    ::pretty_assertions::assert_eq,
     chrono::Duration,
     lookup_key::Key,
     model::{CheckOptions, NewOptions, TodoList},
     printing::{Action::*, Plicit::*, Status::*},
     testing::ymdhms,
-    ::pretty_assertions::assert_eq,
 };
 
 #[test]
