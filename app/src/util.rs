@@ -78,8 +78,8 @@ impl<'a> WrappedPrintableTask<'a> {
     }
 }
 
-pub fn format_task<'ser, 'list>(
-    list: &'list TodoList<'ser>,
+pub fn format_task<'list>(
+    list: &'list TodoList<'_>,
     id: TaskId,
 ) -> PrintableTask<'list> {
     match (
