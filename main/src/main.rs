@@ -26,14 +26,6 @@ enum TodoError {
 
 type TodoResult = Result<(), TodoError>;
 
-fn log10(n: usize) -> usize {
-    if n < 10 {
-        1
-    } else {
-        1 + log10(n / 10)
-    }
-}
-
 mod less;
 
 fn main() -> TodoResult {
@@ -75,8 +67,8 @@ fn main() -> TodoResult {
             context: PrintingContext {
                 max_index_digits: std::cmp::max(
                     // Add one for the minus sign for complete tasks.
-                    log10(model.num_complete_tasks()) + 1,
-                    log10(model.num_incomplete_tasks()),
+                    model.num_complete_tasks().ilog10() as usize + 1,
+                    model.num_incomplete_tasks().ilog10() as usize,
                 ),
                 width: term_width,
                 now: SystemClock.now(),
@@ -104,21 +96,4 @@ fn main() -> TodoResult {
         model::save(writer, &model)?;
     }
     Ok(())
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn log10_examples() {
-        assert_eq!(log10(0), 1);
-        assert_eq!(log10(5), 1);
-        assert_eq!(log10(10), 2);
-        assert_eq!(log10(99), 2);
-        assert_eq!(log10(100), 3);
-        assert_eq!(log10(999), 3);
-        assert_eq!(log10(1000), 4);
-        assert_eq!(log10(123456789), 9);
-    }
 }
