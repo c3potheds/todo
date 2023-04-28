@@ -7,21 +7,17 @@ use {
     },
 };
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
 pub enum Status {
+    #[default]
     Incomplete,
     Complete,
     Blocked,
 }
 
-impl Default for Status {
-    fn default() -> Self {
-        Status::Incomplete
-    }
-}
-
-#[derive(Debug, PartialEq, Eq, Copy, Clone)]
+#[derive(Debug, Default, PartialEq, Eq, Copy, Clone)]
 pub enum Action {
+    #[default]
     None,
     New,
     Delete,
@@ -33,12 +29,6 @@ pub enum Action {
     Punt,
     Snooze,
     Unsnooze,
-}
-
-impl Default for Action {
-    fn default() -> Self {
-        Action::None
-    }
 }
 
 impl Display for Action {
