@@ -30,10 +30,12 @@ enum SaveError {
 enum TodoError {
     #[error("IO error")]
     NoDataDirectory,
-    #[error("IO error")]
-    Io(#[from] std::io::Error),
-    #[error("Command line parsing error")]
-    CommandLineParsing(#[from] clap::Error),
+    #[error("Could not create config directory")]
+    CouldNotCreateConfigDirectory(std::io::Error),
+    #[error("Could not create data directory")]
+    CouldNotCreateDataDirectory(std::io::Error),
+    #[error("Could not spawn paginator")]
+    CouldNotSpawnPaginator(less::CouldNotSpawnPaginator),
     #[error("Load error")]
     Load(#[from] LoadError),
     #[error("Save error")]
@@ -56,7 +58,8 @@ fn main() -> TodoResult {
 
         // If the directory does not exist, create it.
         if !config_path.exists() {
-            std::fs::create_dir_all(&config_path)?;
+            std::fs::create_dir_all(&config_path)
+                .map_err(TodoError::CouldNotCreateConfigDirectory)?;
         }
 
         config_path.push("config.json");
@@ -68,7 +71,8 @@ fn main() -> TodoResult {
 
     // If the directory does not exist, create it.
     if !data_path.exists() {
-        std::fs::create_dir_all(&data_path)?;
+        std::fs::create_dir_all(&data_path)
+            .map_err(TodoError::CouldNotCreateDataDirectory)?;
     }
 
     data_path.push("data.json");
@@ -97,7 +101,8 @@ fn main() -> TodoResult {
     use printing::Printable;
     let mutated = if std::io::stdout().is_terminal() {
         let mut printer = SimpleTodoPrinter {
-            out: less::Less::new(&config.paginator_cmd)?,
+            out: less::Less::new(&config.paginator_cmd)
+                .map_err(TodoError::CouldNotSpawnPaginator)?,
             context: PrintingContext {
                 max_index_digits: app_result.max_index_digits(),
                 width: term_size::dimensions_stdout()
@@ -111,7 +116,7 @@ fn main() -> TodoResult {
         app_result.print(&mut ScriptingTodoPrinter)
     };
     if mutated {
-        let file = File::create(&data_path)?;
+        let file = File::create(&data_path).map_err(SaveError::from)?;
         let writer = BufWriter::new(file);
         serde_json::to_writer(writer, &model).map_err(SaveError::from)?;
     }

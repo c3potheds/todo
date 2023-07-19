@@ -5,19 +5,21 @@ pub struct Less {
     stdin: Option<std::process::ChildStdin>,
 }
 
+#[derive(Debug)]
+pub struct CouldNotSpawnPaginator(std::io::Error);
+
 impl Less {
-    pub fn new(cmd: &[String]) -> std::io::Result<Self> {
-        std::process::Command::new(&cmd[0])
+    pub fn new(cmd: &[String]) -> Result<Self, CouldNotSpawnPaginator> {
+        let mut child = std::process::Command::new(&cmd[0])
             .args(&cmd[1..])
             .stdin(std::process::Stdio::piped())
             .spawn()
-            .map(|mut child| {
-                let stdin = child.stdin.take().unwrap();
-                Less {
-                    process: child,
-                    stdin: Some(stdin),
-                }
-            })
+            .map_err(CouldNotSpawnPaginator)?;
+        let stdin = child.stdin.take().unwrap();
+        Ok(Less {
+            process: child,
+            stdin: Some(stdin),
+        })
     }
 }
 
