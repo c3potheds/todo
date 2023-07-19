@@ -36,10 +36,6 @@ where
         &mut self.layers[layer]
     }
 
-    pub fn len(&self) -> usize {
-        self.layers.iter().map(|layer| layer.len()).sum()
-    }
-
     pub fn bisect_layer(
         &self,
         data: &T,

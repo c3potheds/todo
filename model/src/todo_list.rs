@@ -770,14 +770,6 @@ impl<'ser> TodoList<'ser> {
         self.complete.iter().copied().chain(self.incomplete_tasks())
     }
 
-    pub fn num_incomplete_tasks(&self) -> usize {
-        self.incomplete.len()
-    }
-
-    pub fn num_complete_tasks(&self) -> usize {
-        self.complete.len()
-    }
-
     pub fn unsnooze_up_to(&mut self, now: DateTime<Utc>) -> TaskSet {
         self.incomplete_tasks()
             .filter(|&id| {
