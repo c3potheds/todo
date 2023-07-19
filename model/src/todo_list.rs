@@ -189,7 +189,7 @@ impl<'ser> TodoList<'ser> {
         let new_due_date = self.calculate_implicit_due_date(id);
         let new_tags = self.calculate_implicit_tags(id);
         {
-            if let Some(mut task) = self.tasks.node_weight_mut(id.0) {
+            if let Some(task) = self.tasks.node_weight_mut(id.0) {
                 if old_priority != new_priority {
                     task.implicit_priority = new_priority;
                     changed = true;
