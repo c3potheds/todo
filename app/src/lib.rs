@@ -21,7 +21,7 @@ mod snoozed;
 mod split;
 mod status;
 mod tag;
-pub mod todo;
+mod todo;
 mod top;
 mod unblock;
 mod unsnooze;
