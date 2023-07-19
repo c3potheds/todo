@@ -78,14 +78,16 @@ fn main() -> TodoResult {
     use printing::Printable;
     let mutated = if let Some((term_width, _)) = term_size::dimensions_stdout()
     {
+        let max_index_digits = std::cmp::max(
+            // Add one for the minus sign for complete tasks.
+            model.num_complete_tasks().checked_ilog10().unwrap_or(0) as usize
+                + 1,
+            model.num_incomplete_tasks().checked_ilog10().unwrap_or(1) as usize,
+        );
         let mut printer = SimpleTodoPrinter {
             out: less::Less::new(&config.paginator_cmd)?,
             context: PrintingContext {
-                max_index_digits: std::cmp::max(
-                    // Add one for the minus sign for complete tasks.
-                    model.num_complete_tasks().ilog10() as usize + 1,
-                    model.num_incomplete_tasks().ilog10() as usize,
-                ),
+                max_index_digits,
                 width: term_width,
                 now: SystemClock.now(),
             },
