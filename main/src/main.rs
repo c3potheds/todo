@@ -11,7 +11,7 @@ use {
 };
 
 #[derive(Debug, Error)]
-pub enum LoadError {
+enum LoadError {
     #[error("IO error")]
     IoError(#[from] std::io::Error),
     #[error("Deserialize error")]
