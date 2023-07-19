@@ -1,3 +1,5 @@
+use std::io::IsTerminal;
+
 use {
     clap::Parser,
     cli::Options,
@@ -49,16 +51,18 @@ fn main() -> TodoResult {
     let project_dirs = directories::ProjectDirs::from("", "", "todo")
         .ok_or(TodoError::NoDataDirectory)?;
 
-    let mut config_path = project_dirs.config_dir().to_path_buf();
+    let config = {
+        let mut config_path = project_dirs.config_dir().to_path_buf();
 
-    // If the directory does not exist, create it.
-    if !config_path.exists() {
-        std::fs::create_dir_all(&config_path)?;
-    }
+        // If the directory does not exist, create it.
+        if !config_path.exists() {
+            std::fs::create_dir_all(&config_path)?;
+        }
 
-    config_path.push("config.json");
-    let config = File::open(&config_path)
-        .map_or_else(|_| Ok(config::Config::default()), config::load)?;
+        config_path.push("config.json");
+        File::open(&config_path)
+            .map_or_else(|_| Ok(config::Config::default()), config::load)?
+    };
 
     let mut data_path = project_dirs.data_dir().to_path_buf();
 
@@ -75,30 +79,13 @@ fn main() -> TodoResult {
         Err(_) => model::TodoList::default(),
     };
 
-    use printing::Printable;
-    let mutated = if let Some((term_width, _)) = term_size::dimensions_stdout()
-    {
-        let max_index_digits = std::cmp::max(
-            // Add one for the minus sign for complete tasks.
-            model.num_complete_tasks().checked_ilog10().unwrap_or(0) as usize
-                + 1,
-            model.num_incomplete_tasks().checked_ilog10().unwrap_or(1) as usize,
-        );
-        let mut printer = SimpleTodoPrinter {
-            out: less::Less::new(&config.paginator_cmd)?,
-            context: PrintingContext {
-                max_index_digits,
-                width: term_width,
-                now: SystemClock.now(),
-            },
-        };
+    let app_result = if std::io::stdout().is_terminal() {
         app::todo(
             &mut model,
             &ScrawlTextEditor(&config.text_editor_cmd),
             &SystemClock,
             options,
         )
-        .print(&mut printer)
     } else {
         app::todo(
             &mut model,
@@ -106,7 +93,22 @@ fn main() -> TodoResult {
             &SystemClock,
             options,
         )
-        .print(&mut ScriptingTodoPrinter)
+    };
+    use printing::Printable;
+    let mutated = if std::io::stdout().is_terminal() {
+        let mut printer = SimpleTodoPrinter {
+            out: less::Less::new(&config.paginator_cmd)?,
+            context: PrintingContext {
+                max_index_digits: app_result.max_index_digits(),
+                width: term_size::dimensions_stdout()
+                    .map(|(w, _)| w)
+                    .unwrap_or(80),
+                now: SystemClock.now(),
+            },
+        };
+        app_result.print(&mut printer)
+    } else {
+        app_result.print(&mut ScriptingTodoPrinter)
     };
     if mutated {
         let file = File::create(&data_path)?;

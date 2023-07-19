@@ -22,6 +22,8 @@ mod printable_error_test;
 #[cfg(test)]
 mod printable_info_test;
 #[cfg(test)]
+mod printable_result_test;
+#[cfg(test)]
 mod printable_task_test;
 #[cfg(test)]
 mod printable_warning_test;
@@ -40,13 +42,35 @@ pub type PrintableResult<'list> =
     Result<PrintableAppSuccess<'list>, Vec<PrintableError>>;
 
 pub trait Printable<'a> {
+    fn max_index_digits(&self) -> usize;
     fn print(&self, printer: &mut impl TodoPrinter<'a>) -> bool;
 }
 
-impl<'a, 'b> Printable<'a> for PrintableResult<'b>
+fn count_digits(n: i32) -> usize {
+    match n.cmp(&0) {
+        std::cmp::Ordering::Less => 1 + count_digits(-n),
+        std::cmp::Ordering::Equal => 1,
+        std::cmp::Ordering::Greater => 1 + n.ilog10() as usize,
+    }
+}
+
+impl<'a, 'list> Printable<'a> for PrintableResult<'list>
 where
-    'b: 'a,
+    'list: 'a,
 {
+    fn max_index_digits(&self) -> usize {
+        match self {
+            Ok(success) => success
+                .tasks
+                .iter()
+                .map(|t| t.number)
+                .map(count_digits)
+                .max()
+                .unwrap_or(1),
+            Err(_) => 1,
+        }
+    }
+
     fn print(&self, printer: &mut impl TodoPrinter<'a>) -> bool {
         match self {
             Self::Ok(PrintableAppSuccess {
