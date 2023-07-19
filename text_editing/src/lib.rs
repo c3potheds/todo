@@ -1,10 +1,8 @@
 #[derive(Debug)]
-pub struct Error();
-
-impl From<std::io::Error> for Error {
-    fn from(_: std::io::Error) -> Self {
-        Self()
-    }
+pub enum Error {
+    CouldNotOpenTextEditor(Box<dyn std::error::Error>),
+    CouldNotReadResult(Box<dyn std::error::Error>),
+    FakeErrorForTesting,
 }
 
 pub trait TextEditor {
@@ -17,9 +15,10 @@ impl<'a> TextEditor for ScrawlTextEditor<'a> {
     fn edit_text(&self, display: &str) -> Result<String, Error> {
         scrawl::editor::new()
             .editor(self.0)
-            .contents(display)
-            .open()
-            .map_err(|_| Error())
+            .open(scrawl::editor::Contents::FromString(&display.as_bytes()))
+            .map_err(Error::CouldNotOpenTextEditor)?
+            .to_string()
+            .map_err(Error::CouldNotReadResult)
     }
 }
 
@@ -51,10 +50,7 @@ impl<'a> FakeTextEditor<'a> {
 impl TextEditor for FakeTextEditor<'_> {
     fn edit_text(&self, display: &str) -> Result<String, Error> {
         self.recorded_input.replace(display.to_string());
-        match &self.user_output {
-            Some(ref output) => Ok(output.to_string()),
-            None => Err(Error()),
-        }
+        Ok(self.user_output.ok_or(Error::FakeErrorForTesting)?.to_string())
     }
 }
 
