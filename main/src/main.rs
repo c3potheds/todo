@@ -9,6 +9,22 @@ use {
 };
 
 #[derive(Debug, Error)]
+pub enum LoadError {
+    #[error("IO error")]
+    IoError(#[from] std::io::Error),
+    #[error("Deserialize error")]
+    DeserializeError(#[from] serde_json::Error),
+}
+
+#[derive(Debug, Error)]
+enum SaveError {
+    #[error("IO error")]
+    IoError(#[from] std::io::Error),
+    #[error("Serialize error")]
+    SerializeError(#[from] serde_json::Error),
+}
+
+#[derive(Debug, Error)]
 enum TodoError {
     #[error("IO error")]
     NoDataDirectory,
@@ -17,9 +33,9 @@ enum TodoError {
     #[error("Command line parsing error")]
     CommandLineParsing(#[from] clap::Error),
     #[error("Load error")]
-    Load(#[from] model::LoadError),
+    Load(#[from] LoadError),
     #[error("Save error")]
-    Save(#[from] model::SaveError),
+    Save(#[from] SaveError),
     #[error("Config error")]
     LoadConfig(#[from] config::LoadError),
 }
@@ -55,7 +71,7 @@ fn main() -> TodoResult {
 
     let read_file_result = std::fs::read_to_string(&data_path);
     let mut model = match &read_file_result {
-        Ok(s) => model::load(s)?,
+        Ok(s) => serde_json::from_str(s).map_err(LoadError::from)?,
         Err(_) => model::TodoList::default(),
     };
 
@@ -93,7 +109,7 @@ fn main() -> TodoResult {
     if mutated {
         let file = File::create(&data_path)?;
         let writer = BufWriter::new(file);
-        model::save(writer, &model)?;
+        serde_json::to_writer(writer, &model).map_err(SaveError::from)?;
     }
     Ok(())
 }
