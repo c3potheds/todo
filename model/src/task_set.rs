@@ -103,7 +103,7 @@ impl TaskSet {
     ) -> impl Iterator<Item = (TaskId, TaskId)> {
         use itertools::Itertools;
         self.iter_sorted(list).cartesian_product(
-            other.iter_sorted(list).collect::<Vec<_>>().into_iter(),
+            other.iter_sorted(list).collect::<Vec<_>>(),
         )
     }
 }

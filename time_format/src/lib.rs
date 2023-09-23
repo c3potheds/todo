@@ -402,7 +402,7 @@ pub fn format_duration_laconic(duration: chrono::Duration) -> String {
                 (_, "h") => "hours",
                 _ => &chunk[len..],
             };
-            vec![n, unit].join(" ")
+            [n, unit].join(" ")
         }
         None => panic!("Formatted duration is empty string: {}", formatted),
     }
