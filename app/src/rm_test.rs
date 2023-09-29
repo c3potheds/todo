@@ -47,6 +47,7 @@ fn rm_task_with_deps_and_adeps() {
         .modified(true)
         .validate()
         .printed_info(&info_removed("b"))
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(1, 1))
         .printed_task(&task("c", 2, Blocked).deps_stats(1, 1))
         .end();
 }

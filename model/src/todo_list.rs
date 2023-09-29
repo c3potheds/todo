@@ -800,11 +800,29 @@ impl<'ser> TodoList<'ser> {
         } else if self.complete.contains(&id) {
             remove_first_occurrence_from_vec(&mut self.complete, &id);
         };
+        // Explicitly unblock the adeps from the removed task and the removed
+        // task from its deps. Although removing the node from the graph is
+        // sufficient to update the edges, it doesn't update the implicits of
+        // the deps or adeps, and if we do not do that, we can get stale ids
+        // in the list of implicit tags or stale values for priorities or due
+        // dates. The worst consequence of such stale data can be task ids
+        // of removed tasks getting re-used by new tasks later on and suddenly
+        // adding tags to tasks that shouldn't have them.
+        let deps = self.deps(id);
+        let affected_after_unblocking_from_deps = deps
+            .iter_sorted(self)
+            .fold(TaskSet::default(), |so_far, dep| {
+                so_far | self.unblock(id).from(dep).unwrap()
+            });
+        let adeps = self.adeps(id);
+        let affected_after_unblocking_adeps = adeps
+            .iter_sorted(self)
+            .fold(TaskSet::default(), |so_far, adep| {
+                so_far | self.unblock(adep).from(id).unwrap()
+            });
         // If a task is nestled between deps and adeps, maintain the structure
         // of the graph by blocking the adeps on each of the deps.
         // E.g. if we remove b from (a <- b <- c), then we get (a <- c).
-        let deps = self.deps(id);
-        let adeps = self.adeps(id);
         deps.product(&adeps, self).for_each(|(dep, adep)| {
             // It should not be possible to cause a cycle when blocking an
             // adep on a dep because there would already be a cycle if so.
@@ -819,7 +837,8 @@ impl<'ser> TodoList<'ser> {
             .for_each(|adep| {
                 self.update_depth(adep);
             });
-        adeps
+        (affected_after_unblocking_adeps | affected_after_unblocking_from_deps)
+            - TaskSet::of(id)
     }
 }
 
