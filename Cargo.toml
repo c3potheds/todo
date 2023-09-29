@@ -12,3 +12,7 @@ members = [
     "text_editing",
     "time_format",
 ]
+
+[profile.dev]
+split-debuginfo = "packed"
+debug = true
