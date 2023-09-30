@@ -10,11 +10,14 @@ fn show_all_tasks_with_due_dates<'list>(
     list: &'list TodoList,
     earlier_than: Option<DateTime<Utc>>,
     include_done: bool,
+    include_blocked: bool,
 ) -> PrintableResult<'list> {
     let tasks_to_print = list
         .all_tasks()
         .filter(|&id| {
-            include_done || list.status(id) != Some(TaskStatus::Complete)
+            (include_done || list.status(id) != Some(TaskStatus::Complete))
+                && (include_blocked
+                    || list.status(id) != Some(TaskStatus::Blocked))
         })
         .filter(|&id| match list.implicit_due_date(id) {
             Some(Some(date)) => match earlier_than {
@@ -100,11 +103,14 @@ fn set_due_dates<'list>(
 fn show_tasks_without_due_date<'list>(
     list: &'list TodoList,
     include_done: bool,
+    include_blocked: bool,
 ) -> PrintableResult<'list> {
     let tasks_to_print = list
         .all_tasks()
         .filter(|&id| {
-            include_done || list.status(id) != Some(TaskStatus::Complete)
+            (include_done || list.status(id) != Some(TaskStatus::Complete))
+                && (include_blocked
+                    || list.status(id) != Some(TaskStatus::Blocked))
         })
         .filter(|&id| list.implicit_due_date(id) == Some(None))
         .map(|id| format_task(list, id));
@@ -132,9 +138,12 @@ pub fn run<'list>(
         (Some(tasks), _, true) => {
             set_due_dates(list, tasks, None, cmd.include_done)
         }
-        (None, due_date, false) => {
-            show_all_tasks_with_due_dates(list, due_date, cmd.include_done)
-        }
+        (None, due_date, false) => show_all_tasks_with_due_dates(
+            list,
+            due_date,
+            cmd.include_done,
+            cmd.include_blocked,
+        ),
         (Some(tasks), None, false) => {
             show_source_of_due_dates_for_tasks(list, tasks)
         }
@@ -142,8 +151,10 @@ pub fn run<'list>(
             "due".to_string(),
             "none".to_string(),
         ))]),
-        (None, None, true) => {
-            show_tasks_without_due_date(list, cmd.include_done)
-        }
+        (None, None, true) => show_tasks_without_due_date(
+            list,
+            cmd.include_done,
+            cmd.include_blocked,
+        ),
     }
 }

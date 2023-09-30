@@ -33,7 +33,7 @@ fn show_tasks_with_due_date_includes_blocked() {
     fix.test("todo new b -p a");
     fix.test("todo new c -p b --due 2 days");
     fix.test("todo new d e f");
-    fix.test("todo due")
+    fix.test("todo due -b")
         .modified(false)
         .validate()
         .printed_task(
@@ -55,7 +55,7 @@ fn show_tasks_with_due_date_includes_blocked() {
 }
 
 #[test]
-fn show_tasks_with_due_date_excludes_complete() {
+fn show_tasks_with_due_date_excludes_complete_and_blocked() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let in_2_days = ymdhms(2021, 04, 14, 23, 59, 59);
@@ -71,11 +71,6 @@ fn show_tasks_with_due_date_excludes_complete() {
             &task("b", 1, Incomplete)
                 .due_date(Implicit(in_2_days))
                 .adeps_stats(1, 1),
-        )
-        .printed_task(
-            &task("c", 5, Blocked)
-                .due_date(Explicit(in_2_days))
-                .deps_stats(1, 2),
         )
         .end();
 }
@@ -100,11 +95,6 @@ fn show_tasks_with_due_date_include_done() {
             &task("b", 1, Incomplete)
                 .due_date(Implicit(in_2_days))
                 .adeps_stats(1, 1),
-        )
-        .printed_task(
-            &task("c", 5, Blocked)
-                .due_date(Explicit(in_2_days))
-                .deps_stats(1, 2),
         )
         .end();
 }
@@ -290,8 +280,6 @@ fn show_tasks_without_due_dates() {
         .modified(false)
         .validate()
         .printed_task(&task("g", 4, Incomplete).adeps_stats(1, 2))
-        .printed_task(&task("h", 8, Blocked).deps_stats(1, 1))
-        .printed_task(&task("i", 9, Blocked).deps_stats(1, 2))
         .end();
 }
 
@@ -305,7 +293,6 @@ fn show_tasks_without_due_date_excludes_complete() {
         .modified(false)
         .validate()
         .printed_task(&task("e", 4, Incomplete).adeps_stats(1, 1))
-        .printed_task(&task("f", 5, Blocked).deps_stats(1, 2))
         .end();
 }
 
@@ -320,7 +307,20 @@ fn show_tasks_without_due_date_include_done() {
         .validate()
         .printed_task(&task("d", 0, Complete))
         .printed_task(&task("e", 4, Incomplete).adeps_stats(1, 1))
-        .printed_task(&task("f", 5, Blocked).deps_stats(1, 2))
+        .end();
+}
+
+#[test]
+fn show_tasks_without_due_date_include_blocked() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --due today");
+    fix.test("todo new d e f --chain");
+    fix.test("todo due --none -b")
+        .modified(false)
+        .validate()
+        .printed_task(&task("d", 4, Incomplete).adeps_stats(1, 2))
+        .printed_task(&task("e", 5, Blocked).deps_stats(1, 1))
+        .printed_task(&task("f", 6, Blocked).deps_stats(1, 2))
         .end();
 }
 
@@ -335,5 +335,44 @@ fn cannot_use_due_and_none_flags_at_the_same_time() {
             "due".to_string(),
             "none".to_string(),
         )))
+        .end();
+}
+
+#[test]
+fn only_shows_unblocked_tasks() {
+    let mut fix = Fixture::default();
+    fix.clock.now = ymdhms(2023, 09, 30, 12, 00, 00);
+    let end_of_day = ymdhms(2023, 09, 30, 23, 59, 59);
+    fix.test("todo new a b --due today --chain");
+    fix.test("todo due --on today")
+        .modified(false)
+        .validate()
+        .printed_task(
+            &task("a", 1, Incomplete)
+                .adeps_stats(1, 1)
+                .due_date(Explicit(end_of_day)),
+        )
+        .end();
+}
+
+#[test]
+fn shows_blocked_tasks_with_flag() {
+    let mut fix = Fixture::default();
+    fix.clock.now = ymdhms(2023, 09, 30, 12, 00, 00);
+    let end_of_day = ymdhms(2023, 09, 30, 23, 59, 59);
+    fix.test("todo new a b --due today --chain");
+    fix.test("todo due --on today -b")
+        .modified(false)
+        .validate()
+        .printed_task(
+            &task("a", 1, Incomplete)
+                .adeps_stats(1, 1)
+                .due_date(Explicit(end_of_day)),
+        )
+        .printed_task(
+            &task("b", 2, Blocked)
+                .deps_stats(1, 1)
+                .due_date(Explicit(end_of_day)),
+        )
         .end();
 }

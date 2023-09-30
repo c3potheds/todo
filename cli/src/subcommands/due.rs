@@ -57,4 +57,15 @@ pub struct Due {
     /// earlier than a given date.
     #[arg(long, short = 'd')]
     pub include_done: bool,
+    /// Show blocked tasks in queries.
+    ///
+    /// By default, when querying for due tasks, only incomplete, unblocked
+    /// tasks are shown. With this flag, blocked tasks are also shown.
+    ///
+    /// This is not used when assigning or unassigning due dates. It only
+    /// affects the printed results when querying the source of a task's due
+    /// date, querying all tasks with due dates, or querying all tasks due
+    /// earlier than a given date.
+    #[arg(long, short = 'b')]
+    pub include_blocked: bool,
 }
