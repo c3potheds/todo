@@ -50,17 +50,25 @@ enum EditError {
     InvalidNumber(String),
 }
 
-fn parse_line_from_text_editor(line: &str) -> Result<(i32, String), EditError> {
+// Returns None if the line is blank.
+// Returns Some(Err) if the line is malformed.
+// Returns Some(Ok) if the line is well-formed.
+fn parse_line_from_text_editor(
+    line: &str,
+) -> Option<Result<(i32, String), EditError>> {
+    if line.is_empty() || line.trim().is_empty() {
+        return None;
+    }
     let mut split = line.splitn(2, ") ");
     match split.next() {
         Some(should_be_num) => match should_be_num.parse::<i32>() {
             Ok(num) => match split.next() {
-                Some(desc) => Ok((num, desc.trim().to_string())),
-                _ => Err(EditError::MissingTaskDescription),
+                Some(desc) => Some(Ok((num, desc.trim().to_string()))),
+                _ => Some(Err(EditError::MissingTaskDescription)),
             },
-            _ => Err(EditError::InvalidNumber(should_be_num.to_string())),
+            _ => Some(Err(EditError::InvalidNumber(should_be_num.to_string()))),
         },
-        _ => Err(EditError::MissingDelimiterBetweenNumberAndDescription),
+        _ => Some(Err(EditError::MissingDelimiterBetweenNumberAndDescription)),
     }
 }
 
@@ -96,14 +104,18 @@ fn edit_with_text_editor<'list>(
         .lines()
         .try_fold(TaskSet::default(), |so_far, line| {
             match parse_line_from_text_editor(line) {
-                Ok((pos, desc)) => Ok(so_far
+                Some(Ok((pos, desc))) => Ok(so_far
                     | update_desc(list, ids, pos, &desc).map(|x| {
                         mutated = true;
                         x
                     })?),
-                Err(_) => Err(PrintableError::CannotEditBecauseInvalidLine {
-                    malformed_line: line.to_string(),
-                }),
+                Some(Err(_)) => {
+                    Err(PrintableError::CannotEditBecauseInvalidLine {
+                        malformed_line: line.to_string(),
+                    })
+                }
+                // Skip blank lines.
+                None => Ok(so_far),
             }
         })
         .map_err(|e| vec![e])?

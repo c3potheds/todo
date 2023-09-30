@@ -278,3 +278,28 @@ fn rename_tag_with_text_editor_and_multiple_tasks() {
         .printed_task(&task("z", 4, Blocked).as_tag().deps_stats(2, 2))
         .end();
 }
+
+#[test]
+fn blank_lines_in_text_editor_result_should_not_cause_an_error() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a");
+    fix.text_editor = FakeTextEditor::user_will_enter("\n\n1) b\n\n");
+    fix.test("todo edit 1")
+        .modified(true)
+        .validate()
+        .printed_task(&task("b", 1, Incomplete))
+        .end();
+}
+
+#[test]
+fn whitespace_lines_in_text_editor_result_should_not_cause_an_error() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b");
+    fix.text_editor = FakeTextEditor::user_will_enter("1) c\n   \n2) d");
+    fix.test("todo edit 1 2")
+        .modified(true)
+        .validate()
+        .printed_task(&task("c", 1, Incomplete))
+        .printed_task(&task("d", 2, Incomplete))
+        .end();
+}

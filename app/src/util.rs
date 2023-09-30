@@ -131,7 +131,8 @@ pub fn format_task<'list>(
                 result = result.as_tag();
             }
             for tag_id in TaskSet::from_iter(task.implicit_tags.iter().cloned())
-                .iter_sorted(list).rev()
+                .iter_sorted(list)
+                .rev()
             {
                 if let Some(tag_data) = list.get(tag_id) {
                     result = result.tag(&tag_data.desc);
