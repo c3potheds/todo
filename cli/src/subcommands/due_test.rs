@@ -86,3 +86,50 @@ fn due_include_done_short() {
         }),
     );
 }
+
+#[test]
+fn due_include_blocked_long() {
+    expect_parses_into(
+        "todo due --include-blocked",
+        SubCommand::Due(Due {
+            include_blocked: true,
+            ..Default::default()
+        }),
+    );
+}
+
+#[test]
+fn due_include_blocked_short() {
+    expect_parses_into(
+        "todo due -b",
+        SubCommand::Due(Due {
+            include_blocked: true,
+            ..Default::default()
+        }),
+    );
+}
+
+#[test]
+fn due_include_done_and_blocked() {
+    expect_parses_into(
+        "todo due -bd",
+        SubCommand::Due(Due {
+            include_done: true,
+            include_blocked: true,
+            ..Default::default()
+        }),
+    );
+}
+
+#[test]
+fn due_none_include_done_and_blocked() {
+    expect_parses_into(
+        "todo due --none -bd",
+        SubCommand::Due(Due {
+            none: true,
+            include_done: true,
+            include_blocked: true,
+            ..Default::default()
+        }),
+    );
+}
