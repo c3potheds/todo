@@ -10,15 +10,33 @@ use {
     text_editing::TextEditor,
 };
 
+pub const EDIT_PROMPT: &str = r"# Edit the descriptions of the tasks below.
+#
+# Lines starting with '#' will be ignored.
+#
+# Each line should start with a number followed by a ') ' and then the
+# description of the task.
+#
+# For example, if you want to change the description of task 1 to 'foo' and
+# task 2 to 'bar', you would write:
+#
+# 1) foo
+# 2) bar
+#
+# When you save and exit the editor, the tasks will be updated.
+";
+
 fn format_tasks_for_text_editor(list: &TodoList, ids: &TaskSet) -> String {
-    ids.iter_sorted(list)
-        .flat_map(|id| {
-            list.position(id)
-                .zip(list.get(id).map(|task| &task.desc))
-                .map(|(ref pos, ref desc)| format!("{}) {}", pos, desc))
-                .into_iter()
-        })
-        .join("\n")
+    EDIT_PROMPT.to_string()
+        + &ids
+            .iter_sorted(list)
+            .flat_map(|id| {
+                list.position(id)
+                    .zip(list.get(id).map(|task| &task.desc))
+                    .map(|(ref pos, ref desc)| format!("{}) {}", pos, desc))
+                    .into_iter()
+            })
+            .join("\n")
 }
 
 fn edit_with_description<'list>(
@@ -50,13 +68,16 @@ enum EditError {
     InvalidNumber(String),
 }
 
-// Returns None if the line is blank.
+// Returns None if the line is blank or is a comment starting with '#'.
 // Returns Some(Err) if the line is malformed.
 // Returns Some(Ok) if the line is well-formed.
 fn parse_line_from_text_editor(
     line: &str,
 ) -> Option<Result<(i32, String), EditError>> {
-    if line.is_empty() || line.trim().is_empty() {
+    if line.is_empty()
+        || line.trim().is_empty()
+        || line.trim_start().starts_with('#')
+    {
         return None;
     }
     let mut split = line.splitn(2, ") ");
