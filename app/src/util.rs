@@ -130,8 +130,10 @@ pub fn format_task<'list>(
             if task.tag {
                 result = result.as_tag();
             }
-            for tag_id in &task.implicit_tags {
-                if let Some(tag_data) = list.get(*tag_id) {
+            for tag_id in TaskSet::from_iter(task.implicit_tags.iter().cloned())
+                .iter_sorted(list).rev()
+            {
+                if let Some(tag_data) = list.get(tag_id) {
                     result = result.tag(&tag_data.desc);
                 }
             }

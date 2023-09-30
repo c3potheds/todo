@@ -65,7 +65,10 @@ impl TaskSet {
 
     /// Iterates the set in sorted order, where the ordering is defined by the
     /// position in the list.
-    pub fn iter_sorted(&self, list: &TodoList) -> impl Iterator<Item = TaskId> {
+    pub fn iter_sorted(
+        &self,
+        list: &TodoList,
+    ) -> impl DoubleEndedIterator<Item = TaskId> {
         self.ids
             .iter()
             .flat_map(|&id| {
