@@ -50,7 +50,10 @@ impl<'a> FakeTextEditor<'a> {
 impl TextEditor for FakeTextEditor<'_> {
     fn edit_text(&self, display: &str) -> Result<String, Error> {
         self.recorded_input.replace(display.to_string());
-        Ok(self.user_output.ok_or(Error::FakeErrorForTesting)?.to_string())
+        Ok(self
+            .user_output
+            .ok_or(Error::FakeErrorForTesting)?
+            .to_string())
     }
 }
 
