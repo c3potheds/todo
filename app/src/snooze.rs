@@ -46,6 +46,28 @@ pub fn run<'list>(
             }),
         })
         .map_err(|e| vec![e])?;
+    // If the snooze date has already passed, we don't need to do anything. Just
+    // print the tasks and a warning indicating that the snooze date has already
+    // passed.
+    if snooze_date <= now {
+        let warnings = lookup_tasks(list, &cmd.keys)
+            .iter_sorted(list)
+            .map(|id| {
+                PrintableWarning::SnoozedUntilPast {
+                    snoozed_task: format_task_brief(list, id),
+                    snooze_date,
+                }
+            })
+            .collect();
+        return Ok(PrintableAppSuccess {
+            warnings,
+            tasks: lookup_tasks(list, &cmd.keys)
+                .iter_sorted(list)
+                .map(|id| format_task(list, id))
+                .collect(),
+            ..Default::default()
+        });
+    }
     let (snoozed, warnings, mutated) =
         lookup_tasks(list, &cmd.keys).iter_sorted(list).fold(
             (TaskSet::default(), Vec::new(), false),

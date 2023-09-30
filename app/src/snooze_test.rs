@@ -134,3 +134,19 @@ fn snooze_after_due_date() {
         )
         .end();
 }
+
+#[test]
+fn snooze_until_time_that_has_already_passed_should_leave_tasks_unmodified() {
+    let mut fix = Fixture::default();
+    fix.clock.now = ymdhms(2023, 09, 30, 14, 00, 00);
+    fix.test("todo new a");
+    fix.test("todo snooze a --until last friday")
+        .modified(false)
+        .validate()
+        .printed_warning(&PrintableWarning::SnoozedUntilPast {
+            snoozed_task: BriefPrintableTask::new(1, Incomplete),
+            snooze_date: ymdhms(2023, 09, 29, 00, 00, 00),
+        })
+        .printed_task(&task("a", 1, Incomplete))
+        .end();
+}
