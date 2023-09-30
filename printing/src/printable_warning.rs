@@ -38,6 +38,10 @@ pub enum PrintableWarning {
         due_date: DateTime<Utc>,
         snooze_date: DateTime<Utc>,
     },
+    SnoozedUntilPast {
+        snoozed_task: BriefPrintableTask,
+        snooze_date: DateTime<Utc>,
+    },
     CannotUnsnoozeBecauseComplete(BriefPrintableTask),
     CannotUnsnoozeBecauseBlocked {
         cannot_unsnooze: BriefPrintableTask,
@@ -91,6 +95,14 @@ impl Display for PrintableWarning {
                 f,
                 "Snoozed {} until after its due date {}",
                 snoozed_task, due_date
+            ),
+            SnoozedUntilPast {
+                snoozed_task,
+                snooze_date,
+            } => write!(
+                f,
+                "Snoozed {} until {} which is in the past",
+                snoozed_task, snooze_date
             ),
             CannotUnsnoozeBecauseComplete(task) => {
                 write!(f, "Cannot unsnooze {} because it is complete", task)
