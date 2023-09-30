@@ -5,6 +5,10 @@ use {
     text_editing::FakeTextEditor,
 };
 
+fn prompt_with(stuff: &str) -> String {
+    crate::edit::EDIT_PROMPT.to_string() + stuff
+}
+
 #[test]
 fn edit_one_task() {
     let mut fix = Fixture::default();
@@ -39,7 +43,7 @@ fn edit_with_text_editor_happy_path() {
         .validate()
         .printed_task(&task("b", 1, Incomplete))
         .end();
-    assert_eq!(*fix.text_editor.recorded_input(), "1) a");
+    assert_eq!(*fix.text_editor.recorded_input(), prompt_with("1) a"));
 }
 
 #[test]
@@ -52,7 +56,7 @@ fn edit_with_text_editor_long_desc_later_task() {
         .validate()
         .printed_task(&task("this is serious", 3, Incomplete))
         .end();
-    assert_eq!(*fix.text_editor.recorded_input(), "3) c");
+    assert_eq!(*fix.text_editor.recorded_input(), prompt_with("3) c"));
 }
 
 #[test]
@@ -67,7 +71,10 @@ fn edit_multiple_tasks_with_text_editor() {
         .printed_task(&task("e", 2, Incomplete))
         .printed_task(&task("f", 3, Incomplete))
         .end();
-    assert_eq!(*fix.text_editor.recorded_input(), "1) a\n2) b\n3) c");
+    assert_eq!(
+        *fix.text_editor.recorded_input(),
+        prompt_with("1) a\n2) b\n3) c")
+    );
 }
 
 #[test]
@@ -82,7 +89,7 @@ fn edit_with_text_editor_invalid_task_number() {
             requested: 2,
         })
         .end();
-    assert_eq!(*fix.text_editor.recorded_input(), "1) a");
+    assert_eq!(*fix.text_editor.recorded_input(), prompt_with("1) a"));
 }
 
 #[test]
@@ -96,7 +103,7 @@ fn edit_with_text_editor_unexpected_task_number() {
             requested: 2,
         })
         .end();
-    assert_eq!(*fix.text_editor.recorded_input(), "1) a");
+    assert_eq!(*fix.text_editor.recorded_input(), prompt_with("1) a"));
 }
 
 #[test]
@@ -111,7 +118,7 @@ fn edit_with_text_editor_empty_description() {
             malformed_line: "1)".to_string(),
         })
         .end();
-    assert_eq!(*fix.text_editor.recorded_input(), "1) a");
+    assert_eq!(*fix.text_editor.recorded_input(), prompt_with("1) a"));
 }
 
 #[test]
@@ -126,7 +133,7 @@ fn edit_with_text_editor_remove_delimiter() {
             malformed_line: "1 b".to_string(),
         })
         .end();
-    assert_eq!(*fix.text_editor.recorded_input(), "1) a");
+    assert_eq!(*fix.text_editor.recorded_input(), prompt_with("1) a"));
 }
 
 #[test]
@@ -138,7 +145,7 @@ fn edit_with_text_editor_text_editor_fails() {
         .validate()
         .printed_error(&PrintableError::FailedToUseTextEditor)
         .end();
-    assert_eq!(*fix.text_editor.recorded_input(), "1) a");
+    assert_eq!(*fix.text_editor.recorded_input(), prompt_with("1) a"));
 }
 
 #[test]
