@@ -269,10 +269,10 @@ fn rename_tag_with_text_editor_and_multiple_tasks() {
         .modified(true)
         .validate()
         .printed_task(
-            &task("a", 1, Incomplete).tag("y").tag("z").adeps_stats(0, 2),
+            &task("a", 1, Incomplete).tag("z").tag("y").adeps_stats(0, 2),
         )
         .printed_task(
-            &task("b", 2, Incomplete).tag("y").tag("z").adeps_stats(0, 2),
+            &task("b", 2, Incomplete).tag("z").tag("y").adeps_stats(0, 2),
         )
         .printed_task(&task("y", 3, Blocked).as_tag().deps_stats(2, 2))
         .printed_task(&task("z", 4, Blocked).as_tag().deps_stats(2, 2))

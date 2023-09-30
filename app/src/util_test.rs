@@ -294,7 +294,7 @@ fn format_task_with_implicit_tags() {
     list.block(a).on(c).unwrap();
     list.block(b).on(c).unwrap();
     let actual = format_task(&list, c);
-    let expected = task("c", 1, Incomplete).adeps_stats(2, 2).tag("a").tag("b");
+    let expected = task("c", 1, Incomplete).adeps_stats(2, 2).tag("b").tag("a");
     assert_eq!(actual, expected);
 }
 
@@ -309,8 +309,8 @@ fn format_tag_with_implicit_tags() {
     let actual = format_task(&list, c);
     let expected = task("c", 1, Incomplete)
         .adeps_stats(2, 2)
-        .tag("a")
         .tag("b")
+        .tag("a")
         .as_tag();
     assert_eq!(actual, expected);
 }
@@ -368,4 +368,25 @@ fn lookup_by_range() {
     assert_eq!(lookup_2_3.as_sorted_vec(&list), [b, c]);
     let lookup_1_3 = lookup_tasks(&list, &[Key::ByRange(1, 3)]);
     assert_eq!(lookup_1_3.as_sorted_vec(&list), [a, b, c]);
+}
+
+#[test]
+fn tags_are_formatted_in_reverse_sorted_order() {
+    let mut list = TodoList::default();
+    let a = list.add("a");
+    let b = list.add(NewOptions::new().desc("b").as_tag());
+    let c = list.add(NewOptions::new().desc("c").as_tag().priority(1));
+    let d = list.add(NewOptions::new().desc("d").as_tag());
+    list.block(b).on(a).unwrap();
+    list.block(c).on(a).unwrap();
+    list.block(d).on(b).unwrap();
+    assert_eq!(list.all_tasks().collect::<Vec<_>>(), [a, c, b, d]);
+    let actual = format_task(&list, a);
+    let expected = task("a", 1, Incomplete)
+        .adeps_stats(2, 3)
+        .tag("d")
+        .tag("b")
+        .tag("c")
+        .priority(Implicit(1));
+    assert_eq!(actual, expected);
 }
