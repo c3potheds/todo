@@ -4,8 +4,8 @@ use {
     super::testing::task,
     super::testing::Fixture,
     chrono::Duration,
-    printing::{Action::*, Plicit::*, PrintableError, Status::*},
-    testing::ymdhms,
+    todo_printing::{Action::*, Plicit::*, PrintableError, Status::*},
+    todo_testing::ymdhms,
 };
 
 #[test]

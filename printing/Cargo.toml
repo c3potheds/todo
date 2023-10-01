@@ -1,5 +1,5 @@
 [package]
-name = "printing"
+name = "todo_printing"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,6 +8,6 @@ ansi_term.workspace = true
 chrono.workspace = true
 textwrap.workspace = true
 
-lookup_key.workspace = true
-time_format.workspace = true
-testing.workspace = true
+todo_lookup_key.workspace = true
+todo_time_format.workspace = true
+todo_testing.workspace = true

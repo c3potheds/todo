@@ -1,7 +1,7 @@
 use {
     super::testing::task,
     super::testing::Fixture,
-    printing::{PrintableInfo, Status::*},
+    todo_printing::{PrintableInfo, Status::*},
 };
 
 fn info_removed(desc: &str) -> PrintableInfo {

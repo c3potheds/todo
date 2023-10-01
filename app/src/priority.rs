@@ -1,8 +1,8 @@
 use {
     super::util::{format_task, lookup_tasks},
-    cli::Priority,
-    model::{TaskId, TaskSet, TaskStatus, TodoList},
-    printing::{PrintableAppSuccess, PrintableResult},
+    todo_cli::Priority,
+    todo_model::{TaskId, TaskSet, TaskStatus, TodoList},
+    todo_printing::{PrintableAppSuccess, PrintableResult},
 };
 
 fn set_priority<'list>(

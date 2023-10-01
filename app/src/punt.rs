@@ -1,8 +1,8 @@
 use {
     super::util::{format_task, format_task_brief, lookup_tasks},
-    cli::Punt,
-    model::{PuntError, TaskSet, TodoList},
-    printing::{
+    todo_cli::Punt,
+    todo_model::{PuntError, TaskSet, TodoList},
+    todo_printing::{
         Action, PrintableAppSuccess, PrintableResult, PrintableWarning,
     },
 };

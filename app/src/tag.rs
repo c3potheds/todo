@@ -1,8 +1,8 @@
 use {
     super::util::{format_task, lookup_tasks},
-    cli::Tag,
-    model::{TaskSet, TaskStatus, TodoList},
-    printing::{Action, PrintableAppSuccess, PrintableResult},
+    todo_cli::Tag,
+    todo_model::{TaskSet, TaskStatus, TodoList},
+    todo_printing::{Action, PrintableAppSuccess, PrintableResult},
 };
 
 fn print_all_tags<'list>(

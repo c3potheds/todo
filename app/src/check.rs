@@ -1,11 +1,11 @@
 use {
     super::util::{format_task, format_task_brief, lookup_tasks},
     chrono::{DateTime, Utc},
-    cli::Check,
-    model::{
+    todo_cli::Check,
+    todo_model::{
         CheckError, CheckOptions, ForceChecked, TaskId, TaskSet, TodoList,
     },
-    printing::{
+    todo_printing::{
         Action, PrintableAppSuccess, PrintableError, PrintableResult,
         PrintableWarning,
     },

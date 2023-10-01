@@ -2,9 +2,9 @@ use {
     super::util::{
         format_task, lookup_tasks, parse_budget, should_include_done,
     },
-    cli::Budget,
-    model::{TaskSet, TodoList},
-    printing::{Action, PrintableAppSuccess, PrintableResult},
+    todo_cli::Budget,
+    todo_model::{TaskSet, TodoList},
+    todo_printing::{Action, PrintableAppSuccess, PrintableResult},
 };
 
 pub fn run<'list>(

@@ -1,4 +1,4 @@
-use {clap::Parser, lookup_key::Key};
+use {clap::Parser, todo_lookup_key::Key};
 
 /// Makes tasks temporarily "snoozed" until the given amount of time passes.
 ///

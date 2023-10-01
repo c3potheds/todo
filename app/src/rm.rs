@@ -1,8 +1,8 @@
 use {
     super::util::{format_task, lookup_tasks},
-    cli::Rm,
-    model::{TaskSet, TodoList},
-    printing::{PrintableAppSuccess, PrintableInfo, PrintableResult},
+    todo_cli::Rm,
+    todo_model::{TaskSet, TodoList},
+    todo_printing::{PrintableAppSuccess, PrintableInfo, PrintableResult},
 };
 
 pub fn run<'list>(

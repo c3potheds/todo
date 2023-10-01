@@ -2,9 +2,11 @@ use {
     super::util::{
         format_task, format_task_brief, lookup_tasks, should_include_done,
     },
-    cli::Block,
-    model::{TaskId, TaskSet, TodoList},
-    printing::{Action, PrintableAppSuccess, PrintableError, PrintableResult},
+    todo_cli::Block,
+    todo_model::{TaskId, TaskSet, TodoList},
+    todo_printing::{
+        Action, PrintableAppSuccess, PrintableError, PrintableResult,
+    },
 };
 
 fn to_error(list: &TodoList, a: TaskId, b: TaskId) -> Vec<PrintableError> {

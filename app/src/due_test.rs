@@ -3,8 +3,8 @@
 use {
     super::testing::task,
     super::testing::Fixture,
-    printing::{Plicit::*, PrintableError, Status::*},
-    testing::ymdhms,
+    todo_printing::{Plicit::*, PrintableError, Status::*},
+    todo_testing::ymdhms,
 };
 
 #[test]

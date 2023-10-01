@@ -5,11 +5,11 @@ use {
     },
     ansi_term::Color,
     chrono::{DateTime, Utc},
-    lookup_key::Key,
     std::{
         fmt,
         fmt::{Display, Formatter},
     },
+    todo_lookup_key::Key,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]

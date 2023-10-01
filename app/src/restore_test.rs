@@ -1,7 +1,7 @@
 use {
     super::testing::task,
     super::testing::Fixture,
-    printing::{
+    todo_printing::{
         Action::*, BriefPrintableTask, PrintableError, PrintableWarning,
         Status::*,
     },

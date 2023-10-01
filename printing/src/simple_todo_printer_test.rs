@@ -6,9 +6,9 @@ use {
         PrintableWarning, PrintingContext, SimpleTodoPrinter, Status::*,
         TodoPrinter,
     },
-    lookup_key::Key,
     std::io::Write,
-    testing::ymdhms,
+    todo_lookup_key::Key,
+    todo_testing::ymdhms,
 };
 
 fn create_printer_to_vec() -> SimpleTodoPrinter<Vec<u8>> {

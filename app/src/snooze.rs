@@ -3,9 +3,9 @@ use {
         format_task, format_task_brief, lookup_tasks, parse_snooze_date,
     },
     chrono::{DateTime, Utc},
-    cli::Snooze,
-    model::{SnoozeWarning, TaskId, TaskSet, TodoList},
-    printing::{
+    todo_cli::Snooze,
+    todo_model::{SnoozeWarning, TaskId, TaskSet, TodoList},
+    todo_printing::{
         Action, PrintableAppSuccess, PrintableError, PrintableResult,
         PrintableWarning,
     },

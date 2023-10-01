@@ -1,6 +1,6 @@
 use {
     crate::{testing::expect_parses_into, Bottom, SubCommand},
-    lookup_key::Key::*,
+    todo_lookup_key::Key::*,
 };
 
 #[test]

@@ -1,9 +1,9 @@
 use {
     super::util::{format_task, lookup_tasks, parse_due_date},
     chrono::{DateTime, Utc},
-    cli::Due,
-    model::{TaskId, TaskSet, TaskStatus, TodoList},
-    printing::{PrintableAppSuccess, PrintableError, PrintableResult},
+    todo_cli::Due,
+    todo_model::{TaskId, TaskSet, TaskStatus, TodoList},
+    todo_printing::{PrintableAppSuccess, PrintableError, PrintableResult},
 };
 
 fn show_all_tasks_with_due_dates<'list>(

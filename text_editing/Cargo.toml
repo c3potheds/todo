@@ -1,5 +1,5 @@
 [package]
-name = "text_editing"
+name = "todo_text_editing"
 version = "0.1.0"
 edition = "2021"
 

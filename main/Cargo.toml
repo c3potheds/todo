@@ -1,5 +1,5 @@
 [package]
-name = "main"
+name = "todo_main"
 version = "0.1.0"
 edition = "2021"
 
@@ -10,10 +10,10 @@ serde_json.workspace = true
 term_size.workspace = true
 thiserror.workspace = true
 
-app.workspace = true
-cli.workspace = true
-clock.workspace = true
-config.workspace = true
-model.workspace = true
-printing.workspace = true
-text_editing.workspace = true
+todo_app.workspace = true
+todo_cli.workspace = true
+todo_clock.workspace = true
+todo_config.workspace = true
+todo_model.workspace = true
+todo_printing.workspace = true
+todo_text_editing.workspace = true

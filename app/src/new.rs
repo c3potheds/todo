@@ -4,10 +4,12 @@ use {
         parse_budget, parse_due_date, parse_snooze_date,
     },
     chrono::{DateTime, Utc},
-    cli::New,
-    model::{CheckError, CheckOptions, NewOptions, TaskSet, TodoList},
-    printing::{Action, PrintableAppSuccess, PrintableError, PrintableResult},
     std::{borrow::Cow, collections::HashSet, iter::FromIterator},
+    todo_cli::New,
+    todo_model::{CheckError, CheckOptions, NewOptions, TaskSet, TodoList},
+    todo_printing::{
+        Action, PrintableAppSuccess, PrintableError, PrintableResult,
+    },
 };
 
 pub fn run<'list>(

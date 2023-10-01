@@ -1,5 +1,5 @@
 [package]
-name = "lookup_key"
+name = "todo_lookup_key"
 version = "0.1.0"
 edition = "2021"
 

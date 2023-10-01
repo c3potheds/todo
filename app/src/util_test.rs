@@ -5,10 +5,10 @@ use {
     super::util::*,
     ::pretty_assertions::assert_eq,
     chrono::Duration,
-    lookup_key::Key,
-    model::{CheckOptions, NewOptions, TodoList},
-    printing::{Action::*, Plicit::*, Status::*},
-    testing::ymdhms,
+    todo_lookup_key::Key,
+    todo_model::{CheckOptions, NewOptions, TodoList},
+    todo_printing::{Action::*, Plicit::*, Status::*},
+    todo_testing::ymdhms,
 };
 
 #[test]
