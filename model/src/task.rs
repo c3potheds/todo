@@ -136,4 +136,8 @@ impl<'ser> Task<'ser> {
             implicit_tags: vec![],
         }
     }
+
+    pub(crate) fn is_snoozed(&self) -> bool {
+        self.start_date > self.creation_time
+    }
 }

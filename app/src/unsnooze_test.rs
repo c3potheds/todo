@@ -62,17 +62,14 @@ fn show_warning_when_unsnoozing_complete_task() {
 }
 
 #[test]
-fn show_warning_when_unsnoozing_blocked_task() {
+fn unsnooze_blocked_task() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2022, 02, 22, 10, 00, 00);
     fix.test("todo new a b --chain");
     fix.test("todo snooze b --until 1 hour");
     fix.test("todo unsnooze b")
-        .modified(false)
+        .modified(true)
         .validate()
-        .printed_warning(&PrintableWarning::CannotUnsnoozeBecauseBlocked {
-            cannot_unsnooze: BriefPrintableTask::new(2, Blocked),
-            blocked_by: vec![BriefPrintableTask::new(1, Incomplete)],
-        })
+        .printed_task(&task("b", 2, Blocked).deps_stats(1, 1).action(Unsnooze))
         .end();
 }

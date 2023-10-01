@@ -79,18 +79,28 @@ impl<'ser> TodoList<'ser> {
             use std::cmp::Ordering;
             let ta = self.get(a).unwrap();
             let tb = self.get(b).unwrap();
-            ta.implicit_priority
-                .cmp(&tb.implicit_priority)
-                .then_with(|| {
-                    match (ta.implicit_due_date, tb.implicit_due_date) {
-                        // Put lower due dates first.
-                        (Some(a_date), Some(b_date)) => b_date.cmp(&a_date),
-                        // A task with a due date appears before a task without one.
-                        (Some(_), None) => Ordering::Greater,
-                        (None, Some(_)) => Ordering::Less,
-                        (None, None) => Ordering::Equal,
-                    }
-                })
+            {
+                let (a_is_snoozed, b_is_snoozed) = (
+                    ta.start_date > ta.creation_time,
+                    tb.start_date > tb.creation_time,
+                );
+                match (a_is_snoozed, b_is_snoozed) {
+                    (true, false) => Ordering::Less,
+                    (false, true) => Ordering::Greater,
+                    _ => Ordering::Equal,
+                }
+            }
+            .then_with(|| ta.implicit_priority.cmp(&tb.implicit_priority))
+            .then_with(|| {
+                match (ta.implicit_due_date, tb.implicit_due_date) {
+                    // Put lower due dates first.
+                    (Some(a_date), Some(b_date)) => b_date.cmp(&a_date),
+                    // A task with a due date appears before a task without one.
+                    (Some(_), None) => Ordering::Greater,
+                    (None, Some(_)) => Ordering::Less,
+                    (None, None) => Ordering::Equal,
+                }
+            })
         });
         self.incomplete.put_in_layer(id, depth, pos);
         pos
@@ -278,9 +288,8 @@ impl<'ser> TodoList<'ser> {
 impl<'ser> TodoList<'ser> {
     pub fn add<T: Into<NewOptions<'ser>>>(&mut self, task: T) -> TaskId {
         let task = Task::new(task.into());
-        let snooze = task.start_date > task.creation_time;
         let id = TaskId(self.tasks.add_node(task));
-        self.put_in_incomplete_layer(id, usize::from(snooze));
+        self.put_in_incomplete_layer(id, 0);
         id
     }
 }
@@ -743,10 +752,13 @@ impl<'ser> TodoList<'ser> {
         if self.complete.contains(&id) {
             return Some(TaskStatus::Complete);
         }
-        match self.incomplete.depth(&id) {
-            Some(0) => Some(TaskStatus::Incomplete),
-            Some(_) => Some(TaskStatus::Blocked),
-            _ => None,
+        if self.get(id).map(|task| task.is_snoozed()) == Some(true) {
+            return Some(TaskStatus::Blocked);
+        }
+        if self.incomplete.depth(&id)? == 0 {
+            Some(TaskStatus::Incomplete)
+        } else {
+            Some(TaskStatus::Blocked)
         }
     }
 
@@ -773,19 +785,13 @@ impl<'ser> TodoList<'ser> {
     pub fn unsnooze_up_to(&mut self, now: DateTime<Utc>) -> TaskSet {
         self.incomplete_tasks()
             .filter(|&id| {
-                self.get(id).unwrap().start_date <= now
-                    && self.status(id).unwrap() == TaskStatus::Blocked
-                    && self.max_depth_of_deps(id).is_none()
+                let task = self.get(id).unwrap();
+                task.start_date <= now && task.is_snoozed()
             })
             .collect::<Vec<_>>()
             .into_iter()
             .map(|id| {
-                let old_depth = self.incomplete.depth(&id).unwrap();
-                self.incomplete.remove_from_layer(&id, old_depth);
-                self.put_in_incomplete_layer(id, 0);
-                self.adeps(id).iter_sorted(self).for_each(|adep| {
-                    self.update_depth(adep);
-                });
+                self.unsnooze(id).unwrap();
                 id
             })
             .collect()
@@ -861,12 +867,10 @@ impl<'ser> TodoList<'ser> {
     ) -> Result<(), Vec<SnoozeWarning>> {
         match self.incomplete.depth(&id) {
             Some(depth) => {
-                if depth == 0 {
-                    self.incomplete.remove_from_layer(&id, 0);
-                    self.put_in_incomplete_layer(id, 1);
-                }
                 self.tasks.node_weight_mut(id.0).unwrap().start_date =
                     start_date;
+                self.incomplete.remove_from_layer(&id, depth);
+                self.put_in_incomplete_layer(id, depth);
                 if let Some(due_date) = self.get(id).unwrap().implicit_due_date
                 {
                     if start_date > due_date {
@@ -894,27 +898,18 @@ pub enum UnsnoozeWarning {
 
 impl<'ser> TodoList<'ser> {
     pub fn unsnooze(&mut self, id: TaskId) -> Result<(), Vec<UnsnoozeWarning>> {
-        // If the task is blocked by any incomplete tasks, return an error.
-        if self
-            .deps(id)
-            .iter_unsorted()
-            .any(|dep| self.status(dep).unwrap() != TaskStatus::Complete)
-        {
-            return Err(vec![UnsnoozeWarning::TaskIsBlocked]);
+        let status = self.status(id).unwrap();
+        if status == TaskStatus::Complete {
+            return Err(vec![UnsnoozeWarning::TaskIsComplete]);
         }
-        match self.incomplete.depth(&id) {
-            Some(0) => Err(vec![UnsnoozeWarning::NotSnoozed]),
-            Some(1) => {
-                self.incomplete.remove_from_layer(&id, 1);
-                self.put_in_incomplete_layer(id, 0);
-                // Reset the start date to the creation time.
-                self.tasks.node_weight_mut(id.0).unwrap().start_date =
-                    self.tasks.node_weight(id.0).unwrap().creation_time;
-                Ok(())
-            }
-            Some(_) => unreachable!(),
-            None => Err(vec![UnsnoozeWarning::TaskIsComplete]),
+        let task = self.tasks.node_weight_mut(id.0).unwrap();
+        if !task.is_snoozed() {
+            return Err(vec![UnsnoozeWarning::NotSnoozed]);
         }
+        // Reset the start date to the creation time.
+        task.start_date = task.creation_time;
+        self.update_depth(id);
+        Ok(())
     }
 }
 

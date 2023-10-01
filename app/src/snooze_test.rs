@@ -150,3 +150,24 @@ fn snooze_until_time_that_has_already_passed_should_leave_tasks_unmodified() {
         .printed_task(&task("a", 1, Incomplete))
         .end();
 }
+
+#[test]
+fn snoozed_tasks_should_appear_before_tasks_they_block() {
+    let mut fix = Fixture::default();
+    fix.clock.now = ymdhms(2023, 09, 30, 14, 00, 00);
+    let tomorrow = ymdhms(2023, 10, 01, 00, 00, 00);
+    fix.test("todo new a b c --chain");
+    fix.test("todo snooze a --until tomorrow")
+        .modified(true)
+        .validate()
+        .printed_task(
+            &task("a", 1, Blocked).start_date(tomorrow).action(Snooze),
+        )
+        .end();
+    fix.test("todo -a")
+        .validate()
+        .printed_task(&task("a", 1, Blocked).start_date(tomorrow))
+        .printed_task(&task("b", 2, Blocked).deps_stats(0, 1))
+        .printed_task(&task("c", 3, Blocked).deps_stats(0, 2))
+        .end();
+}
