@@ -912,17 +912,3 @@ impl<'ser> TodoList<'ser> {
         Ok(())
     }
 }
-
-#[derive(Debug, Error)]
-pub enum TodoListError {
-    #[error("could not complete task")]
-    Check(#[from] CheckError),
-    #[error("could not restore task")]
-    Restore(#[from] RestoreError),
-    #[error("could not block task")]
-    Block(#[from] BlockError),
-    #[error("could not unblock task")]
-    Unblock(#[from] UnblockError),
-    #[error("could not punt task")]
-    Punt(#[from] PuntError),
-}
