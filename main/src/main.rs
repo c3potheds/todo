@@ -2,12 +2,12 @@ use std::io::IsTerminal;
 
 use {
     clap::Parser,
-    cli::Options,
-    clock::{Clock, SystemClock},
-    printing::{PrintingContext, ScriptingTodoPrinter, SimpleTodoPrinter},
     std::{fs::File, io::BufWriter},
-    text_editing::{FakeTextEditor, ScrawlTextEditor},
     thiserror::Error,
+    todo_cli::Options,
+    todo_clock::{Clock, SystemClock},
+    todo_printing::{PrintingContext, ScriptingTodoPrinter, SimpleTodoPrinter},
+    todo_text_editing::{FakeTextEditor, ScrawlTextEditor},
 };
 
 #[derive(Debug, Error)]
@@ -41,7 +41,7 @@ enum TodoError {
     #[error("Save error")]
     Save(#[from] SaveError),
     #[error("Config error")]
-    LoadConfig(#[from] config::LoadError),
+    LoadConfig(#[from] todo_config::LoadError),
 }
 
 type TodoResult = Result<(), TodoError>;
@@ -63,8 +63,10 @@ fn main() -> TodoResult {
         }
 
         config_path.push("config.json");
-        File::open(&config_path)
-            .map_or_else(|_| Ok(config::Config::default()), config::load)?
+        File::open(&config_path).map_or_else(
+            |_| Ok(todo_config::Config::default()),
+            todo_config::load,
+        )?
     };
 
     let mut data_path = project_dirs.data_dir().to_path_buf();
@@ -80,25 +82,25 @@ fn main() -> TodoResult {
     let read_file_result = std::fs::read_to_string(&data_path);
     let mut model = match &read_file_result {
         Ok(s) => serde_json::from_str(s).map_err(LoadError::from)?,
-        Err(_) => model::TodoList::default(),
+        Err(_) => todo_model::TodoList::default(),
     };
 
     let app_result = if std::io::stdout().is_terminal() {
-        app::todo(
+        todo_app::todo(
             &mut model,
             &ScrawlTextEditor(&config.text_editor_cmd),
             &SystemClock,
             options,
         )
     } else {
-        app::todo(
+        todo_app::todo(
             &mut model,
             &FakeTextEditor::no_user_output(),
             &SystemClock,
             options,
         )
     };
-    use printing::Printable;
+    use todo_printing::Printable;
     let mutated = if std::io::stdout().is_terminal() {
         let mut printer = SimpleTodoPrinter {
             out: less::Less::new(&config.paginator_cmd)

@@ -22,17 +22,16 @@ textwrap = "0.16.0"
 thiserror = "1.0.30"
 
 # Local dependencies
-app = { path = "app" }
-cli = { path = "cli" }
-clock = { path = "clock" }
-config = { path = "config" }
-lookup_key = { path = "lookup_key" }
-main = { path = "main" }
-model = { path = "model" }
-printing = { path = "printing" }
-testing = { path = "testing" }
-text_editing = { path = "text_editing" }
-time_format = { path = "time_format" }
+todo_app = { path = "app" }
+todo_cli = { path = "cli" }
+todo_clock = { path = "clock" }
+todo_config = { path = "config" }
+todo_lookup_key = { path = "lookup_key" }
+todo_model = { path = "model" }
+todo_printing = { path = "printing" }
+todo_testing = { path = "testing" }
+todo_text_editing = { path = "text_editing" }
+todo_time_format = { path = "time_format" }
 
 [profile.dev]
 split-debuginfo = "packed"

@@ -4,10 +4,10 @@ use {
     super::testing::task,
     super::testing::Fixture,
     chrono::Duration,
-    printing::{
+    todo_printing::{
         Action::*, BriefPrintableTask, Plicit::*, PrintableError, Status::*,
     },
-    testing::ymdhms,
+    todo_testing::ymdhms,
 };
 
 #[test]

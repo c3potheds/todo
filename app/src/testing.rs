@@ -3,15 +3,15 @@
 use {
     chrono::{TimeZone, Utc},
     clap::Parser,
-    cli::Options,
-    clock::FakeClock,
-    model::TodoList,
     pretty_assertions::assert_eq,
-    printing::{
+    todo_cli::Options,
+    todo_clock::FakeClock,
+    todo_model::TodoList,
+    todo_printing::{
         PrintableError, PrintableInfo, PrintableTask, PrintableWarning, Status,
         TodoPrinter,
     },
-    text_editing::FakeTextEditor,
+    todo_text_editing::FakeTextEditor,
 };
 
 #[derive(Debug, PartialEq, Eq)]
@@ -141,7 +141,7 @@ impl<'list> Fixture<'list> {
         let args = shlex::split(s).expect("Could not split args");
         let options =
             Options::try_parse_from(args).expect("Could not parse args");
-        use printing::Printable;
+        use todo_printing::Printable;
         let mutated = crate::todo(
             &mut self.list,
             &self.text_editor,

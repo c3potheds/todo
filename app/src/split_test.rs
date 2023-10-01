@@ -5,8 +5,8 @@ use chrono::Duration;
 use {
     super::testing::task,
     super::testing::Fixture,
-    printing::{Action::*, Status::*},
-    testing::ymdhms,
+    todo_printing::{Action::*, Status::*},
+    todo_testing::ymdhms,
 };
 
 #[test]

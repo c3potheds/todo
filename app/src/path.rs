@@ -2,9 +2,9 @@ use {
     super::util::{
         format_task, format_task_brief, format_tasks_brief, lookup_task,
     },
-    cli::Path,
-    model::{TaskId, TaskSet, TodoList},
-    printing::{
+    todo_cli::Path,
+    todo_model::{TaskId, TaskSet, TodoList},
+    todo_printing::{
         Action, PrintableAppSuccess, PrintableResult, PrintableWarning,
     },
 };

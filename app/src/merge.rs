@@ -1,10 +1,12 @@
 use {
     super::util::{format_task, format_tasks_brief, lookup_tasks},
     chrono::{DateTime, Utc},
-    cli::Merge,
-    model::{DurationInSeconds, NewOptions, TaskSet, TodoList},
-    printing::{Action, PrintableAppSuccess, PrintableError, PrintableResult},
     std::borrow::Cow,
+    todo_cli::Merge,
+    todo_model::{DurationInSeconds, NewOptions, TaskSet, TodoList},
+    todo_printing::{
+        Action, PrintableAppSuccess, PrintableError, PrintableResult,
+    },
 };
 
 pub fn run<'list>(

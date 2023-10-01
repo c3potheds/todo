@@ -6,7 +6,7 @@ use {
         SimpleTodoPrinter, Status::*, TodoPrinter,
     },
     chrono::{DateTime, Utc},
-    testing::ymdhms,
+    todo_testing::ymdhms,
 };
 
 fn make_printing_context() -> PrintingContext {

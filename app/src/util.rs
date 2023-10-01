@@ -1,11 +1,11 @@
 use {
     chrono::{DateTime, Duration, Local, Utc},
-    lookup_key::Key,
-    model::{DurationInSeconds, TaskId, TaskSet, TaskStatus, TodoList},
-    printing::{
+    std::convert::TryFrom,
+    todo_lookup_key::Key,
+    todo_model::{DurationInSeconds, TaskId, TaskSet, TaskStatus, TodoList},
+    todo_printing::{
         BriefPrintableTask, Plicit, PrintableError, PrintableTask, Status,
     },
-    std::convert::TryFrom,
 };
 
 fn to_printing_status(status: TaskStatus) -> Status {
@@ -216,11 +216,11 @@ pub fn parse_due_date(
         return Ok(None);
     }
     let due_date_string = chunks.join(" ");
-    match ::time_format::parse_time(
+    match ::todo_time_format::parse_time(
         Local,
         now.with_timezone(&Local),
         &due_date_string,
-        ::time_format::Snap::ToEnd,
+        ::todo_time_format::Snap::ToEnd,
     ) {
         Ok(due_date) => Ok(Some(due_date.with_timezone(&Utc))),
         Err(_) => Err(PrintableError::CannotParseDueDate {
@@ -262,11 +262,11 @@ pub fn parse_snooze_date(
     if date_string.is_empty() || date_string.is_empty() {
         return Ok(None);
     }
-    match ::time_format::parse_time(
+    match ::todo_time_format::parse_time(
         Local,
         now.with_timezone(&Local),
         &date_string,
-        ::time_format::Snap::ToStart,
+        ::todo_time_format::Snap::ToStart,
     ) {
         Ok(snooze_date) => Ok(Some(snooze_date.with_timezone(&Utc))),
         Err(_) => Err(PrintableError::CannotParseDueDate {

@@ -76,7 +76,7 @@ fn implicit_priority_is_cleaned_up() {
 
 #[test]
 fn implicit_due_date_is_cleaned_up() {
-    use testing::ymdhms;
+    use todo_testing::ymdhms;
     let mut list = TodoList::default();
     let a = list.add("a");
     let b_due = ymdhms(2020, 1, 1, 0, 0, 0);

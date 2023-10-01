@@ -1,6 +1,6 @@
-use cli::Bottom;
-use model::{TaskId, TaskSet, TaskStatus, TodoList};
-use printing::{PrintableAppSuccess, PrintableResult, PrintableWarning};
+use todo_cli::Bottom;
+use todo_model::{TaskId, TaskSet, TaskStatus, TodoList};
+use todo_printing::{PrintableAppSuccess, PrintableResult, PrintableWarning};
 
 use crate::util::{format_task, lookup_task, should_include_done};
 

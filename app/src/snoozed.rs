@@ -1,8 +1,8 @@
 use {
     super::util::format_task,
     chrono::{DateTime, Utc},
-    model::TodoList,
-    printing::{PrintableAppSuccess, PrintableResult},
+    todo_model::TodoList,
+    todo_printing::{PrintableAppSuccess, PrintableResult},
 };
 
 pub fn run<'list>(

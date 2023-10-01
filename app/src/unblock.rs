@@ -2,9 +2,9 @@ use {
     super::util::{
         format_task, format_task_brief, lookup_tasks, should_include_done,
     },
-    cli::Unblock,
-    model::{TaskSet, TodoList},
-    printing::{
+    todo_cli::Unblock,
+    todo_model::{TaskSet, TodoList},
+    todo_printing::{
         Action, PrintableAppSuccess, PrintableError, PrintableResult,
         PrintableWarning,
     },

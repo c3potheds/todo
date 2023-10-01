@@ -1,8 +1,8 @@
 use {
     crate::{BriefPrintableTask, Status},
     ansi_term::Color,
-    lookup_key::Key,
     std::fmt,
+    todo_lookup_key::Key,
 };
 
 pub fn format_key(key: &Key) -> impl fmt::Display + '_ {

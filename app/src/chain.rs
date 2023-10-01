@@ -2,10 +2,12 @@ use {
     super::util::{
         format_task, format_task_brief, lookup_task, should_include_done,
     },
-    cli::Chain,
-    model::{BlockError, TaskSet, TodoList},
-    printing::{Action, PrintableAppSuccess, PrintableError, PrintableResult},
     std::collections::HashMap,
+    todo_cli::Chain,
+    todo_model::{BlockError, TaskSet, TodoList},
+    todo_printing::{
+        Action, PrintableAppSuccess, PrintableError, PrintableResult,
+    },
 };
 
 pub fn run<'list>(

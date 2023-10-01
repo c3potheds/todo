@@ -1,5 +1,5 @@
 [package]
-name = "model"
+name = "todo_model"
 edition = "2021"
 version = "0.1.0"
 authors = ["Simeon <simeon.anfinrud@mac.com"]
@@ -16,4 +16,4 @@ thiserror.workspace = true
 pretty_assertions.workspace = true
 serde_json.workspace = true
 
-testing.workspace = true
+todo_testing.workspace = true

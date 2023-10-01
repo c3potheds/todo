@@ -3,7 +3,7 @@ use {
         testing::{expect_error, expect_parses_into},
         Check, SubCommand,
     },
-    lookup_key::Key::*,
+    todo_lookup_key::Key::*,
 };
 
 #[test]

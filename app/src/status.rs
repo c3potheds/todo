@@ -1,8 +1,8 @@
 use {
     super::util::format_task,
     chrono::{DateTime, Utc},
-    model::{TaskStatus, TodoList},
-    printing::{Action, PrintableAppSuccess, PrintableResult},
+    todo_model::{TaskStatus, TodoList},
+    todo_printing::{Action, PrintableAppSuccess, PrintableResult},
 };
 
 pub struct Status {

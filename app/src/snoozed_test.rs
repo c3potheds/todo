@@ -1,7 +1,7 @@
 #[allow(clippy::zero_prefixed_literal)]
 use {
-    super::testing::task, super::testing::Fixture, printing::Status::*,
-    testing::ymdhms,
+    super::testing::task, super::testing::Fixture, todo_printing::Status::*,
+    todo_testing::ymdhms,
 };
 
 #[test]

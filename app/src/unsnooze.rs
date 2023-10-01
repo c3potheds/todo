@@ -2,9 +2,9 @@ use {
     super::util::{
         format_task, format_task_brief, format_tasks_brief, lookup_tasks,
     },
-    cli::Unsnooze,
-    model::{TaskSet, TodoList, UnsnoozeWarning},
-    printing::{
+    todo_cli::Unsnooze,
+    todo_model::{TaskSet, TodoList, UnsnoozeWarning},
+    todo_printing::{
         Action, PrintableAppSuccess, PrintableResult, PrintableWarning,
     },
 };

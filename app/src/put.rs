@@ -2,10 +2,12 @@ use {
     super::util::{
         format_task, format_task_brief, lookup_tasks, should_include_done,
     },
-    cli::Put,
-    model::{TaskId, TaskSet, TodoList},
-    printing::{Action, PrintableAppSuccess, PrintableError, PrintableResult},
     std::collections::HashSet,
+    todo_cli::Put,
+    todo_model::{TaskId, TaskSet, TodoList},
+    todo_printing::{
+        Action, PrintableAppSuccess, PrintableError, PrintableResult,
+    },
 };
 
 fn print_block_error(

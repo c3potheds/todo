@@ -2,9 +2,9 @@ use {
     super::util::{
         format_task, format_task_brief, format_tasks_brief, lookup_tasks,
     },
-    cli::Restore,
-    model::{ForceRestored, RestoreError, TaskId, TaskSet, TodoList},
-    printing::{
+    todo_cli::Restore,
+    todo_model::{ForceRestored, RestoreError, TaskId, TaskSet, TodoList},
+    todo_printing::{
         Action, PrintableAppSuccess, PrintableError, PrintableResult,
         PrintableWarning,
     },

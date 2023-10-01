@@ -1,8 +1,8 @@
 use {
     super::util::format_task,
-    cli::Find,
-    model::{TaskStatus, TodoList},
-    printing::{Action, PrintableAppSuccess, PrintableResult},
+    todo_cli::Find,
+    todo_model::{TaskStatus, TodoList},
+    todo_printing::{Action, PrintableAppSuccess, PrintableResult},
 };
 
 pub fn run<'list>(list: &'list TodoList, cmd: &Find) -> PrintableResult<'list> {

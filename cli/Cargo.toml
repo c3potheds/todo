@@ -1,9 +1,10 @@
 [package]
-name = "cli"
+name = "todo_cli"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 clap.workspace = true
 
-lookup_key.workspace = true
+todo_config.workspace = true
+todo_lookup_key.workspace = true

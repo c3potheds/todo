@@ -4,11 +4,11 @@ use {
         new, path, priority, punt, put, restore, rm, snooze, snoozed, split,
         status, tag, top, unblock, unsnooze,
     },
-    cli::{Options, SubCommand},
-    clock::Clock,
-    model::TodoList,
-    printing::PrintableResult,
-    text_editing::TextEditor,
+    todo_cli::{Options, SubCommand},
+    todo_clock::Clock,
+    todo_model::TodoList,
+    todo_printing::PrintableResult,
+    todo_text_editing::TextEditor,
 };
 
 fn status_options(options: Options) -> status::Status {

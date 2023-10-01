@@ -4,7 +4,7 @@ use {
     super::testing::task,
     super::testing::Fixture,
     chrono::{Local, TimeZone, Utc},
-    printing::{LogDate::*, Status::*},
+    todo_printing::{LogDate::*, Status::*},
 };
 
 #[test]

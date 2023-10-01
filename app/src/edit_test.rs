@@ -1,8 +1,8 @@
 use {
     super::testing::task,
     super::testing::Fixture,
-    printing::{PrintableError, Status::*},
-    text_editing::FakeTextEditor,
+    todo_printing::{PrintableError, Status::*},
+    todo_text_editing::FakeTextEditor,
 };
 
 fn prompt_with(stuff: &str) -> String {

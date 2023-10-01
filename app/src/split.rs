@@ -2,10 +2,10 @@ use chrono::Duration;
 
 use {
     super::util::{format_task, lookup_tasks},
-    cli::Split,
-    model::{DurationInSeconds, NewOptions, TaskId, TaskSet, TodoList},
-    printing::{Action, PrintableAppSuccess, PrintableResult},
     std::borrow::Cow,
+    todo_cli::Split,
+    todo_model::{DurationInSeconds, NewOptions, TaskId, TaskSet, TodoList},
+    todo_printing::{Action, PrintableAppSuccess, PrintableResult},
 };
 
 #[derive(Default)]

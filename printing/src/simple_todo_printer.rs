@@ -83,7 +83,9 @@ fn fmt_snooze_date(snooze_duration: Duration, out: &mut String) {
                 .bold()
                 .paint(format!(
                     "Snoozed for {}",
-                    ::time_format::format_duration_laconic(snooze_duration)
+                    ::todo_time_format::format_duration_laconic(
+                        snooze_duration
+                    )
                 ))
                 .to_string(),
         );
@@ -134,7 +136,7 @@ fn fmt_due_date(
     if implicit {
         style = style.italic();
     }
-    let desc = ::time_format::display_relative_time(
+    let desc = ::todo_time_format::display_relative_time(
         context.now.with_timezone(&Local),
         due_date.with_timezone(&Local),
     );
@@ -149,7 +151,7 @@ fn fmt_punctuality(punctuality: Duration, out: &mut String) {
         } else {
             (Color::Green.bold(), "early", -punctuality)
         };
-    let desc = ::time_format::format_duration_laconic(abs_punctuality);
+    let desc = ::todo_time_format::format_duration_laconic(abs_punctuality);
     out.push_str(&style.paint(format!("Done {} {}", desc, suffix)).to_string());
     out.push(' ');
 }

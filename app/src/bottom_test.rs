@@ -1,8 +1,8 @@
 use {
     super::testing::task,
     super::testing::Fixture,
-    lookup_key::Key,
-    printing::{PrintableWarning, Status::*},
+    todo_lookup_key::Key,
+    todo_printing::{PrintableWarning, Status::*},
 };
 
 #[test]

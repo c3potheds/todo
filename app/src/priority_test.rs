@@ -1,7 +1,7 @@
 use {
     super::testing::task,
     super::testing::Fixture,
-    printing::{Plicit::*, Status::*},
+    todo_printing::{Plicit::*, Status::*},
 };
 
 #[test]
