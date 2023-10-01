@@ -1,5 +1,7 @@
 #![allow(clippy::zero_prefixed_literal)]
 
+use itertools::Itertools;
+
 use {
     super::*,
     ::pretty_assertions::assert_eq,
@@ -52,7 +54,7 @@ fn unsnooze_up_to_before_snooze_date() {
     let now = Utc.with_ymd_and_hms(2021, 05, 30, 09, 00, 00).unwrap();
     let unsnoozed = list.unsnooze_up_to(now);
     assert_eq!(unsnoozed.len(), 0);
-    assert_eq!(list.status(a).unwrap(), TaskStatus::Blocked);
+    assert!(list.get(a).unwrap().is_snoozed());
 }
 
 #[test]
@@ -122,16 +124,17 @@ fn unsnooze_updates_depth_of_adeps() -> TestResult {
     list.block(b).on(a)?;
     list.block(d).on(c)?;
     // c is first because it is unblocked an unsnoozed.
-    // a is next because it's snoozed, but was added before d, which is blocked
-    // by c.
+    // a is next because it's snoozed and otherwise unblocked.
     // b is blocked by a, and so appears in a deeper layer than a.
-    assert_eq!(list.incomplete_tasks().collect::<Vec<_>>(), [c, a, d, b]);
+    // Likewise, d is blocked by c, and so appears in a deeper layer than c.
+    // d shows up after b because b has a due date and d does not.
+    assert_eq!(list.incomplete_tasks().collect::<Vec<_>>(), [c, a, b, d]);
     let now = Utc.with_ymd_and_hms(2021, 05, 25, 12, 00, 00).unwrap();
-    list.unsnooze_up_to(now);
+    assert_eq!(list.unsnooze_up_to(now).as_sorted_vec(&list), [a]);
     // a and b now appear before c and d, respectively, because they are in
-    // the same layer, and have a due date which sorts them earlier the other
-    // tasks with no due date.
-    assert_eq!(list.incomplete_tasks().collect::<Vec<_>>(), [a, c, b, d]);
+    // the same layer, and have a due date which sorts them earlier than the
+    // other tasks with no due date.
+    assert_eq!(list.incomplete_tasks().collect::<Vec<_>>(), [c, a, b, d]);
     Ok(())
 }
 
@@ -405,23 +408,41 @@ fn unsnooze_task_that_is_snoozed() {
 }
 
 #[test]
-fn unsnooze_blocked_task() -> TestResult {
+fn unsnooze_blocked_task_that_is_not_snoozed() -> TestResult {
     let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     list.block(b).on(a)?;
-    assert_eq!(list.unsnooze(b), Err(vec![UnsnoozeWarning::TaskIsBlocked]));
+    assert_eq!(list.unsnooze(b), Err(vec![UnsnoozeWarning::NotSnoozed]));
     Ok(())
 }
 
 #[test]
-fn unsnooze_deeply_blocked_task() -> TestResult {
+fn unsnooze_deeply_blocked_task_that_is_not_snoozed() -> TestResult {
     let mut list = TodoList::default();
     let a = list.add("a");
     let b = list.add("b");
     let c = list.add("c");
     list.block(b).on(a)?;
     list.block(c).on(b)?;
-    assert_eq!(list.unsnooze(c), Err(vec![UnsnoozeWarning::TaskIsBlocked]));
+    assert_eq!(list.unsnooze(c), Err(vec![UnsnoozeWarning::NotSnoozed]));
+    Ok(())
+}
+
+#[test]
+fn snoozed_task_appears_before_task_it_blocks() -> TestResult {
+    let mut list = TodoList::default();
+    let now = Utc.with_ymd_and_hms(2023, 09, 30, 15, 00, 00).unwrap();
+    let a = list.add(NewOptions::new().desc("a").creation_time(now));
+    let b = list.add("b");
+    let c = list.add("c");
+    let d = list.add("d");
+    list.block(b).on(a)?;
+    list.block(c).on(b)?;
+    let snooze = Utc.with_ymd_and_hms(2023, 10, 01, 00, 00, 00).unwrap();
+    list.snooze(a, snooze).unwrap();
+    assert_eq!(list.status(a), Some(TaskStatus::Blocked));
+    assert_eq!(list.position(a), Some(2));
+    assert_eq!(list.all_tasks().collect_vec(), [d, a, b, c]);
     Ok(())
 }

@@ -52,11 +52,9 @@ pub fn run<'list>(
     if snooze_date <= now {
         let warnings = lookup_tasks(list, &cmd.keys)
             .iter_sorted(list)
-            .map(|id| {
-                PrintableWarning::SnoozedUntilPast {
-                    snoozed_task: format_task_brief(list, id),
-                    snooze_date,
-                }
+            .map(|id| PrintableWarning::SnoozedUntilPast {
+                snoozed_task: format_task_brief(list, id),
+                snooze_date,
             })
             .collect();
         return Ok(PrintableAppSuccess {
