@@ -80,9 +80,9 @@ fn implicit_due_date_is_cleaned_up() {
     let mut list = TodoList::default();
     let a = list.add("a");
     let b_due = ymdhms(2020, 1, 1, 0, 0, 0);
-    let b = list.add(NewOptions::new().desc("b").due_date(b_due.clone()));
+    let b = list.add(NewOptions::new().desc("b").due_date(b_due));
     list.block(b).on(a).unwrap();
-    assert_eq!(list.get(a).unwrap().implicit_due_date, Some(b_due.clone()));
+    assert_eq!(list.get(a).unwrap().implicit_due_date, Some(b_due));
     list.remove(b);
     assert_eq!(list.get(a).unwrap().implicit_due_date, None);
 }
