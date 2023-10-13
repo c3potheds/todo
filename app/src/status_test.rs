@@ -136,6 +136,19 @@ fn status_unsnooze_preserves_order() {
     fix.test("todo snooze a --until 1 hour");
     fix.test("todo snooze b --until 2 hours");
     fix.test("todo snooze c --until 3 hours");
+    fix.test("todo -b")
+        .modified(false)
+        .validate()
+        .printed_task(
+            &task("a", 1, Blocked).start_date(ymdhms(2021, 05, 30, 13, 00, 00)),
+        )
+        .printed_task(
+            &task("b", 2, Blocked).start_date(ymdhms(2021, 05, 30, 14, 00, 00)),
+        )
+        .printed_task(
+            &task("c", 3, Blocked).start_date(ymdhms(2021, 05, 30, 15, 00, 00)),
+        )
+        .end();
     fix.clock.now = ymdhms(2021, 05, 30, 16, 00, 00);
     fix.test("todo")
         .modified(true)

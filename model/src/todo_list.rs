@@ -79,16 +79,14 @@ impl<'ser> TodoList<'ser> {
             use std::cmp::Ordering;
             let ta = self.get(a).unwrap();
             let tb = self.get(b).unwrap();
-            {
-                let (a_is_snoozed, b_is_snoozed) = (
-                    ta.start_date > ta.creation_time,
-                    tb.start_date > tb.creation_time,
-                );
-                match (a_is_snoozed, b_is_snoozed) {
-                    (true, false) => Ordering::Less,
-                    (false, true) => Ordering::Greater,
-                    _ => Ordering::Equal,
-                }
+            let (a_is_snoozed, b_is_snoozed) = (
+                ta.start_date > ta.creation_time,
+                tb.start_date > tb.creation_time,
+            );
+            match (a_is_snoozed, b_is_snoozed) {
+                (true, false) => Ordering::Less,
+                (false, true) => Ordering::Greater,
+                _ => Ordering::Equal,
             }
             .then_with(|| ta.implicit_priority.cmp(&tb.implicit_priority))
             .then_with(|| {
@@ -99,6 +97,15 @@ impl<'ser> TodoList<'ser> {
                     (Some(_), None) => Ordering::Greater,
                     (None, Some(_)) => Ordering::Less,
                     (None, None) => Ordering::Equal,
+                }
+            })
+            .then_with(|| {
+                // If both tasks are snoozed, sort them by start date (the
+                // time that they will be unsnoozed).
+                if a_is_snoozed && b_is_snoozed {
+                    tb.start_date.cmp(&ta.start_date)
+                } else {
+                    Ordering::Equal
                 }
             })
         });

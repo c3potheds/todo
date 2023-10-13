@@ -464,3 +464,18 @@ fn unsnoozed_task_is_sorted_correctly() -> TestResult {
     assert_eq!(list.all_tasks().collect_vec(), [a, b]);
     Ok(())
 }
+
+#[test]
+fn snoozed_tasks_are_sorted_by_start_time() -> TestResult {
+    let mut list = TodoList::default();
+    let now = Utc.with_ymd_and_hms(2023, 10, 13, 10, 00, 00).unwrap();
+    let a = list.add(NewOptions::new().desc("a").creation_time(now));
+    let b = list.add(NewOptions::new().desc("b").creation_time(now));
+    // Snooze a to a later time than b.
+    let snooze_a = Utc.with_ymd_and_hms(2023, 10, 13, 12, 00, 00).unwrap();
+    let snooze_b = Utc.with_ymd_and_hms(2023, 10, 13, 11, 00, 00).unwrap();
+    list.snooze(a, snooze_a).unwrap();
+    list.snooze(b, snooze_b).unwrap();
+    assert_eq!(list.all_tasks().collect_vec(), [b, a]);
+    Ok(())
+}
