@@ -54,7 +54,7 @@ fn split(
                 } else {
                     task.budget
                 },
-                start_date: task.start_date,
+                start_date: Some(task.start_date),
                 tag: match tag {
                     Some(value) => value,
                     None => !keep && original_is_tag,
