@@ -908,7 +908,13 @@ impl<'ser> TodoList<'ser> {
         }
         // Reset the start date to the creation time.
         task.start_date = task.creation_time;
-        self.update_depth(id);
+        self.punt(id).map_err(|e| {
+            // This is redundant but I'd rather not have a panicking code path
+            // by using unwrap().
+            vec![match e {
+                PuntError::TaskIsComplete => UnsnoozeWarning::TaskIsComplete,
+            }]
+        })?;
         Ok(())
     }
 }

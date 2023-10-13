@@ -69,8 +69,7 @@ pub fn run<'list>(
     let start_date = tasks_to_merge
         .iter_unsorted()
         .map(|id| list.get(id).unwrap().start_date)
-        .max()
-        .unwrap_or(now);
+        .max();
     let tag = match cmd.tag {
         Some(value) => value,
         None => tasks_to_merge

@@ -47,7 +47,7 @@ pub struct NewOptions<'ser> {
     pub priority: i32,
     pub due_date: Option<DateTime<Utc>>,
     pub budget: DurationInSeconds,
-    pub start_date: DateTime<Utc>,
+    pub start_date: Option<DateTime<Utc>>,
     pub tag: bool,
 }
 
@@ -61,7 +61,7 @@ impl<'ser> NewOptions<'ser> {
             priority: 0,
             due_date: None,
             budget: DurationInSeconds::default(),
-            start_date: now,
+            start_date: None,
             tag: false,
         }
     }
@@ -92,7 +92,7 @@ impl<'ser> NewOptions<'ser> {
     }
 
     pub fn start_date(mut self, start_date: DateTime<Utc>) -> Self {
-        self.start_date = start_date;
+        self.start_date = Some(start_date);
         self
     }
 
@@ -111,7 +111,7 @@ impl<'ser, S: Into<Cow<'ser, str>>> From<S> for NewOptions<'ser> {
             priority: 0,
             due_date: None,
             budget: DurationInSeconds::default(),
-            start_date: now,
+            start_date: None,
             tag: false,
         }
     }
@@ -131,7 +131,7 @@ impl<'ser> Task<'ser> {
             due_date: options.due_date,
             implicit_due_date: options.due_date,
             budget: options.budget,
-            start_date: options.start_date,
+            start_date: options.start_date.unwrap_or(options.now),
             tag: options.tag,
             implicit_tags: vec![],
         }

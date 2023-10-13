@@ -123,7 +123,7 @@ fn unsnooze_updates_depth_of_adeps() -> TestResult {
     let d = list.add("d");
     list.block(b).on(a)?;
     list.block(d).on(c)?;
-    // c is first because it is unblocked an unsnoozed.
+    // c is first because it is unblocked and unsnoozed.
     // a is next because it's snoozed and otherwise unblocked.
     // b is blocked by a, and so appears in a deeper layer than a.
     // Likewise, d is blocked by c, and so appears in a deeper layer than c.
@@ -134,7 +134,7 @@ fn unsnooze_updates_depth_of_adeps() -> TestResult {
     // a and b now appear before c and d, respectively, because they are in
     // the same layer, and have a due date which sorts them earlier than the
     // other tasks with no due date.
-    assert_eq!(list.incomplete_tasks().collect::<Vec<_>>(), [c, a, b, d]);
+    assert_eq!(list.incomplete_tasks().collect::<Vec<_>>(), [a, c, b, d]);
     Ok(())
 }
 
@@ -444,5 +444,23 @@ fn snoozed_task_appears_before_task_it_blocks() -> TestResult {
     assert_eq!(list.status(a), Some(TaskStatus::Blocked));
     assert_eq!(list.position(a), Some(2));
     assert_eq!(list.all_tasks().collect_vec(), [d, a, b, c]);
+    Ok(())
+}
+
+#[test]
+fn unsnoozed_task_is_sorted_correctly() -> TestResult {
+    let mut list = TodoList::default();
+    let now = Utc.with_ymd_and_hms(2023, 10, 13, 10, 00, 00).unwrap();
+    let a =
+        list.add(NewOptions::new().desc("a").creation_time(now).priority(1));
+    let b =
+        list.add(NewOptions::new().desc("b").creation_time(now).priority(0));
+    let snooze_time = Utc.with_ymd_and_hms(2023, 10, 13, 11, 00, 00).unwrap();
+    list.snooze(a, snooze_time).unwrap();
+    assert_eq!(list.all_tasks().collect_vec(), [b, a]);
+    let unsnoozed = list.unsnooze_up_to(snooze_time);
+    assert_eq!(unsnoozed.as_sorted_vec(&list), [a]);
+    // a should appear before b because it has higher priority.
+    assert_eq!(list.all_tasks().collect_vec(), [a, b]);
     Ok(())
 }

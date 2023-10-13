@@ -20,8 +20,7 @@ pub fn run<'list>(
     let due_date = parse_due_date(now, &cmd.due).map_err(|e| vec![e])?;
     let budget = parse_budget(&cmd.budget).map_err(|e| vec![e])?;
     let snooze_date = parse_snooze_date(now, &cmd.snooze)
-        .map_err(|e| vec![e])?
-        .unwrap_or_default();
+        .map_err(|e| vec![e])?;
     let deps = lookup_tasks(list, &cmd.blocked_by);
     let adeps = lookup_tasks(list, &cmd.blocking);
     let before = lookup_tasks(list, &cmd.before);
