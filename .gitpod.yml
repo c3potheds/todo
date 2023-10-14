@@ -6,7 +6,7 @@ tasks:
   - init: |
       rustup component add llvm-tools-preview
       cargo install cargo-nextest cargo-tarpaulin bacon bat fd-find tere grcov
-      cargo tarpaulin --engine llvm -o lcov
+      cargo tarpaulin --engine llvm -o lcov html
       cargo build
     command: bacon test
 
@@ -14,7 +14,6 @@ vscode:
   extensions:
     - rust-lang.rust-analyzer
     - GitHub.copilot
-    - withfig.fig
     - serayuzgur.crates
     - ryanluker.vscode-coverage-gutters
     - tamasfe.even-better-toml
