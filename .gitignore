@@ -5,3 +5,4 @@ Cargo.lock
 **/*.code-workspace
 **/*.profraw
 **/lcov.info
+**/tarpaulin-report.html
