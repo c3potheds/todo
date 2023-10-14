@@ -84,7 +84,7 @@ fn snoozed_until_tomorrow() {
             &task("b", 2, Blocked).start_date(ymdhms(2023, 10, 14, 22, 00, 00)),
         )
         .printed_task(
-            &task("c", 3, Blocked).start_date(ymdhms(2023, 10, 15, 00, 00, 00))
+            &task("c", 3, Blocked).start_date(ymdhms(2023, 10, 15, 00, 00, 00)),
         )
         .end();
 }

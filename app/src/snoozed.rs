@@ -22,10 +22,13 @@ pub fn run<'list>(
             .all_tasks()
             .filter(|&id| {
                 list.get(id)
-                    .map(|task| task.start_date > now && (match until {
-                        Some(limit) => task.start_date <= limit,
-                        None => true,
-                    }))
+                    .map(|task| {
+                        task.start_date > now
+                            && (match until {
+                                Some(limit) => task.start_date <= limit,
+                                None => true,
+                            })
+                    })
                     .unwrap_or_else(|| false)
             })
             .map(|id| format_task(list, id))
