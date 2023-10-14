@@ -122,6 +122,21 @@ fn edit_with_text_editor_empty_description() {
 }
 
 #[test]
+fn edit_with_text_editor_empty_description_with_trailing_whitespace() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a");
+    fix.text_editor = FakeTextEditor::user_will_enter("1) ");
+    fix.test("todo edit 1")
+        .modified(false)
+        .validate()
+        .printed_error(&PrintableError::CannotEditBecauseInvalidLine {
+            malformed_line: "1) ".to_string(),
+        })
+        .end();
+    assert_eq!(*fix.text_editor.recorded_input(), prompt_with("1) a"));
+}
+
+#[test]
 fn edit_with_text_editor_remove_delimiter() {
     let mut fix = Fixture::default();
     fix.test("todo new a");
@@ -131,6 +146,21 @@ fn edit_with_text_editor_remove_delimiter() {
         .validate()
         .printed_error(&PrintableError::CannotEditBecauseInvalidLine {
             malformed_line: "1 b".to_string(),
+        })
+        .end();
+    assert_eq!(*fix.text_editor.recorded_input(), prompt_with("1) a"));
+}
+
+#[test]
+fn edit_with_text_editor_remove_delimiter_including_whitespace() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a");
+    fix.text_editor = FakeTextEditor::user_will_enter("1b");
+    fix.test("todo edit 1")
+        .modified(false)
+        .validate()
+        .printed_error(&PrintableError::CannotEditBecauseInvalidLine {
+            malformed_line: "1b".to_string(),
         })
         .end();
     assert_eq!(*fix.text_editor.recorded_input(), prompt_with("1) a"));

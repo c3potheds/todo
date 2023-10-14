@@ -1,7 +1,10 @@
 use {
     super::testing::task,
     super::testing::Fixture,
-    todo_printing::{Action::*, Status::*},
+    todo_printing::{
+        Action::*, BriefPrintableTask,
+        PrintableWarning::CannotPuntBecauseComplete, Status::*,
+    },
 };
 
 #[test]
@@ -37,5 +40,18 @@ fn punt_by_name() {
         .modified(true)
         .validate()
         .printed_task(&task("a", 3, Incomplete).action(Punt))
+        .end();
+}
+
+#[test]
+fn punt_complete_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a -d");
+    fix.test("todo punt a")
+        .modified(false)
+        .validate()
+        .printed_warning(&CannotPuntBecauseComplete {
+            cannot_punt: BriefPrintableTask::new(0, Complete),
+        })
         .end();
 }

@@ -84,12 +84,14 @@ fn parse_line_from_text_editor(
     match split.next() {
         Some(should_be_num) => match should_be_num.parse::<i32>() {
             Ok(num) => match split.next() {
+                Some("") | None => Some(Err(EditError::MissingTaskDescription)),
                 Some(desc) => Some(Ok((num, desc.trim().to_string()))),
-                _ => Some(Err(EditError::MissingTaskDescription)),
             },
             _ => Some(Err(EditError::InvalidNumber(should_be_num.to_string()))),
         },
-        _ => Some(Err(EditError::MissingDelimiterBetweenNumberAndDescription)),
+        None => {
+            Some(Err(EditError::MissingDelimiterBetweenNumberAndDescription))
+        }
     }
 }
 

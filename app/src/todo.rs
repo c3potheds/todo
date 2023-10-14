@@ -4,7 +4,7 @@ use {
         new, path, priority, punt, put, restore, rm, snooze, snoozed, split,
         status, tag, top, unblock, unsnooze,
     },
-    todo_cli::{Options, SubCommand},
+    todo_cli::{Options, SubCommand::*},
     todo_clock::Clock,
     todo_model::TodoList,
     todo_printing::PrintableResult,
@@ -26,7 +26,6 @@ pub fn todo<'list>(
     clock: &impl Clock,
     options: Options,
 ) -> PrintableResult<'list> {
-    use self::SubCommand::*;
     let now = clock.now();
     match options.cmd {
         Some(Block(cmd)) => block::run(list, &cmd),

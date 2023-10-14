@@ -899,7 +899,6 @@ impl<'ser> TodoList<'ser> {
 #[derive(Debug, PartialEq, Eq)]
 pub enum UnsnoozeWarning {
     TaskIsComplete,
-    TaskIsBlocked,
     NotSnoozed,
 }
 
