@@ -45,3 +45,46 @@ fn multiple_snoozed_tasks() {
         )
         .end();
 }
+
+#[test]
+fn snoozed_until_today() {
+    let mut fix = Fixture::default();
+    fix.clock.now = ymdhms(2023, 10, 14, 12, 00, 00);
+    fix.test("todo new a b c");
+    fix.test("todo snooze a --until 5pm");
+    fix.test("todo snooze b --until 10pm");
+    fix.test("todo snooze c --until tomorrow");
+    fix.test("todo snoozed --until today")
+        .modified(false)
+        .validate()
+        .printed_task(
+            &task("a", 1, Blocked).start_date(ymdhms(2023, 10, 14, 17, 00, 00)),
+        )
+        .printed_task(
+            &task("b", 2, Blocked).start_date(ymdhms(2023, 10, 14, 22, 00, 00)),
+        )
+        .end();
+}
+
+#[test]
+fn snoozed_until_tomorrow() {
+    let mut fix = Fixture::default();
+    fix.clock.now = ymdhms(2023, 10, 14, 12, 00, 00);
+    fix.test("todo new a b c");
+    fix.test("todo snooze a --until 5pm");
+    fix.test("todo snooze b --until 10pm");
+    fix.test("todo snooze c --until tomorrow");
+    fix.test("todo snoozed --until tomorrow")
+        .modified(false)
+        .validate()
+        .printed_task(
+            &task("a", 1, Blocked).start_date(ymdhms(2023, 10, 14, 17, 00, 00)),
+        )
+        .printed_task(
+            &task("b", 2, Blocked).start_date(ymdhms(2023, 10, 14, 22, 00, 00)),
+        )
+        .printed_task(
+            &task("c", 3, Blocked).start_date(ymdhms(2023, 10, 15, 00, 00, 00))
+        )
+        .end();
+}

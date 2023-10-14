@@ -49,7 +49,7 @@ pub fn todo<'list>(
         Some(Restore(cmd)) => restore::run(list, &cmd),
         Some(Rm(cmd)) => rm::run(list, cmd),
         Some(Snooze(cmd)) => snooze::run(list, now, &cmd),
-        Some(Snoozed(_)) => snoozed::run(list, now),
+        Some(Snoozed(cmd)) => snoozed::run(list, now, &cmd),
         Some(Split(cmd)) => split::run(list, cmd),
         Some(Tag(cmd)) => tag::run(list, &cmd),
         Some(Top(cmd)) => top::run(list, &cmd),
