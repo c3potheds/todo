@@ -178,6 +178,38 @@ fn show_source_of_implicit_due_date() {
 }
 
 #[test]
+fn show_source_of_nonexistent_implicit_due_date() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a");
+    fix.test("todo due a").modified(false).validate().end();
+}
+
+#[test]
+fn show_source_of_implicit_due_date_where_some_adeps_do_not_have_due_date() {
+    let mut fix = Fixture::default();
+    fix.clock.now = ymdhms(2023, 10, 14, 13, 00, 00);
+    let end_of_day = ymdhms(2023, 10, 14, 23, 59, 59);
+    fix.test("todo new a b c");
+    fix.test("todo block b --on a");
+    fix.test("todo block c --on a");
+    fix.test("todo due b --on today");
+    fix.test("todo due a")
+        .modified(false)
+        .validate()
+        .printed_task(
+            &task("a", 1, Incomplete)
+                .due_date(Implicit(end_of_day))
+                .adeps_stats(2, 2),
+        )
+        .printed_task(
+            &task("b", 2, Blocked)
+                .due_date(Explicit(end_of_day))
+                .deps_stats(1, 1),
+        )
+        .end();
+}
+
+#[test]
 fn set_due_date() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
@@ -252,6 +284,19 @@ fn set_due_date_prints_affected_tasks() {
                 .due_date(Explicit(in_1_hour))
                 .deps_stats(1, 2),
         )
+        .end();
+}
+
+#[test]
+fn set_due_date_no_change() {
+    let mut fix = Fixture::default();
+    fix.clock.now = ymdhms(2023, 10, 14, 13, 00, 00);
+    let end_of_day = ymdhms(2023, 10, 14, 23, 59, 59);
+    fix.test("todo new a --due today");
+    fix.test("todo due a --on today")
+        .modified(false)
+        .validate()
+        .printed_task(&task("a", 1, Incomplete).due_date(Explicit(end_of_day)))
         .end();
 }
 

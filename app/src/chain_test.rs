@@ -41,6 +41,13 @@ fn chain_would_cause_cycle() {
 }
 
 #[test]
+fn chain_would_block_on_self() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a");
+    fix.test("todo chain a 1").modified(false).validate().end();
+}
+
+#[test]
 fn chain_shows_affected_deps() {
     let mut fix = Fixture::default();
     fix.test("todo new a b --chain");

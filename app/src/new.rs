@@ -97,7 +97,11 @@ pub fn run<'list>(
                                 },
                             ])
                         }
-                        _ => Ok(so_far),
+                        Err(CheckError::TaskIsAlreadyComplete) => {
+                            std::unreachable!(
+                                "somehow the new task was already complete"
+                            )
+                        }
                     }
                 })?
                 .iter_unsorted(),

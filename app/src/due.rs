@@ -35,11 +35,8 @@ fn show_all_tasks_with_due_dates<'list>(
 }
 
 fn source_of_due_date(list: &TodoList, id: TaskId) -> TaskSet {
-    let due_date = match list.get(id) {
-        Some(task) => match task.implicit_due_date {
-            Some(due_date) => due_date,
-            None => return TaskSet::default(),
-        },
+    let due_date = match list.get(id).unwrap().implicit_due_date {
+        Some(due_date) => due_date,
         None => return TaskSet::default(),
     };
     list.transitive_adeps(id)
@@ -82,7 +79,10 @@ fn set_due_dates<'list>(
         .fold(TaskSet::default(), |so_far, id| {
             let affected_by_id = list.set_due_date(id, due_date);
             if affected_by_id.is_empty() {
-                return so_far;
+                // If set_due_date() returns an empty set, that means no change
+                // occurred. But we should still print the task that we're
+                // setting the due date of even though it didn't change.
+                return so_far | TaskSet::of(id);
             }
             mutated = true;
             so_far | affected_by_id

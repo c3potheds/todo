@@ -1,7 +1,5 @@
 use {
-    super::util::{
-        format_task, format_task_brief, format_tasks_brief, lookup_tasks,
-    },
+    super::util::{format_task, format_task_brief, lookup_tasks},
     todo_cli::Unsnooze,
     todo_model::{TaskSet, TodoList, UnsnoozeWarning},
     todo_printing::{
@@ -42,15 +40,6 @@ pub fn run<'list>(
                     PrintableWarning::CannotUnsnoozeBecauseComplete(
                         format_task_brief(list, id),
                     )
-                }
-                TaskIsBlocked => {
-                    PrintableWarning::CannotUnsnoozeBecauseBlocked {
-                        cannot_unsnooze: format_task_brief(list, id),
-                        blocked_by: format_tasks_brief(
-                            list,
-                            &list.deps(id).include_done(list, false),
-                        ),
-                    }
                 }
                 NotSnoozed => {
                     PrintableWarning::CannotUnsnoozeBecauseNotSnoozed(
