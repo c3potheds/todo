@@ -85,7 +85,7 @@ where
     }
 
     pub fn iter(&self) -> impl Iterator<Item = &T> + '_ {
-        self.layers.iter().flat_map(|layer| layer.iter())
+        self.layers.iter().flatten()
     }
 
     pub fn contains(&self, data: &T) -> bool {

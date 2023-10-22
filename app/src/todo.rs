@@ -1,8 +1,8 @@
 use {
     super::{
-        block, bottom, budget, chain, check, due, edit, find, get, log, merge,
-        new, path, priority, punt, put, restore, rm, snooze, snoozed, split,
-        status, tag, top, unblock, unsnooze,
+        block, bottom, budget, chain, check, clean, due, edit, find, get, log,
+        merge, new, path, priority, punt, put, restore, rm, snooze, snoozed,
+        split, status, tag, top, unblock, unsnooze,
     },
     todo_cli::{Options, SubCommand::*},
     todo_clock::Clock,
@@ -33,6 +33,7 @@ pub fn todo<'list>(
         Some(Budget(cmd)) => budget::run(list, &cmd),
         Some(Chain(cmd)) => chain::run(list, &cmd),
         Some(Check(cmd)) => check::run(list, now, &cmd),
+        Some(Clean(_)) => clean::run(list, now),
         Some(Config(_)) => unimplemented!(),
         Some(Due(cmd)) => due::run(list, now, &cmd),
         Some(Edit(cmd)) => edit::run(list, text_editor, &cmd),
