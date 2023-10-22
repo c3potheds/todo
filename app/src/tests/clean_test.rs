@@ -1,7 +1,7 @@
 #![allow(clippy::field_reassign_with_default)]
 
-use crate::testing::task;
-use crate::testing::Fixture;
+use super::testing::task;
+use super::testing::Fixture;
 use todo_printing::Plicit::*;
 use todo_printing::Status::*;
 

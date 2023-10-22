@@ -17,19 +17,6 @@ pub use self::scripting_todo_printer::*;
 pub use self::simple_todo_printer::*;
 pub use self::todo_printer::*;
 
-#[cfg(test)]
-mod printable_error_test;
-#[cfg(test)]
-mod printable_info_test;
-#[cfg(test)]
-mod printable_result_test;
-#[cfg(test)]
-mod printable_task_test;
-#[cfg(test)]
-mod printable_warning_test;
-#[cfg(test)]
-mod simple_todo_printer_test;
-
 #[derive(Default)]
 pub struct PrintableAppSuccess<'list> {
     pub warnings: Vec<PrintableWarning>,
@@ -98,4 +85,14 @@ where
             }
         }
     }
+}
+
+#[cfg(test)]
+mod tests {
+    mod printable_error_test;
+    mod printable_info_test;
+    mod printable_result_test;
+    mod printable_task_test;
+    mod printable_warning_test;
+    mod simple_todo_printer_test;
 }

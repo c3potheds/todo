@@ -31,88 +31,35 @@ mod util;
 pub use self::todo::todo;
 
 #[cfg(test)]
-mod block_test;
-
-#[cfg(test)]
-mod bottom_test;
-
-#[cfg(test)]
-mod budget_test;
-
-#[cfg(test)]
-mod chain_test;
-
-#[cfg(test)]
-mod check_test;
-
-#[cfg(test)]
-mod clean_test;
-
-#[cfg(test)]
-mod due_test;
-
-#[cfg(test)]
-mod edit_test;
-
-#[cfg(test)]
-mod find_test;
-
-#[cfg(test)]
-mod get_test;
-
-#[cfg(test)]
-mod log_test;
-
-#[cfg(test)]
-mod merge_test;
-
-#[cfg(test)]
-mod new_test;
-
-#[cfg(test)]
-mod path_test;
-
-#[cfg(test)]
-mod priority_test;
-
-#[cfg(test)]
-mod punt_test;
-
-#[cfg(test)]
-mod put_test;
-
-#[cfg(test)]
-mod restore_test;
-
-#[cfg(test)]
-mod rm_test;
-
-#[cfg(test)]
-mod snooze_test;
-
-#[cfg(test)]
-mod snoozed_test;
-
-#[cfg(test)]
-mod split_test;
-
-#[cfg(test)]
-mod status_test;
-
-#[cfg(test)]
-mod tag_test;
-
-#[cfg(test)]
-mod top_test;
-
-#[cfg(test)]
-mod unblock_test;
-
-#[cfg(test)]
-mod unsnooze_test;
-
-#[cfg(test)]
-mod util_test;
-
-#[cfg(test)]
-pub mod testing;
+mod tests {
+    use super::*;
+    mod block_test;
+    mod bottom_test;
+    mod budget_test;
+    mod chain_test;
+    mod check_test;
+    mod clean_test;
+    mod due_test;
+    mod edit_test;
+    mod find_test;
+    mod get_test;
+    mod log_test;
+    mod merge_test;
+    mod new_test;
+    mod path_test;
+    mod priority_test;
+    mod punt_test;
+    mod put_test;
+    mod restore_test;
+    mod rm_test;
+    mod snooze_test;
+    mod snoozed_test;
+    mod split_test;
+    mod status_test;
+    mod tag_test;
+    mod testing;
+    mod top_test;
+    mod unblock_test;
+    mod unsnooze_test;
+    mod util_test;
+}
