@@ -3,6 +3,7 @@ mod bottom;
 mod budget;
 mod chain;
 mod check;
+mod clean;
 mod due;
 mod edit;
 mod find;
@@ -43,6 +44,9 @@ mod chain_test;
 
 #[cfg(test)]
 mod check_test;
+
+#[cfg(test)]
+mod clean_test;
 
 #[cfg(test)]
 mod due_test;

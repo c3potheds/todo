@@ -924,3 +924,17 @@ impl<'ser> TodoList<'ser> {
         Ok(())
     }
 }
+
+impl<'ser> TodoList<'ser> {
+    pub fn clean(&mut self) -> TaskSet {
+        let incomplete_tasks: TaskSet = self
+            .incomplete_tasks()
+            .filter(|&id| self.get(id).is_some())
+            .collect();
+        incomplete_tasks.iter_sorted(self).for_each(|id| {
+            self.update_depth(id);
+            self.punt(id).unwrap();
+        });
+        incomplete_tasks
+    }
+}
