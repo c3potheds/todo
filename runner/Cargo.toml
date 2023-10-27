@@ -12,6 +12,7 @@ serde_json.workspace = true
 term_size.workspace = true
 thiserror.workspace = true
 
+todo_app.workspace = true
 todo_clock.workspace = true
 todo_config.workspace = true
 todo_model.workspace = true

@@ -3,31 +3,12 @@ use std::io::IsTerminal;
 use {
     std::{fs::File, io::BufWriter},
     thiserror::Error,
+    todo_app::Application,
+    todo_app::Mutated,
     todo_clock::{Clock, SystemClock},
-    todo_model::TodoList,
-    todo_printing::{
-        PrintingContext, ScriptingTodoPrinter, SimpleTodoPrinter, TodoPrinter,
-    },
-    todo_text_editing::{FakeTextEditor, ScrawlTextEditor, TextEditor},
+    todo_printing::{PrintingContext, ScriptingTodoPrinter, SimpleTodoPrinter},
+    todo_text_editing::{FakeTextEditor, ScrawlTextEditor},
 };
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum Mutated {
-    Yes,
-    No,
-}
-
-pub trait Application {
-    fn run<'a, P>(
-        self,
-        list: &'a mut TodoList,
-        text_editor: &impl TextEditor,
-        clock: &impl Clock,
-        printer_factory: impl FnOnce(usize) -> Result<P, TodoError>,
-    ) -> Mutated
-    where
-        P: TodoPrinter<'a>;
-}
 
 #[derive(Debug, Error)]
 pub enum LoadError {
@@ -53,8 +34,6 @@ pub enum TodoError {
     CouldNotCreateConfigDirectory(std::io::Error),
     #[error("Could not create data directory")]
     CouldNotCreateDataDirectory(std::io::Error),
-    #[error("Could not spawn paginator")]
-    CouldNotSpawnPaginator(less::CouldNotSpawnPaginator),
     #[error("Load error")]
     Load(#[from] LoadError),
     #[error("Save error")]
@@ -67,10 +46,7 @@ mod less;
 
 pub type TodoResult = Result<(), TodoError>;
 
-pub fn run<A>(app: A) -> TodoResult
-where
-    A: Application,
-{
+pub fn run(app: impl Application) -> TodoResult {
     let project_dirs = directories::ProjectDirs::from("", "", "todo")
         .ok_or(TodoError::NoDataDirectory)?;
 
@@ -111,18 +87,16 @@ where
             &mut model,
             &ScrawlTextEditor(&config.text_editor_cmd),
             &SystemClock,
-            |max_index_digits| {
-                Ok(SimpleTodoPrinter {
-                    out: less::Less::new(&config.paginator_cmd)
-                        .map_err(TodoError::CouldNotSpawnPaginator)?,
-                    context: PrintingContext {
-                        max_index_digits,
-                        width: term_size::dimensions_stdout()
-                            .map(|(w, _)| w)
-                            .unwrap_or(80),
-                        now: SystemClock.now(),
-                    },
-                })
+            |max_index_digits| SimpleTodoPrinter {
+                // TODO: fall back on stdout if paginator cannot spawn.
+                out: less::Less::new(&config.paginator_cmd).unwrap(),
+                context: PrintingContext {
+                    max_index_digits,
+                    width: term_size::dimensions_stdout()
+                        .map(|(w, _)| w)
+                        .unwrap_or(80),
+                    now: SystemClock.now(),
+                },
             },
         )
     } else {
@@ -130,7 +104,7 @@ where
             &mut model,
             &FakeTextEditor::no_user_output(),
             &SystemClock,
-            |_| Ok(ScriptingTodoPrinter),
+            |_| ScriptingTodoPrinter,
         )
     };
     if mutated == Mutated::Yes {
