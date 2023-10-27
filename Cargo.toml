@@ -23,6 +23,7 @@ thiserror = "1.0.30"
 
 # Local dependencies
 todo_app = { path = "app" }
+todo_builtin_apps = { path = "builtin_apps" }
 todo_cli = { path = "cli" }
 todo_clock = { path = "clock" }
 todo_config = { path = "config" }
