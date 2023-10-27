@@ -29,6 +29,7 @@ todo_config = { path = "config" }
 todo_lookup_key = { path = "lookup_key" }
 todo_model = { path = "model" }
 todo_printing = { path = "printing" }
+todo_runner = { path = "runner" }
 todo_testing = { path = "testing" }
 todo_text_editing = { path = "text_editing" }
 todo_time_format = { path = "time_format" }
