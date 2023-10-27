@@ -3,22 +3,10 @@ name = "todo_app"
 version = "0.1.0"
 edition = "2021"
 
-[dependencies]
-chrono.workspace = true
-clap.workspace = true
-humantime.workspace = true
-itertools.workspace = true
-shlex.workspace = true
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-todo_cli.workspace = true
+[dependencies]
 todo_clock.workspace = true
-todo_lookup_key.workspace = true
 todo_model.workspace = true
 todo_printing.workspace = true
-todo_testing.workspace = true
 todo_text_editing.workspace = true
-todo_time_format.workspace = true
-
-[dev-dependencies]
-pretty_assertions.workspace = true
-serde_json.workspace = true
