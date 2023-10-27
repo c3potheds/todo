@@ -5,15 +5,11 @@ edition = "2021"
 
 [dependencies]
 clap.workspace = true
-directories.workspace = true
-serde_json.workspace = true
-term_size.workspace = true
-thiserror.workspace = true
 
 todo_app.workspace = true
 todo_cli.workspace = true
 todo_clock.workspace = true
-todo_config.workspace = true
 todo_model.workspace = true
 todo_printing.workspace = true
+todo_runner.workspace = true
 todo_text_editing.workspace = true
