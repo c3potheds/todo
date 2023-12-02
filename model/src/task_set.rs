@@ -19,7 +19,7 @@ struct TaskIdWithPosition {
 
 impl PartialOrd for TaskIdWithPosition {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.position.partial_cmp(&other.position)
+        Some(self.cmp(other))
     }
 }
 
