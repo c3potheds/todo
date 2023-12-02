@@ -6,7 +6,7 @@ use {
 };
 
 fn prompt_with(stuff: &str) -> String {
-    crate::edit::EDIT_PROMPT.to_string() + stuff
+    format!("{}\n{}", stuff, crate::edit::EDIT_PROMPT)
 }
 
 #[test]
