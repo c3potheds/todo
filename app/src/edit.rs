@@ -10,7 +10,8 @@ use {
     todo_text_editing::TextEditor,
 };
 
-pub const EDIT_PROMPT: &str = r"# Edit the descriptions of the tasks below.
+pub const EDIT_PROMPT: &str = r"
+# Edit the descriptions of the tasks above.
 #
 # Lines starting with '#' will be ignored.
 #
@@ -27,16 +28,14 @@ pub const EDIT_PROMPT: &str = r"# Edit the descriptions of the tasks below.
 ";
 
 fn format_tasks_for_text_editor(list: &TodoList, ids: &TaskSet) -> String {
-    EDIT_PROMPT.to_string()
-        + &ids
-            .iter_sorted(list)
-            .flat_map(|id| {
-                list.position(id)
-                    .zip(list.get(id).map(|task| &task.desc))
-                    .map(|(ref pos, ref desc)| format!("{}) {}", pos, desc))
-                    .into_iter()
-            })
-            .join("\n")
+    ids.iter_sorted(list)
+        .flat_map(|id| {
+            list.position(id)
+                .zip(list.get(id).map(|task| &task.desc))
+                .map(|(ref pos, ref desc)| format!("{}) {}", pos, desc))
+                .into_iter()
+        })
+        .join("\n")
 }
 
 fn edit_with_description<'list>(
@@ -162,9 +161,11 @@ pub fn run<'list>(
         Some(ref desc) => {
             edit_with_description(list, &tasks_to_edit, desc, cmd.include_done)
         }
-        None => match text_editor
-            .edit_text(&format_tasks_for_text_editor(list, &tasks_to_edit))
-        {
+        None => match text_editor.edit_text(&format!(
+            "{}\n{}",
+            format_tasks_for_text_editor(list, &tasks_to_edit),
+            EDIT_PROMPT
+        )) {
             Ok(ref output) => {
                 edit_with_text_editor(list, &tasks_to_edit, output)
             }
