@@ -286,6 +286,7 @@ impl<'a> Display for PrintableTaskWithContext<'a> {
             textwrap::Options::new(self.context.width)
                 .initial_indent(&start)
                 .break_words(false)
+                .word_separator(textwrap::WordSeparator::AsciiSpace)
                 .subsequent_indent(&subsequent_indent),
         ))
     }

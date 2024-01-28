@@ -621,3 +621,27 @@ fn explicit_tag_with_implicit_tags_and_punctuality() {
         )
     );
 }
+
+#[test]
+fn do_not_split_url() {
+    let context = PrintingContext {
+        max_index_digits: 3,
+        width: 40,
+        now: Utc::now(),
+    };
+    let fmt = print_task_with_context(
+        context,
+        &PrintableTask::new(
+            "http://example.com/this/is/a/long/url/that/should/not/be/split",
+            1,
+            Incomplete,
+        ),
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "      \u{1b}[33m1)\u{1b}[0m ",
+            "http://example.com/this/is/a/long/url/that/should/not/be/split\n"
+        )
+    );
+}
