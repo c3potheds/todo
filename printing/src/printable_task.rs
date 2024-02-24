@@ -64,21 +64,6 @@ pub enum InvalidDate {
     DayOutOfRange(u8),
 }
 
-impl LogDate {
-    pub fn ymd(y: u16, m: u8, d: u8) -> Result<LogDate, InvalidDate> {
-        if !(1000..=9999).contains(&y) {
-            return Err(InvalidDate::YearOutOfRange(y));
-        }
-        if m == 0 || m > 12 {
-            return Err(InvalidDate::MonthOutOfRange(m));
-        }
-        if d == 0 || d > 31 {
-            return Err(InvalidDate::DayOutOfRange(d));
-        }
-        Ok(LogDate::YearMonthDay(y, m, d))
-    }
-}
-
 impl Display for LogDate {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         match self {
@@ -94,15 +79,6 @@ impl Display for LogDate {
 pub enum Plicit<T> {
     Implicit(T),
     Explicit(T),
-}
-
-impl<T> Plicit<T> {
-    pub fn map<R, F: FnOnce(T) -> R>(self, f: F) -> Plicit<R> {
-        match self {
-            Plicit::Implicit(t) => Plicit::Implicit(f(t)),
-            Plicit::Explicit(t) => Plicit::Explicit(f(t)),
-        }
-    }
 }
 
 #[derive(Debug, Default, PartialEq, Eq, Clone)]
