@@ -9,7 +9,7 @@ edition = "2021"
 clap.workspace = true
 directories.workspace = true
 serde_json.workspace = true
-term_size.workspace = true
+terminal_size.workspace = true
 thiserror.workspace = true
 
 todo_app.workspace = true
