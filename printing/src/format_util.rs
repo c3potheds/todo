@@ -1,9 +1,9 @@
-use {
-    crate::{BriefPrintableTask, Status},
-    ansi_term::Color,
-    std::fmt,
-    todo_lookup_key::Key,
-};
+use crate::BriefPrintableTask;
+use crate::Status;
+use std::fmt;
+use todo_lookup_key::Key;
+use yansi::Paint;
+use yansi::Style;
 
 pub fn format_key(key: &Key) -> impl fmt::Display + '_ {
     struct FormatKey<'a>(&'a Key);
@@ -46,13 +46,13 @@ pub fn format_keys(keys: &[Key]) -> impl fmt::Display + '_ {
 
 pub fn format_number(number: i32, status: Status) -> String {
     let style = match &status {
-        Status::Complete => Color::Green.normal(),
-        Status::Incomplete => Color::Yellow.normal(),
-        Status::Blocked => Color::Red.normal(),
+        Status::Complete => Style::new().green(),
+        Status::Incomplete => Style::new().yellow(),
+        Status::Blocked => Style::new().red(),
     };
     let mut indexing = number.to_string();
     indexing.push(')');
-    format!("{}", style.paint(&indexing))
+    format!("{}", indexing.paint(style))
 }
 
 pub fn format_numbers<'a, I: IntoIterator<Item = &'a BriefPrintableTask>>(

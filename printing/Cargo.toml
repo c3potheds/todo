@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-ansi_term.workspace = true
 chrono.workspace = true
 textwrap.workspace = true
+yansi.workspace = true
 
 todo_lookup_key.workspace = true
 todo_time_format.workspace = true

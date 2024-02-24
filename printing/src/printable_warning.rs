@@ -1,9 +1,9 @@
+use yansi::Paint;
 use {
     crate::{
         format_util::{format_key, format_numbers},
         BriefPrintableTask,
     },
-    ansi_term::Color,
     chrono::{DateTime, Utc},
     std::{
         fmt,
@@ -57,7 +57,7 @@ pub enum PrintableWarning {
 
 impl Display for PrintableWarning {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{}: ", Color::Yellow.bold().paint("warning"))?;
+        write!(f, "{}: ", "warning".yellow().bold())?;
         use self::PrintableWarning::*;
         match self {
             NoMatchFoundForKey { requested_key } => {

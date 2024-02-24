@@ -2,12 +2,14 @@
 // because dereferencing it directly doesn't insert the ANSI color codes.
 #![allow(clippy::unnecessary_to_owned)]
 
+use yansi::Color;
+use yansi::Paint;
+use yansi::Style;
 use {
     crate::{
         format_util::format_number, Plicit, PrintableError, PrintableInfo,
         PrintableTask, PrintableWarning, TodoPrinter,
     },
-    ansi_term::{Color, Style},
     chrono::{DateTime, Duration, Local, Utc},
     std::{
         fmt,
@@ -79,15 +81,13 @@ fn get_initial_indent(
 fn fmt_snooze_date(snooze_duration: Duration, out: &mut String) {
     if snooze_duration > chrono::Duration::zero() {
         out.push_str(
-            &Color::Purple
-                .bold()
-                .paint(format!(
-                    "Snoozed for {}",
-                    ::todo_time_format::format_duration_laconic(
-                        snooze_duration
-                    )
-                ))
-                .to_string(),
+            &format!(
+                "Snoozed for {}",
+                ::todo_time_format::format_duration_laconic(snooze_duration)
+            )
+            .magenta()
+            .bold()
+            .to_string(),
         );
         out.push(' ');
     }
@@ -104,18 +104,18 @@ fn fmt_priority(priority: &Plicit<i32>, out: &mut String) {
         4 => Color::Green,
         3 => Color::Cyan,
         2 => Color::Blue,
-        1 => Color::Purple,
+        1 => Color::Magenta,
         _ => Color::Black,
     };
     let mut style = if priority >= 0 {
         color.bold()
     } else {
-        color.bold().dimmed()
+        color.bold().dim()
     };
     if implicit {
         style = style.italic();
     }
-    out.push_str(&style.paint(format!("P{}", priority)).to_string());
+    out.push_str(&format!("P{}", priority).paint(style).to_string());
     out.push(' ');
 }
 
@@ -131,7 +131,7 @@ fn fmt_due_date(
     let mut style = match calculate_urgency(context.now, due_date) {
         Urgency::Urgent => Color::Red.bold(),
         Urgency::Moderate => Color::Yellow.bold(),
-        Urgency::Meh => Color::White.bold().dimmed(),
+        Urgency::Meh => Color::White.bold().dim(),
     };
     if implicit {
         style = style.italic();
@@ -140,7 +140,7 @@ fn fmt_due_date(
         context.now.with_timezone(&Local),
         due_date.with_timezone(&Local),
     );
-    out.push_str(&style.paint(format!("Due {}", desc)).to_string());
+    out.push_str(&format!("Due {desc}").paint(style).to_string());
     out.push(' ');
 }
 
@@ -152,7 +152,7 @@ fn fmt_punctuality(punctuality: Duration, out: &mut String) {
             (Color::Green.bold(), "early", -punctuality)
         };
     let desc = ::todo_time_format::format_duration_laconic(abs_punctuality);
-    out.push_str(&style.paint(format!("Done {} {}", desc, suffix)).to_string());
+    out.push_str(&format!("Done {desc} {suffix}").paint(style).to_string());
     out.push(' ');
 }
 
@@ -160,11 +160,7 @@ fn fmt_punctuality(punctuality: Duration, out: &mut String) {
 // deps and the number of total deps, as a fraction. E.g. if the task has 3
 // deps, 2 of which are incomplete, show "🔓 2/3".
 fn fmt_locks(incomplete: usize, total: usize, out: &mut String) {
-    out.push_str(
-        &Color::Red
-            .paint(format!("🔒{}/{}", incomplete, total))
-            .to_string(),
-    );
+    out.push_str(&format!("🔒{incomplete}/{total}").red().to_string());
     out.push(' ');
 }
 
@@ -175,11 +171,7 @@ fn fmt_locks(incomplete: usize, total: usize, out: &mut String) {
 //
 // If none of the adeps are unlockable, the first number is 0.
 fn fmt_unlocks(unlockable: usize, total: usize, out: &mut String) {
-    out.push_str(
-        &Color::White
-            .paint(format!("🔓{unlockable}/{total}"))
-            .to_string(),
-    );
+    out.push_str(&format!("🔓{unlockable}/{total}").white().to_string());
     out.push(' ');
 }
 
@@ -189,20 +181,20 @@ fn fmt_unlocks(unlockable: usize, total: usize, out: &mut String) {
 // from task descriptions.
 fn allocate_tag_color(tag_name: &str) -> Style {
     let neutral_colors = [
-        Color::Fixed(1).normal(),
-        Color::Fixed(2).normal(),
-        Color::Fixed(3).normal(),
-        Color::Fixed(4).normal(),
-        Color::Fixed(5).normal(),
-        Color::Fixed(6).normal(),
-        Color::Fixed(7).normal(),
-        Color::Fixed(9).normal(),
-        Color::Fixed(10).normal(),
-        Color::Fixed(11).normal(),
-        Color::Fixed(12).normal(),
-        Color::Fixed(13).normal(),
-        Color::Fixed(14).normal(),
-        Color::Fixed(15).normal(),
+        Style::new().fixed(1),
+        Style::new().fixed(2),
+        Style::new().fixed(3),
+        Style::new().fixed(4),
+        Style::new().fixed(5),
+        Style::new().fixed(6),
+        Style::new().fixed(7),
+        Style::new().fixed(9),
+        Style::new().fixed(10),
+        Style::new().fixed(11),
+        Style::new().fixed(12),
+        Style::new().fixed(13),
+        Style::new().fixed(14),
+        Style::new().fixed(15),
     ];
     use std::collections::hash_map::DefaultHasher;
     use std::hash::{Hash, Hasher};
@@ -222,7 +214,7 @@ fn fmt_tag(tag: Plicit<&str>, out: &mut String) {
     if implicit {
         style = style.italic();
     }
-    out.push_str(&style.paint(tag).to_string());
+    out.push_str(&tag.paint(style).to_string());
     out.push(' ');
 }
 

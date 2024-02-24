@@ -1,5 +1,5 @@
+use yansi::Paint;
 use {
-    ansi_term::Color,
     chrono::{DateTime, Duration, Utc},
     std::{
         fmt,
@@ -34,19 +34,18 @@ pub enum Action {
 impl Display for Action {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         use self::Action::*;
-        use self::Color::*;
         match self {
             None => write!(f, "   "),
-            New => write!(f, "{}", Green.paint("NEW")),
-            Delete => write!(f, "{}", Red.paint("DEL")),
-            Check => write!(f, "{}", Green.paint("[✓]")),
-            Uncheck => write!(f, "{}", Yellow.paint("[ ]")),
-            Lock => write!(f, " {}", Red.paint("🔒")),
-            Unlock => write!(f, " {}", Green.paint("🔓")),
+            New => write!(f, "{}", "NEW".green()),
+            Delete => write!(f, "{}", "DEL".red()),
+            Check => write!(f, "{}", "[✓]".green()),
+            Uncheck => write!(f, "{}", "[ ]".yellow()),
+            Lock => write!(f, " {}", "🔒".red()),
+            Unlock => write!(f, " {}", "🔓".green()),
             Select => write!(f, " * "),
             Punt => write!(f, " ⏎ "),
-            Snooze => write!(f, "{}", Blue.paint("ZZZ")),
-            Unsnooze => write!(f, " {}", Purple.paint("⏰")),
+            Snooze => write!(f, "{}", "ZZZ".blue()),
+            Unsnooze => write!(f, " {}", "⏰".magenta()),
         }
     }
 }
