@@ -4,7 +4,6 @@ members = ["main"]
 
 [workspace.dependencies]
 # cratets.io dependencies
-ansi_term = "0.12"
 bisection = "0.1"
 chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4.0.*", features = ["derive"] }
@@ -17,9 +16,10 @@ scrawl = "2.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 shlex = "1.1.0"
-term_size = "0.3"
+terminal_size = "0.3"
 textwrap = "0.16.0"
 thiserror = "1.0.30"
+yansi = "1.0.0-gamma"
 
 # Local dependencies
 todo_app = { path = "app" }

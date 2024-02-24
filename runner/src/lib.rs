@@ -92,9 +92,9 @@ pub fn run(app: impl Application) -> TodoResult {
                 out: less::Less::new(&config.paginator_cmd).unwrap(),
                 context: PrintingContext {
                     max_index_digits,
-                    width: term_size::dimensions_stdout()
-                        .map(|(w, _)| w)
-                        .unwrap_or(80),
+                    width: terminal_size::terminal_size()
+                        .map(|(terminal_size::Width(w), _)| w)
+                        .unwrap_or(80) as usize,
                     now: SystemClock.now(),
                 },
             },

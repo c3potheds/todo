@@ -1,9 +1,9 @@
+use yansi::Paint;
 use {
     crate::{
         format_util::{format_keys, format_numbers},
         BriefPrintableTask,
     },
-    ansi_term::Color,
     std::{
         fmt,
         fmt::{Display, Formatter},
@@ -64,7 +64,7 @@ impl Display for PrintableError {
         write!(
             f,
             "{}: {}",
-            Color::Red.bold().paint("error"),
+            "error".red().bold(),
             match self {
                 PrintableError::CannotCheckBecauseBlocked {
                     cannot_check,
@@ -113,36 +113,39 @@ impl Display for PrintableError {
                 }
                 PrintableError::EmptyDate{ flag } => {
                     match flag {
-                        Some(flag) => format!("Empty date for flag {}", Color::White.bold().paint(flag)),
+                        Some(flag) => format!(
+                            "Empty date for flag {}",
+                            flag.white().bold(),
+                        ),
                         None => "Empty date".to_string(),
                     }
                 }
                 PrintableError::CannotParseDueDate { cannot_parse } => {
                     format!(
                         "Cannot parse due date: {}",
-                        Color::White.bold().paint(cannot_parse),
+                        cannot_parse.white().bold(),
                     )
                 }
                 PrintableError::CannotParseDuration { cannot_parse } => {
                     format!(
                         "Cannot parse duration: {}",
-                        Color::White.bold().paint(cannot_parse),
+                        cannot_parse.white().bold(),
                     )
                 }
                 PrintableError::DurationIsTooLong { duration, string_repr } => {
                     format!(
                         "Time budget is too long: {} (from {}).\n{}: {}",
-                        Color::White.bold().paint(format!("{} secs", duration)),
-                        Color::White.bold().paint(string_repr),
-                        Color::White.bold().dimmed().paint("note"),
+                        format!("{duration} secs").white().bold(),
+                        string_repr.white().bold(),
+                        "note".white().bold().dim(),
                         "Must be less than ~136 years, or 2^32 seconds."
                     )
                 }
                 PrintableError::ConflictingArgs((a, b)) => {
                     format!(
                         "Cannot pass {} and {} at the same time",
-                        Color::White.bold().paint(a),
-                        Color::White.bold().paint(b),
+                        a.white().bold(),
+                        b.white().bold(),
                     )
                 }
                 PrintableError::CannotMerge {
