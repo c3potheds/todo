@@ -6,5 +6,4 @@ edition = "2021"
 [dependencies]
 clap.workspace = true
 
-todo_config.workspace = true
 todo_lookup_key.workspace = true
