@@ -192,7 +192,6 @@ fn get_no_context_complete_and_incomplete_match() {
     fix.test("todo get a -n")
         .modified(Mutated::No)
         .validate()
-        .printed_task(&task("a", 0, Complete).action(Select))
         .printed_task(&task("a", 2, Blocked).action(Select).deps_stats(1, 2))
         .end();
 }
@@ -246,5 +245,94 @@ fn get_blocking_shows_transitive_deps() {
         .printed_task(&task("b", 2, Blocked).deps_stats(1, 1))
         .printed_task(&task("c", 3, Blocked).deps_stats(1, 2))
         .printed_task(&task("d", 4, Blocked).action(Select).deps_stats(1, 3))
+        .end();
+}
+
+#[test]
+fn ambiguous_key_with_mixed_matches_only_shows_incomplete_matches() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a a");
+    fix.test("todo check 1");
+    fix.test("todo get a")
+        .modified(Mutated::No)
+        .validate()
+        .printed_task(&task("a", 1, Incomplete).action(Select))
+        .end();
+}
+
+#[test]
+fn ambiguous_key_with_only_incomplete_matches_shows_all_matches() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a a");
+    fix.test("todo get a")
+        .modified(Mutated::No)
+        .validate()
+        .printed_task(&task("a", 1, Incomplete).action(Select))
+        .printed_task(&task("a", 2, Incomplete).action(Select))
+        .end();
+}
+
+#[test]
+fn ambiguous_key_with_only_complete_matches_shows_all_matches() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a a");
+    fix.test("todo check 1 2");
+    fix.test("todo get a")
+        .modified(Mutated::No)
+        .validate()
+        .printed_task(&task("a", -1, Complete).action(Select))
+        .printed_task(&task("a", 0, Complete).action(Select))
+        .end();
+}
+
+#[test]
+fn multiple_ambiguous_keys_with_mixed_matches_only_shows_incomplete_matches() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a a b b");
+    fix.test("todo check 1 3");
+    fix.test("todo get a b")
+        .modified(Mutated::No)
+        .validate()
+        .printed_task(&task("a", 1, Incomplete).action(Select))
+        .printed_task(&task("b", 2, Incomplete).action(Select))
+        .end();
+}
+
+#[test]
+fn one_ambiguous_key_with_mixed_matches_and_one_without_mixed_matches() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a a b");
+    fix.test("todo check 1");
+    fix.test("todo get a b")
+        .modified(Mutated::No)
+        .validate()
+        .printed_task(&task("a", 1, Incomplete).action(Select))
+        .printed_task(&task("b", 2, Incomplete).action(Select))
+        .end();
+}
+
+#[test]
+fn one_key_that_is_only_complete_and_one_that_is_only_incomplete() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b");
+    fix.test("todo check 1");
+    fix.test("todo get a b")
+        .modified(Mutated::No)
+        .validate()
+        .printed_task(&task("a", 0, Complete).action(Select))
+        .printed_task(&task("b", 1, Incomplete).action(Select))
+        .end();
+}
+
+#[test]
+fn show_complete_ambiguous_tasks_when_requested() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a a");
+    fix.test("todo check 1");
+    fix.test("todo get a -d")
+        .modified(Mutated::No)
+        .validate()
+        .printed_task(&task("a", 0, Complete).action(Select))
+        .printed_task(&task("a", 1, Incomplete).action(Select))
         .end();
 }

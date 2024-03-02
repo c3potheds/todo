@@ -85,12 +85,16 @@ impl TaskSet {
         if include_done {
             self
         } else {
-            TaskSet {
-                ids: HashSet::from_iter(self.ids.into_iter().filter(|&id| {
-                    list.status(id) != Some(TaskStatus::Complete)
-                })),
-            }
+            self.partition_done(list).1
         }
+    }
+
+    pub fn partition_done(self, list: &TodoList) -> (Self, Self) {
+        let (done, not_done): (HashSet<_>, HashSet<_>) = self
+            .ids
+            .into_iter()
+            .partition(|&id| list.status(id) == Some(TaskStatus::Complete));
+        (Self { ids: done }, Self { ids: not_done })
     }
 
     pub fn as_sorted_vec(&self, list: &TodoList) -> Vec<TaskId> {
