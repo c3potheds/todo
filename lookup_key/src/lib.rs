@@ -1,6 +1,6 @@
 use std::{num::ParseIntError, str::FromStr};
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, Hash, PartialEq, Eq, Clone)]
 pub enum Key {
     ByNumber(i32),
     ByName(String),

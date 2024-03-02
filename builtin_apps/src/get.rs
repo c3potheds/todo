@@ -1,12 +1,43 @@
-use {
-    super::util::{format_task, lookup_tasks, should_include_done},
-    todo_cli::Get,
-    todo_model::{TaskSet, TodoList},
-    todo_printing::{Action, PrintableAppSuccess, PrintableResult},
-};
+use crate::util::format_task;
+use crate::util::lookup_tasks_by_keys;
+use crate::util::should_include_done;
+use std::collections::HashMap;
+use todo_cli::Get;
+use todo_lookup_key::Key;
+use todo_model::TaskSet;
+use todo_model::TodoList;
+use todo_printing::Action;
+use todo_printing::PrintableAppSuccess;
+use todo_printing::PrintableResult;
+
+fn disambiguate(
+    list: &TodoList,
+    key_task_map: HashMap<&Key, TaskSet>,
+    include_done: bool,
+) -> TaskSet {
+    if include_done {
+        return key_task_map
+            .into_values()
+            .fold(TaskSet::default(), |so_far, tasks| so_far | tasks);
+    }
+    key_task_map
+        .into_values()
+        .fold(TaskSet::default(), |so_far, tasks| {
+            let (complete, incomplete) = tasks.partition_done(list);
+            if !complete.is_empty() && !incomplete.is_empty() {
+                so_far | incomplete
+            } else {
+                so_far | complete | incomplete
+            }
+        })
+}
 
 pub fn run<'list>(list: &'list TodoList, cmd: &Get) -> PrintableResult<'list> {
-    let requested_tasks = lookup_tasks(list, &cmd.keys);
+    let requested_tasks = disambiguate(
+        list,
+        lookup_tasks_by_keys(list, &cmd.keys),
+        cmd.include_done,
+    );
     let include_done = should_include_done(
         cmd.include_done,
         list,

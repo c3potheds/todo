@@ -7,6 +7,7 @@ use {
         BriefPrintableTask, Plicit, PrintableError, PrintableTask, Status,
     },
 };
+use std::collections::HashMap;
 
 fn to_printing_status(status: TaskStatus) -> Status {
     match status {
@@ -191,6 +192,13 @@ pub fn lookup_tasks<'a>(
     keys.into_iter().fold(TaskSet::default(), |so_far, key| {
         so_far | lookup_task(list, key)
     })
+}
+
+pub fn lookup_tasks_by_keys<'a>(
+    list: &'a TodoList,
+    keys: impl IntoIterator<Item = &'a Key>,
+) -> HashMap<&'a Key, TaskSet> {
+    keys.into_iter().map(|key| (key, lookup_task(list, key))).collect()
 }
 
 fn any_tasks_are_complete(
