@@ -246,13 +246,16 @@ fn get_body(
     if let Some(punctuality) = task.punctuality {
         fmt_punctuality(punctuality, &mut body);
     }
-    let remaining_width = context.width - prefix_length - body.len() - 1;
+    let remaining_width = context.width
+        - prefix_length
+        - textwrap::core::display_width(&body)
+        - 1;
     const SEPARATOR: &str = "...";
     use TruncationIndices::*;
     match truncation_indices(
         remaining_width,
         SEPARATOR.len(),
-        task.implicit_tags.iter().map(|tag| tag.len()),
+        task.implicit_tags.iter().copied().map(textwrap::core::display_width),
     ) {
         Empty => (),
         NoTruncation => {
@@ -298,7 +301,11 @@ fn get_subsequent_indent(
 impl<'a> Display for PrintableTaskWithContext<'a> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let start = get_initial_indent(self.task, self.context);
-        let body = get_body(self.task, self.context, start.len());
+        let body = get_body(
+            self.task,
+            self.context,
+            textwrap::core::display_width(&start),
+        );
         if body.is_empty() {
             return f.write_str(start.trim_end());
         }
