@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use {
     chrono::{DateTime, Duration, Local, Utc},
     std::convert::TryFrom,
@@ -7,7 +8,6 @@ use {
         BriefPrintableTask, Plicit, PrintableError, PrintableTask, Status,
     },
 };
-use std::collections::HashMap;
 
 fn to_printing_status(status: TaskStatus) -> Status {
     match status {
@@ -198,7 +198,9 @@ pub fn lookup_tasks_by_keys<'a>(
     list: &'a TodoList,
     keys: impl IntoIterator<Item = &'a Key>,
 ) -> HashMap<&'a Key, TaskSet> {
-    keys.into_iter().map(|key| (key, lookup_task(list, key))).collect()
+    keys.into_iter()
+        .map(|key| (key, lookup_task(list, key)))
+        .collect()
 }
 
 fn any_tasks_are_complete(
