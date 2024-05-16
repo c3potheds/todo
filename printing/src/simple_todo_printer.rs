@@ -266,7 +266,9 @@ fn get_body(
             }
             body.push_str(SEPARATOR);
             body.push(' ');
-            for tag in task.implicit_tags[right..].iter() {
+            for tag in
+                task.implicit_tags[task.implicit_tags.len() - right..].iter()
+            {
                 fmt_tag(Plicit::Implicit(tag), &mut body);
             }
         }
