@@ -117,6 +117,7 @@ fn edit_with_text_editor_empty_description() {
         .validate()
         .printed_error(&PrintableError::CannotEditBecauseInvalidLine {
             malformed_line: "1)".to_string(),
+            explanation: "Missing task description".to_string(),
         })
         .end();
     assert_eq!(*fix.text_editor.recorded_input(), prompt_with("1) a"));
@@ -132,6 +133,7 @@ fn edit_with_text_editor_empty_description_with_trailing_whitespace() {
         .validate()
         .printed_error(&PrintableError::CannotEditBecauseInvalidLine {
             malformed_line: "1) ".to_string(),
+            explanation: "Missing task description".to_string(),
         })
         .end();
     assert_eq!(*fix.text_editor.recorded_input(), prompt_with("1) a"));
@@ -147,6 +149,8 @@ fn edit_with_text_editor_remove_delimiter() {
         .validate()
         .printed_error(&PrintableError::CannotEditBecauseInvalidLine {
             malformed_line: "1 b".to_string(),
+            explanation: "Missing ')' delimiter between number and description"
+                .to_string(),
         })
         .end();
     assert_eq!(*fix.text_editor.recorded_input(), prompt_with("1) a"));
@@ -162,6 +166,8 @@ fn edit_with_text_editor_remove_delimiter_including_whitespace() {
         .validate()
         .printed_error(&PrintableError::CannotEditBecauseInvalidLine {
             malformed_line: "1b".to_string(),
+            explanation: "Missing ')' delimiter between number and description"
+                .to_string(),
         })
         .end();
     assert_eq!(*fix.text_editor.recorded_input(), prompt_with("1) a"));
