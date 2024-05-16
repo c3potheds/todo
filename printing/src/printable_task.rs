@@ -96,6 +96,7 @@ pub struct PrintableTask<'a> {
     pub adeps_stats: (usize, usize),
     pub is_explicit_tag: bool,
     pub implicit_tags: Vec<&'a str>,
+    pub truncate_tags_if_needed: bool,
 }
 
 impl<'a> PrintableTask<'a> {
@@ -160,6 +161,11 @@ impl<'a> PrintableTask<'a> {
 
     pub fn tag(mut self, tag: &'a str) -> Self {
         self.implicit_tags.push(tag);
+        self
+    }
+
+    pub fn truncate_tags_if_needed(mut self, truncate: bool) -> Self {
+        self.truncate_tags_if_needed = truncate;
         self
     }
 }

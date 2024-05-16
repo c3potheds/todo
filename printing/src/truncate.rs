@@ -4,7 +4,7 @@ pub enum TruncationIndices {
     NoTruncation,
 }
 
-/// Returns the positions wheere the inputs need to be culled from the middle
+/// Returns the positions where the inputs need to be culled from the middle
 /// to fit into the given width.
 ///
 /// If both elements of the output tuple are `None`, then the inputs fit into

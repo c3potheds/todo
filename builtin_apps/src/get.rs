@@ -74,11 +74,12 @@ pub fn run<'list>(list: &'list TodoList, cmd: &Get) -> PrintableResult<'list> {
         .include_done(list, include_done)
         .iter_sorted(list)
         .map(|id| {
-            format_task(list, id).action(if requested_tasks.contains(id) {
-                Action::Select
+            let task = format_task(list, id);
+            if requested_tasks.contains(id) {
+                task.action(Action::Select).truncate_tags_if_needed(false)
             } else {
-                Action::None
-            })
+                task.action(Action::None)
+            }
         })
         .collect();
     Ok(PrintableAppSuccess {

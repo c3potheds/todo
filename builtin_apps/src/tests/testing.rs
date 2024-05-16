@@ -168,5 +168,5 @@ impl<'list> Fixture<'list> {
 }
 
 pub fn task(desc: &str, pos: i32, status: Status) -> PrintableTask<'_> {
-    PrintableTask::new(desc, pos, status)
+    PrintableTask::new(desc, pos, status).truncate_tags_if_needed(true)
 }
