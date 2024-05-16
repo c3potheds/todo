@@ -79,18 +79,25 @@ fn parse_line_from_text_editor(
     {
         return None;
     }
-    let mut split = line.splitn(2, ") ");
-    match split.next() {
-        Some(should_be_num) => match should_be_num.parse::<i32>() {
-            Ok(num) => match split.next() {
-                Some("") | None => Some(Err(EditError::MissingTaskDescription)),
-                Some(desc) => Some(Ok((num, desc.trim().to_string()))),
-            },
-            _ => Some(Err(EditError::InvalidNumber(should_be_num.to_string()))),
-        },
-        None => {
-            Some(Err(EditError::MissingDelimiterBetweenNumberAndDescription))
+
+    let mut split = line.splitn(2, ')');
+    let should_be_num = split.next();
+    let desc = split.next();
+
+    match (should_be_num, desc) {
+        (Some(num_str), Some(desc_str)) => {
+            match num_str.trim().parse::<i32>() {
+                Ok(num) => {
+                    if desc_str.trim().is_empty() {
+                        Some(Err(EditError::MissingTaskDescription))
+                    } else {
+                        Some(Ok((num, desc_str.trim().to_string())))
+                    }
+                }
+                _ => Some(Err(EditError::InvalidNumber(num_str.to_string()))),
+            }
         }
+        _ => Some(Err(EditError::MissingDelimiterBetweenNumberAndDescription)),
     }
 }
 
@@ -131,9 +138,24 @@ fn edit_with_text_editor<'list>(
                         mutated = true;
                         x
                     })?),
-                Some(Err(_)) => {
+                Some(Err(EditError::InvalidNumber(s))) => {
                     Err(PrintableError::CannotEditBecauseInvalidLine {
                         malformed_line: line.to_string(),
+                        explanation: format!("\"{s}\" is not a number"),
+                    })
+                }
+                Some(Err(
+                    EditError::MissingDelimiterBetweenNumberAndDescription,
+                )) => Err(PrintableError::CannotEditBecauseInvalidLine {
+                    malformed_line: line.to_string(),
+                    explanation:
+                        "Missing ')' delimiter between number and description"
+                            .to_string(),
+                }),
+                Some(Err(EditError::MissingTaskDescription)) => {
+                    Err(PrintableError::CannotEditBecauseInvalidLine {
+                        malformed_line: line.to_string(),
+                        explanation: "Missing task description".to_string(),
                     })
                 }
                 // Skip blank lines.

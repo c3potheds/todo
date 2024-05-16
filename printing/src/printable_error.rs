@@ -33,6 +33,7 @@ pub enum PrintableError {
     },
     CannotEditBecauseInvalidLine {
         malformed_line: String,
+        explanation: String,
     },
     FailedToUseTextEditor,
     NoMatchForKeys {
@@ -101,7 +102,12 @@ impl Display for PrintableError {
                 } => format!("No task with number {})", requested),
                 PrintableError::CannotEditBecauseInvalidLine{
                     malformed_line,
-                } => format!("Could not parse line: \"{}\"", malformed_line),
+                    explanation,
+                } => format!(
+                    "Could not parse line: \"{}\"; {}",
+                    malformed_line,
+                    explanation,
+                ),
                 PrintableError::FailedToUseTextEditor => {
                     "Failed to open text editor".to_string()
                 }
