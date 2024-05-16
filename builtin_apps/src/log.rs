@@ -23,7 +23,7 @@ pub fn run<'list>(list: &'list TodoList) -> PrintableResult<'list> {
                     },
                 );
                 formatted_task.log_date(if to_show != most_recent_shown {
-                    most_recent_shown = to_show.clone();
+                    most_recent_shown.clone_from(&to_show);
                     to_show.unwrap()
                 } else {
                     LogDate::Invisible
