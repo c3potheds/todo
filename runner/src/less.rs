@@ -6,7 +6,7 @@ pub struct Less {
 }
 
 #[derive(Debug)]
-pub struct CouldNotSpawnPaginator(std::io::Error);
+pub struct CouldNotSpawnPaginator(pub std::io::Error);
 
 impl Less {
     pub fn new(cmd: &[String]) -> Result<Self, CouldNotSpawnPaginator> {
