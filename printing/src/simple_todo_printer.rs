@@ -220,6 +220,55 @@ fn fmt_tag(tag: Plicit<&str>, out: &mut String) {
     out.push(' ');
 }
 
+enum TruncationParams {
+    NoTruncation,
+    TruncateIfNeeded { remaining_width: usize },
+}
+
+fn fmt_implicit_tags(
+    tags: &[&str],
+    params: TruncationParams,
+    out: &mut String,
+) {
+    if tags.is_empty() {
+        return;
+    }
+    use TruncationParams::*;
+    match params {
+        TruncateIfNeeded { remaining_width } => {
+            const SEPARATOR: &str = "...";
+            use TruncationIndices::*;
+            match truncation_indices(
+                remaining_width,
+                SEPARATOR.len(),
+                tags.iter().map(|tag| tag.len()),
+            ) {
+                Empty => (),
+                NoTruncation => {
+                    for tag in tags.iter() {
+                        fmt_tag(Plicit::Implicit(tag), out);
+                    }
+                }
+                Truncate(left, right) => {
+                    for tag in tags[..left].iter() {
+                        fmt_tag(Plicit::Implicit(tag), out);
+                    }
+                    out.push_str(SEPARATOR);
+                    out.push(' ');
+                    for tag in tags[tags.len() - right..].iter() {
+                        fmt_tag(Plicit::Implicit(tag), out);
+                    }
+                }
+            }
+        }
+        NoTruncation => {
+            for tag in tags.iter() {
+                fmt_tag(Plicit::Implicit(tag), out);
+            }
+        }
+    }
+}
+
 fn get_body(
     task: &PrintableTask,
     context: &PrintingContext,
@@ -246,36 +295,18 @@ fn get_body(
     if let Some(punctuality) = task.punctuality {
         fmt_punctuality(punctuality, &mut body);
     }
-    let remaining_width = context.width
-        - prefix_length
-        - textwrap::core::display_width(&body)
-        - 1;
-    const SEPARATOR: &str = "...";
-    use TruncationIndices::*;
-    match truncation_indices(
-        remaining_width,
-        SEPARATOR.len(),
-        task.implicit_tags.iter().copied().map(textwrap::core::display_width),
-    ) {
-        Empty => (),
-        NoTruncation => {
-            for tag in task.implicit_tags.iter() {
-                fmt_tag(Plicit::Implicit(tag), &mut body);
-            }
+    use TruncationParams::{NoTruncation, TruncateIfNeeded};
+    let truncation_params = if task.truncate_tags_if_needed {
+        TruncateIfNeeded {
+            remaining_width: context.width
+                - prefix_length
+                - textwrap::core::display_width(&body)
+                - 1,
         }
-        Truncate(left, right) => {
-            for tag in task.implicit_tags[..left].iter() {
-                fmt_tag(Plicit::Implicit(tag), &mut body);
-            }
-            body.push_str(SEPARATOR);
-            body.push(' ');
-            for tag in
-                task.implicit_tags[task.implicit_tags.len() - right..].iter()
-            {
-                fmt_tag(Plicit::Implicit(tag), &mut body);
-            }
-        }
-    }
+    } else {
+        NoTruncation
+    };
+    fmt_implicit_tags(&task.implicit_tags, truncation_params, &mut body);
     if task.is_explicit_tag {
         fmt_tag(Plicit::Explicit(task.desc), &mut body);
     } else {

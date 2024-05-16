@@ -12,7 +12,11 @@ fn get_incomplete_task() {
     fix.test("todo get 2")
         .modified(Mutated::No)
         .validate()
-        .printed_task(&task("b", 2, Incomplete).action(Select))
+        .printed_task(
+            &task("b", 2, Incomplete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
         .end();
 }
 
@@ -24,7 +28,11 @@ fn get_complete_task() {
     fix.test("todo get -2")
         .modified(Mutated::No)
         .validate()
-        .printed_task(&task("a", -2, Complete).action(Select))
+        .printed_task(
+            &task("a", -2, Complete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
         .end();
 }
 
@@ -35,9 +43,21 @@ fn get_multiple_tasks() {
     fix.test("todo get 2 3 4")
         .modified(Mutated::No)
         .validate()
-        .printed_task(&task("b", 2, Incomplete).action(Select))
-        .printed_task(&task("c", 3, Incomplete).action(Select))
-        .printed_task(&task("d", 4, Incomplete).action(Select))
+        .printed_task(
+            &task("b", 2, Incomplete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
+        .printed_task(
+            &task("c", 3, Incomplete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
+        .printed_task(
+            &task("d", 4, Incomplete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
         .end();
 }
 
@@ -49,7 +69,11 @@ fn get_excludes_completed_deps() {
     fix.test("todo get b")
         .modified(Mutated::No)
         .validate()
-        .printed_task(&task("b", 1, Incomplete).action(Select))
+        .printed_task(
+            &task("b", 1, Incomplete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
         .end();
 }
 
@@ -62,7 +86,11 @@ fn get_include_done() {
         .modified(Mutated::No)
         .validate()
         .printed_task(&task("a", 0, Complete))
-        .printed_task(&task("b", 1, Incomplete).action(Select))
+        .printed_task(
+            &task("b", 1, Incomplete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
         .end();
 }
 
@@ -75,7 +103,12 @@ fn get_shows_blocking_tasks() {
         .modified(Mutated::No)
         .validate()
         .printed_task(&task("a", 1, Incomplete).adeps_stats(1, 1))
-        .printed_task(&task("b", 2, Blocked).action(Select).deps_stats(1, 1))
+        .printed_task(
+            &task("b", 2, Blocked)
+                .action(Select)
+                .truncate_tags_if_needed(false)
+                .deps_stats(1, 1),
+        )
         .end();
 }
 
@@ -88,7 +121,10 @@ fn get_shows_blocked_tasks() {
         .modified(Mutated::No)
         .validate()
         .printed_task(
-            &task("a", 1, Incomplete).action(Select).adeps_stats(1, 1),
+            &task("a", 1, Incomplete)
+                .action(Select)
+                .truncate_tags_if_needed(false)
+                .adeps_stats(1, 1),
         )
         .printed_task(&task("b", 2, Blocked).deps_stats(1, 1))
         .end();
@@ -103,7 +139,12 @@ fn get_shows_transitive_deps_and_adeps() {
         .validate()
         .printed_task(&task("a", 1, Incomplete).adeps_stats(1, 4))
         .printed_task(&task("b", 2, Blocked).deps_stats(1, 1))
-        .printed_task(&task("c", 3, Blocked).action(Select).deps_stats(1, 2))
+        .printed_task(
+            &task("c", 3, Blocked)
+                .action(Select)
+                .truncate_tags_if_needed(false)
+                .deps_stats(1, 2),
+        )
         .printed_task(&task("d", 4, Blocked).deps_stats(1, 3))
         .printed_task(&task("e", 5, Blocked).deps_stats(1, 4))
         .end();
@@ -116,8 +157,16 @@ fn get_by_name_multiple_matches() {
     fix.test("todo get bob")
         .modified(Mutated::No)
         .validate()
-        .printed_task(&task("bob", 1, Incomplete).action(Select))
-        .printed_task(&task("bob", 3, Incomplete).action(Select))
+        .printed_task(
+            &task("bob", 1, Incomplete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
+        .printed_task(
+            &task("bob", 3, Incomplete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
         .end();
 }
 
@@ -129,7 +178,10 @@ fn get_no_context_single_task_by_name() {
         .modified(Mutated::No)
         .validate()
         .printed_task(
-            &task("a", 1, Incomplete).action(Select).adeps_stats(1, 2),
+            &task("a", 1, Incomplete)
+                .action(Select)
+                .truncate_tags_if_needed(false)
+                .adeps_stats(1, 2),
         )
         .end();
 }
@@ -142,9 +194,17 @@ fn get_no_context_multiple_tasks_by_name() {
         .modified(Mutated::No)
         .validate()
         .printed_task(
-            &task("a", 1, Incomplete).action(Select).adeps_stats(1, 2),
+            &task("a", 1, Incomplete)
+                .action(Select)
+                .truncate_tags_if_needed(false)
+                .adeps_stats(1, 2),
         )
-        .printed_task(&task("b", 2, Blocked).action(Select).deps_stats(1, 1))
+        .printed_task(
+            &task("b", 2, Blocked)
+                .action(Select)
+                .truncate_tags_if_needed(false)
+                .deps_stats(1, 1),
+        )
         .end();
 }
 
@@ -156,7 +216,11 @@ fn get_no_context_single_completed_task() {
     fix.test("todo get a -n")
         .modified(Mutated::No)
         .validate()
-        .printed_task(&task("a", -2, Complete).action(Select))
+        .printed_task(
+            &task("a", -2, Complete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
         .end();
 }
 
@@ -168,8 +232,16 @@ fn get_no_context_multiple_completed_tasks() {
     fix.test("todo get a b -n")
         .modified(Mutated::No)
         .validate()
-        .printed_task(&task("a", -2, Complete).action(Select))
-        .printed_task(&task("b", -1, Complete).action(Select))
+        .printed_task(
+            &task("a", -2, Complete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
+        .printed_task(
+            &task("b", -1, Complete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
         .end();
 }
 
@@ -180,7 +252,12 @@ fn get_no_context_blocked_task() {
     fix.test("todo get c -n")
         .modified(Mutated::No)
         .validate()
-        .printed_task(&task("c", 3, Blocked).action(Select).deps_stats(1, 2))
+        .printed_task(
+            &task("c", 3, Blocked)
+                .action(Select)
+                .truncate_tags_if_needed(false)
+                .deps_stats(1, 2),
+        )
         .end();
 }
 
@@ -192,7 +269,12 @@ fn get_no_context_complete_and_incomplete_match() {
     fix.test("todo get a -n")
         .modified(Mutated::No)
         .validate()
-        .printed_task(&task("a", 2, Blocked).action(Select).deps_stats(1, 2))
+        .printed_task(
+            &task("a", 2, Blocked)
+                .action(Select)
+                .truncate_tags_if_needed(false)
+                .deps_stats(1, 2),
+        )
         .end();
 }
 
@@ -203,7 +285,12 @@ fn get_blocked_by_one_task() {
     fix.test("todo get --blocked-by b")
         .modified(Mutated::No)
         .validate()
-        .printed_task(&task("b", 2, Blocked).action(Select).deps_stats(1, 1))
+        .printed_task(
+            &task("b", 2, Blocked)
+                .action(Select)
+                .truncate_tags_if_needed(false)
+                .deps_stats(1, 1),
+        )
         .printed_task(&task("c", 3, Blocked).deps_stats(1, 2))
         .end();
 }
@@ -215,7 +302,12 @@ fn get_blocked_by_shows_transitive_adeps() {
     fix.test("todo get --blocked-by b")
         .modified(Mutated::No)
         .validate()
-        .printed_task(&task("b", 2, Blocked).action(Select).deps_stats(1, 1))
+        .printed_task(
+            &task("b", 2, Blocked)
+                .action(Select)
+                .truncate_tags_if_needed(false)
+                .deps_stats(1, 1),
+        )
         .printed_task(&task("c", 3, Blocked).deps_stats(1, 2))
         .printed_task(&task("d", 4, Blocked).deps_stats(1, 3))
         .printed_task(&task("e", 5, Blocked).deps_stats(1, 4))
@@ -230,7 +322,12 @@ fn get_blocking_one_task() {
         .modified(Mutated::No)
         .validate()
         .printed_task(&task("a", 1, Incomplete).adeps_stats(1, 2))
-        .printed_task(&task("b", 2, Blocked).action(Select).deps_stats(1, 1))
+        .printed_task(
+            &task("b", 2, Blocked)
+                .action(Select)
+                .truncate_tags_if_needed(false)
+                .deps_stats(1, 1),
+        )
         .end();
 }
 
@@ -244,7 +341,12 @@ fn get_blocking_shows_transitive_deps() {
         .printed_task(&task("a", 1, Incomplete).adeps_stats(1, 4))
         .printed_task(&task("b", 2, Blocked).deps_stats(1, 1))
         .printed_task(&task("c", 3, Blocked).deps_stats(1, 2))
-        .printed_task(&task("d", 4, Blocked).action(Select).deps_stats(1, 3))
+        .printed_task(
+            &task("d", 4, Blocked)
+                .action(Select)
+                .truncate_tags_if_needed(false)
+                .deps_stats(1, 3),
+        )
         .end();
 }
 
@@ -256,7 +358,11 @@ fn ambiguous_key_with_mixed_matches_only_shows_incomplete_matches() {
     fix.test("todo get a")
         .modified(Mutated::No)
         .validate()
-        .printed_task(&task("a", 1, Incomplete).action(Select))
+        .printed_task(
+            &task("a", 1, Incomplete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
         .end();
 }
 
@@ -267,8 +373,16 @@ fn ambiguous_key_with_only_incomplete_matches_shows_all_matches() {
     fix.test("todo get a")
         .modified(Mutated::No)
         .validate()
-        .printed_task(&task("a", 1, Incomplete).action(Select))
-        .printed_task(&task("a", 2, Incomplete).action(Select))
+        .printed_task(
+            &task("a", 1, Incomplete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
+        .printed_task(
+            &task("a", 2, Incomplete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
         .end();
 }
 
@@ -280,8 +394,16 @@ fn ambiguous_key_with_only_complete_matches_shows_all_matches() {
     fix.test("todo get a")
         .modified(Mutated::No)
         .validate()
-        .printed_task(&task("a", -1, Complete).action(Select))
-        .printed_task(&task("a", 0, Complete).action(Select))
+        .printed_task(
+            &task("a", -1, Complete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
+        .printed_task(
+            &task("a", 0, Complete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
         .end();
 }
 
@@ -293,8 +415,16 @@ fn multiple_ambiguous_keys_with_mixed_matches_only_shows_incomplete_matches() {
     fix.test("todo get a b")
         .modified(Mutated::No)
         .validate()
-        .printed_task(&task("a", 1, Incomplete).action(Select))
-        .printed_task(&task("b", 2, Incomplete).action(Select))
+        .printed_task(
+            &task("a", 1, Incomplete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
+        .printed_task(
+            &task("b", 2, Incomplete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
         .end();
 }
 
@@ -306,8 +436,16 @@ fn one_ambiguous_key_with_mixed_matches_and_one_without_mixed_matches() {
     fix.test("todo get a b")
         .modified(Mutated::No)
         .validate()
-        .printed_task(&task("a", 1, Incomplete).action(Select))
-        .printed_task(&task("b", 2, Incomplete).action(Select))
+        .printed_task(
+            &task("a", 1, Incomplete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
+        .printed_task(
+            &task("b", 2, Incomplete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
         .end();
 }
 
@@ -319,8 +457,16 @@ fn one_key_that_is_only_complete_and_one_that_is_only_incomplete() {
     fix.test("todo get a b")
         .modified(Mutated::No)
         .validate()
-        .printed_task(&task("a", 0, Complete).action(Select))
-        .printed_task(&task("b", 1, Incomplete).action(Select))
+        .printed_task(
+            &task("a", 0, Complete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
+        .printed_task(
+            &task("b", 1, Incomplete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
         .end();
 }
 
@@ -332,7 +478,15 @@ fn show_complete_ambiguous_tasks_when_requested() {
     fix.test("todo get a -d")
         .modified(Mutated::No)
         .validate()
-        .printed_task(&task("a", 0, Complete).action(Select))
-        .printed_task(&task("a", 1, Incomplete).action(Select))
+        .printed_task(
+            &task("a", 0, Complete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
+        .printed_task(
+            &task("a", 1, Incomplete)
+                .action(Select)
+                .truncate_tags_if_needed(false),
+        )
         .end();
 }

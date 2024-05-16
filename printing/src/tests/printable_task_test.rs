@@ -645,3 +645,58 @@ fn do_not_split_url() {
         )
     );
 }
+
+#[test]
+fn truncate_tags_if_they_do_not_fit_on_line() {
+    let context = PrintingContext {
+        max_index_digits: 3,
+        width: 45,
+        now: Utc::now(),
+    };
+    let fmt = print_task_with_context(
+        context,
+        &PrintableTask::new("a", 1, Incomplete)
+            .tag("project-stardust")
+            .tag("project-zeppelin")
+            .tag("project-apollo")
+            .truncate_tags_if_needed(true),
+    );
+    // Tags are truncated to "project-stardust ... project-apollo"
+    assert_eq!(
+        fmt,
+        concat!(
+            "      \u{1b}[33m1)\u{1b}[0m ",
+            "\u{1b}[3;38;5;9mproject-stardust\u{1b}[0m ",
+            "... ",
+            "\u{1b}[3;38;5;12mproject-apollo\u{1b}[0m\n",
+            "         a\n",
+        )
+    );
+}
+
+#[test]
+fn do_not_truncate_tags_if_not_opted_in() {
+    let context = PrintingContext {
+        max_index_digits: 3,
+        width: 45,
+        now: Utc::now(),
+    };
+    let fmt = print_task_with_context(
+        context,
+        &PrintableTask::new("a", 1, Incomplete)
+            .tag("project-stardust")
+            .tag("project-zeppelin")
+            .tag("project-apollo"),
+    );
+    // "project-stardust project-zeppelin project-apollo" don't fit on one line,
+    // so "project-apollo" is moved to the next line.
+    assert_eq!(
+        fmt,
+        concat!(
+            "      \u{1b}[33m1)\u{1b}[0m ",
+            "\u{1b}[3;38;5;9mproject-stardust\u{1b}[0m ",
+            "\u{1b}[3;38;5;1mproject-zeppelin\u{1b}[0m\n",
+            "         \u{1b}[3;38;5;12mproject-apollo\u{1b}[0m a\n",
+        )
+    );
+}

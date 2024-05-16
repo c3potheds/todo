@@ -98,7 +98,8 @@ pub fn format_task<'list>(
             Some(implicit_due_date),
         ) => {
             let mut result =
-                PrintableTask::new(&task.desc, pos, to_printing_status(status));
+                PrintableTask::new(&task.desc, pos, to_printing_status(status))
+                    .truncate_tags_if_needed(true);
             if implicit_priority != 0 {
                 result =
                     result.priority(if implicit_priority == task.priority {
