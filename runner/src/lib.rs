@@ -83,13 +83,21 @@ pub fn run(app: impl Application) -> TodoResult {
     };
 
     let mutated = if std::io::stdout().is_terminal() {
+        use either::{Left, Right};
+        let out = match less::Less::new(&config.paginator_cmd) {
+            Ok(paginator) => Left(paginator),
+            Err(e) => {
+                eprintln!("Could not spawn paginator: {e:?}");
+                Right(std::io::stdout())
+            }
+        };
         app.run(
             &mut model,
             &ScrawlTextEditor(&config.text_editor_cmd),
             &SystemClock,
             |max_index_digits| SimpleTodoPrinter {
                 // TODO: fall back on stdout if paginator cannot spawn.
-                out: less::Less::new(&config.paginator_cmd).unwrap(),
+                out,
                 context: PrintingContext {
                     max_index_digits,
                     width: terminal_size::terminal_size()
