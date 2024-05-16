@@ -7,8 +7,10 @@ use yansi::Paint;
 use yansi::Style;
 use {
     crate::{
-        format_util::format_number, Plicit, PrintableError, PrintableInfo,
-        PrintableTask, PrintableWarning, TodoPrinter,
+        format_util::format_number,
+        truncate::{truncation_indices, TruncationIndices},
+        Plicit, PrintableError, PrintableInfo, PrintableTask, PrintableWarning,
+        TodoPrinter,
     },
     chrono::{DateTime, Duration, Local, Utc},
     std::{
@@ -218,7 +220,11 @@ fn fmt_tag(tag: Plicit<&str>, out: &mut String) {
     out.push(' ');
 }
 
-fn get_body(task: &PrintableTask, context: &PrintingContext) -> String {
+fn get_body(
+    task: &PrintableTask,
+    context: &PrintingContext,
+    prefix_length: usize,
+) -> String {
     let mut body = String::new();
     if let Some(start_date) = task.start_date {
         fmt_snooze_date(start_date - context.now, &mut body);
@@ -240,8 +246,30 @@ fn get_body(task: &PrintableTask, context: &PrintingContext) -> String {
     if let Some(punctuality) = task.punctuality {
         fmt_punctuality(punctuality, &mut body);
     }
-    for tag in &task.implicit_tags {
-        fmt_tag(Plicit::Implicit(tag), &mut body);
+    let remaining_width = context.width - prefix_length - body.len() - 1;
+    const SEPARATOR: &str = "...";
+    use TruncationIndices::*;
+    match truncation_indices(
+        remaining_width,
+        SEPARATOR.len(),
+        task.implicit_tags.iter().map(|tag| tag.len()),
+    ) {
+        Empty => (),
+        NoTruncation => {
+            for tag in task.implicit_tags.iter() {
+                fmt_tag(Plicit::Implicit(tag), &mut body);
+            }
+        }
+        Truncate(left, right) => {
+            for tag in task.implicit_tags[..left].iter() {
+                fmt_tag(Plicit::Implicit(tag), &mut body);
+            }
+            body.push_str(SEPARATOR);
+            body.push(' ');
+            for tag in task.implicit_tags[right..].iter() {
+                fmt_tag(Plicit::Implicit(tag), &mut body);
+            }
+        }
     }
     if task.is_explicit_tag {
         fmt_tag(Plicit::Explicit(task.desc), &mut body);
@@ -268,7 +296,7 @@ fn get_subsequent_indent(
 impl<'a> Display for PrintableTaskWithContext<'a> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let start = get_initial_indent(self.task, self.context);
-        let body = get_body(self.task, self.context);
+        let body = get_body(self.task, self.context, start.len());
         if body.is_empty() {
             return f.write_str(start.trim_end());
         }

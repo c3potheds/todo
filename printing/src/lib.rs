@@ -7,6 +7,7 @@ mod printable_warning;
 mod scripting_todo_printer;
 mod simple_todo_printer;
 mod todo_printer;
+mod truncate;
 
 pub use self::brief_printable_task::*;
 pub use self::printable_error::*;
@@ -95,4 +96,5 @@ mod tests {
     mod printable_task_test;
     mod printable_warning_test;
     mod simple_todo_printer_test;
+    mod truncate_test;
 }
