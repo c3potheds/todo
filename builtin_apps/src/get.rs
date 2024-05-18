@@ -54,6 +54,8 @@ pub fn run<'list>(list: &'list TodoList, cmd: &Get) -> PrintableResult<'list> {
             // By default, show all context.
             (false, false, false) => (true, true),
             // Any other combination is invalid.
+            // TODO: we will be able to avoid this unreachable!() once
+            // https://github.com/clap-rs/clap/issues/2621 is resolved.
             _ => unreachable!(),
         };
     let tasks_to_print = requested_tasks
