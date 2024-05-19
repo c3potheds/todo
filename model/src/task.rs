@@ -1,7 +1,7 @@
 use {
     crate::{DurationInSeconds, TaskId},
     chrono::{DateTime, Utc},
-    serde::{Deserialize, Serialize},
+    serde_derive::{Deserialize, Serialize},
     std::borrow::Cow,
 };
 

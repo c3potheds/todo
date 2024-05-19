@@ -1,6 +1,6 @@
 use {
     daggy::NodeIndex,
-    serde::{Deserialize, Serialize},
+    serde_derive::{Deserialize, Serialize},
 };
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Deserialize, Serialize)]
