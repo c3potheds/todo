@@ -8,7 +8,6 @@ chrono.workspace = true
 clap.workspace = true
 humantime.workspace = true
 itertools.workspace = true
-shlex.workspace = true
 
 todo_app.workspace = true
 todo_cli.workspace = true
@@ -23,3 +22,4 @@ todo_time_format.workspace = true
 [dev-dependencies]
 pretty_assertions.workspace = true
 serde_json.workspace = true
+shlex.workspace = true
