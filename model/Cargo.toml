@@ -10,6 +10,7 @@ chrono.workspace = true
 daggy.workspace = true
 itertools.workspace = true
 serde.workspace = true
+serde_derive.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]

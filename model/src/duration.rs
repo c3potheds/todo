@@ -1,6 +1,6 @@
 use {
     chrono::Duration,
-    serde::{Deserialize, Serialize},
+    serde_derive::{Deserialize, Serialize},
 };
 
 #[derive(

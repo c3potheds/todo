@@ -5,7 +5,7 @@ use {
     },
     chrono::{DateTime, Duration, Utc},
     daggy::{stable_dag::StableDag, Walker},
-    serde::{Deserialize, Serialize},
+    serde_derive::{Deserialize, Serialize},
     std::{borrow::Cow, collections::HashSet},
     thiserror::Error,
 };

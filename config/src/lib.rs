@@ -1,5 +1,5 @@
 use {
-    serde::{Deserialize, Serialize},
+    serde_derive::{Deserialize, Serialize},
     std::io::Read,
     thiserror::Error,
 };
