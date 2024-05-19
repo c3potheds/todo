@@ -799,3 +799,211 @@ fn do_not_change_position_of_adep_if_complete() {
         .printed_task(&task("y", 1, Incomplete))
         .end();
 }
+
+#[test]
+fn block_on_task_by_name_that_matches_only_complete_tasks_blocks_that_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a --done");
+    fix.test("todo new b -b a")
+        .modified(Mutated::Yes)
+        .validate()
+        .printed_task(&task("b", 1, Incomplete).action(New).adeps_stats(1, 1))
+        .printed_task(&task("a", 2, Blocked).deps_stats(1, 1))
+        .end();
+}
+
+#[test]
+fn block_on_task_by_name_that_matches_incomplete_and_complete_tasks() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a --done");
+    fix.test("todo new a");
+    fix.test("todo new b --blocking a")
+        .modified(Mutated::Yes)
+        .validate()
+        .printed_task(&task("b", 1, Incomplete).action(New).adeps_stats(1, 1))
+        .printed_task(&task("a", 2, Blocked).deps_stats(1, 1))
+        .end();
+}
+
+#[test]
+fn block_on_task_by_name_that_matches_multiple_incomplete_tasks_blocks_on_all()
+{
+    let mut fix = Fixture::default();
+    fix.test("todo new a a");
+    fix.test("todo new b --blocking a")
+        .modified(Mutated::Yes)
+        .validate()
+        .printed_task(&task("b", 1, Incomplete).action(New).adeps_stats(2, 2))
+        .printed_task(&task("a", 2, Blocked).deps_stats(1, 1))
+        .printed_task(&task("a", 3, Blocked).deps_stats(1, 1))
+        .end();
+}
+
+#[test]
+fn blocked_by_task_by_name_that_matches_only_complete_tasks_blocked_by_that_task(
+) {
+    let mut fix = Fixture::default();
+    fix.test("todo new a --done");
+    fix.test("todo new b -p a")
+        .modified(Mutated::Yes)
+        .validate()
+        .printed_task(&task("a", 0, Complete))
+        .printed_task(&task("b", 1, Incomplete).action(New))
+        .end();
+}
+
+#[test]
+fn blocked_by_task_by_name_that_matches_incomplete_and_complete_tasks() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a --done");
+    fix.test("todo new a");
+    fix.test("todo new b -p a")
+        .modified(Mutated::Yes)
+        .validate()
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(1, 1))
+        .printed_task(&task("b", 2, Blocked).action(New).deps_stats(1, 1))
+        .end();
+}
+
+#[test]
+fn blocked_by_task_by_name_that_matches_multiple_incomplete_tasks_blocked_by_all(
+) {
+    let mut fix = Fixture::default();
+    fix.test("todo new a a");
+    fix.test("todo new b -p a")
+        .modified(Mutated::Yes)
+        .validate()
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(0, 1))
+        .printed_task(&task("a", 2, Incomplete).adeps_stats(0, 1))
+        .printed_task(&task("b", 3, Blocked).deps_stats(2, 2).action(New))
+        .end();
+}
+
+#[test]
+fn before_task_by_name_that_matches_only_complete_tasks_inserted_before_that_task(
+) {
+    let mut fix = Fixture::default();
+    fix.test("todo new a --done");
+    fix.test("todo new b --before a")
+        .modified(Mutated::Yes)
+        .validate()
+        .printed_task(&task("b", 1, Incomplete).action(New).adeps_stats(1, 1))
+        .printed_task(&task("a", 2, Blocked).deps_stats(1, 1))
+        .end();
+}
+
+#[test]
+fn before_task_by_name_that_matches_incomplete_and_complete_tasks_inserted_before_all_tasks(
+) {
+    let mut fix = Fixture::default();
+    fix.test("todo new a --done");
+    fix.test("todo new a");
+    fix.test("todo new b --before a")
+        .modified(Mutated::Yes)
+        .validate()
+        .printed_task(&task("b", 1, Incomplete).action(New).adeps_stats(1, 1))
+        .printed_task(&task("a", 2, Blocked).deps_stats(1, 1))
+        .end();
+}
+
+#[test]
+fn before_task_by_name_that_matches_multiple_incomplete_tasks_inserted_before_all_tasks(
+) {
+    let mut fix = Fixture::default();
+    fix.test("todo new a a");
+    fix.test("todo new b --before a")
+        .modified(Mutated::Yes)
+        .validate()
+        .printed_task(&task("b", 1, Incomplete).action(New).adeps_stats(2, 2))
+        .printed_task(&task("a", 2, Blocked).deps_stats(1, 1))
+        .printed_task(&task("a", 3, Blocked).deps_stats(1, 1))
+        .end();
+}
+
+#[test]
+fn after_task_by_name_that_matches_only_complete_tasks_inserted_after_that_task(
+) {
+    let mut fix = Fixture::default();
+    fix.test("todo new a --done");
+    fix.test("todo new b --after a")
+        .modified(Mutated::Yes)
+        .validate()
+        .printed_task(&task("a", 0, Complete))
+        .printed_task(&task("b", 1, Incomplete).action(New))
+        .end();
+}
+
+#[test]
+fn after_task_by_name_that_matches_incomplete_and_complete_tasks_inserted_after_incomplete_tasks(
+) {
+    let mut fix = Fixture::default();
+    fix.test("todo new a --done");
+    fix.test("todo new a");
+    fix.test("todo new b --after a")
+        .modified(Mutated::Yes)
+        .validate()
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(1, 1))
+        .printed_task(&task("b", 2, Blocked).action(New).deps_stats(1, 1))
+        .end();
+}
+
+#[test]
+fn after_task_by_name_that_matches_multiple_incomplete_tasks_inserted_after_all_tasks(
+) {
+    let mut fix = Fixture::default();
+    fix.test("todo new a a");
+    fix.test("todo new b --after a")
+        .modified(Mutated::Yes)
+        .validate()
+        .printed_task(&task("a", 1, Incomplete).adeps_stats(0, 1))
+        .printed_task(&task("a", 2, Incomplete).adeps_stats(0, 1))
+        .printed_task(&task("b", 3, Blocked).action(New).deps_stats(2, 2))
+        .end();
+}
+
+#[test]
+fn by_task_by_name_that_matches_only_complete_task_inserted_by_that_task() {
+    let mut fix = Fixture::default();
+    fix.test("todo new a b c --chain");
+    fix.test("todo check a b");
+    fix.test("todo new d --by b")
+        .modified(Mutated::Yes)
+        .validate()
+        .printed_task(&task("a", -1, Complete))
+        .printed_task(&task("d", 1, Incomplete).action(New).adeps_stats(1, 1))
+        .printed_task(&task("c", 2, Blocked).deps_stats(1, 3))
+        .end();
+}
+
+#[test]
+fn by_task_by_name_that_matches_incomplete_and_complete_tasks_inserted_by_incomplete_tasks(
+) {
+    let mut fix = Fixture::default();
+    fix.test("todo new a1 b c1 --chain -d");
+    fix.test("todo restore c1");
+    fix.test("todo new a2 b c2 --chain");
+    fix.test("todo new d --by b")
+        .modified(Mutated::Yes)
+        .validate()
+        .printed_task(&task("a2", 2, Incomplete).adeps_stats(2, 3))
+        .printed_task(&task("d", 4, Blocked).action(New).deps_stats(1, 1))
+        .printed_task(&task("c2", 5, Blocked).deps_stats(1, 3))
+        .end()
+}
+
+#[test]
+fn by_task_by_name_that_matches_multiple_incomplete_tasks_inserted_by_all_tasks(
+) {
+    let mut fix = Fixture::default();
+    fix.test("todo new a1 b c1 --chain");
+    fix.test("todo new a2 b c2 --chain");
+    fix.test("todo new d --by b")
+        .modified(Mutated::Yes)
+        .validate()
+        .printed_task(&task("a1", 1, Incomplete).adeps_stats(1, 4))
+        .printed_task(&task("a2", 2, Incomplete).adeps_stats(1, 4))
+        .printed_task(&task("d", 5, Blocked).action(New).deps_stats(2, 2))
+        .printed_task(&task("c1", 6, Blocked).deps_stats(2, 4))
+        .printed_task(&task("c2", 7, Blocked).deps_stats(2, 4))
+        .end();
+}

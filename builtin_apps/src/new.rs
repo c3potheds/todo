@@ -1,16 +1,44 @@
 use {
     super::util::{
-        format_task, format_task_brief, format_tasks_brief, lookup_tasks,
-        parse_budget, parse_due_date, parse_snooze_date,
+        format_task, format_task_brief, format_tasks_brief,
+        lookup_tasks_by_keys, parse_budget, parse_due_date, parse_snooze_date,
     },
     chrono::{DateTime, Utc},
     std::{borrow::Cow, collections::HashSet, iter::FromIterator},
     todo_cli::New,
+    todo_lookup_key::Key,
     todo_model::{CheckError, CheckOptions, NewOptions, TaskSet, TodoList},
     todo_printing::{
         Action, PrintableAppSuccess, PrintableError, PrintableResult,
     },
 };
+
+fn disambiguate(list: &TodoList, tasks: TaskSet) -> TaskSet {
+    let (complete, incomplete) = tasks.partition_done(list);
+    if !complete.is_empty() && !incomplete.is_empty() {
+        incomplete
+    } else {
+        complete | incomplete
+    }
+}
+
+// Special task lookup helper function that has special handling for when the
+// key is ambiguous (i.e. a "ByName" key that matches multiple tasks).
+//
+// Ambiguity is resolved by returning all matching tasks if they are all
+// incomplete or all complete, and only incomplete tasks if there is a mix of
+// complete and incomplete tasks.
+fn lookup_tasks_ambiguously<'a>(
+    list: &'a TodoList,
+    keys: impl IntoIterator<Item = &'a Key>,
+) -> TaskSet {
+    let key_to_task_set = lookup_tasks_by_keys(list, keys);
+    key_to_task_set
+        .into_iter()
+        .fold(TaskSet::default(), |so_far, (_, tasks)| {
+            so_far | disambiguate(list, tasks)
+        })
+}
 
 pub fn run<'list>(
     list: &'list mut TodoList,
@@ -21,14 +49,14 @@ pub fn run<'list>(
     let budget = parse_budget(&cmd.budget).map_err(|e| vec![e])?;
     let snooze_date =
         parse_snooze_date(now, &cmd.snooze).map_err(|e| vec![e])?;
-    let deps = lookup_tasks(list, &cmd.blocked_by);
-    let adeps = lookup_tasks(list, &cmd.blocking);
-    let before = lookup_tasks(list, &cmd.before);
-    let by = lookup_tasks(list, &cmd.by);
+    let deps = lookup_tasks_ambiguously(list, &cmd.blocked_by);
+    let adeps = lookup_tasks_ambiguously(list, &cmd.blocking);
+    let before = lookup_tasks_ambiguously(list, &cmd.before);
+    let by = lookup_tasks_ambiguously(list, &cmd.by);
     let before_deps = before
         .iter_unsorted()
         .fold(TaskSet::default(), |so_far, id| so_far | list.deps(id));
-    let after = lookup_tasks(list, &cmd.after);
+    let after = lookup_tasks_ambiguously(list, &cmd.after);
     let after_adeps = after
         .iter_unsorted()
         .fold(TaskSet::default(), |so_far, id| so_far | list.adeps(id));
