@@ -38,6 +38,11 @@ pub enum PrintableWarning {
         due_date: DateTime<Utc>,
         snooze_date: DateTime<Utc>,
     },
+    AlreadySnoozedAfterRequestedTime {
+        snoozed_task: BriefPrintableTask,
+        requested_snooze_date: DateTime<Utc>,
+        snooze_date: DateTime<Utc>,
+    },
     SnoozedUntilPast {
         snoozed_task: BriefPrintableTask,
         snooze_date: DateTime<Utc>,
@@ -95,6 +100,15 @@ impl Display for PrintableWarning {
                 f,
                 "Snoozed {} until after its due date {}",
                 snoozed_task, due_date
+            ),
+            AlreadySnoozedAfterRequestedTime {
+                snoozed_task,
+                requested_snooze_date,
+                snooze_date,
+            } => write!(
+                f,
+                "Already snoozed {} until {} which is after requested time {}",
+                snoozed_task, snooze_date, requested_snooze_date
             ),
             SnoozedUntilPast {
                 snoozed_task,

@@ -184,7 +184,13 @@ fn force_check_snoozed_task() -> TestResult {
 #[test]
 fn snooze_incomplete_task() {
     let mut list = TodoList::default();
-    let a = list.add("a");
+    let now = Utc.with_ymd_and_hms(2021, 05, 25, 13, 00, 00).unwrap();
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .creation_time(now)
+            .start_date(now),
+    );
     assert_eq!(
         list.snooze(a, Utc.with_ymd_and_hms(2021, 05, 25, 14, 00, 00).unwrap()),
         Ok(())
@@ -206,8 +212,19 @@ fn snooze_complete_task() -> TestResult {
 #[test]
 fn snooze_blocked_task() -> TestResult {
     let mut list = TodoList::default();
-    let a = list.add("a");
-    let b = list.add("b");
+    let now = Utc.with_ymd_and_hms(2021, 05, 25, 10, 00, 00).unwrap();
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .creation_time(now)
+            .start_date(now),
+    );
+    let b = list.add(
+        NewOptions::new()
+            .desc("b")
+            .creation_time(now)
+            .start_date(now),
+    );
     list.block(b).on(a)?;
     assert_eq!(
         list.snooze(b, Utc.with_ymd_and_hms(2021, 05, 25, 15, 00, 00).unwrap()),
@@ -218,7 +235,7 @@ fn snooze_blocked_task() -> TestResult {
             Utc.with_ymd_and_hms(2021, 05, 25, 16, 00, 00).unwrap(),
         )
         .as_sorted_vec(&list),
-        [],
+        [b],
     );
     assert_eq!(list.status(b), Some(TaskStatus::Blocked));
     Ok(())
@@ -227,9 +244,16 @@ fn snooze_blocked_task() -> TestResult {
 #[test]
 fn snooze_task_until_after_due_date() {
     let mut list = TodoList::default();
+    let now = Utc.with_ymd_and_hms(2021, 05, 25, 10, 00, 00).unwrap();
     let due_date = Utc.with_ymd_and_hms(2021, 05, 25, 20, 00, 00).unwrap();
     let snooze = Utc.with_ymd_and_hms(2021, 05, 26, 00, 00, 00).unwrap();
-    let a = list.add(NewOptions::new().desc("a").due_date(due_date));
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .creation_time(now)
+            .start_date(now)
+            .due_date(due_date),
+    );
     assert_eq!(
         list.snooze(a, snooze),
         Err(vec![SnoozeWarning::SnoozedUntilAfterDueDate {
@@ -242,10 +266,22 @@ fn snooze_task_until_after_due_date() {
 #[test]
 fn snooze_task_until_after_implicit_due_date() -> TestResult {
     let mut list = TodoList::default();
+    let now = Utc.with_ymd_and_hms(2021, 05, 25, 10, 00, 00).unwrap();
     let due_date = Utc.with_ymd_and_hms(2021, 05, 25, 20, 00, 00).unwrap();
     let snooze = Utc.with_ymd_and_hms(2021, 05, 26, 00, 00, 00).unwrap();
-    let a = list.add("a");
-    let b = list.add(NewOptions::new().desc("b").due_date(due_date));
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .creation_time(now)
+            .start_date(now),
+    );
+    let b = list.add(
+        NewOptions::new()
+            .desc("b")
+            .creation_time(now)
+            .start_date(now)
+            .due_date(due_date),
+    );
     list.block(b).on(a)?;
     assert_eq!(
         list.snooze(a, snooze),
@@ -260,20 +296,42 @@ fn snooze_task_until_after_implicit_due_date() -> TestResult {
 #[test]
 fn snoozed_blocked_task_remains_snoozed_when_deps_completed() -> TestResult {
     let mut list = TodoList::default();
-    let a = list.add("a");
-    let b = list.add("b");
+    let now = Utc.with_ymd_and_hms(2021, 05, 25, 15, 00, 00).unwrap();
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .start_date(now)
+            .creation_time(now),
+    );
+    let b = list.add(
+        NewOptions::new()
+            .desc("b")
+            .start_date(now)
+            .creation_time(now),
+    );
     list.block(b).on(a)?;
-    list.snooze(b, Utc.with_ymd_and_hms(2021, 05, 25, 16, 00, 00).unwrap())
-        .unwrap();
+    assert_eq!(
+        list.snooze(b, Utc.with_ymd_and_hms(2021, 05, 25, 16, 00, 00).unwrap()),
+        Ok(())
+    );
+    // snoozed adeps are not unsnoozed, but still show as affected by a
+    // completed task.
     assert_eq!(
         list.check(CheckOptions {
             id: a,
-            now: Utc.with_ymd_and_hms(2021, 05, 25, 15, 00, 00).unwrap(),
+            now: Utc.with_ymd_and_hms(2021, 05, 25, 15, 30, 00).unwrap(),
         })?
         .as_sorted_vec(&list),
-        [],
+        [b],
     );
     assert_eq!(list.status(b), Some(TaskStatus::Blocked));
+    assert_eq!(
+        list.unsnooze_up_to(
+            Utc.with_ymd_and_hms(2021, 05, 25, 16, 00, 00).unwrap()
+        )
+        .as_sorted_vec(&list),
+        [b]
+    );
     Ok(())
 }
 
@@ -281,15 +339,29 @@ fn snoozed_blocked_task_remains_snoozed_when_deps_completed() -> TestResult {
 fn snoozed_blocked_task_unsnoozes_when_deps_completed_after_snooze_date(
 ) -> TestResult {
     let mut list = TodoList::default();
-    let a = list.add("a");
-    let b = list.add("b");
+    let now = Utc.with_ymd_and_hms(2021, 05, 25, 15, 00, 00).unwrap();
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .creation_time(now)
+            .start_date(now),
+    );
+    let b = list.add(
+        NewOptions::new()
+            .desc("b")
+            .creation_time(now)
+            .start_date(now),
+    );
     list.block(b).on(a)?;
-    list.snooze(b, Utc.with_ymd_and_hms(2021, 05, 25, 16, 00, 00).unwrap())
-        .unwrap();
+    let one_hour_later =
+        Utc.with_ymd_and_hms(2021, 05, 25, 16, 00, 00).unwrap();
+    list.snooze(b, one_hour_later).unwrap();
+    let two_hours_later =
+        Utc.with_ymd_and_hms(2021, 05, 25, 17, 00, 00).unwrap();
     assert_eq!(
         list.check(CheckOptions {
             id: a,
-            now: Utc.with_ymd_and_hms(2021, 05, 25, 17, 00, 00).unwrap(),
+            now: two_hours_later,
         })?
         .as_sorted_vec(&list),
         [b],
@@ -478,4 +550,56 @@ fn snoozed_tasks_are_sorted_by_start_time() -> TestResult {
     list.snooze(b, snooze_b).unwrap();
     assert_eq!(list.all_tasks().collect_vec(), [b, a]);
     Ok(())
+}
+
+#[test]
+fn snooze_until_earlier_time_than_current_snooze_date() {
+    let mut list = TodoList::default();
+    let now = Utc.with_ymd_and_hms(2024, 05, 19, 14, 00, 00).unwrap();
+    let in_two_days = Utc.with_ymd_and_hms(2024, 05, 21, 00, 00, 00).unwrap();
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .creation_time(now)
+            .start_date(in_two_days),
+    );
+    let tomorrow = Utc.with_ymd_and_hms(2024, 05, 21, 00, 00, 00).unwrap();
+    assert_eq!(
+        list.snooze(a, tomorrow),
+        Err(vec![SnoozeWarning::TaskIsAlreadySnoozed {
+            current_snooze: in_two_days,
+            requested_snooze: tomorrow,
+        }])
+    );
+}
+
+#[test]
+fn snooze_until_time_after_due_date_and_before_current_snooze_date() {
+    let mut list = TodoList::default();
+    let now = Utc.with_ymd_and_hms(2024, 05, 19, 14, 00, 00).unwrap();
+    let beginning_of_tomorrow =
+        Utc.with_ymd_and_hms(2024, 05, 20, 00, 00, 00).unwrap();
+    let end_of_tomorrow =
+        Utc.with_ymd_and_hms(2024, 05, 20, 23, 59, 59).unwrap();
+    let in_two_days = Utc.with_ymd_and_hms(2024, 05, 21, 00, 00, 00).unwrap();
+    let a = list.add(
+        NewOptions::new()
+            .desc("a")
+            .creation_time(now)
+            .due_date(end_of_tomorrow)
+            .start_date(in_two_days),
+    );
+    assert_eq!(
+        list.snooze(a, beginning_of_tomorrow),
+        Err(vec![
+            SnoozeWarning::TaskIsAlreadySnoozed {
+                current_snooze: in_two_days,
+                requested_snooze: beginning_of_tomorrow,
+            },
+            SnoozeWarning::SnoozedUntilAfterDueDate {
+                snoozed_until: in_two_days,
+                due_date: end_of_tomorrow,
+            },
+        ])
+    );
 }
