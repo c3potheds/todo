@@ -17,11 +17,23 @@ fn format_snooze_warning(
     warning: SnoozeWarning,
 ) -> PrintableWarning {
     match warning {
+        SnoozeWarning::TaskNotFound { id } => {
+            // This should never happen, as we've already looked up the task.
+            unreachable!("Task not found: {id:?}");
+        }
         SnoozeWarning::TaskIsComplete => {
             PrintableWarning::CannotSnoozeBecauseComplete {
                 cannot_snooze: format_task_brief(list, id),
             }
         }
+        SnoozeWarning::TaskIsAlreadySnoozed {
+            current_snooze,
+            requested_snooze,
+        } => PrintableWarning::AlreadySnoozedAfterRequestedTime {
+            snoozed_task: format_task_brief(list, id),
+            requested_snooze_date: requested_snooze,
+            snooze_date: current_snooze,
+        },
         SnoozeWarning::SnoozedUntilAfterDueDate {
             snoozed_until,
             due_date,
@@ -85,6 +97,12 @@ pub fn run<'list>(
                                         snoozed_until: _, due_date: _
                                     } = w {
                                         mutated = true;
+                                        snoozed.push(id);
+                                    }
+                                    if let SnoozeWarning::TaskIsAlreadySnoozed {
+                                        current_snooze: _,
+                                        requested_snooze: _,
+                                    } = w {
                                         snoozed.push(id);
                                     }
                                 })

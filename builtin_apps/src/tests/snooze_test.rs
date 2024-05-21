@@ -153,6 +153,27 @@ fn snooze_until_time_that_has_already_passed_should_leave_tasks_unmodified() {
 }
 
 #[test]
+fn snooze_until_earlier_than_current_snooze_date_is_no_op_with_warning() {
+    let mut fix = Fixture::default();
+    fix.clock.now = ymdhms(2024, 05, 19, 14, 00, 00);
+    fix.test("todo new a --snooze 2 days");
+    fix.test("todo snooze a --until 1 day")
+        .modified(Mutated::No)
+        .validate()
+        .printed_warning(&PrintableWarning::AlreadySnoozedAfterRequestedTime {
+            snoozed_task: BriefPrintableTask::new(1, Blocked),
+            requested_snooze_date: ymdhms(2024, 05, 20, 00, 00, 00),
+            snooze_date: ymdhms(2024, 05, 21, 00, 00, 00),
+        })
+        .printed_task(
+            &task("a", 1, Blocked)
+                .start_date(ymdhms(2024, 05, 21, 00, 00, 00))
+                .action(Snooze),
+        )
+        .end();
+}
+
+#[test]
 fn snoozed_tasks_should_appear_before_tasks_they_block() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2023, 09, 30, 14, 00, 00);

@@ -177,17 +177,9 @@ impl<'ser> TodoList<'ser> {
         now: Option<DateTime<Utc>>,
     ) -> bool {
         let task = self.get(id).unwrap();
-        let start_date = task.start_date;
-        let creation_time = task.creation_time;
-        match self.incomplete.depth(&id) {
-            Some(depth) => {
-                depth == 1
-                    && match now {
-                        Some(now) => start_date > now,
-                        None => start_date > creation_time,
-                    }
-            }
-            None => true,
+        match now {
+            Some(now) => task.start_date > now,
+            None => task.is_snoozed(),
         }
     }
 
@@ -357,22 +349,26 @@ impl<'ser> TodoList<'ser> {
                 self.tasks[options.id.0].creation_time;
         }
         if let Some(depth) = self.incomplete.depth(&options.id) {
-            assert!(depth == 0 || depth == 1);
+            assert!(depth == 0);
             self.incomplete.remove_from_layer(&options.id, depth);
             self.complete.push(options.id);
             // Update adeps.
             return Ok(self
                 .adeps(options.id)
                 .iter_sorted(self)
-                // Do not update the depth of snoozed adeps if they should still
-                // be snoozed and if the checked task was in layer 0 (i.e.
-                // was itself unsnoozed).
-                .filter(|&adep| {
-                    !self.should_keep_snoozed(adep, Some(options.now))
-                })
+                // Update the depth of all adeps, and collect the ones that
+                // become unblocked.
+                .filter(|&adep| self.update_depth(adep) == Some(0))
                 .collect::<Vec<_>>()
                 .into_iter()
-                .filter(|&adep| self.update_depth(adep) == Some(0))
+                // Unsnooze any adeps that are snoozed whose start date is
+                // before the current time.
+                .inspect(|&adep| {
+                    if !self.should_keep_snoozed(adep, Some(options.now)) {
+                        self.tasks[adep.0].start_date =
+                            self.tasks[adep.0].creation_time;
+                    }
+                })
                 .collect());
         }
         panic!("Checked task didn't have a depth.");
@@ -556,13 +552,13 @@ impl<'a, 'ser> Block<'a, 'ser> {
     fn update_depth_of_blocked_and_get_implicitly_restored_adeps(
         &mut self,
     ) -> TaskSet {
-        if !self.list.should_keep_snoozed(self.blocked, None) {
-            self.list.update_depth(self.blocked);
-            return TaskSet::default();
-        }
+        // If the blocked task is snoozed, then just update its depth, and do
+        // not bother looking for implicitly restored adeps because a snoozed
+        // task can not have had complete adeps.
         let was_blocked_complete =
             self.list.status(self.blocked) == Some(TaskStatus::Complete);
         if !was_blocked_complete {
+            self.list.update_depth(self.blocked);
             return TaskSet::default();
         }
         // Find the intersection of adeps that were complete before the
@@ -621,9 +617,7 @@ impl<'a, 'ser> Unblock<'a, 'ser> {
             Some(e) => self.list.tasks.remove_edge(e),
             None => return Err(UnblockError::WasNotDirectlyBlocking),
         };
-        if !self.list.should_keep_snoozed(self.blocked, None) {
-            self.list.update_depth(self.blocked);
-        }
+        self.list.update_depth(self.blocked);
         Ok(self.list.update_implicits(blocking)
             | TaskSet::of(self.blocked)
             | TaskSet::of(blocking))
@@ -807,12 +801,6 @@ impl<'ser> TodoList<'ser> {
     /// Returns the antidependencies of the removed task. These antidependencies
     /// are automatically blocked on the dependencies of the removed task.
     pub fn remove(&mut self, id: TaskId) -> TaskSet {
-        if self.incomplete.contains(&id) {
-            self.incomplete
-                .remove_from_layer(&id, self.incomplete.depth(&id).unwrap());
-        } else if self.complete.contains(&id) {
-            remove_first_occurrence_from_vec(&mut self.complete, &id);
-        };
         // Explicitly unblock the adeps from the removed task and the removed
         // task from its deps. Although removing the node from the graph is
         // sufficient to update the edges, it doesn't update the implicits of
@@ -841,15 +829,16 @@ impl<'ser> TodoList<'ser> {
             // adep on a dep because there would already be a cycle if so.
             self.block(adep).on(dep).unwrap();
         });
+        if self.incomplete.contains(&id) {
+            self.incomplete
+                .remove_from_layer(&id, self.incomplete.depth(&id).unwrap());
+        } else if self.complete.contains(&id) {
+            remove_first_occurrence_from_vec(&mut self.complete, &id);
+        };
         self.tasks.remove_node(id.0);
-        adeps
-            .iter_sorted(self)
-            .filter(|&adep| !self.should_keep_snoozed(adep, None))
-            .collect::<Vec<_>>()
-            .into_iter()
-            .for_each(|adep| {
-                self.update_depth(adep);
-            });
+        adeps.iter_sorted(self).for_each(|adep| {
+            self.update_depth(adep);
+        });
         (affected_after_unblocking_adeps | affected_after_unblocking_from_deps)
             - TaskSet::of(id)
     }
@@ -857,8 +846,15 @@ impl<'ser> TodoList<'ser> {
 
 #[derive(Debug, PartialEq, Eq, Error)]
 pub enum SnoozeWarning {
+    #[error("task not found")]
+    TaskNotFound { id: TaskId },
     #[error("task is complete")]
     TaskIsComplete,
+    #[error("task is already snoozed until a later time")]
+    TaskIsAlreadySnoozed {
+        current_snooze: DateTime<Utc>,
+        requested_snooze: DateTime<Utc>,
+    },
     #[error("snoozed until after due date")]
     SnoozedUntilAfterDueDate {
         snoozed_until: DateTime<Utc>,
@@ -872,27 +868,46 @@ impl<'ser> TodoList<'ser> {
         id: TaskId,
         start_date: DateTime<Utc>,
     ) -> Result<(), Vec<SnoozeWarning>> {
-        match self.incomplete.depth(&id) {
-            Some(depth) => {
-                self.tasks.node_weight_mut(id.0).unwrap().start_date =
-                    start_date;
-                self.incomplete.remove_from_layer(&id, depth);
-                self.put_in_incomplete_layer(id, depth);
-                if let Some(due_date) = self.get(id).unwrap().implicit_due_date
-                {
-                    if start_date > due_date {
-                        return Err(vec![
-                            SnoozeWarning::SnoozedUntilAfterDueDate {
-                                snoozed_until: start_date,
-                                due_date,
-                            },
-                        ]);
+        let mut warnings = vec![];
+        if let Some(depth) =
+            match (self.incomplete.depth(&id), self.tasks.node_weight_mut(id.0))
+            {
+                (Some(depth), Some(task)) => {
+                    let mut depth_to_move_to = None;
+                    if task.start_date >= start_date {
+                        warnings.push(SnoozeWarning::TaskIsAlreadySnoozed {
+                            current_snooze: task.start_date,
+                            requested_snooze: start_date,
+                        });
+                    } else {
+                        task.start_date = start_date;
+                        depth_to_move_to = Some(depth);
                     }
+                    if let Some(due_date) = task.implicit_due_date {
+                        if task.start_date > due_date {
+                            warnings.push(
+                                SnoozeWarning::SnoozedUntilAfterDueDate {
+                                    snoozed_until: task.start_date,
+                                    due_date,
+                                },
+                            );
+                        }
+                    }
+                    depth_to_move_to
                 }
-                Ok(())
+                (_, None) => {
+                    return Err(vec![SnoozeWarning::TaskNotFound { id }])
+                }
+                (None, _) => return Err(vec![SnoozeWarning::TaskIsComplete]),
             }
-            None => Err(vec![SnoozeWarning::TaskIsComplete]),
+        {
+            self.incomplete.remove_from_layer(&id, depth);
+            self.put_in_incomplete_layer(id, depth);
         }
+        if !warnings.is_empty() {
+            return Err(warnings);
+        }
+        Ok(())
     }
 }
 
