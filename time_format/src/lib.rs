@@ -404,7 +404,7 @@ pub fn parse_time<Tz: TimeZone>(
 // to however much precision is representable. For "laconic" representation of
 // duration, presented to the user, we don't need second-level precision for
 // durations in the order of minutes, or minute-level precision for durations
-// in the order of hourse, etc, so we strip off all but the first "word" in the
+// in the order of hours, etc, so we strip off all but the first "word" in the
 // formatted time.
 pub fn format_duration_laconic(duration: chrono::Duration) -> String {
     let formatted = humantime::format_duration(duration.to_std().unwrap());
