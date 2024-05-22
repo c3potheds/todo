@@ -222,6 +222,15 @@ fn month_with_day() {
 }
 
 #[test]
+fn month_with_invalid_day() {
+    let now = Local.with_ymd_and_hms(2024, 05, 21, 23, 00, 00).unwrap();
+    assert!(parse_time(Local, now, "july 32", Snap::ToEnd).is_err());
+    assert!(parse_time(Local, now, "march 34", Snap::ToEnd).is_err());
+    assert!(parse_time(Local, now, "feb 30", Snap::ToEnd).is_err());
+    assert!(parse_time(Local, now, "april 0", Snap::ToEnd).is_err());
+}
+
+#[test]
 fn month_without_day_this_month() {
     let now = Local.with_ymd_and_hms(2021, 04, 01, 09, 00, 00).unwrap();
     let expected = Local.with_ymd_and_hms(2021, 04, 30, 23, 59, 59).unwrap();
@@ -385,64 +394,43 @@ fn time_of_day_earlier_than_now_at_end_of_month() {
 #[test]
 fn complete_gobbledeygook() {
     let now = Local.with_ymd_and_hms(2022, 04, 09, 11, 00, 00).unwrap();
-    assert_eq!(
-        parse_time(Local, now, "blah", Snap::ToEnd),
-        Err(ParseTimeError)
-    );
+    assert!(parse_time(Local, now, "blah", Snap::ToEnd).is_err());
 }
 
 #[test]
 fn invalid_hour() {
     let now = Local.with_ymd_and_hms(2022, 04, 09, 11, 00, 00).unwrap();
-    assert_eq!(
-        parse_time(Local, now, "13am", Snap::ToStart),
-        Err(ParseTimeError)
-    );
+    assert!(parse_time(Local, now, "13am", Snap::ToStart).is_err());
 }
 
 #[test]
 fn too_large_hour_am() {
     let now = Local.with_ymd_and_hms(2022, 04, 09, 11, 00, 00).unwrap();
-    assert_eq!(
-        parse_time(Local, now, "256am", Snap::ToStart),
-        Err(ParseTimeError)
-    );
+    assert!(parse_time(Local, now, "256am", Snap::ToStart).is_err());
 }
 
 #[test]
 fn too_large_hour_pm() {
     let now = Local.with_ymd_and_hms(2022, 04, 09, 11, 00, 00).unwrap();
-    assert_eq!(
-        parse_time(Local, now, "256pm", Snap::ToStart),
-        Err(ParseTimeError)
-    );
+    assert!(parse_time(Local, now, "256pm", Snap::ToStart).is_err());
 }
 
 #[test]
 fn too_large_hour_followed_by_minutes() {
     let now = Local.with_ymd_and_hms(2022, 04, 09, 11, 00, 00).unwrap();
-    assert_eq!(
-        parse_time(Local, now, "256:30am", Snap::ToStart),
-        Err(ParseTimeError)
-    );
+    assert!(parse_time(Local, now, "256:30am", Snap::ToStart).is_err());
 }
 
 #[test]
 fn too_large_minute_am() {
     let now = Local.with_ymd_and_hms(2022, 04, 09, 11, 00, 00).unwrap();
-    assert_eq!(
-        parse_time(Local, now, "1:256am", Snap::ToStart),
-        Err(ParseTimeError)
-    );
+    assert!(parse_time(Local, now, "1:256am", Snap::ToStart).is_err());
 }
 
 #[test]
 fn too_large_minute_pm() {
     let now = Local.with_ymd_and_hms(2022, 04, 09, 11, 00, 00).unwrap();
-    assert_eq!(
-        parse_time(Local, now, "1:256pm", Snap::ToStart),
-        Err(ParseTimeError)
-    );
+    assert!(parse_time(Local, now, "1:256pm", Snap::ToStart).is_err());
 }
 
 #[test]

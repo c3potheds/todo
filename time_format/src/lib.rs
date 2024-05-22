@@ -1,14 +1,30 @@
 use chrono::{DateTime, Datelike, TimeZone};
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct ParseTimeError;
+pub enum ParseTimeError {
+    LocalError(chrono::format::ParseError),
+    InvalidHour(std::num::ParseIntError),
+    InvalidMinute(std::num::ParseIntError),
+    InvalidSecond(std::num::ParseIntError),
+    UnexpectedChar(char),
+    InvalidTimeOfDay(u8, Midi),
+    IncompleteTimeOfDay(ParseTimeOfDayState),
+    InvalidWeekday(chrono::ParseWeekdayError),
+    InvalidMonth(chrono::ParseMonthError),
+    DayOfMonthIsNotNumber(std::num::ParseIntError),
+    InvalidDayOfMonth(chrono::Month, u32),
+    InvalidYear(std::num::ParseIntError),
+    Misc,
+}
 
-enum Midi {
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum Midi {
     Am,
     Pm,
 }
 
-enum ParseTimeOfDayState {
+#[derive(Debug, PartialEq, Eq)]
+pub enum ParseTimeOfDayState {
     ParsingNumber {
         number_so_far: (usize, usize),
     },
@@ -49,7 +65,7 @@ fn parse_time_of_day_step(
             Ok(ParsingTimeOClock {
                 hour: s[start..end]
                     .parse::<u8>()
-                    .map_err(|_| ParseTimeError)?,
+                    .map_err(ParseTimeError::InvalidHour)?,
                 minute_so_far: (end + 1, end + 1),
             })
         }
@@ -58,7 +74,7 @@ fn parse_time_of_day_step(
             Ok(ExpectingAm {
                 hour: s[start..end]
                     .parse::<u8>()
-                    .map_err(|_| ParseTimeError)?,
+                    .map_err(ParseTimeError::InvalidHour)?,
                 minute: 00,
             })
         }
@@ -67,7 +83,7 @@ fn parse_time_of_day_step(
             Ok(ExpectingPm {
                 hour: s[start..end]
                     .parse::<u8>()
-                    .map_err(|_| ParseTimeError)?,
+                    .map_err(ParseTimeError::InvalidHour)?,
                 minute: 00,
             })
         }
@@ -96,7 +112,7 @@ fn parse_time_of_day_step(
                 hour,
                 minute: s[start..end]
                     .parse::<u8>()
-                    .map_err(|_| ParseTimeError)?,
+                    .map_err(ParseTimeError::InvalidMinute)?,
             })
         }
         (
@@ -111,7 +127,7 @@ fn parse_time_of_day_step(
                 hour,
                 minute: s[start..end]
                     .parse::<u8>()
-                    .map_err(|_| ParseTimeError)?,
+                    .map_err(ParseTimeError::InvalidMinute)?,
             })
         }
         (ExpectingAm { hour, minute }, 'm') => Ok(FullInfo {
@@ -124,7 +140,7 @@ fn parse_time_of_day_step(
             minute,
             midi: Midi::Pm,
         }),
-        _ => Err(ParseTimeError),
+        (_, c) => Err(ParseTimeError::UnexpectedChar(c)),
     }
 }
 
@@ -148,7 +164,11 @@ fn parse_time_of_day<Tz: TimeZone>(
                     (0..=11, Midi::Pm) => hour + 12,
                     (12, Midi::Am) => 0,
                     (12, Midi::Pm) => 12,
-                    _ => return Err(ParseTimeError),
+                    _ => {
+                        return Err(ParseTimeError::InvalidTimeOfDay(
+                            hour, midi,
+                        ))
+                    }
                 };
                 let mut target = tz
                     .with_ymd_and_hms(
@@ -165,7 +185,7 @@ fn parse_time_of_day<Tz: TimeZone>(
                 }
                 Ok(target)
             }
-            _ => Err(ParseTimeError),
+            state => Err(ParseTimeError::IncompleteTimeOfDay(state)),
         })
 }
 
@@ -236,18 +256,16 @@ fn parse_day_of_week<Tz: TimeZone>(
     snap: Snap,
 ) -> Result<DateTime<Tz>, ParseTimeError> {
     use std::str::FromStr;
-    chrono::Weekday::from_str(s)
-        .map(|weekday| {
-            let mut fast_forwarded = now + chrono::Duration::days(1);
-            while fast_forwarded.weekday() != weekday {
-                fast_forwarded += chrono::Duration::days(1);
-            }
-            match snap {
-                Snap::ToStart => start_of_day(fast_forwarded),
-                Snap::ToEnd => end_of_day(fast_forwarded),
-            }
-        })
-        .map_err(|_| ParseTimeError)
+    let weekday =
+        chrono::Weekday::from_str(s).map_err(ParseTimeError::InvalidWeekday)?;
+    let mut fast_forwarded = now + chrono::Duration::days(1);
+    while fast_forwarded.weekday() != weekday {
+        fast_forwarded += chrono::Duration::days(1);
+    }
+    Ok(match snap {
+        Snap::ToStart => start_of_day(fast_forwarded),
+        Snap::ToEnd => end_of_day(fast_forwarded),
+    })
 }
 
 #[derive(Clone, Copy)]
@@ -264,19 +282,20 @@ fn parse_month_day<'a, Tz: TimeZone>(
 ) -> Result<DateTime<Tz>, ParseTimeError> {
     chunk
         .parse::<chrono::Month>()
-        .map_err(|_| ParseTimeError)
+        .map_err(ParseTimeError::InvalidMonth)
         .and_then(|month| match chunks.next() {
-            Some(chunk) => {
-                chunk.parse::<u32>().map_err(|_| ParseTimeError).map(|day| {
+            Some(chunk) => chunk
+                .parse::<u32>()
+                .map_err(ParseTimeError::DayOfMonthIsNotNumber)
+                .and_then(|day| {
                     let datetime = end_of_month_after(now.clone(), month)
                         .with_day(day)
-                        .unwrap();
-                    match snap {
+                        .ok_or(ParseTimeError::InvalidDayOfMonth(month, day))?;
+                    Ok(match snap {
                         Snap::ToStart => start_of_day(datetime),
                         Snap::ToEnd => datetime,
-                    }
-                })
-            }
+                    })
+                }),
             None => Ok(match snap {
                 Snap::ToStart => start_of_month_after(now.clone(), month),
                 Snap::ToEnd => end_of_month_after(now.clone(), month),
@@ -292,7 +311,7 @@ fn parse_year_month_day<'a, Tz: TimeZone>(
 ) -> Result<DateTime<Tz>, ParseTimeError> {
     #![allow(clippy::zero_prefixed_literal)]
     // Year must be formatted as YYYY.
-    let year = chunk.parse::<i32>().map_err(|_| ParseTimeError)?;
+    let year = chunk.parse::<i32>().map_err(ParseTimeError::InvalidYear)?;
     match chunks.next() {
         Some(chunk) => parse_month_day(
             tz.with_ymd_and_hms(year, 01, 01, 00, 00, 00).unwrap(),
@@ -335,7 +354,7 @@ pub fn parse_time<Tz: TimeZone>(
                     Snap::ToEnd => Ok(end_of_day(now.clone())),
                 }
             } else {
-                Err(ParseTimeError)
+                Err(ParseTimeError::Misc)
             }
         })
         .or_else(|_| {
@@ -349,7 +368,7 @@ pub fn parse_time<Tz: TimeZone>(
                     }
                 }
             } else {
-                Err(ParseTimeError)
+                Err(ParseTimeError::Misc)
             }
         })
         .or_else(|_| {
@@ -362,7 +381,7 @@ pub fn parse_time<Tz: TimeZone>(
                         snap,
                     )
                     .map(|datetime| datetime - chrono::Duration::days(7)),
-                    _ => Err(ParseTimeError),
+                    _ => Err(ParseTimeError::Misc),
                 },
                 Some(chunk) => {
                     parse_month_day(now.clone(), chunk, &mut chunks, snap)
@@ -375,7 +394,7 @@ pub fn parse_time<Tz: TimeZone>(
                             )
                         })
                 }
-                _ => Err(ParseTimeError),
+                _ => Err(ParseTimeError::Misc),
             }
         })
         .or_else(|_| parse_time_of_day(tz, now.clone(), s))
