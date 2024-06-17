@@ -84,10 +84,13 @@ pub fn run(app: impl Application) -> TodoResult {
 
     let mutated = if std::io::stdout().is_terminal() {
         use either::{Left, Right};
-        let out = match less::Less::new(&config.paginator_cmd) {
+        let paginator_cmd = &config.paginator_cmd;
+        let out = match less::Less::new(paginator_cmd) {
             Ok(paginator) => Left(paginator),
-            Err(e) => {
-                eprintln!("Could not spawn paginator: {e:?}");
+            Err(less::CouldNotSpawnPaginator(e)) => {
+                eprintln!(
+                    "Could not spawn paginator using {paginator_cmd:?}: {e:?}"
+                );
                 Right(std::io::stdout())
             }
         };
