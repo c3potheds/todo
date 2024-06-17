@@ -14,7 +14,7 @@ use {clap::Parser, todo_lookup_key::Key};
 /// printed.
 ///
 /// If neither task keys nor a due date is provided, this will print all
-/// tasks that have due dates, implicit or explicit. I.e.
+/// tasks that are due today, implicitly or explicitly. I.e.
 ///
 ///   todo due
 ///
@@ -44,7 +44,7 @@ pub struct Due {
     /// This is a human-readable description of a date or time, like "1 day" or
     /// "5pm".
     #[arg(long, alias = "in", alias = "on", num_args = 1..)]
-    pub due: Vec<String>,
+    pub due: Option<Vec<String>>,
     /// Remove the explicit due date. If the implicit due date is inherited from
     /// an antidependency, it is retained.
     #[arg(long)]
