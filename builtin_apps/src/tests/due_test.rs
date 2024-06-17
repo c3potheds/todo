@@ -9,18 +9,34 @@ use {
 };
 
 #[test]
-fn show_tasks_with_due_date() {
+fn show_tasks_due_today() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
-    let in_1_day = ymdhms(2021, 04, 13, 23, 59, 59);
-    fix.test("todo new a b c --due 1 day");
+    let end_of_day = ymdhms(2021, 04, 12, 23, 59, 59);
+    fix.test("todo new a b c --due today");
     fix.test("todo new d e f");
     fix.test("todo due")
         .modified(Mutated::No)
         .validate()
-        .printed_task(&task("a", 1, Incomplete).due_date(Explicit(in_1_day)))
-        .printed_task(&task("b", 2, Incomplete).due_date(Explicit(in_1_day)))
-        .printed_task(&task("c", 3, Incomplete).due_date(Explicit(in_1_day)))
+        .printed_task(&task("a", 1, Incomplete).due_date(Explicit(end_of_day)))
+        .printed_task(&task("b", 2, Incomplete).due_date(Explicit(end_of_day)))
+        .printed_task(&task("c", 3, Incomplete).due_date(Explicit(end_of_day)))
+        .end();
+}
+
+#[test]
+fn tasks_due_later_than_eod_not_included_without_flag() {
+    let mut fix = Fixture::default();
+    fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
+    let end_of_day = ymdhms(2021, 04, 12, 23, 59, 59);
+    fix.test("todo new a b c --due today");
+    fix.test("todo new d e f --due tomorrow");
+    fix.test("todo due")
+        .modified(Mutated::No)
+        .validate()
+        .printed_task(&task("a", 1, Incomplete).due_date(Explicit(end_of_day)))
+        .printed_task(&task("b", 2, Incomplete).due_date(Explicit(end_of_day)))
+        .printed_task(&task("c", 3, Incomplete).due_date(Explicit(end_of_day)))
         .end();
 }
 
@@ -34,7 +50,7 @@ fn show_tasks_with_due_date_includes_blocked() {
     fix.test("todo new b -p a");
     fix.test("todo new c -p b --due 2 days");
     fix.test("todo new d e f");
-    fix.test("todo due -b")
+    fix.test("todo due -b --in 2 days")
         .modified(Mutated::No)
         .validate()
         .printed_task(
@@ -65,7 +81,7 @@ fn show_tasks_with_due_date_excludes_complete_and_blocked() {
     fix.test("todo new c -p b --due 2 days");
     fix.test("todo new d e f");
     fix.test("todo check a");
-    fix.test("todo due")
+    fix.test("todo due --in 2 days")
         .modified(Mutated::No)
         .validate()
         .printed_task(
@@ -86,7 +102,7 @@ fn show_tasks_with_due_date_include_done() {
     fix.test("todo new c -p b --due 2 days");
     fix.test("todo new d e f");
     fix.test("todo check a");
-    fix.test("todo due --include-done")
+    fix.test("todo due --include-done --in 2 days")
         .modified(Mutated::No)
         .validate()
         .printed_task(

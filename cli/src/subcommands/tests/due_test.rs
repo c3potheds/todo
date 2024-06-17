@@ -24,7 +24,7 @@ fn due_with_date_but_no_keys() {
     expect_parses_into(
         "todo due --in 2 days",
         SubCommand::Due(Due {
-            due: vec!["2".to_string(), "days".to_string()],
+            due: Some(vec!["2".to_string(), "days".to_string()]),
             ..Default::default()
         }),
     );
@@ -36,7 +36,7 @@ fn due_with_keys_and_date() {
         "todo due 10 --on friday",
         SubCommand::Due(Due {
             keys: vec![ByNumber(10)],
-            due: vec!["friday".to_string()],
+            due: Some(vec!["friday".to_string()]),
             ..Default::default()
         }),
     );

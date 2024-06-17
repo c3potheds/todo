@@ -1,6 +1,6 @@
 use {
     super::util::{format_task, lookup_tasks, parse_due_date},
-    chrono::{DateTime, Utc},
+    chrono::{DateTime, Local, Timelike, Utc},
     todo_cli::Due,
     todo_model::{TaskId, TaskSet, TaskStatus, TodoList},
     todo_printing::{PrintableAppSuccess, PrintableError, PrintableResult},
@@ -8,7 +8,7 @@ use {
 
 fn show_all_tasks_with_due_dates<'list>(
     list: &'list TodoList,
-    earlier_than: Option<DateTime<Utc>>,
+    earlier_than: DateTime<Utc>,
     include_done: bool,
     include_blocked: bool,
 ) -> PrintableResult<'list> {
@@ -20,10 +20,7 @@ fn show_all_tasks_with_due_dates<'list>(
                     || list.status(id) != Some(TaskStatus::Blocked))
         })
         .filter(|&id| match list.implicit_due_date(id) {
-            Some(Some(date)) => match earlier_than {
-                Some(threshold) => date <= threshold,
-                None => true,
-            },
+            Some(Some(date)) => date <= earlier_than,
             _ => false,
         })
         .map(|id| format_task(list, id))
@@ -120,6 +117,20 @@ fn show_tasks_without_due_date<'list>(
     })
 }
 
+// Fast-forwards the date-time to the end of the day in the local time zone.
+fn end_of_day(now: DateTime<Utc>) -> DateTime<Utc> {
+    now.with_timezone(&Local)
+        .with_hour(23)
+        .unwrap()
+        .with_minute(59)
+        .unwrap()
+        .with_second(59)
+        .unwrap()
+        .with_nanosecond(999_999_999)
+        .unwrap()
+        .with_timezone(&Utc)
+}
+
 pub fn run<'list>(
     list: &'list mut TodoList,
     now: DateTime<Utc>,
@@ -130,7 +141,16 @@ pub fn run<'list>(
     } else {
         Some(lookup_tasks(list, &cmd.keys))
     };
-    let due_date = parse_due_date(now, &cmd.due).map_err(|e| vec![e])?;
+    let due_date = if let Some(due) = &cmd.due {
+        if due.is_empty() {
+            return Err(vec![PrintableError::EmptyDate {
+                flag: Some("due".to_string()),
+            }]);
+        }
+        parse_due_date(now, due).map_err(|e| vec![e])?
+    } else {
+        None
+    };
     match (tasks, due_date, cmd.none) {
         (Some(tasks), Some(due_date), false) => {
             set_due_dates(list, tasks, Some(due_date), cmd.include_done)
@@ -140,7 +160,7 @@ pub fn run<'list>(
         }
         (None, due_date, false) => show_all_tasks_with_due_dates(
             list,
-            due_date,
+            due_date.unwrap_or_else(|| end_of_day(now)),
             cmd.include_done,
             cmd.include_blocked,
         ),
