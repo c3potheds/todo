@@ -134,9 +134,8 @@ fn edit_with_text_editor<'list>(
         .try_fold(TaskSet::default(), |so_far, line| {
             match parse_line_from_text_editor(line) {
                 Some(Ok((pos, desc))) => Ok(so_far
-                    | update_desc(list, ids, pos, &desc).map(|x| {
+                    | update_desc(list, ids, pos, &desc).inspect(|_| {
                         mutated = true;
-                        x
                     })?),
                 Some(Err(EditError::InvalidNumber(s))) => {
                     Err(PrintableError::CannotEditBecauseInvalidLine {

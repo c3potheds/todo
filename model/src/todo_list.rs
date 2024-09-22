@@ -163,11 +163,10 @@ impl<'ser> TodoList<'ser> {
                 }
             }
         }
-        .map(|new_depth| {
+        .inspect(|_| {
             self.adeps(id).iter_sorted(self).for_each(|adep| {
                 self.update_depth(adep);
             });
-            new_depth
         })
     }
 
@@ -791,9 +790,8 @@ impl<'ser> TodoList<'ser> {
             })
             .collect::<Vec<_>>()
             .into_iter()
-            .map(|id| {
-                self.unsnooze(id).unwrap();
-                id
+            .inspect(|id| {
+                self.unsnooze(*id).unwrap();
             })
             .collect()
     }
