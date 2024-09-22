@@ -4,15 +4,19 @@ use {crate::SubCommand, clap::Parser};
 ///
 /// You can create new tasks on your to-do list like this:
 ///
+/// ```
 ///   >>todo new "walk the dog" "wash the dishes"
 ///   NEW  1) walk the dog
 ///   NEW  2) wash the dishes
+/// ```
 ///
 /// And view the existing tasks by just typing 'todo':
 ///
+/// ```
 ///   >>todo
 ///        1) walk the dog
 ///        2) wash the dishes
+/// ```
 ///
 /// To use other commands that manipulate existing tasks, you can use
 /// "task keys" as arguments. A task key is either a string that matches the
@@ -20,10 +24,12 @@ use {crate::SubCommand, clap::Parser};
 /// list. The number always reflects the task's absolute position in the list.
 /// For example:
 ///
+/// ```
 ///   >>todo check 1
 ///   [✓]  0) walk the dog
 ///   >>todo
 ///        1) wash the dishes
+/// ```
 ///
 /// The first command, 'todo check 1' "checked off" the first task in the list,
 /// and the second, 'todo', showed the updated list, with "wash the dishes" now
@@ -39,11 +45,13 @@ use {crate::SubCommand, clap::Parser};
 /// in descending order (most recent first), with the position number counting
 /// down into negative numbers.
 ///
+/// ```
 ///   >>todo check 1
 ///   [✓]  0) wash the dishes
 ///   >>todo log
 ///   2021-05-01      0) wash the dishes
 ///                  -1) walk the dog
+/// ```
 ///
 /// The most unique aspect of this to-do list app is the ability to "block"
 /// tasks on other tasks. This helps you focus on the tasks that you can get
@@ -52,20 +60,24 @@ use {crate::SubCommand, clap::Parser};
 ///
 /// Let's say we add two more tasks to the list:
 ///
+/// ```
 ///   >>todo new "plant tomatoes in the garden"
 ///   NEW  1) plant tomatoes in the garden
 ///   >>todo new "buy tomato seeds"
 ///   NEW  2) buy tomato seeds
+/// ```
 ///
 /// It makes sense that we need to buy tomato seeds before we plant tomatoes in
 /// the garden, so we can de-clutter our list by blocking the "plant" task on
 /// the "buy" task:
 ///
+/// ```
 ///   >>todo block 1 --on 2
 ///        1) buy tomato seeds
 ///   LCK  2) plant tomatoes in the garden
 ///   >>todo
 ///        1) buy tomato seeds
+/// ```
 ///
 /// In this example, we call "buy tomato seeds" a "dependency" (or "dep") of the
 /// "plant tomatoes in the garden" task. Conversely, the "plant" task is an
@@ -79,18 +91,22 @@ use {crate::SubCommand, clap::Parser};
 /// To show the blocked tasks alongside the incomplete tasks, just pass the '-b'
 /// flag to 'todo':
 ///
+/// ```
 ///   >>todo -b
 ///        1) buy tomato seeds
 ///        2) plant tomatoes in the garden
+/// ```
 ///
 /// Once you 'check' the independent task, the dependent task will be "unlocked"
 /// and will show up in the main to-do list again.
 ///
+/// ```
 ///   >>todo check 1
 ///        0) buy tomato seeds
 ///   ULK  1) plant tomatoes in the garden
 ///   >>todo
 ///        1) plant tomatoes in the garden
+/// ```
 ///
 /// There are many other things you can do with this app. To read more, try
 /// using 'todo help' with one of the subcommands, listed below.
