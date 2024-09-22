@@ -4,7 +4,7 @@ use {crate::SubCommand, clap::Parser};
 ///
 /// You can create new tasks on your to-do list like this:
 ///
-/// ```
+/// ```bash
 ///   >>todo new "walk the dog" "wash the dishes"
 ///   NEW  1) walk the dog
 ///   NEW  2) wash the dishes
@@ -12,7 +12,7 @@ use {crate::SubCommand, clap::Parser};
 ///
 /// And view the existing tasks by just typing 'todo':
 ///
-/// ```
+/// ```bash
 ///   >>todo
 ///        1) walk the dog
 ///        2) wash the dishes
@@ -24,7 +24,7 @@ use {crate::SubCommand, clap::Parser};
 /// list. The number always reflects the task's absolute position in the list.
 /// For example:
 ///
-/// ```
+/// ```bash
 ///   >>todo check 1
 ///   [✓]  0) walk the dog
 ///   >>todo
@@ -45,7 +45,7 @@ use {crate::SubCommand, clap::Parser};
 /// in descending order (most recent first), with the position number counting
 /// down into negative numbers.
 ///
-/// ```
+/// ```bash
 ///   >>todo check 1
 ///   [✓]  0) wash the dishes
 ///   >>todo log
@@ -60,7 +60,7 @@ use {crate::SubCommand, clap::Parser};
 ///
 /// Let's say we add two more tasks to the list:
 ///
-/// ```
+/// ```bash
 ///   >>todo new "plant tomatoes in the garden"
 ///   NEW  1) plant tomatoes in the garden
 ///   >>todo new "buy tomato seeds"
@@ -71,7 +71,7 @@ use {crate::SubCommand, clap::Parser};
 /// the garden, so we can de-clutter our list by blocking the "plant" task on
 /// the "buy" task:
 ///
-/// ```
+/// ```bash
 ///   >>todo block 1 --on 2
 ///        1) buy tomato seeds
 ///   LCK  2) plant tomatoes in the garden
@@ -91,7 +91,7 @@ use {crate::SubCommand, clap::Parser};
 /// To show the blocked tasks alongside the incomplete tasks, just pass the '-b'
 /// flag to 'todo':
 ///
-/// ```
+/// ```bash
 ///   >>todo -b
 ///        1) buy tomato seeds
 ///        2) plant tomatoes in the garden
@@ -100,7 +100,7 @@ use {crate::SubCommand, clap::Parser};
 /// Once you 'check' the independent task, the dependent task will be "unlocked"
 /// and will show up in the main to-do list again.
 ///
-/// ```
+/// ```bash
 ///   >>todo check 1
 ///        0) buy tomato seeds
 ///   ULK  1) plant tomatoes in the garden
