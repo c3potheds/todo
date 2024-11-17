@@ -1,5 +1,6 @@
-pub use crate::subcommands::*;
 use clap::Parser;
+
+pub use crate::subcommands::*;
 
 #[derive(Debug, PartialEq, Eq, Parser)]
 pub enum SubCommand {

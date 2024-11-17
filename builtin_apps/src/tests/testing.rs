@@ -1,21 +1,23 @@
 #![allow(clippy::zero_prefixed_literal)]
 use std::cell::RefCell;
 use std::rc::Rc;
-use todo_app::{Application, Mutated};
 
-use {
-    chrono::{TimeZone, Utc},
-    clap::Parser,
-    pretty_assertions::assert_eq,
-    todo_cli::Options,
-    todo_clock::FakeClock,
-    todo_model::TodoList,
-    todo_printing::{
-        PrintableError, PrintableInfo, PrintableTask, PrintableWarning, Status,
-        TodoPrinter,
-    },
-    todo_text_editing::FakeTextEditor,
-};
+use chrono::TimeZone;
+use chrono::Utc;
+use clap::Parser;
+use pretty_assertions::assert_eq;
+use todo_app::Application;
+use todo_app::Mutated;
+use todo_cli::Options;
+use todo_clock::FakeClock;
+use todo_model::TodoList;
+use todo_printing::PrintableError;
+use todo_printing::PrintableInfo;
+use todo_printing::PrintableTask;
+use todo_printing::PrintableWarning;
+use todo_printing::Status;
+use todo_printing::TodoPrinter;
+use todo_text_editing::FakeTextEditor;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 enum PrintedItem<'list> {

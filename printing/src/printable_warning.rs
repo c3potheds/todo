@@ -1,16 +1,15 @@
+use std::fmt;
+use std::fmt::Display;
+use std::fmt::Formatter;
+
+use chrono::DateTime;
+use chrono::Utc;
+use todo_lookup_key::Key;
 use yansi::Paint;
-use {
-    crate::{
-        format_util::{format_key, format_numbers},
-        BriefPrintableTask,
-    },
-    chrono::{DateTime, Utc},
-    std::{
-        fmt,
-        fmt::{Display, Formatter},
-    },
-    todo_lookup_key::Key,
-};
+
+use crate::format_util::format_key;
+use crate::format_util::format_numbers;
+use crate::BriefPrintableTask;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PrintableWarning {

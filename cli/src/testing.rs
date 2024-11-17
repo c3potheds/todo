@@ -1,7 +1,7 @@
-use {
-    crate::{Options, SubCommand},
-    clap::Parser,
-};
+use clap::Parser;
+
+use crate::Options;
+use crate::SubCommand;
 
 pub fn expect_parses_into<'a, S: Into<&'a str>>(args: S, expected: SubCommand) {
     let s = args.into();

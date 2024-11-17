@@ -1,14 +1,17 @@
+use std::fs::File;
+use std::io::BufWriter;
 use std::io::IsTerminal;
 
-use {
-    std::{fs::File, io::BufWriter},
-    thiserror::Error,
-    todo_app::Application,
-    todo_app::Mutated,
-    todo_clock::{Clock, SystemClock},
-    todo_printing::{PrintingContext, ScriptingTodoPrinter, SimpleTodoPrinter},
-    todo_text_editing::{FakeTextEditor, ScrawlTextEditor},
-};
+use thiserror::Error;
+use todo_app::Application;
+use todo_app::Mutated;
+use todo_clock::Clock;
+use todo_clock::SystemClock;
+use todo_printing::PrintingContext;
+use todo_printing::ScriptingTodoPrinter;
+use todo_printing::SimpleTodoPrinter;
+use todo_text_editing::FakeTextEditor;
+use todo_text_editing::ScrawlTextEditor;
 
 #[derive(Debug, Error)]
 pub enum LoadError {
@@ -83,7 +86,8 @@ pub fn run(app: impl Application) -> TodoResult {
     };
 
     let mutated = if std::io::stdout().is_terminal() {
-        use either::{Left, Right};
+        use either::Left;
+        use either::Right;
         let paginator_cmd = &config.paginator_cmd;
         let out = match less::Less::new(paginator_cmd) {
             Ok(paginator) => Left(paginator),

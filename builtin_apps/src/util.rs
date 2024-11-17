@@ -1,13 +1,21 @@
 use std::collections::HashMap;
-use {
-    chrono::{DateTime, Duration, Local, Utc},
-    std::convert::TryFrom,
-    todo_lookup_key::Key,
-    todo_model::{DurationInSeconds, TaskId, TaskSet, TaskStatus, TodoList},
-    todo_printing::{
-        BriefPrintableTask, Plicit, PrintableError, PrintableTask, Status,
-    },
-};
+use std::convert::TryFrom;
+
+use chrono::DateTime;
+use chrono::Duration;
+use chrono::Local;
+use chrono::Utc;
+use todo_lookup_key::Key;
+use todo_model::DurationInSeconds;
+use todo_model::TaskId;
+use todo_model::TaskSet;
+use todo_model::TaskStatus;
+use todo_model::TodoList;
+use todo_printing::BriefPrintableTask;
+use todo_printing::Plicit;
+use todo_printing::PrintableError;
+use todo_printing::PrintableTask;
+use todo_printing::Status;
 
 fn to_printing_status(status: TaskStatus) -> Status {
     match status {

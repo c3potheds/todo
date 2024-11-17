@@ -1,9 +1,10 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use {
-    super::*,
-    chrono::{Duration, TimeZone, Utc},
-};
+use chrono::Duration;
+use chrono::TimeZone;
+use chrono::Utc;
+
+use super::*;
 
 #[test]
 fn default_budget_is_zero() {

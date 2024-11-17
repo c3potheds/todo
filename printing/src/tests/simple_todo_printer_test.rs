@@ -1,15 +1,19 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use {
-    crate::{
-        BriefPrintableTask, PrintableError, PrintableInfo, PrintableTask,
-        PrintableWarning, PrintingContext, SimpleTodoPrinter, Status::*,
-        TodoPrinter,
-    },
-    std::io::Write,
-    todo_lookup_key::Key,
-    todo_testing::ymdhms,
-};
+use std::io::Write;
+
+use todo_lookup_key::Key;
+use todo_testing::ymdhms;
+
+use crate::BriefPrintableTask;
+use crate::PrintableError;
+use crate::PrintableInfo;
+use crate::PrintableTask;
+use crate::PrintableWarning;
+use crate::PrintingContext;
+use crate::SimpleTodoPrinter;
+use crate::Status::*;
+use crate::TodoPrinter;
 
 fn create_printer_to_vec() -> SimpleTodoPrinter<Vec<u8>> {
     SimpleTodoPrinter {

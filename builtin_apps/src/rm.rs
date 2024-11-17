@@ -1,9 +1,12 @@
-use {
-    super::util::{format_task, lookup_tasks},
-    todo_cli::Rm,
-    todo_model::{TaskSet, TodoList},
-    todo_printing::{PrintableAppSuccess, PrintableInfo, PrintableResult},
-};
+use todo_cli::Rm;
+use todo_model::TaskSet;
+use todo_model::TodoList;
+use todo_printing::PrintableAppSuccess;
+use todo_printing::PrintableInfo;
+use todo_printing::PrintableResult;
+
+use super::util::format_task;
+use super::util::lookup_tasks;
 
 pub fn run<'list>(
     list: &'list mut TodoList,

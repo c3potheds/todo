@@ -1,15 +1,16 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use {
-    super::testing::task,
-    super::testing::Fixture,
-    todo_app::Mutated,
-    todo_printing::{
-        Action::*, BriefPrintableTask, Plicit::Explicit, PrintableError,
-        PrintableWarning, Status::*,
-    },
-    todo_testing::ymdhms,
-};
+use todo_app::Mutated;
+use todo_printing::Action::*;
+use todo_printing::BriefPrintableTask;
+use todo_printing::Plicit::Explicit;
+use todo_printing::PrintableError;
+use todo_printing::PrintableWarning;
+use todo_printing::Status::*;
+use todo_testing::ymdhms;
+
+use super::testing::task;
+use super::testing::Fixture;
 
 #[test]
 fn snooze_no_date() {

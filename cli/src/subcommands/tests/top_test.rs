@@ -1,7 +1,8 @@
-use {
-    crate::{testing::expect_parses_into, SubCommand, Top},
-    todo_lookup_key::Key::*,
-};
+use todo_lookup_key::Key::*;
+
+use crate::testing::expect_parses_into;
+use crate::SubCommand;
+use crate::Top;
 
 #[test]
 fn top() {

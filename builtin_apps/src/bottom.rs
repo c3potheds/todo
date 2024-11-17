@@ -1,8 +1,15 @@
 use todo_cli::Bottom;
-use todo_model::{TaskId, TaskSet, TaskStatus, TodoList};
-use todo_printing::{PrintableAppSuccess, PrintableResult, PrintableWarning};
+use todo_model::TaskId;
+use todo_model::TaskSet;
+use todo_model::TaskStatus;
+use todo_model::TodoList;
+use todo_printing::PrintableAppSuccess;
+use todo_printing::PrintableResult;
+use todo_printing::PrintableWarning;
 
-use crate::util::{format_task, lookup_task, should_include_done};
+use crate::util::format_task;
+use crate::util::lookup_task;
+use crate::util::should_include_done;
 
 fn bottom_underneath(
     list: &TodoList,

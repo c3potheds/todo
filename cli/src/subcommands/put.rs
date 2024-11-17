@@ -1,4 +1,5 @@
-use {clap::Parser, todo_lookup_key::Key};
+use clap::Parser;
+use todo_lookup_key::Key;
 
 #[derive(Debug, Default, PartialEq, Eq, Parser)]
 pub struct Prepositions {

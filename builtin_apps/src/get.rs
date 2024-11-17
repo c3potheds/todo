@@ -1,7 +1,5 @@
-use crate::util::format_task;
-use crate::util::lookup_tasks_by_keys;
-use crate::util::should_include_done;
 use std::collections::HashMap;
+
 use todo_cli::Get;
 use todo_lookup_key::Key;
 use todo_model::TaskSet;
@@ -9,6 +7,10 @@ use todo_model::TodoList;
 use todo_printing::Action;
 use todo_printing::PrintableAppSuccess;
 use todo_printing::PrintableResult;
+
+use crate::util::format_task;
+use crate::util::lookup_tasks_by_keys;
+use crate::util::should_include_done;
 
 fn disambiguate(
     list: &TodoList,

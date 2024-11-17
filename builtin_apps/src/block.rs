@@ -1,13 +1,16 @@
-use {
-    super::util::{
-        format_task, format_task_brief, lookup_tasks, should_include_done,
-    },
-    todo_cli::Block,
-    todo_model::{TaskId, TaskSet, TodoList},
-    todo_printing::{
-        Action, PrintableAppSuccess, PrintableError, PrintableResult,
-    },
-};
+use todo_cli::Block;
+use todo_model::TaskId;
+use todo_model::TaskSet;
+use todo_model::TodoList;
+use todo_printing::Action;
+use todo_printing::PrintableAppSuccess;
+use todo_printing::PrintableError;
+use todo_printing::PrintableResult;
+
+use super::util::format_task;
+use super::util::format_task_brief;
+use super::util::lookup_tasks;
+use super::util::should_include_done;
 
 fn to_error(list: &TodoList, a: TaskId, b: TaskId) -> Vec<PrintableError> {
     vec![PrintableError::CannotBlockBecauseWouldCauseCycle {

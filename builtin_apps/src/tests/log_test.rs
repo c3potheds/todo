@@ -1,12 +1,14 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use {
-    super::testing::task,
-    super::testing::Fixture,
-    chrono::{Local, TimeZone, Utc},
-    todo_app::Mutated,
-    todo_printing::{LogDate::*, Status::*},
-};
+use chrono::Local;
+use chrono::TimeZone;
+use chrono::Utc;
+use todo_app::Mutated;
+use todo_printing::LogDate::*;
+use todo_printing::Status::*;
+
+use super::testing::task;
+use super::testing::Fixture;
 
 #[test]
 fn log_with_no_tasks_completed() {

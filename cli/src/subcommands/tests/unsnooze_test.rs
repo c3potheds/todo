@@ -1,10 +1,9 @@
-use {
-    crate::{
-        testing::{expect_error, expect_parses_into},
-        SubCommand, Unsnooze,
-    },
-    todo_lookup_key::Key::*,
-};
+use todo_lookup_key::Key::*;
+
+use crate::testing::expect_error;
+use crate::testing::expect_parses_into;
+use crate::SubCommand;
+use crate::Unsnooze;
 
 #[test]
 fn unsnooze_no_keys_is_error() {

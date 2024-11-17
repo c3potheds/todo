@@ -1,6 +1,6 @@
-use super::*;
-
 use ::pretty_assertions::assert_eq;
+
+use super::*;
 
 #[test]
 fn remove_task_does_not_invalidate_task_ids() {

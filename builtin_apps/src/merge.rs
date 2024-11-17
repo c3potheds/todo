@@ -1,13 +1,20 @@
-use {
-    super::util::{format_task, format_tasks_brief, lookup_tasks},
-    chrono::{DateTime, Utc},
-    std::borrow::Cow,
-    todo_cli::Merge,
-    todo_model::{DurationInSeconds, NewOptions, TaskSet, TodoList},
-    todo_printing::{
-        Action, PrintableAppSuccess, PrintableError, PrintableResult,
-    },
-};
+use std::borrow::Cow;
+
+use chrono::DateTime;
+use chrono::Utc;
+use todo_cli::Merge;
+use todo_model::DurationInSeconds;
+use todo_model::NewOptions;
+use todo_model::TaskSet;
+use todo_model::TodoList;
+use todo_printing::Action;
+use todo_printing::PrintableAppSuccess;
+use todo_printing::PrintableError;
+use todo_printing::PrintableResult;
+
+use super::util::format_task;
+use super::util::format_tasks_brief;
+use super::util::lookup_tasks;
 
 pub fn run<'list>(
     list: &'list mut TodoList,

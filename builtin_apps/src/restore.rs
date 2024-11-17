@@ -1,14 +1,19 @@
-use {
-    super::util::{
-        format_task, format_task_brief, format_tasks_brief, lookup_tasks,
-    },
-    todo_cli::Restore,
-    todo_model::{ForceRestored, RestoreError, TaskId, TaskSet, TodoList},
-    todo_printing::{
-        Action, PrintableAppSuccess, PrintableError, PrintableResult,
-        PrintableWarning,
-    },
-};
+use todo_cli::Restore;
+use todo_model::ForceRestored;
+use todo_model::RestoreError;
+use todo_model::TaskId;
+use todo_model::TaskSet;
+use todo_model::TodoList;
+use todo_printing::Action;
+use todo_printing::PrintableAppSuccess;
+use todo_printing::PrintableError;
+use todo_printing::PrintableResult;
+use todo_printing::PrintableWarning;
+
+use super::util::format_task;
+use super::util::format_task_brief;
+use super::util::format_tasks_brief;
+use super::util::lookup_tasks;
 
 #[derive(Default)]
 struct Restored {

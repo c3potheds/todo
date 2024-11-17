@@ -1,7 +1,8 @@
-use {
-    crate::{BriefPrintableTask, PrintableWarning::*, Status::*},
-    todo_lookup_key::Key::*,
-};
+use todo_lookup_key::Key::*;
+
+use crate::BriefPrintableTask;
+use crate::PrintableWarning::*;
+use crate::Status::*;
 
 #[test]
 fn display_no_match_found_warning() {

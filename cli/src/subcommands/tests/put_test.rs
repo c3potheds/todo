@@ -1,11 +1,10 @@
-use {
-    crate::{
-        subcommands::put::Prepositions,
-        testing::{expect_error, expect_parses_into},
-        Put, SubCommand,
-    },
-    todo_lookup_key::Key::*,
-};
+use todo_lookup_key::Key::*;
+
+use crate::subcommands::put::Prepositions;
+use crate::testing::expect_error;
+use crate::testing::expect_parses_into;
+use crate::Put;
+use crate::SubCommand;
 
 #[test]
 fn punt_missing_keys_or_prepositions() {

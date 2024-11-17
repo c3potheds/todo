@@ -1,6 +1,6 @@
-use super::*;
-
 use thiserror::Error;
+
+use super::*;
 
 #[derive(Debug, Error)]
 pub enum TodoListError {

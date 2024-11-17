@@ -1,7 +1,8 @@
-use {
-    serde_derive::{Deserialize, Serialize},
-    std::{collections::HashMap, hash::Hash},
-};
+use std::collections::HashMap;
+use std::hash::Hash;
+
+use serde_derive::Deserialize;
+use serde_derive::Serialize;
 
 pub fn remove_first_occurrence_from_vec<T: PartialEq>(
     vec: &mut Vec<T>,

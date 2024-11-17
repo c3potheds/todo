@@ -1,12 +1,12 @@
-use crate::util::parse_due_date;
+use chrono::DateTime;
+use chrono::Utc;
+use todo_cli::Snoozed;
+use todo_model::TodoList;
+use todo_printing::PrintableAppSuccess;
+use todo_printing::PrintableResult;
 
-use {
-    super::util::format_task,
-    chrono::{DateTime, Utc},
-    todo_cli::Snoozed,
-    todo_model::TodoList,
-    todo_printing::{PrintableAppSuccess, PrintableResult},
-};
+use super::util::format_task;
+use crate::util::parse_due_date;
 
 pub fn run<'list>(
     list: &'list TodoList,

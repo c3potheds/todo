@@ -1,9 +1,11 @@
-use crate::BriefPrintableTask;
-use crate::Status;
 use std::fmt;
+
 use todo_lookup_key::Key;
 use yansi::Paint;
 use yansi::Style;
+
+use crate::BriefPrintableTask;
+use crate::Status;
 
 pub fn format_key(key: &Key) -> impl fmt::Display + '_ {
     struct FormatKey<'a>(&'a Key);

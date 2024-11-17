@@ -1,10 +1,9 @@
-use {
-    crate::{
-        testing::{expect_error, expect_parses_into},
-        Merge, SubCommand,
-    },
-    todo_lookup_key::Key::*,
-};
+use todo_lookup_key::Key::*;
+
+use crate::testing::expect_error;
+use crate::testing::expect_parses_into;
+use crate::Merge;
+use crate::SubCommand;
 
 #[test]
 fn merge_requires_at_least_one_and_into() {

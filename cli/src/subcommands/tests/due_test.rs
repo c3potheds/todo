@@ -1,7 +1,8 @@
-use {
-    crate::{testing::expect_parses_into, Due, SubCommand},
-    todo_lookup_key::Key::*,
-};
+use todo_lookup_key::Key::*;
+
+use crate::testing::expect_parses_into;
+use crate::Due;
+use crate::SubCommand;
 
 #[test]
 fn due_no_keys_no_date() {

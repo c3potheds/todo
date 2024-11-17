@@ -1,10 +1,11 @@
 #![allow(clippy::field_reassign_with_default)]
 
-use super::testing::task;
-use super::testing::Fixture;
 use todo_app::Mutated;
 use todo_printing::Plicit::*;
 use todo_printing::Status::*;
+
+use super::testing::task;
+use super::testing::Fixture;
 
 #[test]
 fn clean_tasks_out_of_order() {

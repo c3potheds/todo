@@ -1,12 +1,18 @@
-use chrono::Duration;
+use std::borrow::Cow;
 
-use {
-    super::util::{format_task, lookup_tasks},
-    std::borrow::Cow,
-    todo_cli::Split,
-    todo_model::{DurationInSeconds, NewOptions, TaskId, TaskSet, TodoList},
-    todo_printing::{Action, PrintableAppSuccess, PrintableResult},
-};
+use chrono::Duration;
+use todo_cli::Split;
+use todo_model::DurationInSeconds;
+use todo_model::NewOptions;
+use todo_model::TaskId;
+use todo_model::TaskSet;
+use todo_model::TodoList;
+use todo_printing::Action;
+use todo_printing::PrintableAppSuccess;
+use todo_printing::PrintableResult;
+
+use super::util::format_task;
+use super::util::lookup_tasks;
 
 #[derive(Default)]
 struct SplitResult {

@@ -1,20 +1,41 @@
+use todo_app::Application;
+use todo_app::Mutated;
+use todo_cli::Options;
+use todo_cli::SubCommand::*;
+use todo_clock::Clock;
+use todo_model::TodoList;
 use todo_printing::Printable;
+use todo_printing::PrintableResult;
+use todo_printing::TodoPrinter;
+use todo_text_editing::TextEditor;
 
-use {
-    super::{
-        block, bottom, budget, chain, check, clean, due, edit, find, get, log,
-        merge, new, path, priority, punt, put, restore, rm, snooze, snoozed,
-        split, status, tag, top, unblock, unsnooze,
-    },
-    todo_app::Application,
-    todo_app::Mutated,
-    todo_cli::{Options, SubCommand::*},
-    todo_clock::Clock,
-    todo_model::TodoList,
-    todo_printing::PrintableResult,
-    todo_printing::TodoPrinter,
-    todo_text_editing::TextEditor,
-};
+use super::block;
+use super::bottom;
+use super::budget;
+use super::chain;
+use super::check;
+use super::clean;
+use super::due;
+use super::edit;
+use super::find;
+use super::get;
+use super::log;
+use super::merge;
+use super::new;
+use super::path;
+use super::priority;
+use super::punt;
+use super::put;
+use super::restore;
+use super::rm;
+use super::snooze;
+use super::snoozed;
+use super::split;
+use super::status;
+use super::tag;
+use super::top;
+use super::unblock;
+use super::unsnooze;
 
 fn status_options(options: Options) -> status::Status {
     status::Status {

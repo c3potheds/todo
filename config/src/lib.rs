@@ -1,8 +1,8 @@
-use {
-    serde_derive::{Deserialize, Serialize},
-    std::io::Read,
-    thiserror::Error,
-};
+use std::io::Read;
+
+use serde_derive::Deserialize;
+use serde_derive::Serialize;
+use thiserror::Error;
 
 #[derive(Default, Debug, PartialEq, Deserialize, Serialize)]
 struct ConfigModel {

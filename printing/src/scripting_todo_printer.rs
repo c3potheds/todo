@@ -1,10 +1,10 @@
-use {
-    crate::{
-        PrintableError, PrintableInfo, PrintableTask, PrintableWarning,
-        TodoPrinter,
-    },
-    std::io::Write,
-};
+use std::io::Write;
+
+use crate::PrintableError;
+use crate::PrintableInfo;
+use crate::PrintableTask;
+use crate::PrintableWarning;
+use crate::TodoPrinter;
 
 pub struct ScriptingTodoPrinter;
 

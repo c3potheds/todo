@@ -1,15 +1,18 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use {
-    super::testing::task,
-    super::util::*,
-    ::pretty_assertions::assert_eq,
-    chrono::Duration,
-    todo_lookup_key::Key,
-    todo_model::{CheckOptions, NewOptions, TodoList},
-    todo_printing::{Action::*, Plicit::*, Status::*},
-    todo_testing::ymdhms,
-};
+use ::pretty_assertions::assert_eq;
+use chrono::Duration;
+use todo_lookup_key::Key;
+use todo_model::CheckOptions;
+use todo_model::NewOptions;
+use todo_model::TodoList;
+use todo_printing::Action::*;
+use todo_printing::Plicit::*;
+use todo_printing::Status::*;
+use todo_testing::ymdhms;
+
+use super::testing::task;
+use super::util::*;
 
 #[test]
 fn format_task_basic() {

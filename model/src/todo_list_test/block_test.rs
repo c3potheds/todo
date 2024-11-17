@@ -1,6 +1,6 @@
-use super::*;
-
 use ::pretty_assertions::assert_eq;
+
+use super::*;
 
 #[test]
 fn ordering_of_blocked_task() -> TestResult {

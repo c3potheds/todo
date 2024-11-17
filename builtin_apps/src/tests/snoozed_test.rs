@@ -1,8 +1,10 @@
 #![allow(clippy::zero_prefixed_literal)]
-use {
-    super::testing::task, super::testing::Fixture, todo_app::Mutated,
-    todo_printing::Status::*, todo_testing::ymdhms,
-};
+use todo_app::Mutated;
+use todo_printing::Status::*;
+use todo_testing::ymdhms;
+
+use super::testing::task;
+use super::testing::Fixture;
 
 #[test]
 fn no_tasks_snoozed() {

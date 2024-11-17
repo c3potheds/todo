@@ -1,10 +1,9 @@
-use {
-    crate::{format_util::format_number, Status},
-    std::{
-        fmt,
-        fmt::{Display, Formatter},
-    },
-};
+use std::fmt;
+use std::fmt::Display;
+use std::fmt::Formatter;
+
+use crate::format_util::format_number;
+use crate::Status;
 
 /// Represents a task in the to-do list without its description.
 ///

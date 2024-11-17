@@ -1,10 +1,9 @@
-use {
-    crate::{
-        testing::{expect_error, expect_parses_into},
-        Edit, SubCommand,
-    },
-    todo_lookup_key::Key::*,
-};
+use todo_lookup_key::Key::*;
+
+use crate::testing::expect_error;
+use crate::testing::expect_parses_into;
+use crate::Edit;
+use crate::SubCommand;
 
 #[test]
 fn edit_missing_keys() {

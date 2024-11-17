@@ -1,7 +1,6 @@
-use {
-    chrono::Duration,
-    serde_derive::{Deserialize, Serialize},
-};
+use chrono::Duration;
+use serde_derive::Deserialize;
+use serde_derive::Serialize;
 
 #[derive(
     Clone, Copy, Debug, PartialEq, Eq, Deserialize, Serialize, Default,

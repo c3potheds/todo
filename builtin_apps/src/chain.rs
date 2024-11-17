@@ -1,14 +1,18 @@
-use {
-    super::util::{
-        format_task, format_task_brief, lookup_task, should_include_done,
-    },
-    std::collections::HashMap,
-    todo_cli::Chain,
-    todo_model::{BlockError, TaskSet, TodoList},
-    todo_printing::{
-        Action, PrintableAppSuccess, PrintableError, PrintableResult,
-    },
-};
+use std::collections::HashMap;
+
+use todo_cli::Chain;
+use todo_model::BlockError;
+use todo_model::TaskSet;
+use todo_model::TodoList;
+use todo_printing::Action;
+use todo_printing::PrintableAppSuccess;
+use todo_printing::PrintableError;
+use todo_printing::PrintableResult;
+
+use super::util::format_task;
+use super::util::format_task_brief;
+use super::util::lookup_task;
+use super::util::should_include_done;
 
 pub fn run<'list>(
     list: &'list mut TodoList,

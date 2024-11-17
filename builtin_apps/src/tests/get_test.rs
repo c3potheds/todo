@@ -1,9 +1,9 @@
-use {
-    super::testing::task,
-    super::testing::Fixture,
-    todo_app::Mutated,
-    todo_printing::{Action::*, Status::*},
-};
+use todo_app::Mutated;
+use todo_printing::Action::*;
+use todo_printing::Status::*;
+
+use super::testing::task;
+use super::testing::Fixture;
 
 #[test]
 fn get_incomplete_task() {

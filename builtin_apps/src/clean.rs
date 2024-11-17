@@ -1,9 +1,10 @@
-use crate::util::format_task;
 use chrono::DateTime;
 use chrono::Utc;
 use todo_model::TodoList;
 use todo_printing::PrintableAppSuccess;
 use todo_printing::PrintableResult;
+
+use crate::util::format_task;
 
 pub fn run<'list>(
     list: &'list mut TodoList,

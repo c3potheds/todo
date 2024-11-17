@@ -1,14 +1,16 @@
-use todo_printing::{PrintableAppSuccess, PrintableResult};
+use std::borrow::Cow;
 
-use {
-    super::util::{format_task, lookup_tasks},
-    itertools::Itertools,
-    std::borrow::Cow,
-    todo_cli::Edit,
-    todo_model::{TaskSet, TodoList},
-    todo_printing::PrintableError,
-    todo_text_editing::TextEditor,
-};
+use itertools::Itertools;
+use todo_cli::Edit;
+use todo_model::TaskSet;
+use todo_model::TodoList;
+use todo_printing::PrintableAppSuccess;
+use todo_printing::PrintableError;
+use todo_printing::PrintableResult;
+use todo_text_editing::TextEditor;
+
+use super::util::format_task;
+use super::util::lookup_tasks;
 
 pub const EDIT_PROMPT: &str = r"
 # Edit the descriptions of the tasks above.

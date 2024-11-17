@@ -1,15 +1,21 @@
-use {
-    super::util::{format_task, format_task_brief, lookup_tasks},
-    chrono::{DateTime, Utc},
-    todo_cli::Check,
-    todo_model::{
-        CheckError, CheckOptions, ForceChecked, TaskId, TaskSet, TodoList,
-    },
-    todo_printing::{
-        Action, PrintableAppSuccess, PrintableError, PrintableResult,
-        PrintableWarning,
-    },
-};
+use chrono::DateTime;
+use chrono::Utc;
+use todo_cli::Check;
+use todo_model::CheckError;
+use todo_model::CheckOptions;
+use todo_model::ForceChecked;
+use todo_model::TaskId;
+use todo_model::TaskSet;
+use todo_model::TodoList;
+use todo_printing::Action;
+use todo_printing::PrintableAppSuccess;
+use todo_printing::PrintableError;
+use todo_printing::PrintableResult;
+use todo_printing::PrintableWarning;
+
+use super::util::format_task;
+use super::util::format_task_brief;
+use super::util::lookup_tasks;
 
 #[derive(Default)]
 struct Checked {

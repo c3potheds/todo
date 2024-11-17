@@ -1,5 +1,6 @@
-use super::*;
 use ::pretty_assertions::assert_eq;
+
+use super::*;
 
 #[test]
 fn deps_of_standalone_task() -> TestResult {

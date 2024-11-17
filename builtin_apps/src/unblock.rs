@@ -1,14 +1,16 @@
-use {
-    super::util::{
-        format_task, format_task_brief, lookup_tasks, should_include_done,
-    },
-    todo_cli::Unblock,
-    todo_model::{TaskSet, TodoList},
-    todo_printing::{
-        Action, PrintableAppSuccess, PrintableError, PrintableResult,
-        PrintableWarning,
-    },
-};
+use todo_cli::Unblock;
+use todo_model::TaskSet;
+use todo_model::TodoList;
+use todo_printing::Action;
+use todo_printing::PrintableAppSuccess;
+use todo_printing::PrintableError;
+use todo_printing::PrintableResult;
+use todo_printing::PrintableWarning;
+
+use super::util::format_task;
+use super::util::format_task_brief;
+use super::util::lookup_tasks;
+use super::util::should_include_done;
 
 fn unblock_from_given(
     list: &mut TodoList,

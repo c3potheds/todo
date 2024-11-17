@@ -1,10 +1,9 @@
-use {
-    crate::{
-        testing::{expect_error, expect_parses_into},
-        SubCommand, Tag,
-    },
-    todo_lookup_key::Key::*,
-};
+use todo_lookup_key::Key::*;
+
+use crate::testing::expect_error;
+use crate::testing::expect_parses_into;
+use crate::SubCommand;
+use crate::Tag;
 
 #[test]
 fn tag_not_enough_keys_to_unmark() {

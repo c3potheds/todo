@@ -1,12 +1,11 @@
 #![allow(clippy::zero_prefixed_literal)]
 
+use ::pretty_assertions::assert_eq;
+use chrono::TimeZone;
+use chrono::Utc;
 use itertools::Itertools;
 
-use {
-    super::*,
-    ::pretty_assertions::assert_eq,
-    chrono::{TimeZone, Utc},
-};
+use super::*;
 
 #[test]
 fn start_date_defaults_to_creation_time() {

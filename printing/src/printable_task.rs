@@ -1,11 +1,11 @@
+use std::fmt;
+use std::fmt::Display;
+use std::fmt::Formatter;
+
+use chrono::DateTime;
+use chrono::Duration;
+use chrono::Utc;
 use yansi::Paint;
-use {
-    chrono::{DateTime, Duration, Utc},
-    std::{
-        fmt,
-        fmt::{Display, Formatter},
-    },
-};
 
 #[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
 pub enum Status {

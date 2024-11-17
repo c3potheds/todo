@@ -1,7 +1,7 @@
-use crate::{
-    testing::{expect_error, expect_parses_into},
-    Snoozed, SubCommand,
-};
+use crate::testing::expect_error;
+use crate::testing::expect_parses_into;
+use crate::Snoozed;
+use crate::SubCommand;
 
 #[test]
 fn snoozed_extraneous() {

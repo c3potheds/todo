@@ -1,1 +1,4 @@
 max_width = 80
+# Uncomment the following lines and use `cargo +nightly fmt` to format imports.
+# imports_granularity = "item"
+# group_imports = "StdExternalCrate"

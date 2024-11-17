@@ -1,7 +1,7 @@
-use crate::{
-    testing::{expect_error, expect_parses_into},
-    Find, SubCommand,
-};
+use crate::testing::expect_error;
+use crate::testing::expect_parses_into;
+use crate::Find;
+use crate::SubCommand;
 
 #[test]
 fn find_missing_terms() {

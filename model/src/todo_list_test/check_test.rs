@@ -1,10 +1,10 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use {
-    super::*,
-    ::pretty_assertions::assert_eq,
-    chrono::{TimeZone, Utc},
-};
+use ::pretty_assertions::assert_eq;
+use chrono::TimeZone;
+use chrono::Utc;
+
+use super::*;
 
 #[test]
 fn check_complete_task() -> TestResult {

@@ -1,4 +1,5 @@
-use std::{num::ParseIntError, str::FromStr};
+use std::num::ParseIntError;
+use std::str::FromStr;
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone)]
 pub enum Key {
@@ -19,7 +20,8 @@ impl FromStr for Key {
             if let (Ok(start), Ok(end)) =
                 (prefix.parse::<i32>(), suffix.parse::<i32>())
             {
-                use std::cmp::{max, min};
+                use std::cmp::max;
+                use std::cmp::min;
                 return Ok(Key::ByRange(min(start, end), max(start, end)));
             }
         }

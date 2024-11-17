@@ -1,12 +1,11 @@
-use {
-    super::testing::task,
-    super::testing::Fixture,
-    todo_app::Mutated,
-    todo_printing::{
-        Action::*, BriefPrintableTask,
-        PrintableWarning::CannotPuntBecauseComplete, Status::*,
-    },
-};
+use todo_app::Mutated;
+use todo_printing::Action::*;
+use todo_printing::BriefPrintableTask;
+use todo_printing::PrintableWarning::CannotPuntBecauseComplete;
+use todo_printing::Status::*;
+
+use super::testing::task;
+use super::testing::Fixture;
 
 #[test]
 fn punt_first_task() {

@@ -1,15 +1,13 @@
+use std::fmt;
+use std::fmt::Display;
+use std::fmt::Formatter;
+
+use todo_lookup_key::Key;
 use yansi::Paint;
-use {
-    crate::{
-        format_util::{format_keys, format_numbers},
-        BriefPrintableTask,
-    },
-    std::{
-        fmt,
-        fmt::{Display, Formatter},
-    },
-    todo_lookup_key::Key,
-};
+
+use crate::format_util::format_keys;
+use crate::format_util::format_numbers;
+use crate::BriefPrintableTask;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PrintableError {

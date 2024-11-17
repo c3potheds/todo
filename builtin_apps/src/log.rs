@@ -1,9 +1,11 @@
-use {
-    super::util::format_task,
-    chrono::{Datelike, Local},
-    todo_model::TodoList,
-    todo_printing::{LogDate, PrintableAppSuccess, PrintableResult},
-};
+use chrono::Datelike;
+use chrono::Local;
+use todo_model::TodoList;
+use todo_printing::LogDate;
+use todo_printing::PrintableAppSuccess;
+use todo_printing::PrintableResult;
+
+use super::util::format_task;
 
 pub fn run<'list>(list: &'list TodoList) -> PrintableResult<'list> {
     let mut most_recent_shown = None;

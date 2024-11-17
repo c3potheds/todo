@@ -1,5 +1,6 @@
 use std::fmt::Display;
 use std::fmt::Formatter;
+
 use yansi::Paint;
 
 #[derive(Debug, Clone, PartialEq, Eq)]

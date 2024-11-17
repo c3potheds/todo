@@ -1,12 +1,12 @@
-use {
-    super::testing::task,
-    super::testing::Fixture,
-    todo_app::Mutated,
-    todo_printing::{
-        Action::*, BriefPrintableTask, PrintableError, PrintableWarning,
-        Status::*,
-    },
-};
+use todo_app::Mutated;
+use todo_printing::Action::*;
+use todo_printing::BriefPrintableTask;
+use todo_printing::PrintableError;
+use todo_printing::PrintableWarning;
+use todo_printing::Status::*;
+
+use super::testing::task;
+use super::testing::Fixture;
 
 #[test]
 fn check_one_task() {

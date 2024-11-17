@@ -1,14 +1,13 @@
 #![allow(clippy::zero_prefixed_literal)]
 
 use chrono::Duration;
+use todo_app::Mutated;
+use todo_printing::Action::*;
+use todo_printing::Status::*;
+use todo_testing::ymdhms;
 
-use {
-    super::testing::task,
-    super::testing::Fixture,
-    todo_app::Mutated,
-    todo_printing::{Action::*, Status::*},
-    todo_testing::ymdhms,
-};
+use super::testing::task;
+use super::testing::Fixture;
 
 #[test]
 fn split_one_into_three() {

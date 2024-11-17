@@ -1,7 +1,8 @@
-use {
-    crate::{testing::expect_parses_into, Options, SubCommand},
-    clap::Parser,
-};
+use clap::Parser;
+
+use crate::testing::expect_parses_into;
+use crate::Options;
+use crate::SubCommand;
 
 fn parse<I>(args: I) -> Options
 where

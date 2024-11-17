@@ -1,5 +1,6 @@
-use super::*;
 use ::pretty_assertions::assert_eq;
+
+use super::*;
 
 #[test]
 fn set_desc_existent() {

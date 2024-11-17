@@ -1,5 +1,6 @@
-use super::*;
 use ::pretty_assertions::assert_eq;
+
+use super::*;
 
 #[test]
 fn restore_incomplete_task() -> TestResult {

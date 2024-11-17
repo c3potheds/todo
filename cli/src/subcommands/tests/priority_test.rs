@@ -1,7 +1,8 @@
-use {
-    crate::{testing::expect_parses_into, Priority, SubCommand},
-    todo_lookup_key::Key::*,
-};
+use todo_lookup_key::Key::*;
+
+use crate::testing::expect_parses_into;
+use crate::Priority;
+use crate::SubCommand;
 
 #[test]
 fn priority_query_all() {

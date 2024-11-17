@@ -1,4 +1,5 @@
-use chrono::{DateTime, Utc};
+use chrono::DateTime;
+use chrono::Utc;
 
 pub trait Clock {
     fn now(&self) -> DateTime<Utc>;

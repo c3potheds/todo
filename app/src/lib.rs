@@ -1,7 +1,7 @@
-use {
-    todo_clock::Clock, todo_model::TodoList, todo_printing::TodoPrinter,
-    todo_text_editing::TextEditor,
-};
+use todo_clock::Clock;
+use todo_model::TodoList;
+use todo_printing::TodoPrinter;
+use todo_text_editing::TextEditor;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Mutated {

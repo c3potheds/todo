@@ -1,13 +1,14 @@
-use {
-    super::testing::task,
-    super::testing::Fixture,
-    todo_app::Mutated,
-    todo_lookup_key::Key,
-    todo_printing::{
-        Action::*, BriefPrintableTask, Plicit::*, PrintableError,
-        PrintableWarning, Status::*,
-    },
-};
+use todo_app::Mutated;
+use todo_lookup_key::Key;
+use todo_printing::Action::*;
+use todo_printing::BriefPrintableTask;
+use todo_printing::Plicit::*;
+use todo_printing::PrintableError;
+use todo_printing::PrintableWarning;
+use todo_printing::Status::*;
+
+use super::testing::task;
+use super::testing::Fixture;
 
 #[test]
 fn unblock_task_from_direct_dependency() {

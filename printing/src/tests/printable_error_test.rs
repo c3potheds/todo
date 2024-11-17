@@ -1,4 +1,6 @@
-use crate::{BriefPrintableTask, PrintableError::*, Status::*};
+use crate::BriefPrintableTask;
+use crate::PrintableError::*;
+use crate::Status::*;
 
 #[test]
 fn display_cannot_check_because_blocked_error() {

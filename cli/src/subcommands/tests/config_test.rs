@@ -1,4 +1,6 @@
-use crate::{testing::expect_parses_into, Config, SubCommand};
+use crate::testing::expect_parses_into;
+use crate::Config;
+use crate::SubCommand;
 
 #[test]
 fn just_show_config() {

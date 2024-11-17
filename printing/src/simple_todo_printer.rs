@@ -2,23 +2,28 @@
 // because dereferencing it directly doesn't insert the ANSI color codes.
 #![allow(clippy::unnecessary_to_owned)]
 
+use std::fmt;
+use std::fmt::Display;
+use std::fmt::Formatter;
+use std::io::Write;
+
+use chrono::DateTime;
+use chrono::Duration;
+use chrono::Local;
+use chrono::Utc;
 use yansi::Color;
 use yansi::Paint;
 use yansi::Style;
-use {
-    crate::{
-        format_util::format_number,
-        truncate::{truncation_indices, TruncationIndices},
-        Plicit, PrintableError, PrintableInfo, PrintableTask, PrintableWarning,
-        TodoPrinter,
-    },
-    chrono::{DateTime, Duration, Local, Utc},
-    std::{
-        fmt,
-        fmt::{Display, Formatter},
-        io::Write,
-    },
-};
+
+use crate::format_util::format_number;
+use crate::truncate::truncation_indices;
+use crate::truncate::TruncationIndices;
+use crate::Plicit;
+use crate::PrintableError;
+use crate::PrintableInfo;
+use crate::PrintableTask;
+use crate::PrintableWarning;
+use crate::TodoPrinter;
 
 pub struct PrintingContext {
     /// The number of digits that task numbers may have, including a minus sign.
@@ -199,7 +204,8 @@ fn allocate_tag_color(tag_name: &str) -> Style {
         Style::new().fixed(15),
     ];
     use std::collections::hash_map::DefaultHasher;
-    use std::hash::{Hash, Hasher};
+    use std::hash::Hash;
+    use std::hash::Hasher;
     let mut hasher = DefaultHasher::new();
     tag_name.hash(&mut hasher);
     let hash: usize = hasher.finish() as usize;
@@ -295,7 +301,8 @@ fn get_body(
     if let Some(punctuality) = task.punctuality {
         fmt_punctuality(punctuality, &mut body);
     }
-    use TruncationParams::{NoTruncation, TruncateIfNeeded};
+    use TruncationParams::NoTruncation;
+    use TruncationParams::TruncateIfNeeded;
     let truncation_params = if task.truncate_tags_if_needed {
         TruncateIfNeeded {
             remaining_width: context.width

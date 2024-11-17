@@ -1,7 +1,8 @@
-use {
-    crate::{testing::expect_parses_into, Bottom, SubCommand},
-    todo_lookup_key::Key::*,
-};
+use todo_lookup_key::Key::*;
+
+use crate::testing::expect_parses_into;
+use crate::Bottom;
+use crate::SubCommand;
 
 #[test]
 fn bottom() {

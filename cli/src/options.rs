@@ -1,4 +1,6 @@
-use {crate::SubCommand, clap::Parser};
+use clap::Parser;
+
+use crate::SubCommand;
 
 /// Maintains and manipulates your to-do list.
 ///

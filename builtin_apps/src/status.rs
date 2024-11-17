@@ -1,9 +1,12 @@
-use {
-    super::util::format_task,
-    chrono::{DateTime, Utc},
-    todo_model::{TaskStatus, TodoList},
-    todo_printing::{Action, PrintableAppSuccess, PrintableResult},
-};
+use chrono::DateTime;
+use chrono::Utc;
+use todo_model::TaskStatus;
+use todo_model::TodoList;
+use todo_printing::Action;
+use todo_printing::PrintableAppSuccess;
+use todo_printing::PrintableResult;
+
+use super::util::format_task;
 
 pub struct Status {
     pub include_blocked: bool,

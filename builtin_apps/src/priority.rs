@@ -1,9 +1,13 @@
-use {
-    super::util::{format_task, lookup_tasks},
-    todo_cli::Priority,
-    todo_model::{TaskId, TaskSet, TaskStatus, TodoList},
-    todo_printing::{PrintableAppSuccess, PrintableResult},
-};
+use todo_cli::Priority;
+use todo_model::TaskId;
+use todo_model::TaskSet;
+use todo_model::TaskStatus;
+use todo_model::TodoList;
+use todo_printing::PrintableAppSuccess;
+use todo_printing::PrintableResult;
+
+use super::util::format_task;
+use super::util::lookup_tasks;
 
 fn set_priority<'list>(
     list: &'list mut TodoList,

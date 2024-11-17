@@ -1,4 +1,6 @@
-use chrono::{DateTime, Datelike, TimeZone};
+use chrono::DateTime;
+use chrono::Datelike;
+use chrono::TimeZone;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum ParseTimeError {
