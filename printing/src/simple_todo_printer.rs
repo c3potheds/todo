@@ -264,6 +264,7 @@ fn fmt_implicit_tags(
                     for tag in tags[tags.len() - right..].iter() {
                         fmt_tag(Plicit::Implicit(tag), out);
                     }
+                    out.push('\n');
                 }
             }
         }

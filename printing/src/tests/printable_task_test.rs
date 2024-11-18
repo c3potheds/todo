@@ -704,3 +704,33 @@ fn do_not_truncate_tags_if_not_opted_in() {
         )
     );
 }
+
+#[test]
+fn start_description_on_new_line_if_tags_are_truncated() {
+    let context = PrintingContext {
+        max_index_digits: 3,
+        // The content would fit in 47 columns with truncation, but we put the
+        // description on a new line when tags are truncated to better visually
+        // separate the tags from the description.
+        width: 47,
+        now: Utc::now(),
+    };
+    let fmt = print_task_with_context(
+        context,
+        &PrintableTask::new("a", 1, Incomplete)
+            .tag("project-stardust")
+            .tag("project-zeppelin")
+            .tag("project-apollo")
+            .truncate_tags_if_needed(true),
+    );
+    assert_eq!(
+        fmt,
+        concat!(
+            "      \u{1b}[33m1)\u{1b}[0m ",
+            "\u{1b}[3;38;5;9mproject-stardust\u{1b}[0m ",
+            "... ",
+            "\u{1b}[3;38;5;12mproject-apollo\u{1b}[0m\n",
+            "         a\n",
+        )
+    );
+}
