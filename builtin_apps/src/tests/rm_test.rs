@@ -1,9 +1,9 @@
-use todo_app::Mutated;
 use todo_printing::PrintableInfo;
 use todo_printing::Status::*;
 
 use super::testing::task;
 use super::testing::Fixture;
+use super::testing::Mutated;
 
 fn info_removed(desc: &str) -> PrintableInfo {
     PrintableInfo::Removed {

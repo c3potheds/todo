@@ -1,10 +1,10 @@
-use todo_app::Mutated;
 use todo_lookup_key::Key;
 use todo_printing::PrintableWarning;
 use todo_printing::Status::*;
 
 use super::testing::task;
 use super::testing::Fixture;
+use super::testing::Mutated;
 
 #[test]
 fn bottom_empty() {

@@ -3,12 +3,12 @@
 use chrono::Local;
 use chrono::TimeZone;
 use chrono::Utc;
-use todo_app::Mutated;
 use todo_printing::LogDate::*;
 use todo_printing::Status::*;
 
 use super::testing::task;
 use super::testing::Fixture;
+use super::testing::Mutated;
 
 #[test]
 fn log_with_no_tasks_completed() {

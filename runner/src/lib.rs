@@ -4,9 +4,9 @@ use std::io::IsTerminal;
 
 use thiserror::Error;
 use todo_app::Application;
-use todo_app::Mutated;
 use todo_clock::Clock;
 use todo_clock::SystemClock;
+use todo_printing::Printable;
 use todo_printing::PrintingContext;
 use todo_printing::ScriptingTodoPrinter;
 use todo_printing::SimpleTodoPrinter;
@@ -98,31 +98,32 @@ pub fn run(app: impl Application) -> TodoResult {
                 Right(std::io::stdout())
             }
         };
-        app.run(
+        let result = app.run(
             &mut model,
             &ScrawlTextEditor(&config.text_editor_cmd),
             &SystemClock,
-            |max_index_digits| SimpleTodoPrinter {
-                // TODO: fall back on stdout if paginator cannot spawn.
-                out,
-                context: PrintingContext {
-                    max_index_digits,
-                    width: terminal_size::terminal_size()
-                        .map(|(terminal_size::Width(w), _)| w)
-                        .unwrap_or(80) as usize,
-                    now: SystemClock.now(),
-                },
+        );
+        let mut printer = SimpleTodoPrinter {
+            out,
+            context: PrintingContext {
+                max_index_digits: result.max_index_digits(),
+                width: terminal_size::terminal_size()
+                    .map(|(terminal_size::Width(w), _)| w)
+                    .unwrap_or(80) as usize,
+                now: SystemClock.now(),
             },
-        )
+        };
+        result.print(&mut printer)
     } else {
-        app.run(
+        let result = app.run(
             &mut model,
             &FakeTextEditor::no_user_output(),
             &SystemClock,
-            |_| ScriptingTodoPrinter,
-        )
+        );
+        let mut printer = ScriptingTodoPrinter;
+        result.print(&mut printer)
     };
-    if mutated == Mutated::Yes {
+    if mutated {
         let file = File::create(&data_path).map_err(SaveError::from)?;
         let writer = BufWriter::new(file);
         serde_json::to_writer(writer, &model).map_err(SaveError::from)?;

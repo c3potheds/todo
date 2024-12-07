@@ -1,9 +1,9 @@
-use todo_app::Mutated;
 use todo_printing::Action::Select;
 use todo_printing::Status::*;
 
 use super::testing::task;
 use super::testing::Fixture;
+use super::testing::Mutated;
 
 #[test]
 fn find_with_exact_match() {
