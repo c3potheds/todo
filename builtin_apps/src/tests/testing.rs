@@ -39,7 +39,7 @@ pub struct Validation<'validation, 'test> {
     expected: Vec<PrintedItem<'test>>,
 }
 
-impl<'validation, 'test> Validation<'validation, 'test> {
+impl<'test> Validation<'_, 'test> {
     pub fn printed_task(mut self, task: &PrintableTask<'test>) -> Self {
         self.expected.push(PrintedItem::Task(task.clone()));
         self
@@ -117,7 +117,7 @@ pub struct Fixture<'list> {
     pub text_editor: FakeTextEditor<'list>,
 }
 
-impl<'list> Default for Fixture<'list> {
+impl Default for Fixture<'_> {
     fn default() -> Self {
         Fixture {
             list: TodoList::default(),
@@ -154,7 +154,7 @@ impl<'test> Validator<'test> {
     }
 }
 
-impl<'list> Fixture<'list> {
+impl Fixture<'_> {
     pub fn test(&mut self, s: &str) -> Validator<'_> {
         let mut printer = FakePrinter::default();
         let mutated = {
