@@ -1,6 +1,5 @@
 #![allow(clippy::zero_prefixed_literal)]
 
-use todo_app::Mutated;
 use todo_printing::Action::*;
 use todo_printing::BriefPrintableTask;
 use todo_printing::Plicit::*;
@@ -10,6 +9,7 @@ use todo_testing::ymdhms;
 
 use super::testing::task;
 use super::testing::Fixture;
+use super::testing::Mutated;
 
 #[test]
 fn merge_two_tasks() {

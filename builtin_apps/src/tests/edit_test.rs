@@ -1,10 +1,10 @@
-use todo_app::Mutated;
 use todo_printing::PrintableError;
 use todo_printing::Status::*;
 use todo_text_editing::FakeTextEditor;
 
 use super::testing::task;
 use super::testing::Fixture;
+use super::testing::Mutated;
 
 fn prompt_with(stuff: &str) -> String {
     format!("{}\n{}", stuff, crate::edit::EDIT_PROMPT)

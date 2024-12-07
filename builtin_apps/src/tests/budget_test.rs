@@ -1,7 +1,6 @@
 #![allow(clippy::zero_prefixed_literal)]
 
 use chrono::Duration;
-use todo_app::Mutated;
 use todo_printing::Action::*;
 use todo_printing::Plicit::*;
 use todo_printing::PrintableError;
@@ -10,6 +9,7 @@ use todo_testing::ymdhms;
 
 use super::testing::task;
 use super::testing::Fixture;
+use super::testing::Mutated;
 
 #[test]
 fn budget_one_task() {

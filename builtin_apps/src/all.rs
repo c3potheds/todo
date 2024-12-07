@@ -1,12 +1,9 @@
 use todo_app::Application;
-use todo_app::Mutated;
 use todo_cli::Options;
 use todo_cli::SubCommand::*;
 use todo_clock::Clock;
 use todo_model::TodoList;
-use todo_printing::Printable;
 use todo_printing::PrintableResult;
-use todo_printing::TodoPrinter;
 use todo_text_editing::TextEditor;
 
 use super::block;
@@ -96,21 +93,13 @@ impl App {
 }
 
 impl Application for App {
-    fn run<'a, P>(
+    type Result<'a> = PrintableResult<'a>;
+    fn run<'a>(
         self,
         list: &'a mut TodoList,
         text_editor: &impl TextEditor,
         clock: &impl Clock,
-        printer_factory: impl FnOnce(usize) -> P,
-    ) -> Mutated
-    where
-        P: TodoPrinter<'a>,
-    {
-        let app_result = todo(list, text_editor, clock, self.options);
-        let mut printer = printer_factory(app_result.max_index_digits());
-        match app_result.print(&mut printer) {
-            true => Mutated::Yes,
-            false => Mutated::No,
-        }
+    ) -> Self::Result<'a> {
+        todo(list, text_editor, clock, self.options)
     }
 }

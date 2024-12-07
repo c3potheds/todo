@@ -7,10 +7,10 @@ use chrono::Utc;
 use clap::Parser;
 use pretty_assertions::assert_eq;
 use todo_app::Application;
-use todo_app::Mutated;
 use todo_cli::Options;
 use todo_clock::FakeClock;
 use todo_model::TodoList;
+use todo_printing::Printable;
 use todo_printing::PrintableError;
 use todo_printing::PrintableInfo;
 use todo_printing::PrintableTask;
@@ -18,6 +18,12 @@ use todo_printing::PrintableWarning;
 use todo_printing::Status;
 use todo_printing::TodoPrinter;
 use todo_text_editing::FakeTextEditor;
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum Mutated {
+    Yes,
+    No,
+}
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 enum PrintedItem<'list> {
@@ -150,20 +156,19 @@ impl<'test> Validator<'test> {
 
 impl<'list> Fixture<'list> {
     pub fn test(&mut self, s: &str) -> Validator<'_> {
-        let printer = FakePrinter::default();
+        let mut printer = FakePrinter::default();
         let mutated = {
             let args = shlex::split(s).expect("Could not split args");
             let options =
                 Options::try_parse_from(args).expect("Could not parse args");
             let app = crate::App::new(options);
-            app.run(&mut self.list, &self.text_editor, &self.clock, |_| {
-                printer.clone()
-            })
+            app.run(&mut self.list, &self.text_editor, &self.clock)
+                .print(&mut printer)
         };
         let record = printer.record.borrow().clone();
         Validator {
             record,
-            mutated,
+            mutated: if mutated { Mutated::Yes } else { Mutated::No },
             cmd: s.to_string(),
         }
     }
