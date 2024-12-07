@@ -337,7 +337,7 @@ fn get_subsequent_indent(
     " ".repeat(total_offset)
 }
 
-impl<'a> Display for PrintableTaskWithContext<'a> {
+impl Display for PrintableTaskWithContext<'_> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let start = get_initial_indent(self.task, self.context);
         let body = get_body(

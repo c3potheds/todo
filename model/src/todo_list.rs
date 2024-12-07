@@ -27,7 +27,7 @@ pub struct TodoList<'ser> {
     incomplete: Layering<TaskId>,
 }
 
-impl<'ser> TodoList<'ser> {
+impl TodoList<'_> {
     fn calculate_implicit_priority(&self, id: TaskId) -> i32 {
         self.get(id)
             .into_iter()
@@ -330,7 +330,7 @@ impl From<TaskId> for CheckOptions {
     }
 }
 
-impl<'ser> TodoList<'ser> {
+impl TodoList<'_> {
     /// Marks the task with the given id as complete. If successful, returns a
     /// set of tasks that became unblocked, if any.
     pub fn check<Options: Into<CheckOptions>>(
@@ -442,7 +442,7 @@ pub enum RestoreError {
     WouldRestore(TaskSet),
 }
 
-impl<'ser> TodoList<'ser> {
+impl TodoList<'_> {
     /// Marks a complete task as incomplete. If successful, returns a set of
     /// tasks that become blocked, if any.
     pub fn restore(&mut self, id: TaskId) -> Result<TaskSet, RestoreError> {
@@ -556,7 +556,7 @@ fn get_incomplete_adeps(list: &TodoList, id: TaskId) -> TaskSet {
         .collect()
 }
 
-impl<'a, 'ser> Block<'a, 'ser> {
+impl Block<'_, '_> {
     fn update_depth_of_blocked_and_get_implicitly_restored_adeps(
         &mut self,
     ) -> TaskSet {
@@ -616,7 +616,7 @@ pub enum UnblockError {
     WasNotDirectlyBlocking,
 }
 
-impl<'a, 'ser> Unblock<'a, 'ser> {
+impl Unblock<'_, '_> {
     pub fn from(self, blocking: TaskId) -> Result<TaskSet, UnblockError> {
         if blocking == self.blocked {
             return Err(UnblockError::WouldUnblockFromSelf);
@@ -638,7 +638,7 @@ pub enum PuntError {
     TaskIsComplete,
 }
 
-impl<'ser> TodoList<'ser> {
+impl TodoList<'_> {
     pub fn punt(&mut self, id: TaskId) -> Result<(), PuntError> {
         match self.incomplete.depth(&id) {
             Some(depth) => {
@@ -869,7 +869,7 @@ pub enum SnoozeWarning {
     },
 }
 
-impl<'ser> TodoList<'ser> {
+impl TodoList<'_> {
     pub fn snooze(
         &mut self,
         id: TaskId,
@@ -924,7 +924,7 @@ pub enum UnsnoozeWarning {
     NotSnoozed,
 }
 
-impl<'ser> TodoList<'ser> {
+impl TodoList<'_> {
     pub fn unsnooze(&mut self, id: TaskId) -> Result<(), Vec<UnsnoozeWarning>> {
         let status = self.status(id).unwrap();
         if status == TaskStatus::Complete {
@@ -947,7 +947,7 @@ impl<'ser> TodoList<'ser> {
     }
 }
 
-impl<'ser> TodoList<'ser> {
+impl TodoList<'_> {
     pub fn clean(&mut self) -> TaskSet {
         let incomplete_tasks: TaskSet = self
             .incomplete_tasks()

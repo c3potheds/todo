@@ -11,7 +11,7 @@ pub trait TextEditor {
 
 pub struct ScrawlTextEditor<'a>(pub &'a str);
 
-impl<'a> TextEditor for ScrawlTextEditor<'a> {
+impl TextEditor for ScrawlTextEditor<'_> {
     fn edit_text(&self, display: &str) -> Result<String, Error> {
         scrawl::editor::new()
             .editor(self.0)

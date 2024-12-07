@@ -10,7 +10,7 @@ use crate::Status;
 pub fn format_key(key: &Key) -> impl fmt::Display + '_ {
     struct FormatKey<'a>(&'a Key);
 
-    impl<'a> fmt::Display for FormatKey<'a> {
+    impl fmt::Display for FormatKey<'_> {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             match self.0 {
                 Key::ByNumber(n) => write!(f, "\"{}\"", n),
@@ -28,7 +28,7 @@ pub fn format_key(key: &Key) -> impl fmt::Display + '_ {
 pub fn format_keys(keys: &[Key]) -> impl fmt::Display + '_ {
     struct FormatKeys<'a>(&'a [Key]);
 
-    impl<'a> fmt::Display for FormatKeys<'a> {
+    impl fmt::Display for FormatKeys<'_> {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             let mut first = true;
             for key in self.0 {
