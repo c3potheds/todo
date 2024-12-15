@@ -7,6 +7,7 @@ use serde_derive::Serialize;
 
 use crate::DurationInSeconds;
 use crate::TaskId;
+use crate::TaskStatus;
 
 fn default_creation_time() -> DateTime<Utc> {
     Utc::now()
@@ -22,6 +23,9 @@ pub struct Task<'ser> {
     pub creation_time: DateTime<Utc>,
     #[serde(default)]
     pub completion_time: Option<DateTime<Utc>>,
+    // Status is cached here for performance
+    #[serde(default)]
+    pub cached_status: Option<TaskStatus>,
     #[serde(default)]
     pub priority: i32,
     #[serde(default)]
@@ -137,6 +141,7 @@ impl<'ser> Task<'ser> {
             start_date: options.start_date.unwrap_or(options.now),
             tag: options.tag,
             implicit_tags: vec![],
+            cached_status: None,
         }
     }
 

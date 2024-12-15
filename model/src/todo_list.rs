@@ -131,7 +131,11 @@ impl TodoList<'_> {
 
     /// Recalculates the depth by adding 1 to the max depth of the task's deps.
     /// Returns Some with the new depth if a change was made, None otherwise.
-    fn update_depth(&mut self, id: TaskId) -> Option<usize> {
+    fn update_depth(
+        &mut self,
+        id: TaskId,
+        now: Option<DateTime<Utc>>,
+    ) -> Option<usize> {
         match (
             self.incomplete.depth(&id),
             self.max_depth_of_deps(id).map(|depth| depth + 1),
@@ -140,12 +144,15 @@ impl TodoList<'_> {
             (None, None) => {
                 remove_first_occurrence_from_vec(&mut self.complete, &id);
                 self.complete.push(id);
+                self.tasks[id.0].cached_status = Some(TaskStatus::Complete);
                 None
             }
             // Task is complete, needs to be put into a layer.
             (None, Some(new_depth)) => {
                 remove_first_occurrence_from_vec(&mut self.complete, &id);
                 self.put_in_incomplete_layer(id, new_depth);
+                // Set status to blocked since it has incomplete deps
+                self.tasks[id.0].cached_status = Some(TaskStatus::Blocked);
                 Some(new_depth)
             }
             // Task is incomplete and has some incomplete deps.
@@ -157,6 +164,8 @@ impl TodoList<'_> {
                     // Depth changed and adeps need to update.
                     self.incomplete.remove_from_layer(&id, old_depth);
                     self.put_in_incomplete_layer(id, new_depth);
+                    // Set status to blocked since it has incomplete deps
+                    self.tasks[id.0].cached_status = Some(TaskStatus::Blocked);
                     Some(new_depth)
                 }
             }
@@ -168,13 +177,20 @@ impl TodoList<'_> {
                 } else {
                     self.incomplete.remove_from_layer(&id, old_depth);
                     self.put_in_incomplete_layer(id, 0);
+                    // Set status to blocked if still snoozed, incomplete otherwise
+                    self.tasks[id.0].cached_status =
+                        if self.should_keep_snoozed(id, now) {
+                            Some(TaskStatus::Blocked)
+                        } else {
+                            Some(TaskStatus::Incomplete)
+                        };
                     Some(0)
                 }
             }
         }
         .inspect(|_| {
             self.adeps(id).iter_sorted(self).for_each(|adep| {
-                self.update_depth(adep);
+                self.update_depth(adep, None);
             });
         })
     }
@@ -349,13 +365,14 @@ impl TodoList<'_> {
         if !incomplete_deps.is_empty() {
             return Err(CheckError::TaskIsBlockedBy(incomplete_deps));
         }
-        self.tasks[options.id.0].completion_time = Some(options.now);
+        let task = &mut self.tasks[options.id.0];
+        task.completion_time = Some(options.now);
         // It's legal to complete a task that's snoozed, but reset the snoozed
         // date to the task's creation time.
-        if self.tasks[options.id.0].start_date > options.now {
-            self.tasks[options.id.0].start_date =
-                self.tasks[options.id.0].creation_time;
+        if task.start_date > options.now {
+            task.start_date = task.creation_time;
         }
+        task.cached_status = Some(TaskStatus::Complete);
         if let Some(depth) = self.incomplete.depth(&options.id) {
             assert!(depth == 0);
             self.incomplete.remove_from_layer(&options.id, depth);
@@ -366,7 +383,9 @@ impl TodoList<'_> {
                 .iter_sorted(self)
                 // Update the depth of all adeps, and collect the ones that
                 // become unblocked.
-                .filter(|&adep| self.update_depth(adep) == Some(0))
+                .filter(|&adep| {
+                    self.update_depth(adep, Some(options.now)) == Some(0)
+                })
                 .collect::<Vec<_>>()
                 .into_iter()
                 // Unsnooze any adeps that are snoozed whose start date is
@@ -457,14 +476,16 @@ impl TodoList<'_> {
         if !complete_adeps.is_empty() {
             return Err(RestoreError::WouldRestore(complete_adeps));
         }
-        self.tasks[id.0].completion_time = None;
+        let task = &mut self.tasks[id.0];
+        task.completion_time = None;
+        task.cached_status = Some(TaskStatus::Incomplete);
         self.put_in_incomplete_layer(id, 0);
         remove_first_occurrence_from_vec(&mut self.complete, &id);
         // Update adeps.
         Ok(self
             .adeps(id)
             .iter_sorted(self)
-            .filter(|&adep| self.update_depth(adep) == Some(1))
+            .filter(|&adep| self.update_depth(adep, None) == Some(1))
             .collect())
     }
 
@@ -566,13 +587,13 @@ impl Block<'_, '_> {
         let was_blocked_complete =
             self.list.status(self.blocked) == Some(TaskStatus::Complete);
         if !was_blocked_complete {
-            self.list.update_depth(self.blocked);
+            self.list.update_depth(self.blocked, None);
             return TaskSet::default();
         }
         // Find the intersection of adeps that were complete before the
         // update and adeps that are not complete after the update.
         get_complete_adeps(self.list, self.blocked)
-            & match self.list.update_depth(self.blocked) {
+            & match self.list.update_depth(self.blocked, None) {
                 Some(_) => get_incomplete_adeps(self.list, self.blocked),
                 None => TaskSet::default(),
             }
@@ -625,7 +646,7 @@ impl Unblock<'_, '_> {
             Some(e) => self.list.tasks.remove_edge(e),
             None => return Err(UnblockError::WasNotDirectlyBlocking),
         };
-        self.list.update_depth(self.blocked);
+        self.list.update_depth(self.blocked, None);
         Ok(self.list.update_implicits(blocking)
             | TaskSet::of(self.blocked)
             | TaskSet::of(blocking))
@@ -758,10 +779,14 @@ impl<'ser> TodoList<'ser> {
     }
 
     pub fn status(&self, id: TaskId) -> Option<TaskStatus> {
+        let task = self.tasks.node_weight(id.0)?;
+        if let Some(cached) = task.cached_status {
+            return Some(cached);
+        }
         if self.complete.contains(&id) {
             return Some(TaskStatus::Complete);
         }
-        if self.get(id).map(|task| task.is_snoozed()) == Some(true) {
+        if task.is_snoozed() {
             return Some(TaskStatus::Blocked);
         }
         if self.incomplete.depth(&id)? == 0 {
@@ -844,7 +869,7 @@ impl<'ser> TodoList<'ser> {
         };
         self.tasks.remove_node(id.0);
         adeps.iter_sorted(self).for_each(|adep| {
-            self.update_depth(adep);
+            self.update_depth(adep, None);
         });
         (affected_after_unblocking_adeps | affected_after_unblocking_from_deps)
             - TaskSet::of(id)
@@ -954,7 +979,7 @@ impl TodoList<'_> {
             .filter(|&id| self.get(id).is_some())
             .collect();
         incomplete_tasks.iter_sorted(self).for_each(|id| {
-            self.update_depth(id);
+            self.update_depth(id, None);
             self.punt(id).unwrap();
         });
         incomplete_tasks
