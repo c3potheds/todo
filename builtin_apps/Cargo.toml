@@ -20,6 +20,7 @@ todo_text_editing.workspace = true
 todo_time_format.workspace = true
 
 [dev-dependencies]
+todo_cli = { path = "../cli", features = ["test-utils"] }
 pretty_assertions.workspace = true
 serde_json.workspace = true
 shlex.workspace = true

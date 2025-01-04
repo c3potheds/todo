@@ -1,5 +1,12 @@
+use chrono::DateTime;
+use chrono::Duration;
+use chrono::Utc;
 use clap::Parser;
 use todo_lookup_key::Key;
+
+use crate::value_parsers::parse_budget;
+use crate::value_parsers::parse_due_date;
+use crate::value_parsers::parse_snooze_date;
 
 /// Creates new tasks in the to-do list.
 ///
@@ -95,8 +102,8 @@ pub struct New {
     /// be reordered if you assign a due date! Dependencies whose implicit due
     /// date, and therefore ordering, are updated by assigning the new tasks
     /// this due date will be printed in the console output.
-    #[arg(long, num_args = 1..)]
-    pub due: Vec<String>,
+    #[arg(long, num_args = 1.., value_parser = parse_due_date)]
+    pub due: Option<DateTime<Utc>>,
 
     /// Allocate a time budget for the new tasks.
     ///
@@ -109,8 +116,8 @@ pub struct New {
     ///
     /// A budget has no effect unless the task also has an implicit or explicit
     /// due date.
-    #[arg(long, num_args = 1..)]
-    pub budget: Vec<String>,
+    #[arg(long, num_args = 1.., value_parser = parse_budget)]
+    pub budget: Option<Duration>,
 
     /// Snooze the new tasks for a given amount of time.
     ///
@@ -123,8 +130,8 @@ pub struct New {
     /// the 'snooze' subcommand, if you give a description of a day or month,
     /// the task will be unsnoozed at the start of that time interval, unlike
     /// due dates, which snap to the end of the time interval.
-    #[arg(long, short = 's', num_args = 1..)]
-    pub snooze: Vec<String>,
+    #[arg(long, short = 's', num_args = 1.., value_parser = parse_snooze_date)]
+    pub snooze: Option<DateTime<Utc>>,
 
     /// Complete the new tasks.
     ///

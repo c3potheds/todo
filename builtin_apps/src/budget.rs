@@ -7,14 +7,13 @@ use todo_printing::PrintableResult;
 
 use super::util::format_task;
 use super::util::lookup_tasks;
-use super::util::parse_budget;
 use super::util::should_include_done;
 
 pub fn run<'list>(
     list: &'list mut TodoList,
     cmd: &Budget,
 ) -> PrintableResult<'list> {
-    let budget = parse_budget(&cmd.budget).map_err(|e| vec![e])?;
+    let budget = cmd.budget;
     let tasks = lookup_tasks(list, &cmd.keys);
     let include_done =
         should_include_done(cmd.include_done, list, tasks.iter_unsorted());

@@ -1,7 +1,6 @@
 #![allow(clippy::zero_prefixed_literal)]
 
 use todo_printing::Plicit::*;
-use todo_printing::PrintableError;
 use todo_printing::Status::*;
 use todo_testing::ymdhms;
 
@@ -47,11 +46,11 @@ fn show_tasks_with_due_date_includes_blocked() {
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let in_5_hours = ymdhms(2021, 04, 12, 19, 00, 00);
     let in_2_days = ymdhms(2021, 04, 14, 23, 59, 59);
-    fix.test("todo new a --due 5 hours");
+    fix.test("todo new a --due '5 hours'");
     fix.test("todo new b -p a");
-    fix.test("todo new c -p b --due 2 days");
+    fix.test("todo new c -p b --due '2 days'");
     fix.test("todo new d e f");
-    fix.test("todo due -b --in 2 days")
+    fix.test("todo due -b --in '2 days'")
         .modified(Mutated::No)
         .validate()
         .printed_task(
@@ -77,12 +76,12 @@ fn show_tasks_with_due_date_excludes_complete_and_blocked() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let in_2_days = ymdhms(2021, 04, 14, 23, 59, 59);
-    fix.test("todo new a --due 5 hours");
+    fix.test("todo new a --due '5 hours'");
     fix.test("todo new b -p a");
-    fix.test("todo new c -p b --due 2 days");
+    fix.test("todo new c -p b --due '2 days'");
     fix.test("todo new d e f");
     fix.test("todo check a");
-    fix.test("todo due --in 2 days")
+    fix.test("todo due --in '2 days'")
         .modified(Mutated::No)
         .validate()
         .printed_task(
@@ -98,12 +97,12 @@ fn show_tasks_with_due_date_include_done() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let in_2_days = ymdhms(2021, 04, 14, 23, 59, 59);
-    fix.test("todo new a --due 5 hours");
+    fix.test("todo new a --due '5 hours'");
     fix.test("todo new b -p a");
-    fix.test("todo new c -p b --due 2 days");
+    fix.test("todo new c -p b --due '2 days'");
     fix.test("todo new d e f");
     fix.test("todo check a");
-    fix.test("todo due --include-done --in 2 days")
+    fix.test("todo due --include-done --in '2 days'")
         .modified(Mutated::No)
         .validate()
         .printed_task(
@@ -123,12 +122,12 @@ fn show_tasks_with_due_date_earlier_than_given_date() {
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let in_5_hours = ymdhms(2021, 04, 12, 19, 00, 00);
     let in_6_hours = ymdhms(2021, 04, 12, 20, 00, 00);
-    fix.test("todo new a --due 5 hours");
+    fix.test("todo new a --due '5 hours'");
     fix.test("todo new b -p a");
-    fix.test("todo new c -p b --due 2 days");
+    fix.test("todo new c -p b --due '2 days'");
     fix.test("todo new d e f");
-    fix.test("todo new g --due 6 hours");
-    fix.test("todo due --in 1 day")
+    fix.test("todo new g --due '6 hours'");
+    fix.test("todo due --in '1 day'")
         .modified(Mutated::No)
         .validate()
         .printed_task(
@@ -145,13 +144,13 @@ fn show_tasks_with_due_date_earlier_than_given_date_include_done() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let in_5_hours = ymdhms(2021, 04, 12, 19, 00, 00);
-    fix.test("todo new a --due 5 hours");
+    fix.test("todo new a --due '5 hours'");
     fix.test("todo new b -p a");
-    fix.test("todo new c -p b --due 2 days");
+    fix.test("todo new c -p b --due '2 days'");
     fix.test("todo new d e f");
-    fix.test("todo new g --due 6 hours");
+    fix.test("todo new g --due '6 hours'");
     fix.test("todo check g");
-    fix.test("todo due --in 1 day -d")
+    fix.test("todo due --in '1 day' -d")
         .modified(Mutated::No)
         .validate()
         .printed_task(
@@ -170,9 +169,9 @@ fn show_source_of_implicit_due_date() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let in_2_days = ymdhms(2021, 04, 14, 23, 59, 59);
-    fix.test("todo new a --due 5 days");
+    fix.test("todo new a --due '5 days'");
     fix.test("todo new b -p a");
-    fix.test("todo new c -p b --due 2 days");
+    fix.test("todo new c -p b --due '2 days'");
     fix.test("todo new d e f --due today");
     fix.test("todo due a")
         .modified(Mutated::No)
@@ -235,9 +234,9 @@ fn set_due_date() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let thursday = ymdhms(2021, 04, 15, 23, 59, 59);
-    fix.test("todo new a --due 5 hours");
+    fix.test("todo new a --due '5 hours'");
     fix.test("todo new b -p a");
-    fix.test("todo new c -p b --due 2 days");
+    fix.test("todo new c -p b --due '2 days'");
     fix.test("todo new d e f");
     fix.test("todo due d e --on thursday")
         .modified(Mutated::Yes)
@@ -283,11 +282,11 @@ fn set_due_date_prints_affected_tasks() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 14, 00, 00);
     let in_1_hour = ymdhms(2021, 04, 12, 15, 00, 00);
-    fix.test("todo new a --due 5 hours");
+    fix.test("todo new a --due '5 hours'");
     fix.test("todo new b -p a");
-    fix.test("todo new c -p b --due 2 days");
+    fix.test("todo new c -p b --due '2 days'");
     fix.test("todo new d e f");
-    fix.test("todo due c --in 1 hour")
+    fix.test("todo due c --in '1 hour'")
         .modified(Mutated::Yes)
         .validate()
         .printed_task(
@@ -324,9 +323,9 @@ fn set_due_date_no_change() {
 #[test]
 fn reset_due_date() {
     let mut fix = Fixture::default();
-    fix.test("todo new a --due 5 hours");
+    fix.test("todo new a --due '5 hours'");
     fix.test("todo new b -p a");
-    fix.test("todo new c -p b --due 2 days");
+    fix.test("todo new c -p b --due '2 days'");
     fix.test("todo new d e f");
     fix.test("todo due c --none")
         .modified(Mutated::Yes)
@@ -387,20 +386,6 @@ fn show_tasks_without_due_date_include_blocked() {
         .printed_task(&task("d", 4, Incomplete).adeps_stats(1, 2))
         .printed_task(&task("e", 5, Blocked).deps_stats(1, 1))
         .printed_task(&task("f", 6, Blocked).deps_stats(1, 2))
-        .end();
-}
-
-#[test]
-fn cannot_use_due_and_none_flags_at_the_same_time() {
-    let mut fix = Fixture::default();
-    fix.clock.now = ymdhms(2021, 04, 13, 18, 00, 00);
-    fix.test("todo due --in 1 day --none")
-        .modified(Mutated::No)
-        .validate()
-        .printed_error(&PrintableError::ConflictingArgs((
-            "due".to_string(),
-            "none".to_string(),
-        )))
         .end();
 }
 
