@@ -1,7 +1,10 @@
+#![allow(clippy::zero_prefixed_literal)]
+
 use todo_lookup_key::Key::*;
+use todo_testing::ymdhms;
 
 use crate::testing::expect_error;
-use crate::testing::expect_parses_into;
+use crate::testing::expect_parses;
 use crate::Snooze;
 use crate::SubCommand;
 
@@ -13,44 +16,44 @@ fn snooze_missing_args() {
 
 #[test]
 fn snooze_by_number() {
-    expect_parses_into(
-        "todo snooze 1 --until tomorrow",
-        SubCommand::Snooze(Snooze {
+    let now = ymdhms(2025, 01, 03, 11, 00, 00);
+    expect_parses("todo snooze 1 --until tomorrow")
+        .at_time(now)
+        .into(SubCommand::Snooze(Snooze {
             keys: vec![ByNumber(1)],
-            until: vec!["tomorrow".to_string()],
-        }),
-    )
+            until: ymdhms(2025, 01, 04, 00, 00, 00),
+        }))
 }
 
 #[test]
 fn snooze_by_name() {
-    expect_parses_into(
-        "todo snooze a --until saturday",
-        SubCommand::Snooze(Snooze {
+    let now = ymdhms(2025, 01, 03, 11, 00, 00);
+    expect_parses("todo snooze a --until saturday")
+        .at_time(now)
+        .into(SubCommand::Snooze(Snooze {
             keys: vec![ByName("a".to_string())],
-            until: vec!["saturday".to_string()],
-        }),
-    )
+            until: ymdhms(2025, 01, 04, 00, 00, 00),
+        }))
 }
 
 #[test]
 fn snooze_multiple_tasks() {
-    expect_parses_into(
-        "todo snooze a 1 --until 2 days",
-        SubCommand::Snooze(Snooze {
+    let now = ymdhms(2025, 01, 03, 11, 00, 00);
+    expect_parses("todo snooze a 1 --until '2 days'")
+        .at_time(now)
+        .into(SubCommand::Snooze(Snooze {
             keys: vec![ByName("a".to_string()), ByNumber(1)],
-            until: vec!["2".to_string(), "days".to_string()],
-        }),
-    )
+            until: ymdhms(2025, 01, 05, 00, 00, 00),
+        }))
 }
 
 #[test]
 fn snooze_by_negative_number() {
-    expect_parses_into(
-        "todo snooze -1 --until august",
-        SubCommand::Snooze(Snooze {
+    let now = ymdhms(2025, 01, 03, 11, 00, 00);
+    expect_parses("todo snooze -1 --until august")
+        .at_time(now)
+        .into(SubCommand::Snooze(Snooze {
             keys: vec![ByNumber(-1)],
-            until: vec!["august".to_string()],
-        }),
-    )
+            until: ymdhms(2025, 08, 01, 00, 00, 00),
+        }))
 }

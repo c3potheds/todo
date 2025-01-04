@@ -1,5 +1,9 @@
+use chrono::DateTime;
+use chrono::Utc;
 use clap::Parser;
 use todo_lookup_key::Key;
+
+use crate::value_parsers::parse_snooze_date;
 
 /// Makes tasks temporarily "snoozed" until the given amount of time passes.
 ///
@@ -29,6 +33,6 @@ pub struct Snooze {
     pub keys: Vec<Key>,
 
     /// Description of how long to snooze.
-    #[arg(long, num_args = 1..)]
-    pub until: Vec<String>,
+    #[arg(long, num_args = 1.., value_parser = parse_snooze_date)]
+    pub until: DateTime<Utc>,
 }

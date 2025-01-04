@@ -7,14 +7,12 @@ use todo_model::TaskSet;
 use todo_model::TodoList;
 use todo_printing::Action;
 use todo_printing::PrintableAppSuccess;
-use todo_printing::PrintableError;
 use todo_printing::PrintableResult;
 use todo_printing::PrintableWarning;
 
 use super::util::format_task;
 use super::util::format_task_brief;
 use super::util::lookup_tasks;
-use super::util::parse_snooze_date;
 
 fn format_snooze_warning(
     list: &TodoList,
@@ -55,14 +53,7 @@ pub fn run<'list>(
     now: DateTime<Utc>,
     cmd: &Snooze,
 ) -> PrintableResult<'list> {
-    let snooze_date = parse_snooze_date(now, &cmd.until)
-        .and_then(|date| match date {
-            Some(date) => Ok(date),
-            None => Err(PrintableError::EmptyDate {
-                flag: Some("--until".to_string()),
-            }),
-        })
-        .map_err(|e| vec![e])?;
+    let snooze_date = cmd.until;
     // If the snooze date has already passed, we don't need to do anything. Just
     // print the tasks and a warning indicating that the snooze date has already
     // passed.

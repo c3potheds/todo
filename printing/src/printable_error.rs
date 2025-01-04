@@ -37,15 +37,6 @@ pub enum PrintableError {
     NoMatchForKeys {
         keys: Vec<Key>,
     },
-    EmptyDate {
-        flag: Option<String>,
-    },
-    CannotParseDueDate {
-        cannot_parse: String,
-    },
-    CannotParseDuration {
-        cannot_parse: String,
-    },
     DurationIsTooLong {
         duration: u64,
         string_repr: String,
@@ -113,27 +104,6 @@ impl Display for PrintableError {
                     format!(
                         "No match for keys {}",
                         format_keys(keys),
-                    )
-                }
-                PrintableError::EmptyDate{ flag } => {
-                    match flag {
-                        Some(flag) => format!(
-                            "Empty date for flag {}",
-                            flag.white().bold(),
-                        ),
-                        None => "Empty date".to_string(),
-                    }
-                }
-                PrintableError::CannotParseDueDate { cannot_parse } => {
-                    format!(
-                        "Cannot parse due date: {}",
-                        cannot_parse.white().bold(),
-                    )
-                }
-                PrintableError::CannotParseDuration { cannot_parse } => {
-                    format!(
-                        "Cannot parse duration: {}",
-                        cannot_parse.white().bold(),
                     )
                 }
                 PrintableError::DurationIsTooLong { duration, string_repr } => {

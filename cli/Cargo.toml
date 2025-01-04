@@ -5,5 +5,17 @@ edition = "2021"
 
 [dependencies]
 clap.workspace = true
+chrono.workspace = true
+humantime.workspace = true
+lazy_static = "1.4"
 
 todo_lookup_key.workspace = true
+todo_time_format.workspace = true
+
+[dev-dependencies]
+pretty_assertions.workspace = true
+shlex.workspace = true
+todo_testing.workspace = true
+
+[features]
+test-utils = []

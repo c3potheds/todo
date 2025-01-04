@@ -1,6 +1,11 @@
+#![allow(clippy::zero_prefixed_literal)]
+
+use chrono::Duration;
 use todo_lookup_key::Key::*;
+use todo_testing::ymdhms;
 
 use crate::testing::expect_error;
+use crate::testing::expect_parses;
 use crate::testing::expect_parses_into;
 use crate::New;
 use crate::SubCommand;
@@ -13,9 +18,18 @@ fn new_missing_keys() {
     expect_error("todo new a --before");
     expect_error("todo new a --after");
     expect_error("todo new a --by");
+}
+
+#[test]
+fn new_invalid_dates_or_durations() {
+    let now = ymdhms(2025, 01, 04, 12, 00, 00);
+    let _override_now = crate::time_utils::override_now(now);
     expect_error("todo new a --due");
+    expect_error("todo new a --due blah");
     expect_error("todo new a --budget");
+    expect_error("todo new a --budget blah");
     expect_error("todo new a --snooze");
+    expect_error("todo new a --snooze blah");
 }
 
 #[test]
@@ -232,23 +246,24 @@ fn new_with_negative_priority() {
 
 #[test]
 fn new_with_due_date() {
-    expect_parses_into(
-        "todo new a --due 7 days",
-        SubCommand::New(New {
+    let now = ymdhms(2025, 01, 04, 12, 00, 00);
+    let in_7_days = ymdhms(2025, 01, 11, 23, 59, 59);
+    expect_parses("todo new a --due '7 days'")
+        .at_time(now)
+        .into(SubCommand::New(New {
             desc: vec!["a".to_string()],
-            due: vec!["7".to_string(), "days".to_string()],
+            due: Some(in_7_days),
             ..Default::default()
-        }),
-    )
+        }))
 }
 
 #[test]
 fn new_with_budget() {
     expect_parses_into(
-        "todo new a --budget 2 days",
+        "todo new a --budget '2 days'",
         SubCommand::New(New {
             desc: vec!["a".to_string()],
-            budget: vec!["2".to_string(), "days".to_string()],
+            budget: Some(Duration::days(2)),
             ..Default::default()
         }),
     );
@@ -256,26 +271,28 @@ fn new_with_budget() {
 
 #[test]
 fn new_snooze_long() {
-    expect_parses_into(
-        "todo new a --snooze tomorrow",
-        SubCommand::New(New {
+    let now = ymdhms(2025, 01, 04, 12, 00, 00);
+    let tomorrow = ymdhms(2025, 01, 05, 00, 00, 00);
+    expect_parses("todo new a --snooze tomorrow")
+        .at_time(now)
+        .into(SubCommand::New(New {
             desc: vec!["a".to_string()],
-            snooze: vec!["tomorrow".to_string()],
+            snooze: Some(tomorrow),
             ..Default::default()
-        }),
-    );
+        }));
 }
 
 #[test]
 fn new_snooze_short() {
-    expect_parses_into(
-        "todo new a -s 2 days",
-        SubCommand::New(New {
+    let now = ymdhms(2024, 12, 31, 12, 00, 00);
+    let in_2_days = ymdhms(2025, 01, 02, 00, 00, 00);
+    expect_parses("todo new a -s '2 days'")
+        .at_time(now)
+        .into(SubCommand::New(New {
             desc: vec!["a".to_string()],
-            snooze: vec!["2".to_string(), "days".to_string()],
+            snooze: Some(in_2_days),
             ..Default::default()
-        }),
-    );
+        }));
 }
 
 #[test]

@@ -1,19 +1,13 @@
 use std::collections::HashMap;
-use std::convert::TryFrom;
 
-use chrono::DateTime;
 use chrono::Duration;
-use chrono::Local;
-use chrono::Utc;
 use todo_lookup_key::Key;
-use todo_model::DurationInSeconds;
 use todo_model::TaskId;
 use todo_model::TaskSet;
 use todo_model::TaskStatus;
 use todo_model::TodoList;
 use todo_printing::BriefPrintableTask;
 use todo_printing::Plicit;
-use todo_printing::PrintableError;
 use todo_printing::PrintableTask;
 use todo_printing::Status;
 
@@ -225,71 +219,4 @@ pub fn should_include_done(
     tasks: impl IntoIterator<Item = TaskId>,
 ) -> bool {
     from_cmdline || any_tasks_are_complete(list, tasks.into_iter())
-}
-
-pub fn parse_due_date(
-    now: DateTime<Utc>,
-    chunks: &[String],
-) -> Result<Option<DateTime<Utc>>, PrintableError> {
-    if chunks.is_empty() {
-        return Ok(None);
-    }
-    let due_date_string = chunks.join(" ");
-    match ::todo_time_format::parse_time(
-        Local,
-        now.with_timezone(&Local),
-        &due_date_string,
-        ::todo_time_format::Snap::ToEnd,
-    ) {
-        Ok(due_date) => Ok(Some(due_date.with_timezone(&Utc))),
-        Err(_) => Err(PrintableError::CannotParseDueDate {
-            cannot_parse: due_date_string.to_string(),
-        }),
-    }
-}
-
-pub fn parse_budget(
-    chunks: &[String],
-) -> Result<DurationInSeconds, PrintableError> {
-    let budget_string = chunks.join(" ");
-    if budget_string == "0" || budget_string.is_empty() {
-        return Ok(DurationInSeconds::default());
-    }
-    match humantime::parse_duration(&budget_string) {
-        Ok(duration) => {
-            Ok(DurationInSeconds(match u32::try_from(duration.as_secs()) {
-                Ok(secs) => secs,
-                Err(_) => {
-                    return Err(PrintableError::DurationIsTooLong {
-                        duration: duration.as_secs(),
-                        string_repr: budget_string,
-                    })
-                }
-            }))
-        }
-        Err(_) => Err(PrintableError::CannotParseDuration {
-            cannot_parse: budget_string.clone(),
-        }),
-    }
-}
-
-pub fn parse_snooze_date(
-    now: DateTime<Utc>,
-    chunks: &[String],
-) -> Result<Option<DateTime<Utc>>, PrintableError> {
-    let date_string = chunks.join(" ");
-    if date_string.is_empty() || date_string.is_empty() {
-        return Ok(None);
-    }
-    match ::todo_time_format::parse_time(
-        Local,
-        now.with_timezone(&Local),
-        &date_string,
-        ::todo_time_format::Snap::ToStart,
-    ) {
-        Ok(snooze_date) => Ok(Some(snooze_date.with_timezone(&Utc))),
-        Err(_) => Err(PrintableError::CannotParseDueDate {
-            cannot_parse: date_string.to_string(),
-        }),
-    }
 }

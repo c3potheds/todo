@@ -14,7 +14,7 @@ use super::testing::Mutated;
 fn unsnooze_snoozed_task() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2022, 02, 22, 10, 00, 00);
-    fix.test("todo new a --snooze 1 hour");
+    fix.test("todo new a --snooze '1 hour'");
     fix.test("todo unsnooze 1")
         .modified(Mutated::Yes)
         .validate()
@@ -27,7 +27,7 @@ fn unsnoozed_task_appears_at_end_of_incomplete_list() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2022, 02, 22, 10, 00, 00);
     fix.test("todo new a b c");
-    fix.test("todo snooze a --until 1 hour");
+    fix.test("todo snooze a --until '1 hour'");
     fix.test("todo unsnooze a")
         .modified(Mutated::Yes)
         .validate()
@@ -53,7 +53,7 @@ fn unsnooze_task_that_is_not_snoozed_is_no_op() {
 fn show_warning_when_unsnoozing_complete_task() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2022, 02, 22, 10, 00, 00);
-    fix.test("todo new a --snooze 1 hour");
+    fix.test("todo new a --snooze '1 hour'");
     fix.test("todo check a");
     fix.test("todo unsnooze a")
         .modified(Mutated::No)
@@ -69,7 +69,7 @@ fn unsnooze_blocked_task() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2022, 02, 22, 10, 00, 00);
     fix.test("todo new a b --chain");
-    fix.test("todo snooze b --until 1 hour");
+    fix.test("todo snooze b --until '1 hour'");
     fix.test("todo unsnooze b")
         .modified(Mutated::Yes)
         .validate()
