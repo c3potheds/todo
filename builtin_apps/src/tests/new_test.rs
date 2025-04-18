@@ -11,6 +11,9 @@ use todo_testing::ymdhms;
 use super::testing::task;
 use super::testing::Fixture;
 use super::testing::Mutated;
++use todo_model::{FocusPredicate, TaskId};
++use chrono::{NaiveTime, Weekday};
++use std::collections::HashSet;
 
 #[test]
 fn new_one_task() {
@@ -1008,3 +1011,56 @@ fn by_task_by_name_that_matches_multiple_incomplete_tasks_inserted_by_all_tasks(
         .printed_task(&task("c2", 7, Blocked).deps_stats(2, 4))
         .end();
 }
+
++// Helper to create HashSet<Weekday>
++fn weekdays(days: &[Weekday]) -> HashSet<Weekday> {
++    days.iter().cloned().collect()
++}
++// Helper to create NaiveTime
++fn time(h: u32, m: u32) -> NaiveTime {
++    NaiveTime::from_hms_opt(h, m, 0).unwrap()
++}
++
++#[test]
++fn new_with_focus_valid_weekday() {
++    let mut fix = Fixture::default();
++    fix.test(r#"todo new task --focus "mon""#)
++        .modified(Mutated::Yes)
++        .validate()
++        .printed_task(&task("task", 1, Incomplete).action(New))
++        .end();
++    let list = fix.load();
++    assert_eq!(
++        list.get(TaskId(0)).unwrap().focus,
++        Some(FocusPredicate::Weekdays(weekdays(&[Weekday::Mon])))
++    );
++}
++
++#[test]
++fn new_with_focus_valid_timerange() {
++    let mut fix = Fixture::default();
++    fix.test(r#"todo new task2 --focus "9am-5pm""#)
++        .modified(Mutated::Yes)
++        .validate()
++        .printed_task(&task("task2", 1, Incomplete).action(New))
++        .end();
++    let list = fix.load();
++        assert_eq!(
++        list.get(TaskId(0)).unwrap().focus,
++        Some(FocusPredicate::TimeOfDayRange{ start: time(9,0), end: time(17,0) })
++    );
++}
++
++#[test]
++fn new_with_focus_invalid_predicate() {
++     let mut fix = Fixture::default();
++    // Run with invalid focus, expect modification but no focus set, and a warning (can't check warning)
++    fix.test(r#"todo new task --focus "invalid-focus-string""#)
++        .modified(Mutated::Yes) // List is still modified (task added)
++        .validate()
++        .printed_task(&task("task", 1, Incomplete).action(New)) // Task should be added
++        .end();
++    let list = fix.load();
++    // Focus should NOT be set
++    assert!(list.get(TaskId(0)).unwrap().focus.is_none());
++}

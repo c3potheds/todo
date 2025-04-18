@@ -347,6 +347,39 @@ impl From<TaskId> for CheckOptions {
 }
 
 impl TodoList<'_> {
+    /// Checks if a task is effectively in focus at the given time.
+    /// A task is effectively in focus if:
+    /// 1. It meets its own focus predicate (if any) at the given time.
+    /// 2. All of its antidependencies are also effectively in focus at the given time.
+    /// If a task has no focus predicate, it only depends on its antidependencies.
+    pub fn is_effectively_in_focus(&self, task_id: TaskId, now: DateTime<Utc>) -> bool {
+        // Use a cache or visited set if performance becomes an issue or cycles are possible
+        // For now, assume DAG and rely on recursive calls.
+
+        // 1. Check the task itself
+        if let Some(task) = self.get(task_id) {
+            if let Some(predicate) = &task.focus {
+                if !crate::check_predicate(predicate, now) {
+                    return false; // Task's own predicate not met
+                }
+            }
+            // If no predicate, the task itself is considered "in focus" for this step.
+        } else {
+            return false; // Task not found
+        }
+
+        // 2. Check antidependencies recursively
+        for adep_id in self.adeps(task_id).iter_sorted(self) {
+            if !self.is_effectively_in_focus(adep_id, now) {
+                return false; // An antidependency is not in focus
+            }
+        }
+
+        // If we reached here, the task's own predicate passed (or was None)
+        // and all antidependencies are also in focus.
+        true
+    }
+
     /// Marks the task with the given id as complete. If successful, returns a
     /// set of tasks that became unblocked, if any.
     pub fn check<Options: Into<CheckOptions>>(
@@ -710,6 +743,26 @@ impl<'ser> TodoList<'ser> {
             Some(task) => {
                 task.priority = priority;
                 self.update_implicits(id)
+            }
+            None => TaskSet::default(),
+        }
+    }
+
+    pub fn set_focus(
+        &mut self,
+        id: TaskId,
+        focus: Option<crate::FocusPredicate>,
+    ) -> TaskSet {
+        match self.tasks.node_weight_mut(id.0) {
+            Some(task) => {
+                if task.focus == focus {
+                    return TaskSet::default();
+                }
+                task.focus = focus;
+                // Changing focus doesn't affect implicit sorting properties
+                // currently, so we don't need to update implicits or punt.
+                // Just return the modified task ID.
+                TaskSet::of(id)
             }
             None => TaskSet::default(),
         }

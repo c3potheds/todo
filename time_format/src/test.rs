@@ -4,6 +4,9 @@ use chrono::Local;
 use chrono::TimeZone;
 
 use crate::*;
++use chrono::{NaiveTime, Weekday};
++use model::FocusPredicate; // Adjust path if needed, e.g. use todo_model::FocusPredicate;
++use std::collections::HashSet;
 
 #[test]
 fn in_five_minutes_abbreviated() {
@@ -531,3 +534,112 @@ fn relative_time_in_11_months() {
     let actual = display_relative_time(now, then);
     assert_eq!(actual, expected);
 }
+
++#[test]
++fn test_parse_focus_predicate() {
++    // Helper to create HashSet<Weekday>
++    fn weekdays(days: &[Weekday]) -> HashSet<Weekday> {
++        days.iter().cloned().collect()
++    }
++
++    // Helper to create NaiveTime
++    fn time(h: u32, m: u32) -> NaiveTime {
++        NaiveTime::from_hms_opt(h, m, 0).unwrap()
++    }
++    fn time_s(h: u32, m: u32, s: u32) -> NaiveTime {
++        NaiveTime::from_hms_opt(h, m, s).unwrap()
++    }
++
++    // === Valid Weekdays ===
++    assert_eq!(
++        parse_focus_predicate("weekdays").unwrap(),
++        FocusPredicate::Weekdays(weekdays(&[
++            Weekday::Mon, Weekday::Tue, Weekday::Wed, Weekday::Thu, Weekday::Fri
++        ]))
++    );
++    assert_eq!(
++        parse_focus_predicate("WEEKends").unwrap(), // Case-insensitive
++        FocusPredicate::Weekdays(weekdays(&[Weekday::Sat, Weekday::Sun]))
++    );
++    assert_eq!(
++        parse_focus_predicate("mon").unwrap(),
++        FocusPredicate::Weekdays(weekdays(&[Weekday::Mon]))
++    );
++    assert_eq!(
++        parse_focus_predicate("tuesday").unwrap(), // Full day name
++        FocusPredicate::Weekdays(weekdays(&[Weekday::Tue]))
++    );
++    assert_eq!(
++        parse_focus_predicate("mwf").unwrap(),
++        FocusPredicate::Weekdays(weekdays(&[
++            Weekday::Mon, Weekday::Wed, Weekday::Fri
++        ]))
++    );
++    assert_eq!(
++        parse_focus_predicate("tth").unwrap(), // Ambiguous 't' test
++        FocusPredicate::Weekdays(weekdays(&[Weekday::Tue, Weekday::Thu]))
++    );
++    assert_eq!(
++        parse_focus_predicate("satsun").unwrap(),
++        FocusPredicate::Weekdays(weekdays(&[Weekday::Sat, Weekday::Sun]))
++    );
++    assert_eq!(
++        parse_focus_predicate("TUEsat").unwrap(), // Mixed case sequence
++        FocusPredicate::Weekdays(weekdays(&[Weekday::Tue, Weekday::Sat]))
++    );
++
++    // === Valid Time Ranges ===
++    assert_eq!(
++        parse_focus_predicate("9am-5pm").unwrap(),
++        FocusPredicate::TimeOfDayRange { start: time(9, 0), end: time(17, 0) }
++    );
++    assert_eq!(
++        parse_focus_predicate(" 14:00 - 17:30 ").unwrap(), // Whitespace
++        FocusPredicate::TimeOfDayRange { start: time(14, 0), end: time(17, 30) }
++    );
++    assert_eq!(
++        parse_focus_predicate("10pm-2am").unwrap(), // Wrap around midnight
++        FocusPredicate::TimeOfDayRange { start: time(22, 0), end: time(2, 0) }
++    );
++    assert_eq!(
++        parse_focus_predicate("after 6pm").unwrap(),
++        FocusPredicate::TimeOfDayRange { start: time(18, 0), end: time_s(23, 59, 59) }
++    );
++     assert_eq!(
++        parse_focus_predicate("after 18:00").unwrap(),
++        FocusPredicate::TimeOfDayRange { start: time(18, 0), end: time_s(23, 59, 59) }
++    );
++    assert_eq!(
++        parse_focus_predicate("before 8:00").unwrap(),
++        FocusPredicate::TimeOfDayRange { start: time(0, 0), end: time(8, 0) }
++    );
++    assert_eq!(
++        parse_focus_predicate("before 9am").unwrap(),
++        FocusPredicate::TimeOfDayRange { start: time(0, 0), end: time(9, 0) }
++    );
++    assert_eq!(
++        parse_focus_predicate("after 23:59").unwrap(), // Edge case
++        FocusPredicate::TimeOfDayRange { start: time(23, 59), end: time_s(23, 59, 59) }
++    );
++
++    // === Invalid Inputs ===
++    // Weekdays
++    assert!(matches!(parse_focus_predicate("monda"), Err(ParseFocusError::InvalidWeekdaySequence(_))));
++    assert!(matches!(parse_focus_predicate("montuefriyay"), Err(ParseFocusError::InvalidWeekdaySequence(_))));
++    assert!(matches!(parse_focus_predicate("mon tue wed thur fri sat sun"), Err(ParseFocusError::InvalidWeekdaySequence(_)))); // 'thur' is invalid
++
++    // Times
++    assert!(matches!(parse_focus_predicate("9-5"), Err(ParseFocusError::InvalidTime(_)))); // Needs am/pm or 24hr format
++    assert!(matches!(parse_focus_predicate("9am-5"), Err(ParseFocusError::InvalidTime(_))));
++    assert!(matches!(parse_focus_predicate("25:00-26:00"), Err(ParseFocusError::InvalidTime(_))));
++    assert!(matches!(parse_focus_predicate("10am-"), Err(ParseFocusError::InvalidTime(s)) if s.is_empty())); // Missing end time
++    assert!(matches!(parse_focus_predicate("-5pm"), Err(ParseFocusError::InvalidTime(s)) if s.is_empty())); // Missing start time
++    assert!(matches!(parse_focus_predicate("before 25:00"), Err(ParseFocusError::InvalidTime(_))));
++    assert!(matches!(parse_focus_predicate("after noon"), Err(ParseFocusError::InvalidTime(_)))); // Needs specific time
++
++    // Unknown/General
++    assert!(matches!(parse_focus_predicate("afternoon"), Err(ParseFocusError::UnknownPredicateType(_))));
++    assert!(matches!(parse_focus_predicate(""), Err(ParseFocusError::UnknownPredicateType(_))));
++    assert!(matches!(parse_focus_predicate("alfter 9am"), Err(ParseFocusError::UnknownPredicateType(_)))); // Misspelled prefix
++    assert!(matches!(parse_focus_predicate("weekdays 9am-5pm"), Err(ParseFocusError::InvalidWeekdaySequence(_)))); // Cannot mix types yet
++}

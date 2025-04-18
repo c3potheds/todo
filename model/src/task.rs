@@ -46,6 +46,8 @@ pub struct Task<'ser> {
     // Cache of all the tags that depend on this task.
     #[serde(default)]
     pub implicit_tags: Vec<TaskId>,
+    #[serde(default)]
+    pub focus: Option<crate::FocusPredicate>,
 }
 
 pub struct NewOptions<'ser> {
@@ -56,6 +58,7 @@ pub struct NewOptions<'ser> {
     pub budget: DurationInSeconds,
     pub start_date: Option<DateTime<Utc>>,
     pub tag: bool,
+    pub focus: Option<crate::FocusPredicate>,
 }
 
 impl<'ser> NewOptions<'ser> {
@@ -70,6 +73,7 @@ impl<'ser> NewOptions<'ser> {
             budget: DurationInSeconds::default(),
             start_date: None,
             tag: false,
+            focus: None,
         }
     }
 
@@ -103,6 +107,11 @@ impl<'ser> NewOptions<'ser> {
         self
     }
 
+    pub fn focus(mut self, focus: crate::FocusPredicate) -> Self {
+        self.focus = Some(focus);
+        self
+    }
+
     pub fn as_tag(mut self) -> Self {
         self.tag = true;
         self
@@ -120,6 +129,7 @@ impl<'ser, S: Into<Cow<'ser, str>>> From<S> for NewOptions<'ser> {
             budget: DurationInSeconds::default(),
             start_date: None,
             tag: false,
+            focus: None,
         }
     }
 }
@@ -142,6 +152,7 @@ impl<'ser> Task<'ser> {
             tag: options.tag,
             implicit_tags: vec![],
             cached_status: None,
+            focus: options.focus,
         }
     }
 

@@ -141,4 +141,14 @@ pub struct New {
     /// to their descriptions.
     #[arg(long, short = 't')]
     pub tag: bool,
+
+    /// Set a focus time for the new tasks.
+    ///
+    /// Tasks are only considered "in focus" if they and their antidependencies
+    /// meet their focus criteria. Focus can be specified as:
+    ///   - Weekdays: "mon", "tue", "mwf", "weekdays", "weekends"
+    ///   - Time ranges: "9am-5pm", "14:00-17:30", "after 6pm", "before 8:00"
+    /// Focus criteria are checked against the current time.
+    #[arg(long, verbatim_doc_comment)]
+    pub focus: Option<String>,
 }

@@ -23,6 +23,8 @@ use super::util::lookup_tasks_by_keys;
 use super::util::parse_budget;
 use super::util::parse_due_date;
 use super::util::parse_snooze_date;
+use todo_model::FocusPredicate;
+use time_format::parse_focus_predicate;
 
 fn disambiguate(list: &TodoList, tasks: TaskSet) -> TaskSet {
     let (complete, incomplete) = tasks.partition_done(list);
@@ -79,6 +81,22 @@ pub fn run<'list>(
     );
     let deps = deps | before_deps | after | by_deps;
     let adeps = adeps | before | after_adeps | by_adeps;
+
+    let focus_predicate: Option<FocusPredicate> =
+        match cmd.focus.as_deref().map(parse_focus_predicate) {
+            Some(Ok(predicate)) => Some(predicate),
+            Some(Err(e)) => {
+                // TODO: Use PrintableError::CouldNotParseFocus?
+                eprintln!(
+                    "Warning: Could not parse focus predicate '{:?}': {:?}",
+                    cmd.focus.as_deref().unwrap(), // We know it's Some
+                    e
+                );
+                None
+            }
+            None => None,
+        };
+
     let priority = cmd.priority;
     let mut to_print = HashSet::new();
     let new_tasks: TaskSet = cmd
@@ -93,6 +111,7 @@ pub fn run<'list>(
                 budget,
                 start_date: snooze_date,
                 tag: cmd.tag,
+                focus: focus_predicate.clone(), // Clone the predicate for each task
             });
             to_print.insert(id);
             id

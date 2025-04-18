@@ -14,6 +14,7 @@ pub enum SubCommand {
     Due(Due),
     Edit(Edit),
     Find(Find),
+    Focus(Focus),
     Get(Get),
 
     /// Shows completed tasks.

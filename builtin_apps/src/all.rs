@@ -13,8 +13,10 @@ use super::chain;
 use super::check;
 use super::clean;
 use super::due;
+use super::due;
 use super::edit;
 use super::find;
+use super::focus; // Add focus module
 use super::get;
 use super::log;
 use super::merge;
@@ -38,6 +40,7 @@ fn status_options(options: Options) -> status::Status {
     status::Status {
         include_blocked: options.include_blocked || options.include_all,
         include_done: options.include_done || options.include_all,
+        include_all: options.include_all, // Pass the include_all flag
     }
 }
 
@@ -61,6 +64,7 @@ fn todo<'list>(
         Some(Due(cmd)) => due::run(list, now, &cmd),
         Some(Edit(cmd)) => edit::run(list, text_editor, &cmd),
         Some(Find(cmd)) => find::run(list, &cmd),
+        Some(Focus(cmd)) => focus::run(list, &cmd), // Add focus dispatch
         Some(Get(cmd)) => get::run(list, &cmd),
         Some(Log) => log::run(list),
         Some(Merge(cmd)) => merge::run(list, now, &cmd),

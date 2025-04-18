@@ -8,6 +8,7 @@ mod clean;
 mod due;
 mod edit;
 mod find;
+mod focus; // Add focus module
 mod get;
 mod log;
 mod merge;

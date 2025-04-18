@@ -1,6 +1,7 @@
 use chrono::DateTime;
 use chrono::Datelike;
-use chrono::TimeZone;
+use chrono::{DateTime, Datelike, NaiveTime, TimeZone, Weekday};
+use std::{collections::HashSet, str::FromStr};
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum ParseTimeError {
@@ -438,6 +439,164 @@ pub fn display_relative_time<Tz: TimeZone>(
         format!("{} ago", format_duration_laconic(-duration))
     } else {
         format!("in {}", format_duration_laconic(duration))
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum ParseFocusError {
+    UnknownPredicateType(String),
+    InvalidWeekdaySequence(String),
+    InvalidTimeRangeFormat(String),
+    ChronoParseError(chrono::format::ParseError),
+    InvalidTime(String),
+    MissingPart(String),
+    ChronoParseWeekdayError(chrono::ParseWeekdayError),
+    // Add more specific errors as needed
+}
+
+impl From<chrono::format::ParseError> for ParseFocusError {
+    fn from(e: chrono::format::ParseError) -> Self {
+        ParseFocusError::ChronoParseError(e)
+    }
+}
+
+impl From<chrono::ParseWeekdayError> for ParseFocusError {
+    fn from(e: chrono::ParseWeekdayError) -> Self {
+        ParseFocusError::ChronoParseWeekdayError(e)
+    }
+}
+
+// Helper to parse time strings like "14:30", "2pm", "09:15am" into NaiveTime
+fn parse_naive_time(time_str: &str) -> Result<NaiveTime, ParseFocusError> {
+    let time_str = time_str.trim();
+    // Try parsing HH:MM (24-hour) first
+    if let Ok(time) = NaiveTime::parse_from_str(time_str, "%H:%M") {
+        return Ok(time);
+    }
+    // Try parsing HH (e.g., "14")
+    if let Ok(time) = NaiveTime::parse_from_str(time_str, "%H") {
+         return Ok(time);
+    }
+     // Try parsing HHam/pm (e.g., "2pm")
+    if let Ok(time) = NaiveTime::parse_from_str(time_str, "%I%p") {
+        return Ok(time);
+    }
+    // Try parsing HH:MMam/pm (e.g., "02:30pm")
+    if let Ok(time) = NaiveTime::parse_from_str(time_str, "%I:%M%p") {
+        return Ok(time);
+    }
+     // Try parsing H am/pm (e.g., "2 pm") - Note: chrono doesn't directly support space, handle manually
+     let lower = time_str.to_lowercase();
+     if let Some(i) = lower.find(" am") {
+         if let Ok(time) = NaiveTime::parse_from_str(&format!("{}am", &lower[..i].trim()), "%I%p") {
+              return Ok(time);
+         }
+     }
+     if let Some(i) = lower.find(" pm") {
+         if let Ok(time) = NaiveTime::parse_from_str(&format!("{}pm", &lower[..i].trim()), "%I%p") {
+             return Ok(time);
+         }
+     }
+
+
+    Err(ParseFocusError::InvalidTime(time_str.to_string()))
+}
+
+
+pub fn parse_focus_predicate(
+    s: &str,
+) -> Result<model::FocusPredicate, ParseFocusError> {
+    let lower = s.to_lowercase();
+    match lower.as_str() {
+        "weekdays" => Ok(model::FocusPredicate::Weekdays(
+            vec![
+                Weekday::Mon,
+                Weekday::Tue,
+                Weekday::Wed,
+                Weekday::Thu,
+                Weekday::Fri,
+            ]
+            .into_iter()
+            .collect(),
+        )),
+        "weekends" => Ok(model::FocusPredicate::Weekdays(
+            vec![Weekday::Sat, Weekday::Sun].into_iter().collect(),
+        )),
+        // Try parsing sequences of weekday abbreviations
+        _ => {
+            let mut weekdays = HashSet::new();
+            let mut i = 0;
+            while i < lower.len() {
+                // Try matching known abbreviations (longest first)
+                let remaining = &lower[i..];
+                let mut found_match = false;
+                for (abbr, day, len) in [
+                    ("mon", Weekday::Mon, 3), ("monday", Weekday::Mon, 6),
+                    ("tue", Weekday::Tue, 3), ("tuesday", Weekday::Tue, 7),
+                    ("wed", Weekday::Wed, 3), ("wednesday", Weekday::Wed, 9),
+                    ("thu", Weekday::Thu, 3), ("thursday", Weekday::Thu, 8),
+                    ("fri", Weekday::Fri, 3), ("friday", Weekday::Fri, 6),
+                    ("sat", Weekday::Sat, 3), ("saturday", Weekday::Sat, 8),
+                    ("sun", Weekday::Sun, 3), ("sunday", Weekday::Sun, 6),
+                    // Special cases
+                    ("t", Weekday::Tue, 1), // Ambiguous 't' -> Tue is common
+                    ("th", Weekday::Thu, 2),
+                    ("w", Weekday::Wed, 1),
+                    ("m", Weekday::Mon, 1),
+                    ("f", Weekday::Fri, 1),
+                    ("s", Weekday::Sat, 1), // Ambiguous 's' -> Sat is common
+                 ] {
+                    if remaining.starts_with(abbr) {
+                        weekdays.insert(day);
+                        i += len;
+                        found_match = true;
+                        break; // Found the longest match starting at i
+                    }
+                }
+                if !found_match {
+                    // If no abbreviation matched at this position, it's either the end
+                    // or an invalid sequence, or it might be a time range.
+                    // For now, assume invalid if weekdays set is not empty, else try time parsing.
+                    if !weekdays.is_empty() {
+                         return Err(ParseFocusError::InvalidWeekdaySequence(format!(
+                            "Unexpected character sequence starting at index {} in '{}'",
+                            i, s
+                        )));
+                    } else {
+                         // Break here and try time parsing later
+                         break;
+                    }
+                }
+            }
+
+            if !weekdays.is_empty() {
+                // Successfully parsed at least one weekday and reached the end of the string
+                 Ok(model::FocusPredicate::Weekdays(weekdays))
+            } else {
+                // If no weekdays were parsed, try parsing as a time range
+                let lower = s.trim().to_lowercase(); // Use trimmed lowercase version
+                if let Some(time_str) = lower.strip_prefix("after ") {
+                     let start = parse_naive_time(time_str)?;
+                     let end = NaiveTime::from_hms_opt(23, 59, 59).unwrap(); // End of day
+                     Ok(model::FocusPredicate::TimeOfDayRange{ start, end })
+                } else if let Some(time_str) = lower.strip_prefix("before ") {
+                     let start = NaiveTime::from_hms_opt(0, 0, 0).unwrap(); // Start of day
+                     let end = parse_naive_time(time_str)?;
+                     Ok(model::FocusPredicate::TimeOfDayRange{ start, end })
+                } else if let Some(separator_index) = lower.find('-') {
+                    let start_str = &lower[..separator_index];
+                    let end_str = &lower[separator_index + 1..];
+                    let start = parse_naive_time(start_str)?;
+                    let end = parse_naive_time(end_str)?;
+                     // Basic validation: end time should be after start time?
+                     // For now, allow wrapping around midnight (e.g., 10pm-2am)
+                    Ok(model::FocusPredicate::TimeOfDayRange { start, end })
+                } else {
+                     // If it's not weekdays and not a recognizable time range format
+                    Err(ParseFocusError::UnknownPredicateType(s.to_string()))
+                }
+            }
+        }
     }
 }
 
