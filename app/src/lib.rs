@@ -2,6 +2,8 @@ use todo_clock::Clock;
 use todo_model::TodoList;
 use todo_text_editing::TextEditor;
 
+pub mod interactive;
+
 pub trait Application {
     type Result<'a>: todo_printing::Printable<'a>;
     fn run<'a>(

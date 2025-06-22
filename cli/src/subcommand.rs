@@ -3,7 +3,12 @@ use clap::Parser;
 pub use crate::subcommands::*;
 
 #[derive(Debug, PartialEq, Eq, Parser)]
+#[command(about = "Run in interactive mode")]
+pub struct Interactive {}
+
+#[derive(Debug, PartialEq, Eq, Parser)]
 pub enum SubCommand {
+    Interactive(Interactive),
     Block(Block),
     Bottom(Bottom),
     Budget(Budget),

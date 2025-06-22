@@ -10,3 +10,6 @@ todo_clock.workspace = true
 todo_model.workspace = true
 todo_printing.workspace = true
 todo_text_editing.workspace = true
+ratatui = { version = "0.26", features = ["crossterm"] }
+crossterm = "0.27"
+chrono = { version = "0.4", features = ["serde"] }
