@@ -42,7 +42,7 @@ impl<'a> FakeTextEditor<'a> {
         }
     }
 
-    pub fn recorded_input(&self) -> std::cell::Ref<String> {
+    pub fn recorded_input(&self) -> std::cell::Ref<'_, String> {
         self.recorded_input.borrow()
     }
 }

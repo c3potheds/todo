@@ -673,7 +673,7 @@ impl TodoList<'_> {
 }
 
 impl<'ser> TodoList<'ser> {
-    pub fn get(&self, id: TaskId) -> Option<&Task> {
+    pub fn get(&self, id: TaskId) -> Option<&Task<'_>> {
         self.tasks.node_weight(id.0)
     }
 
