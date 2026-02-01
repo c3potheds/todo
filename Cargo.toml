@@ -1,6 +1,21 @@
 [workspace]
 resolver = "2"
-members = ["main"]
+members = [
+    "api_client",
+    "app",
+    "builtin_apps",
+    "cli",
+    "clock",
+    "config",
+    "lookup_key",
+    "main",
+    "model",
+    "printing",
+    "runner",
+    "testing",
+    "text_editing",
+    "time_format",
+]
 
 [workspace.dependencies]
 # cratets.io dependencies

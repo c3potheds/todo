@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use std::collections::HashSet;
 
 use chrono::DateTime;
@@ -20,14 +19,13 @@ use crate::TaskSet;
 use crate::TaskStatus;
 
 #[derive(Debug, Deserialize, Serialize, Default)]
-pub struct TodoList<'ser> {
-    #[serde(borrow)]
-    tasks: StableDag<Task<'ser>, ()>,
+pub struct TodoList {
+    tasks: StableDag<Task, ()>,
     complete: Vec<TaskId>,
     incomplete: Layering<TaskId>,
 }
 
-impl TodoList<'_> {
+impl TodoList {
     fn calculate_implicit_priority(&self, id: TaskId) -> i32 {
         self.get(id)
             .into_iter()
@@ -308,8 +306,8 @@ impl TodoList<'_> {
     }
 }
 
-impl<'ser> TodoList<'ser> {
-    pub fn add<T: Into<NewOptions<'ser>>>(&mut self, task: T) -> TaskId {
+impl TodoList {
+    pub fn add<T: Into<NewOptions>>(&mut self, task: T) -> TaskId {
         let task = Task::new(task.into());
         let id = TaskId(self.tasks.add_node(task));
         self.put_in_incomplete_layer(id, 0);
@@ -346,7 +344,7 @@ impl From<TaskId> for CheckOptions {
     }
 }
 
-impl TodoList<'_> {
+impl TodoList {
     /// Marks the task with the given id as complete. If successful, returns a
     /// set of tasks that became unblocked, if any.
     pub fn check<Options: Into<CheckOptions>>(
@@ -461,7 +459,7 @@ pub enum RestoreError {
     WouldRestore(TaskSet),
 }
 
-impl TodoList<'_> {
+impl TodoList {
     /// Marks a complete task as incomplete. If successful, returns a set of
     /// tasks that become blocked, if any.
     pub fn restore(&mut self, id: TaskId) -> Result<TaskSet, RestoreError> {
@@ -535,13 +533,13 @@ impl TodoList<'_> {
     }
 }
 
-pub struct Block<'a, 'ser> {
-    list: &'a mut TodoList<'ser>,
+pub struct Block<'a> {
+    list: &'a mut TodoList,
     blocked: TaskId,
 }
 
-impl<'ser> TodoList<'ser> {
-    pub fn block(&mut self, id: TaskId) -> Block<'_, 'ser> {
+impl TodoList {
+    pub fn block(&mut self, id: TaskId) -> Block<'_> {
         Block {
             list: self,
             blocked: id,
@@ -577,7 +575,7 @@ fn get_incomplete_adeps(list: &TodoList, id: TaskId) -> TaskSet {
         .collect()
 }
 
-impl Block<'_, '_> {
+impl Block<'_> {
     fn update_depth_of_blocked_and_get_implicitly_restored_adeps(
         &mut self,
     ) -> TaskSet {
@@ -615,13 +613,13 @@ impl Block<'_, '_> {
     }
 }
 
-pub struct Unblock<'a, 'ser> {
-    list: &'a mut TodoList<'ser>,
+pub struct Unblock<'a> {
+    list: &'a mut TodoList,
     blocked: TaskId,
 }
 
-impl<'ser> TodoList<'ser> {
-    pub fn unblock(&mut self, blocked: TaskId) -> Unblock<'_, 'ser> {
+impl TodoList {
+    pub fn unblock(&mut self, blocked: TaskId) -> Unblock<'_> {
         Unblock {
             list: self,
             blocked,
@@ -637,7 +635,7 @@ pub enum UnblockError {
     WasNotDirectlyBlocking,
 }
 
-impl Unblock<'_, '_> {
+impl Unblock<'_> {
     pub fn from(self, blocking: TaskId) -> Result<TaskSet, UnblockError> {
         if blocking == self.blocked {
             return Err(UnblockError::WouldUnblockFromSelf);
@@ -659,7 +657,7 @@ pub enum PuntError {
     TaskIsComplete,
 }
 
-impl TodoList<'_> {
+impl TodoList {
     pub fn punt(&mut self, id: TaskId) -> Result<(), PuntError> {
         match self.incomplete.depth(&id) {
             Some(depth) => {
@@ -672,12 +670,12 @@ impl TodoList<'_> {
     }
 }
 
-impl<'ser> TodoList<'ser> {
+impl TodoList {
     pub fn get(&self, id: TaskId) -> Option<&Task> {
         self.tasks.node_weight(id.0)
     }
 
-    pub fn set_desc<S: Into<Cow<'ser, str>>>(
+    pub fn set_desc<S: Into<String>>(
         &mut self,
         id: TaskId,
         desc: S,
@@ -894,7 +892,7 @@ pub enum SnoozeWarning {
     },
 }
 
-impl TodoList<'_> {
+impl TodoList {
     pub fn snooze(
         &mut self,
         id: TaskId,
@@ -949,7 +947,7 @@ pub enum UnsnoozeWarning {
     NotSnoozed,
 }
 
-impl TodoList<'_> {
+impl TodoList {
     pub fn unsnooze(&mut self, id: TaskId) -> Result<(), Vec<UnsnoozeWarning>> {
         let status = self.status(id).unwrap();
         if status == TaskStatus::Complete {
@@ -972,7 +970,7 @@ impl TodoList<'_> {
     }
 }
 
-impl TodoList<'_> {
+impl TodoList {
     pub fn clean(&mut self) -> TaskSet {
         let incomplete_tasks: TaskSet = self
             .incomplete_tasks()
