@@ -77,9 +77,9 @@ fn merged_task_has_min_due_date_of_sources() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 25, 23, 20, 00);
     let in_10_min = ymdhms(2021, 04, 25, 23, 30, 00);
-    fix.test("todo new a --due 15 min");
-    fix.test("todo new b --due 10 min");
-    fix.test("todo new c --due 20 min");
+    fix.test("todo new a --due '15 min'");
+    fix.test("todo new b --due '10 min'");
+    fix.test("todo new c --due '20 min'");
     fix.test("todo merge a b c --into abc")
         .modified(Mutated::Yes)
         .validate()
@@ -161,7 +161,7 @@ fn merge_task_with_snoozed_task() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 28, 18, 00, 00);
     fix.test("todo new a b");
-    fix.test("todo snooze b --until 1 day");
+    fix.test("todo snooze b --until '1 day'");
     fix.test("todo merge a b --into ab")
         .modified(Mutated::Yes)
         .validate()
@@ -178,9 +178,9 @@ fn merge_snoozed_tasks() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 28, 16, 00, 00);
     fix.test("todo new a b c");
-    fix.test("todo snooze a --until 1 hour");
-    fix.test("todo snooze b --until 2 hours");
-    fix.test("todo snooze c --until 3 hours");
+    fix.test("todo snooze a --until '1 hour'");
+    fix.test("todo snooze b --until '2 hours'");
+    fix.test("todo snooze c --until '3 hours'");
     fix.test("todo merge a b c --into abc")
         .modified(Mutated::Yes)
         .validate()

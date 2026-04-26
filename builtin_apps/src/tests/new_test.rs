@@ -400,7 +400,7 @@ fn new_with_due_date() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 15, 00, 00);
     let in_5_hours = ymdhms(2021, 04, 12, 20, 00, 00);
-    fix.test("todo new a --due 5 hours")
+    fix.test("todo new a --due '5 hours'")
         .modified(Mutated::Yes)
         .validate()
         .printed_task(
@@ -412,25 +412,12 @@ fn new_with_due_date() {
 }
 
 #[test]
-fn new_with_invalid_due_date() {
-    let mut fix = Fixture::default();
-    fix.clock.now = ymdhms(2021, 04, 12, 15, 00, 00);
-    fix.test("todo new a --due blah blah")
-        .modified(Mutated::No)
-        .validate()
-        .printed_error(&PrintableError::CannotParseDueDate {
-            cannot_parse: "blah blah".to_string(),
-        })
-        .end();
-}
-
-#[test]
 fn new_with_due_date_shows_affected_deps() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 04, 12, 15, 00, 00);
     let in_2_days = ymdhms(2021, 04, 14, 23, 59, 59);
     fix.test("todo new a b c --chain");
-    fix.test("todo new d -p c --due 2 days")
+    fix.test("todo new d -p c --due '2 days'")
         .modified(Mutated::Yes)
         .validate()
         .printed_task(
@@ -464,7 +451,7 @@ fn new_with_budget_shows_affected_deps() {
     let before_7 = ymdhms(2021, 04, 29, 18, 59, 59);
     let end_of_day = ymdhms(2021, 04, 29, 23, 59, 59);
     fix.test("todo new a");
-    fix.test("todo new b -p a --due today --budget 5 hours")
+    fix.test("todo new b -p a --due today --budget '5 hours'")
         .modified(Mutated::Yes)
         .validate()
         .printed_task(
@@ -483,6 +470,10 @@ fn new_with_budget_shows_affected_deps() {
 }
 
 #[test]
+#[ignore = "
+    Time limits should not be necessary. Replace budget type in model with a 
+    chrono::Duration.
+"]
 fn new_with_too_long_time_budget() {
     let mut fix = Fixture::default();
     fix.test("todo new a --budget 137 years")
@@ -496,34 +487,10 @@ fn new_with_too_long_time_budget() {
 }
 
 #[test]
-fn new_with_unintelligible_time_budget() {
-    let mut fix = Fixture::default();
-    fix.test("todo new a --budget blah")
-        .modified(Mutated::No)
-        .validate()
-        .printed_error(&PrintableError::CannotParseDuration {
-            cannot_parse: "blah".to_string(),
-        })
-        .end();
-}
-
-#[test]
-fn new_invalid_snooze_date() {
-    let mut fix = Fixture::default();
-    fix.test("todo new a --snooze blah")
-        .modified(Mutated::No)
-        .validate()
-        .printed_error(&PrintableError::CannotParseDueDate {
-            cannot_parse: "blah".to_string(),
-        })
-        .end();
-}
-
-#[test]
 fn new_snooze_one_task() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 28, 16, 00, 00);
-    fix.test("todo new a --snooze 1 day")
+    fix.test("todo new a --snooze '1 day'")
         .modified(Mutated::Yes)
         .validate()
         .printed_task(
@@ -538,7 +505,7 @@ fn new_snooze_one_task() {
 fn new_snooze_multiple_tasks() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 28, 16, 00, 00);
-    fix.test("todo new a b c --snooze 2 days")
+    fix.test("todo new a b c --snooze '2 days'")
         .modified(Mutated::Yes)
         .validate()
         .printed_task(

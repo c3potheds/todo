@@ -1,3 +1,4 @@
+#![cfg(test)]
 #![allow(clippy::zero_prefixed_literal)]
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -7,6 +8,7 @@ use chrono::Utc;
 use clap::Parser;
 use pretty_assertions::assert_eq;
 use todo_app::Application;
+use todo_cli::time_utils;
 use todo_cli::Options;
 use todo_clock::FakeClock;
 use todo_model::TodoList;
@@ -34,6 +36,7 @@ enum PrintedItem<'list> {
 }
 
 pub struct Validation<'validation, 'test> {
+    caller: &'static std::panic::Location<'static>,
     cmd: &'validation str,
     actual: &'validation Vec<PrintedItem<'test>>,
     expected: Vec<PrintedItem<'test>>,
@@ -62,17 +65,13 @@ impl<'test> Validation<'_, 'test> {
 
     pub fn end(self) {
         let cmd = self.cmd;
+        let caller = self.caller;
         assert_eq!(
-            // Note: the pretty_assertions crate switches the order of the
-            // arguments to assert_eq!() so that the first argument is labeled
-            // "right" and the second argument is labeled "left".
-            //
-            // The "left" argument is painted red, so we want that to be the
-            // erroneous actual value when the assertion fails. The "right"
-            // argument is painted green, showing what the output should be.
-            &self.expected,
-            self.actual,
-            "Unexpected output from '{cmd}' (left: actual, right: expected)"
+            &self.expected, self.actual,
+            "\n\t
+            In {caller}\n\t
+            Unexpected output from `{cmd}`\n\t\
+            (left: missing, right: extra)"
         );
     }
 }
@@ -130,6 +129,7 @@ impl Default for Fixture<'_> {
 }
 
 pub struct Validator<'test> {
+    caller: &'static std::panic::Location<'static>,
     record: Vec<PrintedItem<'test>>,
     mutated: Mutated,
     cmd: String,
@@ -137,16 +137,21 @@ pub struct Validator<'test> {
 
 impl<'test> Validator<'test> {
     pub fn modified(self, expected: Mutated) -> Self {
+        let caller = self.caller;
+        let cmd = &self.cmd;
+        let actual = &self.mutated;
         assert_eq!(
             self.mutated, expected,
-            "Incorrect mutation from '{}'; expected {:?}, got {:?}",
-            self.cmd, expected, self.mutated
+            "
+        In {caller}
+        Incorrect mutation from '{cmd}'; expected {expected:?}, got {actual:?}",
         );
         self
     }
 
     pub fn validate(&mut self) -> Validation<'_, 'test> {
         Validation {
+            caller: self.caller,
             cmd: &self.cmd,
             actual: &mut self.record,
             expected: Vec::new(),
@@ -155,18 +160,29 @@ impl<'test> Validator<'test> {
 }
 
 impl Fixture<'_> {
+    #[track_caller]
     pub fn test(&mut self, s: &str) -> Validator<'_> {
+        let caller = std::panic::Location::caller();
         let mut printer = FakePrinter::default();
         let mutated = {
             let args = shlex::split(s).expect("Could not split args");
+            let _set_time = time_utils::override_now(self.clock.now);
             let options =
-                Options::try_parse_from(args).expect("Could not parse args");
+                Options::try_parse_from(args.iter()).unwrap_or_else(|e| {
+                    panic!(
+                        "\n\t
+                        In {caller}\n\t
+                        Could not parse args {s:?}: {args:#?}\n
+                        {e:#?}"
+                    );
+                });
             let app = crate::App::new(options);
             app.run(&mut self.list, &self.text_editor, &self.clock)
                 .print(&mut printer)
         };
         let record = printer.record.borrow().clone();
         Validator {
+            caller,
             record,
             mutated: if mutated { Mutated::Yes } else { Mutated::No },
             cmd: s.to_string(),

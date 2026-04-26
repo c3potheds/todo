@@ -1,6 +1,7 @@
-use super::*;
 use chrono::Utc;
 use todo_testing::ymdhms;
+
+use super::*;
 
 #[test]
 fn status_of_incomplete_task() -> TestResult {

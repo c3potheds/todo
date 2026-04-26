@@ -3,7 +3,6 @@
 use todo_printing::Action::*;
 use todo_printing::BriefPrintableTask;
 use todo_printing::Plicit::Explicit;
-use todo_printing::PrintableError;
 use todo_printing::PrintableWarning;
 use todo_printing::Status::*;
 use todo_testing::ymdhms;
@@ -13,24 +12,11 @@ use super::testing::Fixture;
 use super::testing::Mutated;
 
 #[test]
-fn snooze_no_date() {
-    let mut fix = Fixture::default();
-    fix.test("todo new a");
-    fix.test("todo snooze a")
-        .modified(Mutated::No)
-        .validate()
-        .printed_error(&PrintableError::EmptyDate {
-            flag: Some("--until".to_string()),
-        })
-        .end();
-}
-
-#[test]
 fn snooze_one_task() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 27, 11, 00, 00);
     fix.test("todo new a b");
-    fix.test("todo snooze a --until 1 day")
+    fix.test("todo snooze a --until '1 day'")
         .modified(Mutated::Yes)
         .validate()
         .printed_task(
@@ -71,8 +57,8 @@ fn snooze_multiple_tasks() {
 fn snooze_snoozed_task() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 27, 11, 00, 00);
-    fix.test("todo new a --snooze 2 hours");
-    fix.test("todo snooze a --until 3 hours")
+    fix.test("todo new a --snooze '2 hours'");
+    fix.test("todo snooze a --until '3 hours'")
         .modified(Mutated::Yes)
         .validate()
         .printed_task(
@@ -103,7 +89,7 @@ fn snooze_blocked_task_above_layer_1() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 27, 11, 00, 00);
     fix.test("todo new a b c --chain");
-    fix.test("todo snooze c --until 1 day")
+    fix.test("todo snooze c --until '1 day'")
         .modified(Mutated::Yes)
         .validate()
         .printed_task(
@@ -119,8 +105,8 @@ fn snooze_blocked_task_above_layer_1() {
 fn snooze_after_due_date() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2022, 10, 02, 23, 00, 00);
-    fix.test("todo new a --due 1 day");
-    fix.test("todo snooze a --until 2 days")
+    fix.test("todo new a --due '1 day'");
+    fix.test("todo snooze a --until '2 days'")
         .modified(Mutated::Yes)
         .validate()
         .printed_warning(&PrintableWarning::SnoozedAfterDueDate {
@@ -142,7 +128,7 @@ fn snooze_until_time_that_has_already_passed_should_leave_tasks_unmodified() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2023, 09, 30, 14, 00, 00);
     fix.test("todo new a");
-    fix.test("todo snooze a --until last friday")
+    fix.test("todo snooze a --until 'last friday'")
         .modified(Mutated::No)
         .validate()
         .printed_warning(&PrintableWarning::SnoozedUntilPast {
@@ -157,8 +143,8 @@ fn snooze_until_time_that_has_already_passed_should_leave_tasks_unmodified() {
 fn snooze_until_earlier_than_current_snooze_date_is_no_op_with_warning() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2024, 05, 19, 14, 00, 00);
-    fix.test("todo new a --snooze 2 days");
-    fix.test("todo snooze a --until 1 day")
+    fix.test("todo new a --snooze '2 days'");
+    fix.test("todo snooze a --until '1 day'")
         .modified(Mutated::No)
         .validate()
         .printed_warning(&PrintableWarning::AlreadySnoozedAfterRequestedTime {

@@ -6,17 +6,13 @@ use todo_printing::PrintableAppSuccess;
 use todo_printing::PrintableResult;
 
 use super::util::format_task;
-use crate::util::parse_due_date;
 
 pub fn run<'list>(
     list: &'list TodoList,
     now: DateTime<Utc>,
     cmd: &Snoozed,
 ) -> PrintableResult<'list> {
-    let until = match &cmd.until {
-        Some(chunks) => parse_due_date(now, chunks).map_err(|e| vec![e])?,
-        None => None,
-    };
+    let until = cmd.until;
     Ok(PrintableAppSuccess {
         tasks: list
             .all_tasks()

@@ -1,46 +1,55 @@
-use todo_lookup_key::Key::*;
+#![allow(clippy::zero_prefixed_literal)]
 
+use todo_lookup_key::Key::*;
+use todo_testing::ymdhms;
+
+use crate::testing::expect_parses;
 use crate::testing::expect_parses_into;
 use crate::Due;
 use crate::SubCommand;
 
 #[test]
 fn due_no_keys_no_date() {
-    expect_parses_into("todo due", SubCommand::Due(Due::default()));
+    let now = ymdhms(2024, 12, 31, 0, 0, 0);
+    expect_parses("todo due")
+        .at_time(now)
+        .into(SubCommand::Due(Due::default()));
 }
 
 #[test]
 fn due_with_keys_but_no_date() {
-    expect_parses_into(
-        "todo due 1",
-        SubCommand::Due(Due {
+    let now = ymdhms(2024, 12, 31, 00, 00, 00);
+    expect_parses("todo due 1")
+        .at_time(now)
+        .into(SubCommand::Due(Due {
             keys: vec![ByNumber(1)],
             ..Default::default()
-        }),
-    );
+        }));
 }
 
 #[test]
 fn due_with_date_but_no_keys() {
-    expect_parses_into(
-        "todo due --in 2 days",
-        SubCommand::Due(Due {
-            due: Some(vec!["2".to_string(), "days".to_string()]),
+    let now = ymdhms(2024, 12, 31, 00, 00, 00);
+    let end_of_2_days_later = ymdhms(2025, 01, 02, 23, 59, 59);
+    expect_parses("todo due --in '2 days'")
+        .at_time(now)
+        .into(SubCommand::Due(Due {
+            due: Some(end_of_2_days_later),
             ..Default::default()
-        }),
-    );
+        }));
 }
 
 #[test]
 fn due_with_keys_and_date() {
-    expect_parses_into(
-        "todo due 10 --on friday",
-        SubCommand::Due(Due {
+    let fixed_now = ymdhms(2025, 01, 01, 00, 00, 00);
+    let end_of_friday = ymdhms(2025, 01, 03, 23, 59, 59);
+    expect_parses("todo due 10 --on friday")
+        .at_time(fixed_now)
+        .into(SubCommand::Due(Due {
             keys: vec![ByNumber(10)],
-            due: Some(vec!["friday".to_string()]),
+            due: Some(end_of_friday),
             ..Default::default()
-        }),
-    );
+        }));
 }
 
 #[test]

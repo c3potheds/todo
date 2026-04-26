@@ -54,7 +54,7 @@ fn split_preserves_dependency_structure() {
 fn split_snoozed_task() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 30, 09, 00, 00);
-    fix.test("todo new a --snooze 1 day");
+    fix.test("todo new a --snooze '1 day'");
     fix.test("todo split a --into x y")
         .modified(Mutated::Yes)
         .validate()
@@ -74,7 +74,7 @@ fn split_snoozed_task() {
 #[test]
 fn chained_split_task_with_budget_distributes_budget() {
     let mut fix = Fixture::default();
-    fix.test("todo new a --budget 3 hours");
+    fix.test("todo new a --budget '3 hours'");
     fix.test("todo split a --into x y z --chain")
         .modified(Mutated::Yes)
         .validate()
@@ -102,7 +102,7 @@ fn chained_split_task_with_budget_distributes_budget() {
 #[test]
 fn split_task_with_budget_keeps_budget() {
     let mut fix = Fixture::default();
-    fix.test("todo new a --budget 3 hours");
+    fix.test("todo new a --budget '3 hours'");
     fix.test("todo split a --into x y z")
         .modified(Mutated::Yes)
         .validate()
@@ -155,7 +155,7 @@ fn split_task_keep_chained() {
 #[test]
 fn split_task_keep_with_budget() {
     let mut fix = Fixture::default();
-    fix.test("todo new a --budget 3 hours");
+    fix.test("todo new a --budget '3 hours'");
     fix.test("todo split a --into x y z --keep")
         .modified(Mutated::Yes)
         .validate()
@@ -184,7 +184,7 @@ fn split_task_keep_with_budget() {
 #[test]
 fn split_task_chain_keep_with_budget() {
     let mut fix = Fixture::default();
-    fix.test("todo new a --budget 3 hours");
+    fix.test("todo new a --budget '3 hours'");
     fix.test("todo split a --into x y z --keep --chain")
         .modified(Mutated::Yes)
         .validate()

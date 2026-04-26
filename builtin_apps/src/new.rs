@@ -8,6 +8,7 @@ use todo_cli::New;
 use todo_lookup_key::Key;
 use todo_model::CheckError;
 use todo_model::CheckOptions;
+use todo_model::DurationInSeconds;
 use todo_model::NewOptions;
 use todo_model::TaskSet;
 use todo_model::TodoList;
@@ -20,9 +21,6 @@ use super::util::format_task;
 use super::util::format_task_brief;
 use super::util::format_tasks_brief;
 use super::util::lookup_tasks_by_keys;
-use super::util::parse_budget;
-use super::util::parse_due_date;
-use super::util::parse_snooze_date;
 
 fn disambiguate(list: &TodoList, tasks: TaskSet) -> TaskSet {
     let (complete, incomplete) = tasks.partition_done(list);
@@ -56,10 +54,12 @@ pub fn run<'list>(
     now: DateTime<Utc>,
     cmd: &New,
 ) -> PrintableResult<'list> {
-    let due_date = parse_due_date(now, &cmd.due).map_err(|e| vec![e])?;
-    let budget = parse_budget(&cmd.budget).map_err(|e| vec![e])?;
-    let snooze_date =
-        parse_snooze_date(now, &cmd.snooze).map_err(|e| vec![e])?;
+    let due_date = cmd.due;
+    let budget = cmd
+        .budget
+        .map(|budget| DurationInSeconds(budget.num_seconds() as u32))
+        .unwrap_or_default();
+    let snooze_date = cmd.snooze;
     let deps = lookup_tasks_ambiguously(list, &cmd.blocked_by);
     let adeps = lookup_tasks_ambiguously(list, &cmd.blocking);
     let before = lookup_tasks_ambiguously(list, &cmd.before);

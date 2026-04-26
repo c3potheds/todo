@@ -1,5 +1,8 @@
+use chrono::Duration;
 use clap::Parser;
 use todo_lookup_key::Key;
+
+use crate::value_parsers::parse_budget;
 
 /// Assign a time budget to the given tasks.
 ///
@@ -25,8 +28,8 @@ pub struct Budget {
     #[arg(required = true, num_args = 1..)]
     pub keys: Vec<Key>,
     /// The description of the budgeted duration.
-    #[arg(long, alias = "is", required = true, num_args = 1..)]
-    pub budget: Vec<String>,
+    #[arg(long, alias = "is", num_args = 1.., value_parser = parse_budget)]
+    pub budget: Duration,
     /// Show completed affected tasks.
     #[arg(long, short = 'd')]
     pub include_done: bool,

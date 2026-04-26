@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 chrono.workspace = true
 humantime.workspace = true
+thiserror.workspace = true

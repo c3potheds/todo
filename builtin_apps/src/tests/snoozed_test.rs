@@ -20,7 +20,7 @@ fn one_snoozed_task() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 27, 11, 00, 00);
     fix.test("todo new a b c");
-    fix.test("todo snooze b --until 1 hour");
+    fix.test("todo snooze b --until '1 hour'");
     fix.test("todo snoozed")
         .modified(Mutated::No)
         .validate()
@@ -35,7 +35,7 @@ fn multiple_snoozed_tasks() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2022, 10, 15, 12, 00, 00);
     fix.test("todo new a b c d e");
-    fix.test("todo snooze a b c --until 1 hour");
+    fix.test("todo snooze a b c --until '1 hour'");
     fix.test("todo snoozed")
         .modified(Mutated::No)
         .validate()

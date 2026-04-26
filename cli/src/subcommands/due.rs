@@ -1,5 +1,9 @@
+use chrono::DateTime;
+use chrono::Utc;
 use clap::Parser;
 use todo_lookup_key::Key;
+
+use crate::value_parsers::parse_due_date;
 
 /// Assigns or queries due dates.
 ///
@@ -44,8 +48,8 @@ pub struct Due {
     ///
     /// This is a human-readable description of a date or time, like "1 day" or
     /// "5pm".
-    #[arg(long, alias = "in", alias = "on", num_args = 1..)]
-    pub due: Option<Vec<String>>,
+    #[arg(long, alias = "in", alias = "on", num_args = 1.., value_parser = parse_due_date)]
+    pub due: Option<DateTime<Utc>>,
     /// Remove the explicit due date. If the implicit due date is inherited from
     /// an antidependency, it is retained.
     #[arg(long)]

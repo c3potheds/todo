@@ -1,21 +1,33 @@
 use chrono::DateTime;
 use chrono::Datelike;
 use chrono::TimeZone;
+use thiserror::Error;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Error)]
 pub enum ParseTimeError {
-    LocalError(chrono::format::ParseError),
+    #[error("Invalid hour: {0}")]
     InvalidHour(std::num::ParseIntError),
+    #[error("Invalid minute: {0}")]
     InvalidMinute(std::num::ParseIntError),
+    #[error("Invalid second: {0}")]
     InvalidSecond(std::num::ParseIntError),
+    #[error("Unexpected character: {0}")]
     UnexpectedChar(char),
+    #[error("Invalid time of day: {0}:{1:?}")]
     InvalidTimeOfDay(u8, Midi),
+    #[error("Incomplete time of day: {0:?}")]
     IncompleteTimeOfDay(ParseTimeOfDayState),
+    #[error("Invalid weekday: {0}")]
     InvalidWeekday(chrono::ParseWeekdayError),
+    #[error("Invalid month: {0}")]
     InvalidMonth(chrono::ParseMonthError),
+    #[error("Day of month is not a number: {0}")]
     DayOfMonthIsNotNumber(std::num::ParseIntError),
+    #[error("Invalid day of month: {0:?} {1}")]
     InvalidDayOfMonth(chrono::Month, u32),
+    #[error("Invalid year: {0}")]
     InvalidYear(std::num::ParseIntError),
+    #[error("Miscellaneous error")]
     Misc,
 }
 

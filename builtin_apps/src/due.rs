@@ -13,7 +13,6 @@ use todo_printing::PrintableResult;
 
 use super::util::format_task;
 use super::util::lookup_tasks;
-use super::util::parse_due_date;
 
 fn show_all_tasks_with_due_dates<'list>(
     list: &'list TodoList,
@@ -150,16 +149,7 @@ pub fn run<'list>(
     } else {
         Some(lookup_tasks(list, &cmd.keys))
     };
-    let due_date = if let Some(due) = &cmd.due {
-        if due.is_empty() {
-            return Err(vec![PrintableError::EmptyDate {
-                flag: Some("due".to_string()),
-            }]);
-        }
-        parse_due_date(now, due).map_err(|e| vec![e])?
-    } else {
-        None
-    };
+    let due_date = cmd.due;
     match (tasks, due_date, cmd.none) {
         (Some(tasks), Some(due_date), false) => {
             set_due_dates(list, tasks, Some(due_date), cmd.include_done)

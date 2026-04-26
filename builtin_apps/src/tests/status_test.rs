@@ -111,7 +111,7 @@ fn status_unsnoozes_if_snooze_time_passed() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 28, 18, 00, 00);
     fix.test("todo new a");
-    fix.test("todo snooze a --until 1 day");
+    fix.test("todo snooze a --until '1 day'");
     fix.clock.now = ymdhms(2021, 05, 29, 18, 00, 00);
     fix.test("todo")
         .modified(Mutated::Yes)
@@ -125,7 +125,7 @@ fn status_does_not_unsnooze_if_snooze_time_does_not_pass() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 28, 18, 00, 00);
     fix.test("todo new a");
-    fix.test("todo snooze a --until 1 day");
+    fix.test("todo snooze a --until '1 day'");
     fix.test("todo").modified(Mutated::No).validate().end();
 }
 
@@ -134,9 +134,9 @@ fn status_unsnooze_preserves_order() {
     let mut fix = Fixture::default();
     fix.clock.now = ymdhms(2021, 05, 30, 12, 00, 00);
     fix.test("todo new a b c");
-    fix.test("todo snooze a --until 1 hour");
-    fix.test("todo snooze b --until 2 hours");
-    fix.test("todo snooze c --until 3 hours");
+    fix.test("todo snooze a --until '1 hour'");
+    fix.test("todo snooze b --until '2 hours'");
+    fix.test("todo snooze c --until '3 hours'");
     fix.test("todo -b")
         .modified(Mutated::No)
         .validate()
