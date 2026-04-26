@@ -6,7 +6,7 @@ members = ["main"]
 # cratets.io dependencies
 bisection = "0.1"
 chrono = { version = "0.4", features = ["serde"] }
-clap = { version = "4.5", features = ["derive"] }
+clap = { version = "4.6", features = ["derive"] }
 daggy = { version = "0.9", features = ["serde-1", "stable_dag"] }
 directories = "6.0"
 either = "1.12"
